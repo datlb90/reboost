@@ -1,0 +1,69 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Reboost.DataAccess;
+using Reboost.DataAccess.Entities;
+
+namespace Reboost.Service.Services
+{
+    public interface IDocumentService
+    {
+        Task<Documents> Create(Documents newDocument);
+
+        Task<Documents> Update(Documents document);
+
+        Task<Documents> Delete(Documents document);
+
+        Task<IEnumerable<Documents>> GetAllDocument();
+
+        Task<Documents> GetById(int id);
+
+        Task<IEnumerable<Documents>> GetByFileName(string fileName);
+
+        Task<IEnumerable<Documents>> GetByStatus(int status);
+    }
+
+    public class DocumentService : IDocumentService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        public DocumentService(IUnitOfWork unitOfWork)
+        {
+            this._unitOfWork = unitOfWork;
+        }
+
+        public async Task<Documents> Create(Documents newDocument)
+        {
+            return await _unitOfWork.Documents.Create(newDocument);
+        }
+
+        public async Task<Documents> Update(Documents document)
+        {
+            return await _unitOfWork.Documents.Update(document);
+        }
+
+        public async Task<Documents> Delete(Documents document)
+        {
+            return await _unitOfWork.Documents.Delete(document);
+        }
+
+        public async Task<IEnumerable<Documents>> GetAllDocument()
+        {
+            return await _unitOfWork.Documents.GetAllAsync();
+        }
+
+        public async Task<Documents> GetById(int id)
+        {
+            return await _unitOfWork.Documents.GetByIdAsync(id);
+        }
+
+        public async Task<IEnumerable<Documents>> GetByFileName(string fileName)
+        {
+            return await _unitOfWork.Documents.GetByFileName(fileName);
+        }
+
+        public async Task<IEnumerable<Documents>> GetByStatus(int status)
+        {
+            return await _unitOfWork.Documents.GetByStatus(status);
+        }
+    }
+}
