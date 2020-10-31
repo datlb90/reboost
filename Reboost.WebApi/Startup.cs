@@ -19,6 +19,7 @@ using Reboost.Service.Services;
 using Reboost.WebApi.Email;
 using Reboost.WebApi.Identity;
 using VueCliMiddleware;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Reboost.WebApi
 {
@@ -41,7 +42,7 @@ namespace Reboost.WebApi
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                               builder =>
                               {
-                                  builder.WithOrigins("http://localhost:8081")
+                                  builder.WithOrigins("http://localhost:3011")
                                                         .AllowAnyHeader()
                                                         .AllowAnyMethod();
                               });
@@ -53,13 +54,17 @@ namespace Reboost.WebApi
                 options.UseSqlServer(Configuration.GetConnectionString("ReboostDbContext"));
             });
 
-            services.AddIdentity<IdentityUser, IdentityRole>(options =>
-            {
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequiredLength = 5;
-            }).AddEntityFrameworkStores<ApplicationDbContext>()
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            //services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            //{
+            //    options.Password.RequireDigit = true;
+            //    options.Password.RequireLowercase = true;
+            //    options.Password.RequiredLength = 5;
+            //}).AddEntityFrameworkStores<ApplicationDbContext>()
+            //    .AddDefaultTokenProviders();
 
             services.AddAuthentication(auth =>
             {
@@ -79,6 +84,25 @@ namespace Reboost.WebApi
                 };
             });
 
+            services.AddAuthentication()
+                .AddGoogle("google", opt =>
+                {
+                    var googleAuth = Configuration.GetSection("Authentication:Google");
+
+                    opt.ClientId = googleAuth["ClientId"];
+                    opt.ClientSecret = googleAuth["ClientSecret"];
+                    opt.SignInScheme = IdentityConstants.ExternalScheme;
+                });
+
+            services.AddAuthentication()
+                .AddFacebook("facebook", opt => {
+                    var facebookAuth = Configuration.GetSection("Authentication:Facebook");
+
+                    opt.AppId = facebookAuth["AppId"];
+                    opt.AppSecret = facebookAuth["AppSecret"];
+                    opt.SignInScheme = IdentityConstants.ExternalScheme;
+                });
+
             services.AddDbContext<ReboostDbContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("ReboostDbContext"));
@@ -86,6 +110,7 @@ namespace Reboost.WebApi
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IDocumentService, DocumentService>();
+            services.AddTransient<IRequestQueueService, RequestQueueService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddTransient<IMailService, SendGridMailService>();
 

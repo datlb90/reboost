@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +14,7 @@ namespace Reboost.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class DocumentController
+    public class DocumentController : ControllerBase
     {
         private readonly IDocumentService _docService;
 
@@ -20,6 +22,20 @@ namespace Reboost.WebApi.Controllers
         {
             _docService = docService;
         }
+
+        //[HttpGet]
+        //[Route("test")]
+        //public async Task<Documents> Test()
+        //{
+        //    HttpClient client = new HttpClient();
+        //    var response = await client.GetAsync("https://edvmodelserver.azurewebsites.net/classify?title=assistant professor");
+        //    if(response.StatusCode == HttpStatusCode.OK)
+        //    {
+        //        string responseString = await response.Content.ReadAsStringAsync();
+        //        Console.Write(responseString);
+        //    }
+        //    return null;
+        //}
 
         [HttpPost]
         [Route("")]

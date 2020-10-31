@@ -1,141 +1,267 @@
 <template>
-	<div class="test">
-		<div>
+  <div class="test">
+    <!-- <div>
 			<p>Hello {{ username }}</p>
 		</div>
+		<el-alert
+			title="warning alert"
+			type="warning"
+		/> -->
+    <div>
+      <div
+        style="width: 420px;
+					margin: auto;
+					padding: 30px;
+					border: #d4d3d3 solid 1px;
+					border-radius: 8px;
+					background-color: white;"
+      >
+        <div>
+          <el-form :model="form">
+            <div>
+              <el-button plain>
+                Edvision Logo
+              </el-button>
+              <p class="welcome">
+                Welcome back, please login to your account.
+              </p>
+            </div>
+            <el-form-item style="text-align: left;">
+              <span style="font-size: 15px; font-weight: bold; color: #409eff;">
+                Institution Email
+              </span>
+              <el-input id="email" v-model="form.username" type="text" />
+              <br>
+            </el-form-item>
+            <el-form-item style="text-align: left;">
+              <span style="font-size: 15px; font-weight: bold; color: #409eff;">
+                Password
+              </span>
+              <el-input id="password" v-model="form.password" type="password" autocomplete="off" />
+            </el-form-item>
+            <el-form-item>
+              <el-checkbox style="float: left;">
+                Remember Me
+              </el-checkbox>
+              <a href="https://netid.usf.edu/una/?display=reset" style="float: right; color: #409eff; text-decoration: none;">
+                Forgot Password?
+              </a>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" style="width: 100%;" @click="login()">
+                Sign in to EdVision
+              </el-button>
+            </el-form-item>
 
-		<el-form ref="form" :model="form" label-width="120px" style="width: 30%; margin: auto;">
-			<el-form-item label="Username">
-				<el-input v-model="form.username" />
-			</el-form-item>
-			<el-form-item label="Password">
-				<el-input v-model="form.password" type="password" autocomplete="off" />
-			</el-form-item>
-			<el-form-item>
-				<el-button type="primary" @click="login()">
-					Sign In
-				</el-button>
-				<el-button type="primary" plain @click="apiCall()">
-					Api Call
-				</el-button>
-				<el-button type="primary" plain @click="logout()">
-					Logout
-				</el-button>
-			</el-form-item>
-		</el-form>
+            <el-form-item>
+              <form ref="googleLoginForm" method="post" :action="googleFormAction">
+                <el-button type="primary" style="width: 100%;" @click="submitGoogleLoginForm()">
+                  Sign in with Google
+                </el-button>
+              </form>
+            </el-form-item>
 
-		
-		<el-table
-			v-if="weathers && weathers.length > 0"
-			:data="weathers"
-			border
-			style="width: 50%; margin: auto; margin-top: 20px;"
-		>
-			<el-table-column
-				prop="date"
-				label="Date"
-				width="180"
-			/>
-			<el-table-column
-				prop="temperatureC"
-				label="Temperature C"
-				width="180"
-			/>
-			<el-table-column
-				prop="temperatureF"
-				label="Temperature F"
-			/>
-			<el-table-column
-				prop="summary"
-				label="Summary"
-			/>
-		</el-table>
-	</div>
+            <el-form-item>
+              <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
+                <el-button type="primary" style="width: 100%;" @click="submitFacebookLoginForm()">
+                  Sign in with Facebook
+                </el-button>
+              </form>
+            </el-form-item>
+
+            <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
+              By logging in, I agree to the
+              <a href="#" style="color: #409eff; text-decoration: none;">
+                terms
+              </a> and
+              <a href="#" style="color: #409eff; text-decoration: none;">
+                policies
+              </a>
+            </div>
+            <hr>
+            <el-form-item style="margin-bottom: 5px;">
+              <el-button type="primary" style="width: 100%;" plain>
+                Contact Support
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 30%; margin: auto; margin-top: 20px;">
+      <el-button type="primary" plain @click="apiCall()">
+        Api Call
+      </el-button>
+      <el-button type="primary" plain @click="logout()">
+        Logout
+      </el-button>
+    </div>
+
+    <el-table
+      v-if="weathers && weathers.length > 0"
+      :data="weathers"
+      border
+      style="width: 50%; margin: auto; margin-top: 20px;"
+    >
+      <el-table-column
+        prop="date"
+        label="Date"
+        width="180"
+      />
+      <el-table-column
+        prop="temperatureC"
+        label="Temperature C"
+        width="180"
+      />
+      <el-table-column
+        prop="temperatureF"
+        label="Temperature F"
+      />
+      <el-table-column
+        prop="summary"
+        label="Summary"
+      />
+    </el-table>
+  </div>
 </template>
 <script>
 // @ is an alias to /src
-import http from '@/utils/axios';
+import http from '@/utils/axios'
 export default {
-	name: 'Test',
-	data() {
-		return {
-			weathers: [],
-			user: null,
-			mgr: null,
-			username: 'guest',
-			form: {
-				username: '',
-				password: ''
-			},
-			access_token: null,
-		};
-	},
-	async created(){
-	},
-	methods:{
-		login() {
-			let that = this;
-	  		http.post('http://localhost:5000/api/auth/login', {
-				Email: this.form.username,
-				Password: this.form.password
-			})
-				.then(function (response) {
-					console.log(response);
-					that.username = response.data.email;
-					that.access_token = response.data.message;
-				})
-				.catch(function (error) {
-					console.log(error);
-				});
-		},
-		logout() {
-			this.mgr.signoutRedirect();
-		},
-		apiCall(){
+  name: 'Test',
+  data() {
+    return {
+      weathers: [],
+      user: null,
+      mgr: null,
+      username: 'guest',
+      form: {
+        username: '',
+        password: ''
+      },
+      access_token: null,
+      fbSignInParams: {
+        scope: 'email',
+        return_scopes: true
+      },
+      googleExternalLogin: null,
+      returnUrl: '/about',
+      googleFormAction: null,
+      facebookFormAction: null
+    }
+  },
+  async created() {
+    this.googleFormAction = 'api/auth/external/google/' + encodeURIComponent(this.returnUrl)
+    this.facebookFormAction = 'api/auth/external/facebook/' + encodeURIComponent(this.returnUrl)
+    // this.oauthSignIn()
+  },
+  methods: {
+    oauthSignIn() {
+      // Google's OAuth 2.0 endpoint for requesting an access token
+      var oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth'
 
-			const config = {
-				headers: { Authorization: `Bearer ${this.access_token}` }
-			};
-			let url = 'http://localhost:5000/api/weatherforecast';
-			//let url = 'https://edvision.ai/api/weatherforecast';
-			http.get( 
-				url,
-				config
-			).then(response => {
-				if (response && response.data.length > 0){
-					this.weathers = response.data;
-						
-				}
-			}).catch(error => {
-				this.$notify.error({
-					title: 'Error',
-					message: error
-				});
-					
-			});
-		}
-	}
-};
+      // Create <form> element to submit parameters to OAuth 2.0 endpoint.
+      var form = document.createElement('form')
+      form.setAttribute('method', 'GET') // Send as a GET request.
+      form.setAttribute('action', oauth2Endpoint)
+
+      // Parameters to pass to OAuth 2.0 endpoint.
+      var params = { 'client_id': '296436268455-jec5622h7o285l5thb6es3cs2dkv4m45.apps.googleusercontent.com',
+        'redirect_uri': 'http://localhost:3011/about',
+        'response_type': 'token',
+        'scope': 'https://www.googleapis.com/auth/drive.metadata.readonly',
+        'include_granted_scopes': 'true',
+        'state': 'pass-through value' }
+
+      // Add form parameters as hidden input values.
+      for (var p in params) {
+        var input = document.createElement('input')
+        input.setAttribute('type', 'hidden')
+        input.setAttribute('name', p)
+        input.setAttribute('value', params[p])
+        form.appendChild(input)
+      }
+
+      // Add form to page and submit it to open the OAuth 2.0 endpoint.
+      document.body.appendChild(form)
+      form.submit()
+    },
+    submitGoogleLoginForm() {
+      this.$refs.googleLoginForm.submit()
+    },
+    submitFacebookLoginForm() {
+      this.$refs.facebookLoginForm.submit()
+    },
+    login() {
+      const that = this
+      console.log(this.form)
+      http.post('https://localhost:6990/api/auth/login', {
+        Email: this.form.username,
+        Password: this.form.password
+      })
+        .then(function(response) {
+          console.log(response)
+          that.username = response.data.email
+          that.access_token = response.data.message
+        })
+        .catch(function(error) {
+          console.log(error)
+        })
+    },
+    apiCall() {
+      const config = {
+        headers: { Authorization: `Bearer ${this.access_token}` }
+      }
+      const url = 'https://localhost:6990/api/weatherforecast'
+      // let url = 'https://edvision.ai/api/weatherforecast';
+      http.get(
+        url,
+        config
+      ).then(response => {
+        if (response && response.data.length > 0) {
+          this.weathers = response.data
+        }
+      }).catch(error => {
+        this.$notify.error({
+          title: 'Error',
+          message: error
+        })
+      })
+    }
+  }
+}
 </script>
+
 <style>
-.text {
-  font-size: 14px;
+hr
+{
+	margin-bottom: 20px;
+	border-bottom: 1px;
+	border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.item {
-  margin-bottom: 18px;
+.el-form-item__content{
+	line-height: 20px !important;
 }
+</style>
 
-.clearfix:before,
-.clearfix:after {
-  display: table;
-  content: "";
+<style scoped>
+.g-signin-button {
+  /* This is where you control how the button looks. Be creative! */
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background-color: #3c82f7;
+  color: #fff;
+  box-shadow: 0 3px 0 #0f69ff;
 }
-.clearfix:after {
-  clear: both;
-}
-
-.box-card {
-  width: 480px;
+.fb-signin-button {
+  /* This is where you control how the button looks. Be creative! */
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background-color: #4267b2;
+  color: #fff;
 }
 </style>

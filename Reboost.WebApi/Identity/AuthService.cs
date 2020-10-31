@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Reboost.WebApi.Email;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Reboost.WebApi.Identity
 {
@@ -20,6 +21,8 @@ namespace Reboost.WebApi.Identity
         Task<UserManagerResponse> RegisterUserAsync(RegisterViewModel model);
 
         Task<UserManagerResponse> LoginUserAsync(LoginViewModel model);
+
+        Task<UserManagerResponse> LoginExternalAsync(AuthenticateResult result);
 
         Task<UserManagerResponse> ConfirmEmailAsync(string userId, string token);
 
@@ -30,10 +33,10 @@ namespace Reboost.WebApi.Identity
 
     public class AuthService : IAuthService
     {
-        private UserManager<IdentityUser> _userManger;
+        private UserManager<ApplicationUser> _userManger;
         private IConfiguration _configuration;
         private IMailService _mailService;
-        public AuthService(UserManager<IdentityUser> userManager, IConfiguration configuration, IMailService mailService)
+        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IMailService mailService)
         {
             _userManger = userManager;
             _configuration = configuration;
@@ -52,10 +55,13 @@ namespace Reboost.WebApi.Identity
                     IsSuccess = false,
                 };
 
-            var identityUser = new IdentityUser
+
+            var identityUser = new ApplicationUser
             {
                 Email = model.Email,
                 UserName = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName
             };
 
             var result = await _userManger.CreateAsync(identityUser, model.Password);
@@ -88,6 +94,111 @@ namespace Reboost.WebApi.Identity
             };
 
         }
+
+        public async Task<UserManagerResponse> LoginExternalAsync(AuthenticateResult authResult)
+        {
+            // lookup our user and external provider info
+            var externalUser = authResult.Principal;
+
+            // try to determine the unique email
+            var emailClaim = externalUser.FindFirst(ClaimTypes.Email);// ?? throw new Exception("Unknown email");
+
+            if (emailClaim != null)
+            {
+                // remove the user id claim so we don't include it as an extra claim if/when we provision the user
+                var claims = externalUser.Claims.ToList();
+                var provider = authResult.Properties.Items["scheme"];
+                var email = emailClaim.Value;
+
+                // find the external user
+                var user = await _userManger.FindByEmailAsync(email);
+
+                string userId = null;
+                if (user == null)
+                {
+                    string firstName = claims.FirstOrDefault(x => x.Type == ClaimTypes.GivenName)?.Value;
+                    string lastName = claims.FirstOrDefault(x => x.Type == ClaimTypes.Surname)?.Value;
+
+                    // Create new user
+                    var identityUser = new ApplicationUser
+                    {
+                        Email = email,
+                        UserName = email,
+                        FirstName = firstName == null ? email : firstName,
+                        LastName = lastName == null ? "" : lastName
+                    };
+
+                    var result = await _userManger.CreateAsync(identityUser);
+                    if (result.Succeeded)
+                        userId = identityUser.Id;
+                }
+                else
+                {
+                    userId = user.Id;
+                }
+
+                var userClaims = new[]
+                {
+                    new Claim("Email", email),
+                    new Claim(ClaimTypes.NameIdentifier, userId)
+                };
+
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AuthSettings:JwtSecret"]));
+
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["AuthSettings:JwtIssuer"],
+                    audience: _configuration["AuthSettings:JwtAudience"],
+                    claims: userClaims,
+                    expires: DateTime.Now.AddDays(30),
+                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+
+                string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                return new UserManagerResponse
+                {
+                    Email = email,
+                    Message = tokenAsString,
+                    IsSuccess = true,
+                    ExpireDate = token.ValidTo
+                };
+            }
+            else
+            {
+                return new UserManagerResponse
+                {
+                    IsSuccess = false
+                };
+            }
+        }
+
+        private async Task<(IdentityUser user, string provider, string email, IEnumerable<Claim> claims)>
+            FindUserFromExternalProviderAsync(AuthenticateResult result)
+        {
+            var externalUser = result.Principal;
+
+            // try to determine the unique id of the external user (issued by the provider)
+            // the most common claim type for that are the sub claim and the NameIdentifier
+            // depending on the external provider, some other claim type might be used
+            var emailClaim = externalUser.FindFirst(ClaimTypes.Email);// ?? throw new Exception("Unknown email");
+
+            if(emailClaim != null)
+            {
+                // remove the user id claim so we don't include it as an extra claim if/when we provision the user
+                var claims = externalUser.Claims.ToList();
+                var provider = result.Properties.Items["scheme"];
+                var email = emailClaim.Value;
+
+                // find the external user
+                var user = await _userManger.FindByEmailAsync(email);
+                return (user, provider, email, claims);
+            }
+            else
+            {
+                return (null, null, null, null);
+            }
+            
+        }
+
 
         public async Task<UserManagerResponse> LoginUserAsync(LoginViewModel model)
         {

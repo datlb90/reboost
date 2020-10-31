@@ -1,6 +1,13 @@
 <template>
-	<div id="app">
-		<div id="nav">
+  <div id="app">
+    <div v-if="!$route.meta.plainLayout">
+      <layout />
+    </div>
+    <div v-if="$route.meta.plainLayout" id="content-wrapper">
+      <router-view />
+    </div>
+
+    <!-- <div id="nav">
 			<router-link to="/">
 				Home
 			</router-link> |
@@ -14,15 +21,33 @@
 				Document
 			</router-link>
 		</div>
-		<router-view />
-	</div>
+		<router-view /> -->
+  </div>
 </template>
 
+<script>
+import layout from '@/layout/Index.vue'
+// import store from './store'
+// import { mapState, mapGetters, mapActions } from 'vuex'
+export default {
+  name: 'App',
+  components: {
+    layout
+  }
+}
+</script>
+
 <style>
+body{
+	margin: 0px;
+}
+@font-face {
+  font-family: "GoogleRoboto";
+  src: url("assets/Roboto/Roboto-Regular.ttf") format("truetype");
+}
+
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: 'GoogleRoboto';
   text-align: center;
   color: #2c3e50;
 }

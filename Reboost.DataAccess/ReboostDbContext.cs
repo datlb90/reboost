@@ -7,6 +7,7 @@ namespace Reboost.DataAccess
     public class ReboostDbContext : DbContext
     {
         public DbSet<Documents> Documents { get; set; }
+        public DbSet<RequestQueue> RequestQueues { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
             : base(options)

@@ -21,6 +21,11 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<IEnumerable<Documents>> GetByFileName(string fileName)
         {
+            //RawSqlString sql = new RawSqlString();
+            var result = ReboostDbContext.Documents.FromSqlRaw(@"SELECT Top(1) Id, RequestId FROM RequestQueue
+                WITH(UPDLOCK, HOLDLOCK) WHERE Status = 0 ORDER BY Priority DESC, RequestedDatetime ASC)")
+                .FirstOrDefaultAsync();
+
             return await ReboostDbContext.Documents.Where(d => d.FileName == fileName).ToListAsync();
         }
 

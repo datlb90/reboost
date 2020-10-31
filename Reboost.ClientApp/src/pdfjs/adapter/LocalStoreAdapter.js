@@ -34,7 +34,7 @@ export default class LocalStoreAdapter extends StoreAdapter {
 					let annotations = getAnnotations(documentId);
 					annotations.push(annotation);
 					updateAnnotations(documentId, annotations);
-
+					console.log(annotations);
 					resolve(annotation);
 				});
 			},
@@ -80,6 +80,8 @@ export default class LocalStoreAdapter extends StoreAdapter {
 						text: selectedText,
 						topPosition: topPos
 					};
+
+					console.log(comment);
 
 					let annotations = getAnnotations(documentId);
 					annotations.push(comment);

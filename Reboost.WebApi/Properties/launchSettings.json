@@ -4,7 +4,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:50598",
+      "applicationUrl": "https://localhost:6990",
       "sslPort": 0
     }
   },
@@ -20,8 +20,8 @@
     "Reboost.WebApi": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "weatherforecast",
-      "applicationUrl": "http://localhost:5000",
+      "launchUrl": "/",
+      "applicationUrl": "https://localhost:6990",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
