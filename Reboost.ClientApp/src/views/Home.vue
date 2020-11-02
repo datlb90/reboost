@@ -17,12 +17,12 @@
 export default {
   name: 'Home',
   mounted() {
-    // console.log(document.body
-    document.documentElement.style.height = '100%'
-    // document.html.style.height = '100%';
-    document.body.style.height = '100%'
-    document.getElementById('app').style.height = '100%'
-    document.getElementById('content-wrapper').style.height = '100%'
+    // // console.log(document.body
+    // document.documentElement.style.height = '100%'
+    // // document.html.style.height = '100%';
+    // document.body.style.height = '100%'
+    // document.getElementById('app').style.height = '100%'
+    // document.getElementById('content-wrapper').style.height = '100%'
   },
   methods: {
     login() {

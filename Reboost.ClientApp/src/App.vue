@@ -1,67 +1,58 @@
 <template>
   <div id="app">
     <div v-if="!$route.meta.plainLayout">
-      <layout />
+      <HeaderTwo v-if="currentUrl == '/web-hosting'" />
+      <HeaderThree v-else-if="currentUrl == '/machine-learning'" />
+      <HeaderFour v-else-if="currentUrl == '/digital-agency'" />
+      <div v-else-if="currentUrl == '/not-found' || currentUrl == '/coming-soon'" />
+      <Header v-else />
+      <PreLoader v-if="isLoading" />
+      <router-view />
+      <div v-if="currentUrl == '/not-found' || currentUrl == '/coming-soon'" />
+      <Footer v-else />
     </div>
-    <div v-if="$route.meta.plainLayout" id="content-wrapper">
+    <div v-else>
       <router-view />
     </div>
 
-    <!-- <div id="nav">
-			<router-link to="/">
-				Home
-			</router-link> |
-			<router-link to="/about">
-				About
-			</router-link> |
-			<router-link to="/test">
-				Test
-			</router-link> |
-			<router-link to="/document">
-				Document
-			</router-link>
-		</div>
-		<router-view /> -->
   </div>
 </template>
 
 <script>
-import layout from '@/layout/Index.vue'
-// import store from './store'
-// import { mapState, mapGetters, mapActions } from 'vuex'
+import Header from './components/layout/Header'
+import HeaderTwo from './components/layout/HeaderTwo'
+import HeaderThree from './components/layout/HeaderThree'
+import HeaderFour from './components/layout/HeaderFour'
+import Footer from './components/layout/Footer'
+import PreLoader from './components/layout/PreLoader'
+
 export default {
   name: 'App',
   components: {
-    layout
+    Header, HeaderTwo, HeaderThree, HeaderFour, Footer, PreLoader
+  },
+
+  data() {
+    return {
+      isLoading: true,
+      currentUrl: ''
+    }
+  },
+
+  watch: {
+    '$route'(pathUrl) {
+      this.currentUrl = pathUrl.path
+      this.isLoading = true
+      setTimeout(() => { this.isLoading = false }, 1500)
+    }
+  },
+
+  mounted() {
+    this.currentUrl = window.location.pathname
+    console.log(this.currentUrl)
+    setTimeout(() => {
+      this.isLoading = false
+    }, 2000)
   }
 }
 </script>
-
-<style>
-body{
-	margin: 0px;
-}
-@font-face {
-  font-family: "GoogleRoboto";
-  src: url("assets/Roboto/Roboto-Regular.ttf") format("truetype");
-}
-
-#app {
-  font-family: 'GoogleRoboto';
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
-</style>

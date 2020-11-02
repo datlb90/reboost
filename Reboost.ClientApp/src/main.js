@@ -12,11 +12,23 @@ import FBSignInButton from 'vue-facebook-signin-button'
 import GSignInButton from 'vue-google-signin-button'
 import VueCookies from 'vue-cookies'
 
+import { BootstrapVue } from 'bootstrap-vue'
+import VueFeather from 'vue-feather'
+import vWow from 'v-wow'
+import VueCarousel from 'vue-carousel'
+import Toasted from 'vue-toasted'
+
+import './assets/style/custom.scss'
+
+Vue.use(BootstrapVue)
+Vue.use(VueFeather)
+Vue.use(vWow)
+Vue.use(VueCarousel)
+Vue.use(Toasted)
+
 Vue.use(VueCookies)
 Vue.use(FBSignInButton)
 Vue.use(GSignInButton)
-
-// import './permission';
 
 Vue.use(Element, { locale })
 Vue.config.productionTip = false

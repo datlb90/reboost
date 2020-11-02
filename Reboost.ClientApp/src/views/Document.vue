@@ -178,9 +178,6 @@
 //   DefaultTextLayerFactory
 // } from "pdfjs-dist/web/pdf_viewer.js";
 
-import '@/pdfjs/shared/document.css'
-import '@/pdfjs/shared/toolbar.css'
-import '@/pdfjs/shared/pdf_viewer.css'
 import PDFJS from 'pdf-dist/webpack.js'
 
 // PDFJSAnnotate
@@ -1065,3 +1062,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+@import '../pdfjs/shared/document.css';
+@import '../pdfjs/shared/toolbar.css';
+@import '../pdfjs/shared/pdf_viewer.css';
+</style>

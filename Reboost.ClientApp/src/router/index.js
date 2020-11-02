@@ -1,151 +1,133 @@
 import Vue from 'vue'
-import Router from 'vue-router'
-import Home from '../views/Home.vue'
+import VueRouter from 'vue-router'
+// import Home from '../views/Home.vue'
+import About from '../views/About.vue'
 import Document from '../views/Document.vue'
 import Test from '../views/Test.vue'
-import store from '@/store'
-import { Message } from 'element-ui'
-import NProgress from 'nprogress' // progress bar
-Vue.use(Router)
 
-// import Layout from '../layout/Index.vue';
-/**
- * constantRoutes
- * a base page that does not have permission requirements
- * all roles can be accessed
- */
-export const constantRoutes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home,
-    meta: {
-      plainLayout: false
-    }
+// Pages
+import Landing from '../components/landing-pages/Landing'
+import ITStartup from '../components/landing-pages/ITStartup'
+import Developer from '../components/landing-pages/Developer'
+import WebHosting from '../components/landing-pages/WebHosting'
+import RepairCenter from '../components/landing-pages/RepairCenter'
+import Iot from '../components/landing-pages/Iot'
+import AiMachineLearning from '../components/landing-pages/AiMachineLearning'
+import MachineLearning from '../components/landing-pages/MachineLearning'
+import DigitalAgency from '../components/landing-pages/DigitalAgency'
+import AboutStyleOne from '../components/other-pages/about/AboutStyleOne'
+import AboutStyleTwo from '../components/other-pages/about/AboutStyleTwo'
+import AboutStyleThree from '../components/other-pages/about/AboutStyleThree'
+import Features from '../components/other-pages/features/Features'
+import FeatureDetails from '../components/other-pages/features/FeatureDetails'
+import ServicesOne from '../components/other-pages/services/ServicesOne'
+import ServicesTwo from '../components/other-pages/services/ServicesTwo'
+import ServicesThree from '../components/other-pages/services/ServicesThree'
+import ServicesFour from '../components/other-pages/services/ServicesFour'
+import ServicesFive from '../components/other-pages/services/ServicesFive'
+import ServiceDetails from '../components/other-pages/services/ServiceDetails'
+import ProjectStyleOne from '../components/other-pages/projects/ProjectStyleOne'
+import ProjectStyleTwo from '../components/other-pages/projects/ProjectStyleTwo'
+import ProjectDetails from '../components/other-pages/projects/ProjectDetails'
+import Team from '../components/other-pages/team/Team'
+import Pricing from '../components/other-pages/pricing/Pricing'
+import Faq from '../components/other-pages/faq/Faq'
+import NotFound from '../components/other-pages/not-found/NotFound'
+import ComingSoon from '../components/other-pages/coming-soon/ComingSoon'
+import BlogGrid from '../components/other-pages/blog/BlogGrid'
+import BlogRightSidebar from '../components/other-pages/blog/BlogRightSidebar'
+import BlogGridTwo from '../components/other-pages/blog/BlogGridTwo'
+import BlogRightSidebarTwo from '../components/other-pages/blog/BlogRightSidebarTwo'
+import BlogGridThree from '../components/other-pages/blog/BlogGridThree'
+import BlogRightSidebarThree from '../components/other-pages/blog/BlogRightSidebarThree'
+import BlogDetails from '../components/other-pages/blog/BlogDetails'
+import Contact from '../components/other-pages/contact/Contact'
+import Shop from '../components/other-pages/product/Shop'
+import Cart from '../components/other-pages/product/Cart'
+import Checkout from '../components/other-pages/product/Checkout'
+import ItemDetails from '../components/other-pages/product/ItemDetails'
+
+Vue.use(VueRouter)
+
+const router = new VueRouter({
+  mode: 'history',
+  linkExactActiveClass: 'active',
+  scrollBehavior() {
+    return { x: 0, y: 0 }
   },
-  {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
-  },
-  {
-    path: '/document',
-    name: 'Document',
-    component: Document
-    // meta: {
-    // 	plainLayout: true
-    // }
-  },
-  {
-    path: '/test',
-    name: 'Test',
-    component: Test,
-    meta: {
-      plainLayout: true
-    }
-  }
-]
-
-export const asyncRoutes = [
-  { path: '*', redirect: '/404', hidden: true }
-]
-
-// export default router;
-
-const createRouter = () => new Router({
-  mode: 'history', // require service support
-  // scrollBehavior: () => ({ y: 0 }),
-  routes: constantRoutes
+  routes: [
+    {
+      path: '/',
+      name: 'Home',
+      component: Landing,
+      meta: {
+        plainLayout: false,
+        launchPage: true
+      }
+    },
+    {
+      path: '/about',
+      name: 'About',
+      component: About
+    },
+    {
+      path: '/document',
+      name: 'Document',
+      component: Document,
+      meta: {
+        plainLayout: true
+      }
+    },
+    {
+      path: '/test',
+      name: 'Test',
+      component: Test,
+      meta: {
+        plainLayout: true
+      }
+    },
+    // { path: '/', component: ITStartup },
+    { path: '/it-startup', component: ITStartup },
+    { path: '/developer', component: Developer },
+    { path: '/web-hosting', component: WebHosting },
+    { path: '/repair-center', component: RepairCenter },
+    { path: '/iot', component: Iot },
+    { path: '/ai-machine-learning', component: AiMachineLearning },
+    { path: '/machine-learning', component: MachineLearning },
+    { path: '/digital-agency', component: DigitalAgency },
+    { path: '/about-style-one', component: AboutStyleOne },
+    { path: '/about-style-two', component: AboutStyleTwo },
+    { path: '/about-style-three', component: AboutStyleThree },
+    { path: '/features', component: Features },
+    { path: '/feature-details', component: FeatureDetails },
+    { path: '/service-style-one', component: ServicesOne },
+    { path: '/service-style-two', component: ServicesTwo },
+    { path: '/service-style-three', component: ServicesThree },
+    { path: '/service-style-four', component: ServicesFour },
+    { path: '/service-style-five', component: ServicesFive },
+    { path: '/service-details', component: ServiceDetails },
+    { path: '/project-style-one', component: ProjectStyleOne },
+    { path: '/project-style-two', component: ProjectStyleTwo },
+    { path: '/project-details', component: ProjectDetails },
+    { path: '/team', component: Team },
+    { path: '/pricing', component: Pricing },
+    { path: '/faq', component: Faq },
+    { path: '/coming-soon', component: ComingSoon },
+    { path: '/not-found', component: NotFound },
+    { path: '/blog-grid', component: BlogGrid },
+    { path: '/blog-right-sidebar', component: BlogRightSidebar },
+    { path: '/blog-grid-two', component: BlogGridTwo },
+    { path: '/blog-right-sidebar-two', component: BlogRightSidebarTwo },
+    { path: '/blog-grid-three', component: BlogGridThree },
+    { path: '/blog-right-sidebar-three', component: BlogRightSidebarThree },
+    { path: '/blog-details', component: BlogDetails },
+    { path: '/contact', component: Contact },
+    { path: '/shop', component: Shop },
+    { path: '/cart', component: Cart },
+    { path: '/checkout', component: Checkout },
+    { path: '/details', component: ItemDetails }
+  ]
 })
-
-const router = createRouter()
-
-// Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
-// export function resetRouter() {
-// 	const newRouter = createRouter();
-// 	router.matcher = newRouter.matcher; // reset router
-// }
 
 export default router
-
-NProgress.configure({ showSpinner: false }) // NProgress Configuration
-
-const whiteList = ['/login', '/auth-redirect'] // no redirect whitelist
-
-router.beforeEach(async(to, from, next) => {
-  // start progress bar
-  NProgress.start()
-
-  // set page title
-  // npndocument.title = getPageTitle(to.meta.title);
-
-  // determine whether the user has logged in
-  const hasToken = true// getToken();
-  if (hasToken) {
-    if (to.path === '/login') {
-      // if is logged in, redirect to the home page
-      next({ path: '/' })
-      // NProgress.done(); // hack: https://github.com/PanJiaChen/vue-element-admin/pull/2939
-    } else {
-      // determine whether the user has obtained his permission roles through getInfo
-      const hasRoles = false// store.getters.roles && store.getters.roles.length > 0;
-      if (hasRoles) {
-        next()
-      } else {
-        // // generate accessible routes map based on roles
-        // const accessRoutes = await store.dispatch('permission/generateRoutes');
-
-        // // dynamically add accessible routes
-        // router.addRoutes(accessRoutes);
-
-        // // hack method to ensure that addRoutes is complete
-        // // set the replace: true, so the navigation will not leave a history record
-        // //next({ ...to, replace: true });
-        // next();
-
-        try {
-          // get user info
-          // note: roles must be a object array! such as: ['admin'] or ,['developer','editor']
-          // const { roles } = await store.dispatch('user/getInfo');
-
-          // generate accessible routes map based on roles
-          const accessRoutes = await store.dispatch('permission/generateRoutes')
-
-          // dynamically add accessible routes
-          router.addRoutes(accessRoutes)
-
-          // hack method to ensure that addRoutes is complete
-          // set the replace: true, so the navigation will not leave a history record
-          // next({ ...to, replace: true });
-          next()
-        } catch (error) {
-          // remove token and go to login page to re-login
-          // await store.dispatch('user/resetToken');
-          Message.error(error || 'Has Error')
-          next(`/login?redirect=${to.path}`)
-          NProgress.done()
-        }
-      }
-    }
-  } else {
-    /* has no token*/
-
-    if (whiteList.indexOf(to.path) !== -1) {
-      // in the free login whitelist, go directly
-      next()
-    } else {
-      // other pages that do not have permission to access are redirected to the login page.
-      next(`/login?redirect=${to.path}`)
-      // NProgress.done();
-    }
-  }
-})
-
-router.afterEach(() => {
-  // finish progress bar
-  NProgress.done()
-})
 

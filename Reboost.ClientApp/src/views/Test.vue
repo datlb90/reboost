@@ -9,51 +9,60 @@
 		/> -->
     <div>
       <div
-        style="width: 420px;
+        style="width: 400px;
 					margin: auto;
 					padding: 30px;
 					border: #d4d3d3 solid 1px;
 					border-radius: 8px;
-					background-color: white;"
+					background-color: white;     margin-top: 10%;"
       >
         <div>
           <el-form :model="form">
-            <div>
-              <el-button plain>
-                Edvision Logo
-              </el-button>
-              <p class="welcome">
+            <div style="    margin: auto;    width: 140px; padding-left: 10px; padding-bottom: 20px;">
+              <router-link class="navbar-brand" to="/" style="padding-top: 0px;">
+                <img src="@/assets/logo/green_logo.png" alt="logo" style="width: 140px;">
+              </router-link>
+              <!-- <el-button plain>
+                Reboost Logo
+              </el-button> -->
+              <!-- <p class="welcome">
                 Welcome back, please login to your account.
-              </p>
+              </p> -->
             </div>
             <el-form-item style="text-align: left;">
-              <span style="font-size: 15px; font-weight: bold; color: #409eff;">
-                Institution Email
+              <span style="font-size: 15px; font-weight: bold; color: rgb(78 126 154);">
+                Username or email
               </span>
               <el-input id="email" v-model="form.username" type="text" />
               <br>
             </el-form-item>
             <el-form-item style="text-align: left;">
-              <span style="font-size: 15px; font-weight: bold; color: #409eff;">
+              <span style="font-size: 15px; font-weight: bold; color:rgb(78 126 154);">
                 Password
               </span>
+
+              <a href="https://netid.usf.edu/una/?display=reset" style="float: right; color: rgb(101 139 179); text-decoration: none;">
+                Forgot Password?
+              </a>
+
               <el-input id="password" v-model="form.password" type="password" autocomplete="off" />
             </el-form-item>
-            <el-form-item>
+            <!-- <el-form-item>
               <el-checkbox style="float: left;">
                 Remember Me
               </el-checkbox>
               <a href="https://netid.usf.edu/una/?display=reset" style="float: right; color: #409eff; text-decoration: none;">
                 Forgot Password?
               </a>
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item>
-              <el-button type="primary" style="width: 100%;" @click="login()">
-                Sign in to EdVision
-              </el-button>
+              <!-- <el-button type="primary" style="width: 100%;" @click="login()">
+                Sign in to Reboost
+              </el-button> -->
+              <a href="#" class="btn btn-primary" style="width: 100%;" @click="login()">Sign In</a>
             </el-form-item>
 
-            <el-form-item>
+            <!-- <el-form-item>
               <form ref="googleLoginForm" method="post" :action="googleFormAction">
                 <el-button type="primary" style="width: 100%;" @click="submitGoogleLoginForm()">
                   Sign in with Google
@@ -67,35 +76,34 @@
                   Sign in with Facebook
                 </el-button>
               </form>
-            </el-form-item>
+            </el-form-item> -->
 
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
               By logging in, I agree to the
-              <a href="#" style="color: #409eff; text-decoration: none;">
+              <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
                 terms
               </a> and
-              <a href="#" style="color: #409eff; text-decoration: none;">
+              <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
                 policies
               </a>
             </div>
             <hr>
             <el-form-item style="margin-bottom: 5px;">
-              <el-button type="primary" style="width: 100%;" plain>
-                Contact Support
-              </el-button>
+              <a href="#" class="btn btn-light" style="width: 100%;text-transform: none; color: #246185;">New to Reboost? Register Now!</a>
+
             </el-form-item>
           </el-form>
         </div>
       </div>
     </div>
 
-    <div style="width: 30%; margin: auto; margin-top: 20px;">
+    <div v-if="access_token" style="width: 30%; margin: auto; margin-top: 20px; text-align: center;">
       <el-button type="primary" plain @click="apiCall()">
         Api Call
       </el-button>
-      <el-button type="primary" plain @click="logout()">
+      <!-- <el-button type="primary" plain @click="logout()">
         Logout
-      </el-button>
+      </el-button> -->
     </div>
 
     <el-table
@@ -195,8 +203,7 @@ export default {
     },
     login() {
       const that = this
-      console.log(this.form)
-      http.post('https://localhost:6990/api/auth/login', {
+      http.post('http://localhost:6990/api/auth/login', {
         Email: this.form.username,
         Password: this.form.password
       })
@@ -204,16 +211,24 @@ export default {
           console.log(response)
           that.username = response.data.email
           that.access_token = response.data.message
+          that.$notify.success({
+            title: 'Success',
+            message: 'You have successfully logged in.'
+          })
         })
         .catch(function(error) {
-          console.log(error)
+          // console.log(error)
+          that.$notify.error({
+            title: 'Error',
+            message: error
+          })
         })
     },
     apiCall() {
       const config = {
         headers: { Authorization: `Bearer ${this.access_token}` }
       }
-      const url = 'https://localhost:6990/api/weatherforecast'
+      const url = 'http://localhost:6990/api/weatherforecast'
       // let url = 'https://edvision.ai/api/weatherforecast';
       http.get(
         url,
@@ -223,9 +238,10 @@ export default {
           this.weathers = response.data
         }
       }).catch(error => {
+        console.log(error)
         this.$notify.error({
           title: 'Error',
-          message: error
+          message: 'Username or password is incorrect.'
         })
       })
     }
