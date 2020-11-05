@@ -7,7 +7,7 @@
           <div class="single-footer-widget">
             <div class="logo">
               <a href="/">
-                <img src="../../assets/img/logo.png" alt="logo">
+                <img src="../../assets/logo/green_logo.png" alt="logo" style="width: 140px;">
               </a>
             </div>
             <p>Quis ipsum suspendisse ultrices gravida. Risus commodo viverra maecenas accumsan lacus vel facilisis.</p>
@@ -60,7 +60,7 @@
 
         <div class="col-lg-12 col-md-12">
           <div class="copyright-area">
-            <p>Copyright &copy;2020 Pasona. All Rights Reserved</p>
+            <p>Copyright &copy;2020 Reboost. All Rights Reserved</p>
           </div>
         </div>
       </div>

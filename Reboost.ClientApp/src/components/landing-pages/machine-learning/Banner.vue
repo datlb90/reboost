@@ -1,6 +1,6 @@
 <template>
   <!-- Start ML Main Banner -->
-  <div class="ml-main-banner">
+  <div id="banner" class="ml-main-banner">
     <div class="container-fluid">
       <div class="row align-items-center">
         <div class="col-lg-6 col-md-12">

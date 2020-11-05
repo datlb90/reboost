@@ -1,6 +1,6 @@
 <template>
   <!-- Start Main Banner -->
-  <div class="ml-main-section" style=" padding-top: 150px; padding-bottom: 80px;">
+  <div id="banner" class="ml-main-section" style=" padding-top: 150px; padding-bottom: 80px;">
     <div class="container">
       <div class="row">
         <div class="col-lg-6 col-md-12">

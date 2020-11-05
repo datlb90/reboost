@@ -1,6 +1,6 @@
 <template>
   <!-- Start IoT Why Choose Us Area -->
-  <section class="iot-why-choose-us ptb-80 pb-0">
+  <section id="howItWorks" class="iot-why-choose-us ptb-80 pb-0">
     <div class="container">
       <div class="section-title">
         <h2>How It Works</h2>

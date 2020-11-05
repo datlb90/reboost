@@ -1,6 +1,6 @@
 <template>
   <!-- Start Fun Facts Area -->
-  <section class="funfacts-area ptb-80">
+  <section id="features" class="funfacts-area ptb-80">
     <div class="container">
       <div class="section-title">
         <h2>We always try to understand users expectation</h2>
