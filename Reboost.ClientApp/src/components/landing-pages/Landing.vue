@@ -2,9 +2,11 @@
   <div>
     <Banner />
     <BoxesArea />
+    <HowItWorks2 />
+    <WhyChooseUs />
+    <HowItWorks />
     <FeaturesArea />
     <Features />
-    <Services />
     <Team />
     <Funfacts />
     <Pricing />
@@ -31,7 +33,9 @@ import Banner from './landing/Banner'
 import BoxesArea from './landing/BoxesArea'
 import FeaturesArea from './developer/FeaturesArea'
 import Features from './developer/Features'
-import Services from './developer/Services'
+import HowItWorks from './landing/HowItWorks'
+import HowItWorks2 from './landing/HowItWorks2'
+import WhyChooseUs from './landing/WhyChooseUs'
 import Team from './developer/Team'
 import Funfacts from './developer/Funfacts'
 import Pricing from './developer/Pricing'
@@ -45,7 +49,9 @@ export default {
     BoxesArea,
     FeaturesArea,
     Features,
-    Services,
+    HowItWorks,
+    HowItWorks2,
+    WhyChooseUs,
     Team,
     Funfacts,
     Pricing,

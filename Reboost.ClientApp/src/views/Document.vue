@@ -206,12 +206,12 @@ export default {
       viewer: null,
       PAGE_HEIGHT: 1,
       NUM_PAGES: 0,
-      documentId: './static/demand.pdf',
+      documentId: './static/test1.pdf',
       RENDER_OPTIONS: {
-        documentId: './static/demand.pdf',
+        documentId: './static/test1.pdf',
         pdfDocument: null,
         scale:
-          parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.2,
+          parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
         rotate: parseInt(localStorage.getItem(`${this.documentId}/rotate`), 10) || 0
       },
       newComment: '',

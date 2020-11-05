@@ -7,12 +7,12 @@
           <div class="ml-banner-content" style="margin-top: 50px;">
             <h1>A New Way to Learn</h1>
             <p>Reboost is the best platform to help you boost your language writing test scores.
-              Whether it is the TOEFL or the IELTS test, we will get you fully prepared with:</p>
+              No matter which test you take, we will get you fully prepared and guarantee your score improvement by offering:</p>
             <ul>
               <li>Unlimited practice tests</li>
-              <li>100% free peer evaluation</li>
-              <li>Learning by providing feedback</li>
-              <li>Professional rater evaluation</li>
+              <li>Active community that encourages you to practice more</li>
+              <li>Opportunity to learn by providing feedback</li>
+              <li>Useful and constructive feedback to help you improve</li>
             </ul>
 
             <!-- <a href="#" class="btn btn-secondary">Get Started</a> -->
