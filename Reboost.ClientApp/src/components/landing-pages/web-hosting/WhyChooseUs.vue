@@ -25,7 +25,7 @@
                 <div class="icon">
                   <i class="flaticon-team" />
                 </div>
-                <h3>Unlimited Practice Test</h3>
+                <h3>Proficient & Friendly</h3>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna.</p>
               </div>
             </div>

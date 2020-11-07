@@ -1,55 +1,55 @@
-import StoreAdapter from './adapter/StoreAdapter';
-import LocalStoreAdapter from './adapter/LocalStoreAdapter';
-import render from './render';
-import UI from './UI';
+import StoreAdapter from './adapter/StoreAdapter'
+import LocalStoreAdapter from './adapter/LocalStoreAdapter'
+import render from './render'
+import UI from './UI'
 
 export default {
-	/**
+  /**
    * Abstract class that needs to be defined so PDFJSAnnotate
    * knows how to communicate with your server.
    */
-	StoreAdapter,
+  StoreAdapter,
 
-	/**
+  /**
    * Implementation of StoreAdapter that stores annotation data to localStorage.
    */
-	LocalStoreAdapter,
+  LocalStoreAdapter,
 
-	/**
+  /**
    * Abstract instance of StoreAdapter
    */
-	__storeAdapter: new StoreAdapter(),
+  __storeAdapter: new StoreAdapter(),
 
-	/**
+  /**
    * Getter for the underlying StoreAdapter property
    *
    * @return {StoreAdapter}
    */
-	getStoreAdapter() {
-		return this.__storeAdapter;
-	},
+  getStoreAdapter() {
+    return this.__storeAdapter
+  },
 
-	/**
+  /**
    * Setter for the underlying StoreAdapter property
    *
    * @param {StoreAdapter} adapter The StoreAdapter implementation to be used.
    */
-	setStoreAdapter(adapter) {
-		// TODO this throws an error when bundled
-		// if (!(adapter instanceof StoreAdapter)) {
-		//   throw new Error('adapter must be an instance of StoreAdapter');
-		// }
+  setStoreAdapter(adapter) {
+    // TODO this throws an error when bundled
+    // if (!(adapter instanceof StoreAdapter)) {
+    //   throw new Error('adapter must be an instance of StoreAdapter');
+    // }
 
-		this.__storeAdapter = adapter;
-	},
+    this.__storeAdapter = adapter
+  },
 
-	/**
+  /**
    * UI is a helper for instrumenting UI interactions for creating,
    * editing, and deleting annotations in the browser.
    */
-	UI,
+  UI,
 
-	/**
+  /**
    * Render the annotations for a page in the PDF Document
    *
    * @param {SVGElement} svg The SVG element that annotations should be rendered to
@@ -57,9 +57,9 @@ export default {
    * @param {Object} data The StoreAdapter.getAnnotations data
    * @return {Promise}
    */
-	render,
+  render,
 
-	/**
+  /**
    * Convenience method for getting annotation data
    *
    * @alias StoreAdapter.getAnnotations
@@ -67,7 +67,7 @@ export default {
    * @param {String} pageNumber The page number
    * @return {Promise}
    */
-	getAnnotations(documentId, pageNumber) {
-		return this.getStoreAdapter().getAnnotations(documentId, pageNumber);
-	}
-};
+  getAnnotations(documentId, pageNumber) {
+    return this.getStoreAdapter().getAnnotations(documentId, pageNumber)
+  }
+}

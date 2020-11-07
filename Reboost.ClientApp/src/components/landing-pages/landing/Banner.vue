@@ -66,6 +66,7 @@ export default {
   name: 'Banner'
 }
 </script>
+
 <style scoped>
 .banner-form{
   background: #ffffff;
