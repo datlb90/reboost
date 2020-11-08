@@ -1,17 +1,19 @@
 <template>
   <div id="app">
-    <div v-if="!$route.meta.plainLayout">
-      <HeaderTwo v-if="currentUrl == '/web-hosting'" />
-      <HeaderThree v-else-if="currentUrl == '/machine-learning'" />
-      <HeaderFour v-else-if="currentUrl == '/digital-agency'" />
-      <div v-else-if="currentUrl == '/not-found' || currentUrl == '/coming-soon'" />
-      <Header v-else />
+    <div v-if="!$route.meta.plainLayout && $route.meta.landingPage">
+      <LandingHeader />
       <PreLoader v-if="isLoading" />
       <router-view />
-      <div v-if="currentUrl == '/not-found' || currentUrl == '/coming-soon'" />
-      <Footer v-else />
+      <Footer />
     </div>
-    <div v-else>
+    <div v-if="!$route.meta.plainLayout && $route.meta.raterLanding">
+      <RaterHeader />
+      <PreLoader v-if="isLoading" />
+      <router-view />
+      <Footer />
+    </div>
+    <div v-if="!$route.meta.plainLayout && !$route.meta.landingPage && !$route.meta.raterLanding">
+      <Header />
       <router-view />
     </div>
 
@@ -20,16 +22,15 @@
 
 <script>
 import Header from './components/layout/Header'
-import HeaderTwo from './components/layout/HeaderTwo'
-import HeaderThree from './components/layout/HeaderThree'
-import HeaderFour from './components/layout/HeaderFour'
+import LandingHeader from './components/layout/LandingHeader'
+import RaterHeader from './components/layout/RaterHeader'
 import Footer from './components/layout/Footer'
 import PreLoader from './components/layout/PreLoader'
 
 export default {
   name: 'App',
   components: {
-    Header, HeaderTwo, HeaderThree, HeaderFour, Footer, PreLoader
+    Header, LandingHeader, RaterHeader, Footer, PreLoader
   },
 
   data() {

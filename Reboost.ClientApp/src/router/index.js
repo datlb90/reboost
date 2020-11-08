@@ -4,9 +4,11 @@ import VueRouter from 'vue-router'
 import About from '../views/About.vue'
 import Document from '../views/Document.vue'
 import Test from '../views/Test.vue'
-
+import RaterApply from '../views/rater/Application.vue'
 // Pages
 import Landing from '../components/landing-pages/Landing'
+import RaterLanding from '../components/landing-pages/Rater'
+
 import ITStartup from '../components/landing-pages/ITStartup'
 import Developer from '../components/landing-pages/Developer'
 import WebHosting from '../components/landing-pages/WebHosting'
@@ -29,6 +31,7 @@ import ServiceDetails from '../components/other-pages/services/ServiceDetails'
 import ProjectStyleOne from '../components/other-pages/projects/ProjectStyleOne'
 import ProjectStyleTwo from '../components/other-pages/projects/ProjectStyleTwo'
 import ProjectDetails from '../components/other-pages/projects/ProjectDetails'
+
 import Team from '../components/other-pages/team/Team'
 import Pricing from '../components/other-pages/pricing/Pricing'
 import Faq from '../components/other-pages/faq/Faq'
@@ -62,7 +65,24 @@ const router = new VueRouter({
       component: Landing,
       meta: {
         plainLayout: false,
-        launchPage: true
+        landingPage: true
+      }
+    },
+    {
+      path: '/rater',
+      name: 'Rater',
+      component: RaterLanding,
+      meta: {
+        plainLayout: false,
+        raterLanding: true
+      }
+    },
+    {
+      path: '/rater/apply',
+      name: 'RaterApply',
+      component: RaterApply,
+      meta: {
+        plainLayout: false
       }
     },
     {
@@ -75,7 +95,7 @@ const router = new VueRouter({
       name: 'Document',
       component: Document,
       meta: {
-        plainLayout: true
+        plainLayout: false
       }
     },
     {
