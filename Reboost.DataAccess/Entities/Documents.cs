@@ -7,10 +7,9 @@ namespace Reboost.DataAccess.Entities
     {
         public string FileName { get; set; }
         public byte[] Data { get; set; }
-        public int Status { get; set; }
+        public string Status { get; set; }
         public int PageCount { get; set; }
         public string Text { get; set; }
-        public DateTime DateCretaed { get; set; }
-        public DateTime DateModified { get; set; }
+        public DateTime CreatedDate { get; set; }
     }
 }

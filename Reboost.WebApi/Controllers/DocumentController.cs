@@ -23,20 +23,6 @@ namespace Reboost.WebApi.Controllers
             _docService = docService;
         }
 
-        //[HttpGet]
-        //[Route("test")]
-        //public async Task<Documents> Test()
-        //{
-        //    HttpClient client = new HttpClient();
-        //    var response = await client.GetAsync("https://edvmodelserver.azurewebsites.net/classify?title=assistant professor");
-        //    if(response.StatusCode == HttpStatusCode.OK)
-        //    {
-        //        string responseString = await response.Content.ReadAsStringAsync();
-        //        Console.Write(responseString);
-        //    }
-        //    return null;
-        //}
-
         [HttpPost]
         [Route("")]
         public async Task<Documents> Create(Documents newDocument)
@@ -81,7 +67,7 @@ namespace Reboost.WebApi.Controllers
 
         [HttpGet]
         [Route("status/{status}")]
-        public async Task<IEnumerable<Documents>> GetByStatus(int status)
+        public async Task<IEnumerable<Documents>> GetByStatus(string status)
         {
             return await _docService.GetByStatus(status);
         }

@@ -20,7 +20,7 @@ namespace Reboost.Service.Services
 
         Task<IEnumerable<Documents>> GetByFileName(string fileName);
 
-        Task<IEnumerable<Documents>> GetByStatus(int status);
+        Task<IEnumerable<Documents>> GetByStatus(string status);
     }
 
     public class DocumentService : IDocumentService
@@ -61,7 +61,7 @@ namespace Reboost.Service.Services
             return await _unitOfWork.Documents.GetByFileName(fileName);
         }
 
-        public async Task<IEnumerable<Documents>> GetByStatus(int status)
+        public async Task<IEnumerable<Documents>> GetByStatus(string status)
         {
             return await _unitOfWork.Documents.GetByStatus(status);
         }

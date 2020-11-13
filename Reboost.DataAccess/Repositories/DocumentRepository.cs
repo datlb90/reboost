@@ -10,7 +10,7 @@ namespace Reboost.DataAccess.Repositories
     public interface IDocumentRepository : IRepository<Documents>
     {
         Task<IEnumerable<Documents>> GetByFileName(string fileName);
-        Task<IEnumerable<Documents>> GetByStatus(int status);
+        Task<IEnumerable<Documents>> GetByStatus(string status);
     }
 
     public class DocumentRespository : Repository<Documents>, IDocumentRepository
@@ -29,7 +29,7 @@ namespace Reboost.DataAccess.Repositories
             return await ReboostDbContext.Documents.Where(d => d.FileName == fileName).ToListAsync();
         }
 
-        public async Task<IEnumerable<Documents>> GetByStatus(int status)
+        public async Task<IEnumerable<Documents>> GetByStatus(string status)
         {
             return await ReboostDbContext.Documents.Where(d => d.Status == status).ToListAsync();
         }
