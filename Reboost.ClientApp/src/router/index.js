@@ -5,6 +5,8 @@ import About from '../views/About.vue'
 import Document from '../views/Document.vue'
 import Test from '../views/Test.vue'
 import RaterApply from '../views/rater/Application.vue'
+import Admin from '../views/Admin.vue'
+
 // Pages
 import Landing from '../components/landing-pages/Landing'
 import RaterLanding from '../components/landing-pages/Rater'
@@ -49,6 +51,8 @@ import Shop from '../components/other-pages/product/Shop'
 import Cart from '../components/other-pages/product/Cart'
 import Checkout from '../components/other-pages/product/Checkout'
 import ItemDetails from '../components/other-pages/product/ItemDetails'
+import ApplicationDetail from '../views/ApplicationDetail.vue'
+import CreateAccount from '../views/CreateAccount.vue'
 
 Vue.use(VueRouter)
 
@@ -106,6 +110,16 @@ const router = new VueRouter({
         plainLayout: true
       }
     },
+    {
+      path: '/admin',
+      name: 'Admin',
+      component: Admin
+    },
+    {
+      path: '/createAccount',
+      name: 'CreateAccount',
+      component: CreateAccount
+    },
     // { path: '/', component: ITStartup },
     { path: '/it-startup', component: ITStartup },
     { path: '/developer', component: Developer },
@@ -145,7 +159,15 @@ const router = new VueRouter({
     { path: '/shop', component: Shop },
     { path: '/cart', component: Cart },
     { path: '/checkout', component: Checkout },
-    { path: '/details', component: ItemDetails }
+    { path: '/details', component: ItemDetails },
+    {
+      path: '/rater/details/:id',
+      component: ApplicationDetail,
+      name: 'RaterDetails',
+      // meta: {
+      //   plainLayout: true // Disable Header Layout and Footer Layout
+      // }
+    }
   ]
 })
 

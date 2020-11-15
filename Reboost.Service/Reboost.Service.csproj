@@ -5,10 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\PhotoService.cs" />
+    <Compile Remove="Services\ScoreService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Reboost.Shared\Reboost.Shared.csproj" />
     <ProjectReference Include="..\Reboost.DataAccess\Reboost.DataAccess.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
   </ItemGroup>
 </Project>

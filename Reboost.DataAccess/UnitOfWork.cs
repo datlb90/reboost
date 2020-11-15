@@ -8,6 +8,9 @@ namespace Reboost.DataAccess
     {
         IDocumentRepository Documents { get; }
         IRequestQueueRepository RequestQueues { get; }
+        IRaterRepository Raters { get; }
+        ILookUpRepository LookUps { get; }
+
         Task<int> CommitAsync();
     }
 
@@ -16,6 +19,9 @@ namespace Reboost.DataAccess
         private readonly ReboostDbContext _context;
         private DocumentRespository _documentRepository;
         private RequestQueueRepository _requestQueueRepository;
+        private RaterRepository _raterRepository;
+        private LookUpRepository _lookUpRepository;
+
 
         public UnitOfWork(ReboostDbContext context)
         {
@@ -24,6 +30,8 @@ namespace Reboost.DataAccess
 
         public IDocumentRepository Documents => _documentRepository = _documentRepository ?? new DocumentRespository(_context);
         public IRequestQueueRepository RequestQueues => _requestQueueRepository = _requestQueueRepository ?? new RequestQueueRepository(_context);
+        public IRaterRepository Raters => _raterRepository = _raterRepository ?? new RaterRepository(_context);
+        public ILookUpRepository LookUps => _lookUpRepository = _lookUpRepository ?? new LookUpRepository(_context);
 
         public async Task<int> CommitAsync()
         {

@@ -20,6 +20,8 @@ using Reboost.WebApi.Email;
 using Reboost.WebApi.Identity;
 using VueCliMiddleware;
 using Microsoft.AspNetCore.Authentication;
+using AutoMapper;
+using Reboost.WebApi.Utils;
 
 namespace Reboost.WebApi
 {
@@ -105,14 +107,20 @@ namespace Reboost.WebApi
 
             services.AddDbContext<ReboostDbContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("ReboostDbContext"));
+                options.UseSqlServer(Configuration.GetConnectionString("ReboostDbContext"), b => b.MigrationsAssembly("Reboost.DataAccess"));
             });
+
+            services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
+
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IDocumentService, DocumentService>();
             services.AddTransient<IRequestQueueService, RequestQueueService>();
+            services.AddScoped<IRaterService, RaterService>();
+            services.AddScoped<ILookUpService, LookUpService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddTransient<IMailService, SendGridMailService>();
+
 
             services.AddControllers();
             services.AddRazorPages();
