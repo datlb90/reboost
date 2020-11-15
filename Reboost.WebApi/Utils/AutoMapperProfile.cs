@@ -12,7 +12,7 @@ namespace Reboost.WebApi.Utils
     {
         public AutoMapperProfile()
         {
-            CreateMap<CreateRaterModel, Rater>();
+            CreateMap<RaterModel, Rater>();
         }
     }
 }

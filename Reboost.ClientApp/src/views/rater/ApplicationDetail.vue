@@ -174,7 +174,7 @@
 <script>
 import { mapGetters } from 'vuex'
 export default {
-  name: 'Detail',
+  name: 'ApplicationDetail',
   data() {
     return {
       picture: [],

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Reboost.DataAccess.Entities;
 using Reboost.Service.Services;
 using Reboost.WebApi.Models;
@@ -44,46 +45,80 @@ namespace Reboost.WebApi.Controllers
         }
         [HttpPost]
         [Route("create")]
-        public async Task<Rater> CreateAsync([FromForm] CreateRaterModel model)
+        public async Task<Rater> CreateAsync([FromForm] RaterModel model)
         {
-            var _rater = _mapper.Map<Rater>(model);
-            foreach (var photo in model.IELTSCertificatePhotos)
+            try
             {
-                using (var memoryStream = new MemoryStream())
-                {
-                    await photo.CopyToAsync(memoryStream);
-                    var _photo = new Photo
-                    {
-                        File = memoryStream.ToArray(),
-                        FileName = photo.FileName,
-                        FileType = "IELSCertificate"
-                    };
+                var _rater = _mapper.Map<Rater>(model);
 
-                    _rater.Photos.Add(_photo);
+                _rater.Scores = JsonConvert.DeserializeObject<List<UserScore>>(model.ScoreJSON);
+
+                if(model.IELTSCertificatePhotos != null)
+                {
+                    foreach (var photo in model.IELTSCertificatePhotos)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await photo.CopyToAsync(memoryStream);
+                            var _photo = new Photo
+                            {
+                                File = memoryStream.ToArray(),
+                                FileName = photo.FileName,
+                                FileType = "IELS Certificate"
+                            };
+
+                            _rater.Photos.Add(_photo);
+                        }
+                    }
                 }
+                if (model.TOEFLCertificatePhotos != null)
+                {
+                    foreach (var photo in model.TOEFLCertificatePhotos)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await photo.CopyToAsync(memoryStream);
+                            var _photo = new Photo
+                            {
+                                File = memoryStream.ToArray(),
+                                FileName = photo.FileName,
+                                FileType = "TOEFL Certificate"
+                            };
+
+                            _rater.Photos.Add(_photo);
+                        }
+                    }
+                }
+                if (model.IDCardPhotos != null)
+                {
+                    foreach (var photo in model.IDCardPhotos)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await photo.CopyToAsync(memoryStream);
+                            var _photo = new Photo
+                            {
+                                File = memoryStream.ToArray(),
+                                FileName = photo.FileName,
+                                FileType = "ID"
+                            };
+
+                            _rater.Photos.Add(_photo);
+                        }
+                    }
+                }
+
+
+                return await _service.CreateAsync(_rater);
             }
-            foreach (var photo in model.TOEFLCertificatePhotos)
+            catch (Exception ex)
             {
-                using (var memoryStream = new MemoryStream())
-                {
-                    await photo.CopyToAsync(memoryStream);
-                    var _photo = new Photo
-                    {
-                        File = memoryStream.ToArray(),
-                        FileName = photo.FileName,
-                        FileType = "TOEFLCertificate"
-                    };
-
-                    _rater.Photos.Add(_photo);
-                }
+                return await Task.FromException<Rater>(ex);
             }
-
-            
-            return await _service.CreateAsync(_rater);
         }
         [HttpPost]
         [Route("update")]
-        public async Task<Rater> UpdateAsync([FromForm] CreateRaterModel model)
+        public async Task<Rater> UpdateAsync([FromForm] RaterModel model)
         {
             var _rater = _mapper.Map<Rater>(model);
             var _photos = new List<Photo>();

@@ -12,7 +12,9 @@ namespace Reboost.DataAccess.Entities
         public string Skill { get; set; }
         public double Score { get; set; }
         public DateTime UpdatedDate { get; set; }
-        public Rater Rater { get; set; }
+        
+        
+        public virtual Rater Rater { get; set; }
 
     }
 }

@@ -5,7 +5,7 @@ import About from '../views/About.vue'
 import Document from '../views/Document.vue'
 import Test from '../views/Test.vue'
 import RaterApply from '../views/rater/Application.vue'
-import Admin from '../views/Admin.vue'
+
 
 // Pages
 import Landing from '../components/landing-pages/Landing'
@@ -51,8 +51,10 @@ import Shop from '../components/other-pages/product/Shop'
 import Cart from '../components/other-pages/product/Cart'
 import Checkout from '../components/other-pages/product/Checkout'
 import ItemDetails from '../components/other-pages/product/ItemDetails'
-import ApplicationDetail from '../views/ApplicationDetail.vue'
-import CreateAccount from '../views/CreateAccount.vue'
+
+import ManageRaters from '../views/admin/ManageRaters.vue'
+import Application from '../views/rater/Application.vue'
+import ApplicationDetail from '../views/rater/ApplicationDetail.vue'
 
 Vue.use(VueRouter)
 
@@ -113,13 +115,20 @@ const router = new VueRouter({
     {
       path: '/admin',
       name: 'Admin',
-      component: Admin
+      component: ManageRaters
     },
     {
-      path: '/createAccount',
-      name: 'CreateAccount',
-      component: CreateAccount
+      path: '/rater/upload',
+      name: 'RaterUpload',
+      component: Application
     },
+    ,
+    {
+      path: '/rater/details/:id',
+      component: ApplicationDetail,
+      name: 'RaterDetails'
+    },
+
     // { path: '/', component: ITStartup },
     { path: '/it-startup', component: ITStartup },
     { path: '/developer', component: Developer },
@@ -159,15 +168,7 @@ const router = new VueRouter({
     { path: '/shop', component: Shop },
     { path: '/cart', component: Cart },
     { path: '/checkout', component: Checkout },
-    { path: '/details', component: ItemDetails },
-    {
-      path: '/rater/details/:id',
-      component: ApplicationDetail,
-      name: 'RaterDetails',
-      // meta: {
-      //   plainLayout: true // Disable Header Layout and Footer Layout
-      // }
-    }
+    { path: '/details', component: ItemDetails }
   ]
 })
 
