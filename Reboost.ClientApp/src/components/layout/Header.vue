@@ -98,7 +98,7 @@ export default {
   name: 'HeaderTwo',
   data() {
     return {
-      role: 'rater',
+      role: 'learner',
       isSticky: false,
       appInProgress: true
     }
