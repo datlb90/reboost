@@ -2,14 +2,6 @@
   <!-- Start Main Banner -->
   <div id="banner" class="main-banner" style="height: 860px; padding-top: 180px; padding-bottom: 80px;">
     <div class="container">
-
-      <el-steps :active="2" style="margin-top: 60px; margin-bottom: 60px; color: #6084a4 !important;">
-        <el-step title="Step 1" description="Create an account" icon="far fa-user-circle" />
-        <el-step title="Step 2" description="Upload credentials" icon="fas fa-file-upload" />
-        <el-step title="Step 3" description="Complete tranning" icon="far fa-check-circle" />
-        <el-step title="Step 4" description="Start rating" icon="fas fa-edit" />
-      </el-steps>
-
       <div class="row">
         <div class="col-lg-7 col-md-12">
           <div class="ml-banner-content" style="margin-top: 10px;">

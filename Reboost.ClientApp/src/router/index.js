@@ -6,7 +6,6 @@ import Document from '../views/Document.vue'
 import Test from '../views/Test.vue'
 import RaterApply from '../views/rater/Application.vue'
 
-
 // Pages
 import Landing from '../components/landing-pages/Landing'
 import RaterLanding from '../components/landing-pages/Rater'
@@ -122,10 +121,9 @@ const router = new VueRouter({
       name: 'RaterUpload',
       component: Application
     },
-    ,
     {
       path: '/rater/details/:id',
-      component: Application,
+      component: ApplicationDetail,
       name: 'RaterDetails'
     },
 
