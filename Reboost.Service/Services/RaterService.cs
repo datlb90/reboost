@@ -13,6 +13,7 @@ namespace Reboost.Service.Services
         Task<Rater> GetByIdAsync(int id);
         Task<Rater> CreateAsync(Rater rater);
         Task<Rater> UpdateAsync(Rater rater);
+        Task<Rater> UpdateStatusAsync(int id, string status);
         Task<Rater> DeleteAsync(int id);
     }
 
@@ -39,11 +40,18 @@ namespace Reboost.Service.Services
 
         public async Task<Rater> GetByIdAsync(int id)
         {
-            return await _unitOfWork.Raters.GetByIdAsync(id);
+            return await _unitOfWork.Raters.GetByIdAsync(id, "Scores");
         }
 
         public async Task<Rater> UpdateAsync(Rater rater)
         {
+            return await _unitOfWork.Raters.Update(rater);
+        }
+        public async Task<Rater> UpdateStatusAsync(int id, string status)
+        {
+            var rater = await _unitOfWork.Raters.GetByIdAsync(id);
+            rater.Status = status;
+
             return await _unitOfWork.Raters.Update(rater);
         }
     }

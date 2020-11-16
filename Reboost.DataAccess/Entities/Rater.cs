@@ -20,6 +20,7 @@ namespace Reboost.DataAccess.Entities
         public string Note { get; set; }
         public string Biography { get; set; }
         public DateTime LastActivityDate { get; set; }
+        public string ApplyTo { get; set; }
 
         public virtual ICollection<Photo> Photos { get; set; }
         public virtual ICollection<UserScore> Scores { get; set; }

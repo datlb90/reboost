@@ -24,15 +24,23 @@ const raterService = {
         return http.post('/rater/create', formData, { headers: {'Content-Type': 'multipart/form-data' } }).then(rs => rs.data);
     },
     update(data){
-        data.iELTSCertificatePhotos = [];
-        data.iDCardPhotos = [];
         let formData = new FormData();
+        let specialKeys = ['iDCardPhotos', 'iELTSCertificatePhotos', 'tOEFLCertificatePhotos'];
+
         for(let key in data){
-            formData.set(key, data[key]);
+            if(specialKeys.includes(key)){
+                for(let f of data[key]){
+                    formData.append(key, f);
+                }
+            }
+            else{
+                formData.set(key, data[key]);
+            }
         }
-        return http.post('/rater/update', formData, { headers: {
-            'Content-Type': 'multipart/form-data'
-          } }).then(rs => rs.data);
+        return http.post('/rater/update', formData, { headers: {'Content-Type': 'multipart/form-data' } }).then(rs => rs.data);
+    },
+    updateStatus(id, status){
+        return http.get(`/rater/status/${id}/${status}`).then(rs=> rs.data);
     }
 }
 

@@ -21,6 +21,27 @@
   <el-row class="row-flex">
     <el-col :span="14" class="col-border padding-30">
       <el-form ref="formRegister" :model="formRegister" label-width="180px" style="width:90%;">
+        
+
+        <el-form-item v-if="raterId" label="Current Status">
+          <el-tag
+            :type="
+              formRegister.status === 'Approved'
+                ? 'success'
+                : formRegister.status === 'Applied'
+                ? 'primary'
+                : formRegister.status === 'Training Completed'
+                ? 'warning'
+                : 'danger'
+            "
+            disable-transitions
+            >{{ formRegister.status }}</el-tag>
+        </el-form-item>
+        
+        <el-form-item v-if="raterId" label="Applied Date" prop="appliedDate">
+          <el-date-picker v-model="formRegister.appliedDate" type="date" placeholder="Pick a day"></el-date-picker>
+        </el-form-item>
+      
         <el-form-item label="First Name" prop="firstName" :rules="[
           { required: true, message: 'First name is required'}
         ]">
@@ -94,9 +115,7 @@
               </el-col>
             </el-row>
           </el-form-item>
-          <el-form-item label="IELTS Credentials" prop="iELTSCertificatePhotos" :rules="[
-          { required: true, message: 'IELTS Credential is required'}
-        ]">
+          <el-form-item label="IELTS Credentials" prop="iELTSCertificatePhotos">
             <el-upload class="upload-demo" action="" :on-change="handleChangeIELTS" :on-remove="handleRemoveIELTS" :file-list="formRegister.iELTSCertificatePhotos" :auto-upload="false" list-type="picture">
               <el-button size="small" type="primary">Click to upload</el-button>
               <div slot="tip" class="el-upload__tip">
@@ -109,34 +128,32 @@
           <el-form-item label="TOEFL Test Scores">
             <el-row :gutter="24" style="display:flex; justify-content: space-between;">
               <el-col :span="6">
-                <el-select v-model="formRegister.firstLanguage" placeholder="Writting">
-                  <el-option label="Zone one" value="shanghai"></el-option>
-                  <el-option label="Zone two" value="beijing"></el-option>
+                <el-select v-model="formRegister.toeflTestScore.writting" placeholder="Writting">
+                  <el-option v-for="item in score" :key="item" :label="item" :value="item">
+                  </el-option>
+                  </el-select>
+              </el-col>
+              <el-col :span="6">
+                <el-select v-model="formRegister.toeflTestScore.reading" placeholder="Reading">
+                  <el-option v-for="item in score" :key="item" :label="item" :value="item">
+                  </el-option>
                 </el-select>
               </el-col>
               <el-col :span="6">
-                <el-select v-model="formRegister.firstLanguage" placeholder="Reading">
-                  <el-option label="Zone one" value="shanghai"></el-option>
-                  <el-option label="Zone two" value="beijing"></el-option>
+                <el-select v-model="formRegister.toeflTestScore.listening" placeholder="Listening">
+                  <el-option v-for="item in score" :key="item" :label="item" :value="item">
+                  </el-option>
                 </el-select>
               </el-col>
               <el-col :span="6">
-                <el-select v-model="formRegister.firstLanguage" placeholder="Listening">
-                  <el-option label="Zone one" value="shanghai"></el-option>
-                  <el-option label="Zone two" value="beijing"></el-option>
-                </el-select>
-              </el-col>
-              <el-col :span="6">
-                <el-select v-model="formRegister.firstLanguage" placeholder="Speaking">
-                  <el-option label="Zone one" value="shanghai"></el-option>
-                  <el-option label="Zone two" value="beijing"></el-option>
+                <el-select v-model="formRegister.toeflTestScore.speaking" placeholder="Speaking">
+                  <el-option v-for="item in score" :key="item" :label="item" :value="item">
+                  </el-option>
                 </el-select>
               </el-col>
             </el-row>
           </el-form-item>
-          <el-form-item label="TOEFL Credentials" prop="tOEFLCertificatePhotos" :rules="[
-          { required: true, message: 'TOEFL Credential is required'}
-        ]">
+          <el-form-item label="TOEFL Credentials" prop="tOEFLCertificatePhotos">
             <el-upload class="upload-demo" action="" 
             :on-change="handleChangeTOEFL" 
             :on-remove="handleRemoveTOEFL" 
@@ -150,9 +167,7 @@
           </el-form-item>
         </div>
 
-        <el-form-item ref="photoId" label="Photo ID" prop="iDCardPhotos" :rules="[
-          { required: true, message: 'Photo ID is required'}
-        ]">
+        <el-form-item ref="photoId" label="Photo ID" prop="iDCardPhotos">
           <el-upload class="upload-demo" action="" :on-change="handleChangeIdPhoto" :on-remove="handleRemoveIdPhoto" :file-list="formRegister.iDCardPhotos" :auto-upload="false" list-type="picture">
             <el-button size="small" type="primary">Click to upload</el-button>
             <div slot="tip" class="el-upload__tip">
@@ -164,8 +179,11 @@
           <el-input type="textarea" v-model="formRegister.biography" :rows="5" placeholder="Tell us a little bit about yourself and the reason why you apply to become our rater"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="onSubmit('formRegister')">Create</el-button>
-          <el-button>Cancel</el-button>
+          <el-button v-if="!raterId" type="primary" @click="onSubmit('formRegister', 'create')">Create</el-button>
+          <el-button v-if="!raterId">Cancel</el-button>
+          <el-button v-if="raterId" class="button" size="medium" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
+          <el-button v-if="raterId" class="button" size="medium" type="success" @click="updateStatus('Approved')">Approve</el-button>
+          <el-button v-if="raterId" class="button" size="medium" type="danger" @click="updateStatus('Rejected')">Reject</el-button>
         </el-form-item>
       </el-form>
     </el-col>
@@ -178,6 +196,7 @@
 import raterService from '../../services/rater.service'
 import lookupService from '../../services/lookup.service'
 import moment from 'moment';
+import * as mapUtil from '@/utils/model-mapping';
 
 export default {
   name: 'Application',
@@ -192,22 +211,12 @@ export default {
           url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
         }
       ],
-      input1: '',
-      form: {
-        name: '',
-        region: '',
-        date1: '',
-        date2: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: ''
-      },
       formRegister: {
         firstName: '',
         lastName: '',
         gender: '',
         occupation: '',
+        status: '',
         firstLanguage: '',
         applyToBecome: {
           IELTS: false,
@@ -228,11 +237,13 @@ export default {
         iDCardPhotos: [],
         iELTSCertificatePhotos: [],
         tOEFLCertificatePhotos: [],
-        biography: ''
+        biography: '',
+        appliedDate: new Date()
       },
       occupation: [],
       firstLanguage: [],
-      gender: []
+      gender: [],
+      raterId: ''
     }
   },
   methods: {
@@ -246,8 +257,45 @@ export default {
       lookupService.getByType('GENDER').then(rs => {
         this.gender = rs;
       });
+
+      if(this.$route.params.id){
+        this.raterId = this.$route.params.id;
+        this.loadDetail(this.$route.params.id);
+      }
     },
-    onSubmit(formName) {
+    loadDetail(id){
+      console.log('load detail', mapUtil);
+      raterService.getById(id).then(rs => {
+        console.log('result load detail', rs);
+        this.formRegister = mapUtil.map(rs, this.formRegister);
+        
+        //Score
+        if(rs.scores){
+          this.formRegister.ieltsTestScore.listening = rs.scores.find(s => s.subject == 'IELTS' && s.skill == 'Listening').score;
+          this.formRegister.ieltsTestScore.reading = rs.scores.find(s => s.subject == 'IELTS' && s.skill == 'Reading').score;
+          this.formRegister.ieltsTestScore.writting = rs.scores.find(s => s.subject == 'IELTS' && s.skill == 'Writting').score;
+          this.formRegister.ieltsTestScore.speaking = rs.scores.find(s => s.subject == 'IELTS' && s.skill == 'Speaking').score;
+
+          this.formRegister.toeflTestScore.listening = rs.scores.find(s => s.subject == 'TOEFL' && s.skill == 'Listening').score;
+          this.formRegister.toeflTestScore.reading = rs.scores.find(s => s.subject == 'TOEFL' && s.skill == 'Reading').score;
+          this.formRegister.toeflTestScore.writting = rs.scores.find(s => s.subject == 'TOEFL' && s.skill == 'Writting').score;
+          this.formRegister.toeflTestScore.speaking = rs.scores.find(s => s.subject == 'TOEFL' && s.skill == 'Speaking').score;
+        }
+        
+        //Apply to
+        if(rs.applyTo){
+          let items = rs.applyTo.split(',');
+          for(let key in this.formRegister.applyToBecome){
+            let exist = items.find(i => i == key);
+            if(exist){
+              this.formRegister.applyToBecome[key] = true;
+            }
+          }
+        }
+        
+      });
+    },
+    onSubmit(formName, createOrUpdate) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let data = {...this.formRegister}
@@ -276,24 +324,58 @@ export default {
 
           data.scoreJSON = JSON.stringify(scores);
           data.status = 'Applied';
+          data.appliedDate = moment().format('yyyy-MM-DD hh:mm:ss');
+
+          let _applyTo = [];
+          for(let key in data.applyToBecome){
+            if(data.applyToBecome[key] == true){
+              _applyTo.push(key);
+            }
+          }
+          data.applyTo = _applyTo.join(',');
 
           delete data.ieltsTestScore;
           delete data.toeflTestScore;
 
-
-          raterService.insert(data).then(rs => {
+          if(createOrUpdate == 'create'){
+            raterService.insert(data).then(rs => {
             this.$toasted.show('Upload success', {
               icons: 'shopping_cart',
               theme: 'bubble',
               position: 'top-right',
               duration: 3000
             })
-          })
+            })
+          }
+          else if(createOrUpdate == 'update'){
+            console.log('update rater information');
+            raterService.update(data).then(rs => {
+            this.$toasted.show('Update success', {
+              icons: 'shopping_cart',
+              theme: 'bubble',
+              position: 'top-right',
+              duration: 3000
+            })
+            })
+          }
+
+          
         } else {
           console.log('error submit!!');
           return false;
         }
       });
+    },
+    updateStatus(status){
+      raterService.updateStatus(this.raterId, status).then(rs => {
+        this.formRegister.status = status;
+        this.$toasted.show('Update success', {
+          icons: 'shopping_cart',
+          theme: 'bubble',
+          position: 'top-right',
+          duration: 3000
+        })
+      })
     },
     handleRemoveIdPhoto(file, fileList) {
       this.formRegister.iDCardPhotos = fileList;

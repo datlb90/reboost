@@ -116,60 +116,85 @@ namespace Reboost.WebApi.Controllers
                 return await Task.FromException<Rater>(ex);
             }
         }
+        
         [HttpPost]
         [Route("update")]
         public async Task<Rater> UpdateAsync([FromForm] RaterModel model)
         {
-            var _rater = _mapper.Map<Rater>(model);
-            var _photos = new List<Photo>();
-            foreach (var photo in model.IELTSCertificatePhotos)
+            try
             {
-                using (var memoryStream = new MemoryStream())
-                {
-                    await photo.CopyToAsync(memoryStream);
-                    var _photo = new Photo
-                    {
-                        File = memoryStream.ToArray(),
-                        FileName = photo.FileName,
-                        FileType = "Certificate"
-                    };
+                var _rater = _mapper.Map<Rater>(model);
+                var _photos = new List<Photo>();
 
-                    _photos.Add(_photo);
+                if (model.IELTSCertificatePhotos != null)
+                {
+                    foreach (var photo in model.IELTSCertificatePhotos)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await photo.CopyToAsync(memoryStream);
+                            var _photo = new Photo
+                            {
+                                File = memoryStream.ToArray(),
+                                FileName = photo.FileName,
+                                FileType = "IELS Certificate"
+                            };
+
+                            _photos.Add(_photo);
+                        }
+                    }
                 }
+                if (model.TOEFLCertificatePhotos != null)
+                {
+                    foreach (var photo in model.TOEFLCertificatePhotos)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await photo.CopyToAsync(memoryStream);
+                            var _photo = new Photo
+                            {
+                                File = memoryStream.ToArray(),
+                                FileName = photo.FileName,
+                                FileType = "TOEFL Certificate"
+                            };
+
+                            _photos.Add(_photo);
+                        }
+                    }
+                }
+                if (model.IDCardPhotos != null)
+                {
+                    foreach (var photo in model.IDCardPhotos)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await photo.CopyToAsync(memoryStream);
+                            var _photo = new Photo
+                            {
+                                File = memoryStream.ToArray(),
+                                FileName = photo.FileName,
+                                FileType = "ID"
+                            };
+
+                            _photos.Add(_photo);
+                        }
+                    }
+                }
+
+                _rater.Photos = _photos;
+                _rater.Scores = JsonConvert.DeserializeObject<List<UserScore>>(model.ScoreJSON);
+
+                return await _service.UpdateAsync(_rater);
             }
-            foreach (var photo in model.TOEFLCertificatePhotos)
+            catch (Exception ex)
             {
-                using (var memoryStream = new MemoryStream())
-                {
-                    await photo.CopyToAsync(memoryStream);
-                    var _photo = new Photo
-                    {
-                        File = memoryStream.ToArray(),
-                        FileName = photo.FileName,
-                        FileType = "IdPhoto"
-                    };
-
-                    _photos.Add(_photo);
-                }
+                return await Task.FromException<Rater>(ex);
             }
-            foreach (var photo in model.IDCardPhotos)
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    await photo.CopyToAsync(memoryStream);
-                    var _photo = new Photo
-                    {
-                        File = memoryStream.ToArray(),
-                        FileName = photo.FileName,
-                        FileType = "IdPhoto"
-                    };
+        }
 
-                    _photos.Add(_photo);
-                }
-            }
-
-            _rater.Photos = _photos;
-            return await _service.UpdateAsync(_rater);
+        [HttpGet("status/{id}/{status}")]
+        public async Task<Rater> UpdateStatus(int id, string status) {
+            return await _service.UpdateStatusAsync(id, status);
         }
 
         [HttpPost]

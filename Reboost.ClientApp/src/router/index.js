@@ -125,7 +125,7 @@ const router = new VueRouter({
     ,
     {
       path: '/rater/details/:id',
-      component: ApplicationDetail,
+      component: Application,
       name: 'RaterDetails'
     },
 

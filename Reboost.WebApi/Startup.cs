@@ -22,6 +22,7 @@ using VueCliMiddleware;
 using Microsoft.AspNetCore.Authentication;
 using AutoMapper;
 using Reboost.WebApi.Utils;
+using Newtonsoft.Json;
 
 namespace Reboost.WebApi
 {
@@ -122,7 +123,7 @@ namespace Reboost.WebApi
             services.AddTransient<IMailService, SendGridMailService>();
 
 
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(option => option.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
             services.AddRazorPages();
             //services.AddSpaStaticFiles(configuration =>
             //{
