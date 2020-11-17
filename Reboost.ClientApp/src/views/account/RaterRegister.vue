@@ -21,22 +21,23 @@
                 type="primary"
                 class="login-btn"
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
-                @click="singIn()"
+                @click="signUp()"
               >
-                Sign In
+                Create Rater Account
               </el-button>
             </el-form-item>
 
-            <el-form-item style="text-align: left;">
-              <a href="/forgot/password" style="float: left; color: rgb(101 139 179); text-decoration: none;">
-                Forgot Password?
-              </a>
-              <a href="/register" style="float: right; color: rgb(101 139 179); text-decoration: none;">
-                Sign Up
-              </a>
+            <el-form-item style="text-align: center;">
+              <p href="/forgot/password" style="color: black; text-decoration: none;">
+                Already have an account?  <a href="/login" style="color: rgb(101 139 179); text-decoration: none;">
+                  Sign In Now
+                </a>
+              </p>
+
             </el-form-item>
 
-            <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px;">
+            <hr>
+            <div style="font-size: 14px; text-align: center; padding-bottom: 10px;">
               Or you can sign in with
             </div>
 
@@ -52,7 +53,6 @@
                 </el-button>
               </form>
             </el-form-item>
-
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
               By logging in, I agree to the
               <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
@@ -88,26 +88,23 @@ export default {
     }
   },
   async created() {
-    this.googleFormAction = 'api/auth/external/google/Learner/' + encodeURIComponent(this.returnUrl)
-    this.facebookFormAction = 'api/auth/external/facebook/Learner/' + encodeURIComponent(this.returnUrl)
+    this.googleFormAction = 'api/auth/external/google/' + encodeURIComponent(this.returnUrl)
+    this.facebookFormAction = 'api/auth/external/facebook/' + encodeURIComponent(this.returnUrl)
+    // this.oauthSignIn()
   },
   methods: {
-    ...mapActions('auth', ['login']),
+    ...mapActions('auth', ['register']),
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
     },
-    submitGoohlrLoginForm() {
-      this.$refs.googleLoginForm.submit()
-    },
-    async singIn() {
-      const user = await this.login({
+    async signUp() {
+      const user = await this.register({
         Email: this.form.username,
-        Password: this.form.password
+        Password: this.form.password,
+        Role: 'Rater'
       })
       if (user) {
-        if (user.role == 'Admin') { this.$router.push('/admin') }
-        if (user.role == 'Rater') { this.$router.push('/rater/home') }
-        if (user.role == 'Learner') { this.$router.push('/') }
+        this.$router.push('/rater/apply')
       }
     }
   }
@@ -117,23 +114,6 @@ export default {
 <style scoped>
 .login-btn:hover{
   background: rgb(95 147 177) !important;
-}
-
-.separator {
-    display: flex;
-    align-items: center;
-    text-align: center;
-}
-.separator::before, .separator::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #dcdcdc;
-}
-.separator::before {
-    margin-right: 1em;
-}
-.separator::after {
-    margin-left: 1em;
 }
 
 .wrapper {

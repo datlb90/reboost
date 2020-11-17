@@ -21,19 +21,19 @@
                 type="primary"
                 class="login-btn"
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
-                @click="login()"
+                @click="signUp()"
               >
-                Sign In
+                Sign Up
               </el-button>
             </el-form-item>
 
-            <el-form-item style="text-align: left;">
-              <a href="/forgot/password" style="float: left; color: rgb(101 139 179); text-decoration: none;">
-                Forgot Password?
-              </a>
-              <a href="/register" style="float: right; color: rgb(101 139 179); text-decoration: none;">
-                Sign Up
-              </a>
+            <el-form-item style="text-align: center;">
+              <p href="/forgot/password" style="color: black; text-decoration: none;">
+                Already have an account?  <a href="/login" style="color: rgb(101 139 179); text-decoration: none;">
+                  Sign In Now
+                </a>
+              </p>
+
             </el-form-item>
 
             <hr>
@@ -93,19 +93,18 @@ export default {
     // this.oauthSignIn()
   },
   methods: {
-    ...mapActions('auth', ['authLogin']),
+    ...mapActions('auth', ['register']),
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
     },
-    async login() {
-      const user = await this.authLogin({
+    async signUp() {
+      const user = await this.register({
         Email: this.form.username,
-        Password: this.form.password
+        Password: this.form.password,
+        Role: 'Learner'
       })
       if (user) {
-        if (user.role == 'Admin') { this.$router.push('/admin') }
-        if (user.role == 'Rater') { this.$router.push('/rater/home') }
-        if (user.role == 'Learner') { this.$router.push('/topics/all') }
+        this.$router.push('/topics/all')
       }
     }
   }

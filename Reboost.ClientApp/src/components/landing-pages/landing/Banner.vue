@@ -22,16 +22,23 @@
             <form>
               <div class="form-group">
                 <label>Email address</label>
-                <input type="text" class="form-control" placeholder="Enter username">
+                <input v-model="email" type="text" class="form-control" placeholder="Enter email address">
               </div>
 
               <div class="form-group">
                 <label>Password</label>
-                <input type="password" class="form-control" placeholder="Create a password">
+                <input v-model="password" type="password" class="form-control" placeholder="Create a password">
               </div>
 
-              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;" @click="register()">Sign Up</button>
-
+              <!-- <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" @click="signUp()">Sign Up</button> -->
+              <el-button
+                type="primary"
+                class="login-btn"
+                style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
+                @click="signUp()"
+              >
+                Sign Up
+              </el-button>
               <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
                 Or you can sign in with
               </div>
@@ -77,6 +84,7 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
 export default {
   name: 'Banner',
   data() {
@@ -87,6 +95,8 @@ export default {
         username: '',
         password: ''
       },
+      email: null,
+      password: null,
       googleExternalLogin: null,
       returnUrl: '/',
       googleFormAction: null,
@@ -94,22 +104,35 @@ export default {
     }
   },
   async created() {
-    this.googleFormAction = 'api/auth/external/google/' + encodeURIComponent(this.returnUrl)
-    this.facebookFormAction = 'api/auth/external/facebook/' + encodeURIComponent(this.returnUrl)
+    this.googleFormAction = 'api/auth/external/google/Learner/' + encodeURIComponent(this.returnUrl)
+    this.facebookFormAction = 'api/auth/external/facebook/Learner/' + encodeURIComponent(this.returnUrl)
   },
   methods: {
+    ...mapActions('auth', ['register']),
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
     },
     submitGoohlrLoginForm() {
       this.$refs.googleLoginForm.submit()
+    },
+    async signUp() {
+      const user = await this.register({
+        Email: this.email,
+        Password: this.password,
+        Role: 'Learner'
+      })
+      if (user) {
+        console.log(user)
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-
+.login-btn:hover{
+  background: rgb(95 147 177) !important;
+}
 .separator {
     display: flex;
     align-items: center;

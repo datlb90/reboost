@@ -10,7 +10,17 @@ const authService = {
       .catch(error => {
         console.log(error)
       })
+  },
+  register(data) {
+    return http.post('/auth/register', data)
+      .then(response => {
+        return response.data
+      })
+      .catch(error => {
+        console.log(error)
+      })
   }
+
 }
 
 export default authService

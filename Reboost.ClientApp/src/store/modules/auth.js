@@ -12,8 +12,16 @@ const state = {
 }
 
 const actions = {
-  async authLogin({ state, commit }, data) {
+  async login({ state, commit }, data) {
     const result = await authService.login(data)
+    if (result) {
+      commit('SET_USER', result.user)
+      return result.user
+    }
+    return null
+  },
+  async register({ state, commit }, data) {
+    const result = await authService.register(data)
     if (result) {
       commit('SET_USER', result.user)
       return result.user

@@ -7,6 +7,7 @@ import Test from '../views/Test.vue'
 import RaterApply from '../views/rater/Application.vue'
 import Login from '../views/account/Login.vue'
 import Register from '../views/account/Register.vue'
+import RaterRegister from '../views/account/RaterRegister.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
 // Pages
 import Landing from '../components/landing-pages/Landing'
@@ -118,6 +119,15 @@ const router = new VueRouter({
       path: '/register',
       name: 'Register',
       component: Register,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
+      path: '/rater/register',
+      name: 'RaterRegister',
+      component: RaterRegister,
       meta: {
         plainLayout: true,
         landingPage: false
