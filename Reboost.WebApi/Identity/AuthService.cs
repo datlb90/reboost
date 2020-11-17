@@ -65,7 +65,7 @@ namespace Reboost.WebApi.Identity
             };
 
             var result = await _userManger.CreateAsync(identityUser, model.Password);
-
+            //_userManger.addt
             if (result.Succeeded)
             {
                 var confirmEmailToken = await _userManger.GenerateEmailConfirmationTokenAsync(identityUser);
@@ -154,12 +154,31 @@ namespace Reboost.WebApi.Identity
 
                 string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
 
+                var roles = await _userManger.GetRolesAsync(user);
+                if (roles == null)
+                {
+                    return new UserManagerResponse
+                    {
+                        Message = "User has no role",
+                        IsSuccess = false,
+                    };
+                }
+
+                UserLoginModel userModel = new UserLoginModel
+                {
+                    Id = user.Id,
+                    Username = user.UserName,
+                    Email = user.Email,
+                    Role = roles.FirstOrDefault(), // Each user has only one role
+                    Token = tokenAsString,
+                    ExpireDate = token.ValidTo
+                };
+
                 return new UserManagerResponse
                 {
-                    Email = email,
+                    user = userModel,
                     Message = tokenAsString,
                     IsSuccess = true,
-                    ExpireDate = token.ValidTo
                 };
             }
             else
@@ -214,7 +233,6 @@ namespace Reboost.WebApi.Identity
             }
 
             var result = await _userManger.CheckPasswordAsync(user, model.Password);
-
             if (!result)
                 return new UserManagerResponse
                 {
@@ -239,12 +257,31 @@ namespace Reboost.WebApi.Identity
 
             string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
 
+            var roles = await _userManger.GetRolesAsync(user);
+            if (roles == null)
+            {
+                return new UserManagerResponse
+                {
+                    Message = "User has no role",
+                    IsSuccess = false,
+                };
+            }
+
+            UserLoginModel userModel = new UserLoginModel
+            {
+                Id = user.Id,
+                Username = user.UserName,
+                Email = user.Email,
+                Role = roles.FirstOrDefault(), // Each user has only one role
+                Token = tokenAsString,
+                ExpireDate = token.ValidTo
+            };
+
             return new UserManagerResponse
             {
-                Email = user.Email,
-                Message = tokenAsString,
+                user = userModel,
+                Message = "Login Success!",
                 IsSuccess = true,
-                ExpireDate = token.ValidTo
             };
         }
 

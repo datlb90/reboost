@@ -14,28 +14,15 @@
               <li>Opportunity to learn by providing feedback</li>
               <li>Useful and constructive feedback to help you improve</li>
             </ul>
-
-            <!-- <a href="#" class="btn btn-secondary">Get Started</a> -->
           </div>
         </div>
-
-        <!-- <div class="col-lg-6 col-md-12">
-          <div class="ml-banner-image" style="position: initial;">
-            <img v-wow src="https://www.exordo.com/img/score-cards-top.png" class="wow fadeIn" data-wow-delay="2s" alt="image" style="left: 20px;">
-          </div>
-        </div> -->
 
         <div class="col-lg-5 offset-lg-1">
           <div class="banner-form ml-3">
             <form>
               <div class="form-group">
-                <label>Username</label>
+                <label>Email address</label>
                 <input type="text" class="form-control" placeholder="Enter username">
-              </div>
-
-              <div class="form-group">
-                <label>Email</label>
-                <input type="email" class="form-control" placeholder="Enter your email">
               </div>
 
               <div class="form-group">
@@ -43,7 +30,35 @@
                 <input type="password" class="form-control" placeholder="Create a password">
               </div>
 
-              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Register Now</button>
+              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;" @click="register()">Sign Up</button>
+
+              <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
+                Or you can sign in with
+              </div>
+
+              <div style="padding-bottom: 40px;">
+                <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
+                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                    Facebook
+                  </el-button>
+                </form>
+                <form ref="googleLoginForm" method="post" :action="googleFormAction">
+                  <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
+                    Google
+                  </el-button>
+                </form>
+              </div>
+
+              <div style="font-size: 14px; text-align: center; padding-top: 20px; height: 10px;">
+                By logging in, I agree to the
+                <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+                  terms
+                </a> and
+                <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+                  policies
+                </a>
+              </div>
+
             </form>
           </div>
         </div>
@@ -63,11 +78,55 @@
 
 <script>
 export default {
-  name: 'Banner'
+  name: 'Banner',
+  data() {
+    return {
+      user: null,
+      mgr: null,
+      form: {
+        username: '',
+        password: ''
+      },
+      googleExternalLogin: null,
+      returnUrl: '/',
+      googleFormAction: null,
+      facebookFormAction: null
+    }
+  },
+  async created() {
+    this.googleFormAction = 'api/auth/external/google/' + encodeURIComponent(this.returnUrl)
+    this.facebookFormAction = 'api/auth/external/facebook/' + encodeURIComponent(this.returnUrl)
+  },
+  methods: {
+    submitFacebookLoginForm() {
+      this.$refs.facebookLoginForm.submit()
+    },
+    submitGoohlrLoginForm() {
+      this.$refs.googleLoginForm.submit()
+    }
+  }
 }
 </script>
 
 <style scoped>
+
+.separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+.separator::before, .separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #dcdcdc;
+}
+.separator::before {
+    margin-right: 1em;
+}
+.separator::after {
+    margin-left: 1em;
+}
+
 .banner-form{
   background: #ffffff;
     -webkit-box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.08);

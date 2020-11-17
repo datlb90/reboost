@@ -16,6 +16,9 @@
       <Header />
       <router-view />
     </div>
+    <div v-if="$route.meta.plainLayout">
+      <router-view />
+    </div>
 
   </div>
 </template>
