@@ -1,11 +1,14 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-// import Home from '../views/Home.vue'
+
 import About from '../views/About.vue'
 import Document from '../views/Document.vue'
 import Test from '../views/Test.vue'
 import RaterApply from '../views/rater/Application.vue'
-
+import Login from '../views/account/Login.vue'
+import Register from '../views/account/Register.vue'
+import RaterRegister from '../views/account/RaterRegister.vue'
+import AdminHome from '../views/admin/AdminHome.vue'
 // Pages
 import Landing from '../components/landing-pages/Landing'
 import RaterLanding from '../components/landing-pages/Rater'
@@ -104,12 +107,46 @@ const router = new VueRouter({
       }
     },
     {
+      path: '/login',
+      name: 'Login',
+      component: Login,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
+      path: '/register',
+      name: 'Register',
+      component: Register,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
+      path: '/rater/register',
+      name: 'RaterRegister',
+      component: RaterRegister,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
       path: '/test',
       name: 'Test',
       component: Test,
       meta: {
-        plainLayout: true
+        plainLayout: true,
+        landingPage: false
       }
+    },
+
+    {
+      path: '/admin',
+      name: 'AdminHome',
+      component: AdminHome
     },
     {
       path: '/admin',

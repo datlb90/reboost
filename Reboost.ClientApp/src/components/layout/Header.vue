@@ -16,7 +16,7 @@
           <b-navbar-toggle target="navbarSupportedContent" />
 
           <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
-            <ul v-if="role == 'learner'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+            <ul v-if="role == 'Learner'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
 
               <li class="nav-item">
                 <router-link to="/practice" class="nav-link active">Practice</router-link>
@@ -34,7 +34,7 @@
                 <router-link to="/dicuss" class="nav-link">Discuss</router-link>
               </li>
             </ul>
-            <ul v-if="role == 'rater'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+            <ul v-if="role == 'Rater'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
 
               <li class="nav-item">
                 <router-link to="/rater/apply" class="nav-link active">Application</router-link>
@@ -48,7 +48,7 @@
                 <router-link to="/dicuss" class="nav-link">Discuss</router-link>
               </li>
             </ul>
-            <ul v-if="role == 'admin'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+            <ul v-if="role == 'Admin'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
 
               <li class="nav-item">
                 <router-link to="/admin/raters" class="nav-link active">Raters</router-link>
@@ -98,7 +98,7 @@ export default {
   name: 'HeaderTwo',
   data() {
     return {
-      role: 'rater',
+      role: this.$store.state.auth.user.role,
       isSticky: false,
       appInProgress: true
     }
@@ -109,7 +109,6 @@ export default {
       return this.$store.state.cart
     }
   },
-
   mounted() {
     const that = this
     window.addEventListener('scroll', () => {
@@ -121,6 +120,10 @@ export default {
         that.isSticky = false
       }
     })
+  },
+  created() {
+    console.log(this.$store.state.auth.user.role)
+    console.log(this.role)
   }
 }
 </script>

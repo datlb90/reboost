@@ -5,10 +5,21 @@ namespace Reboost.Shared
 {
     public class UserManagerResponse
     {
-        public string Email { get; set; }
+       
         public string Message { get; set; }
         public bool IsSuccess { get; set; }
         public IEnumerable<string> Errors { get; set; }
+        public UserLoginModel user { get; set; }
+
+    }
+
+    public class UserLoginModel
+    {
+        public string Id { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string Role { get; set; }
+        public string Token { get; set; }
         public DateTime? ExpireDate { get; set; }
     }
 }
