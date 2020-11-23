@@ -69,8 +69,8 @@ namespace Reboost.WebApi.Controllers
         }
 
         // /api/auth/external
-        [HttpPost("external/{provider}/{returnUrl}")]
-        public IActionResult ExternalLogin(string provider, string returnUrl)
+        [HttpPost("external/{provider}/{role}/{returnUrl}")]
+        public IActionResult ExternalLogin(string provider, string role, string returnUrl)
         {
             var props = new AuthenticationProperties
             {
@@ -79,6 +79,7 @@ namespace Reboost.WebApi.Controllers
                 Items =
                     {
                         { "returnUrl", returnUrl },
+                        { "role", role },
                         { "scheme", provider },
                     }
             };
