@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import VueMeta from 'vue-meta'
 import App from './App.vue'
 import router from './router'
 import store from './store'
@@ -20,6 +21,7 @@ import Toasted from 'vue-toasted'
 
 import './assets/style/custom.scss'
 
+Vue.use(VueMeta)
 Vue.use(BootstrapVue)
 Vue.use(VueFeather)
 Vue.use(vWow)

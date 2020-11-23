@@ -1,24 +1,24 @@
 /* eslint-disable no-unused-vars */
-import insertScreenReaderHint from './insertScreenReaderHint';
-import renderScreenReaderHints from './renderScreenReaderHints';
-import insertScreenReaderComment from './insertScreenReaderComment';
-import renderScreenReaderComments from './renderScreenReaderComments';
-import { addEventListener } from '../UI/event';
-import PDFJSAnnotate from '../PDFJSAnnotate';
+import insertScreenReaderHint from './insertScreenReaderHint'
+import renderScreenReaderHints from './renderScreenReaderHints'
+import insertScreenReaderComment from './insertScreenReaderComment'
+import renderScreenReaderComments from './renderScreenReaderComments'
+import { addEventListener } from '../UI/event'
+import PDFJSAnnotate from '../PDFJSAnnotate'
 
 /**
  * Initialize the event handlers for keeping screen reader hints synced with data
  */
 export default function initEventHandlers() {
-	addEventListener('annotation:add', (documentId, pageNumber, annotation) => {
-		reorderAnnotationsByType(documentId, pageNumber, annotation.type);
-	});
-	addEventListener('annotation:edit', (documentId, annotationId, annotation) => {
-		reorderAnnotationsByType(documentId, annotation.page, annotation.type);
-	});
-	addEventListener('annotation:delete', removeAnnotation);
-	addEventListener('comment:add', insertComment);
-	addEventListener('comment:delete', removeComment);
+  addEventListener('annotation:add', (documentId, pageNumber, annotation) => {
+    reorderAnnotationsByType(documentId, pageNumber, annotation.type)
+  })
+  addEventListener('annotation:edit', (documentId, annotationId, annotation) => {
+    reorderAnnotationsByType(documentId, annotation.page, annotation.type)
+  })
+  addEventListener('annotation:delete', removeAnnotation)
+  addEventListener('comment:add', insertComment)
+  addEventListener('comment:delete', removeComment)
 }
 
 /**
@@ -29,20 +29,20 @@ export default function initEventHandlers() {
  * @param {Strig} type The annotation type
  */
 function reorderAnnotationsByType(documentId, pageNumber, type) {
-	PDFJSAnnotate.getStoreAdapter().getAnnotations(documentId, pageNumber)
-		.then((annotations) => {
-			return annotations.annotations.filter((a) => {
-				return a.type === type;
-			});
-		})
-		.then((annotations) => {
-			annotations.forEach((a) => {
-				removeAnnotation(documentId, a.uuid);
-			});
+  PDFJSAnnotate.getStoreAdapter().getAnnotations(documentId, pageNumber)
+    .then((annotations) => {
+      return annotations.annotations.filter((a) => {
+        return a.type === type
+      })
+    })
+    .then((annotations) => {
+      annotations.forEach((a) => {
+        removeAnnotation(documentId, a.uuid)
+      })
 
-			return annotations;
-		})
-		.then(renderScreenReaderHints);
+      return annotations
+    })
+    .then(renderScreenReaderHints)
 }
 
 /**
@@ -52,8 +52,8 @@ function reorderAnnotationsByType(documentId, pageNumber, type) {
  * @param {String} annotationId The Id of the annotation
  */
 function removeAnnotation(documentId, annotationId) {
-	removeElementById(`pdf-annotate-screenreader-${annotationId}`);
-	removeElementById(`pdf-annotate-screenreader-${annotationId}-end`);
+  removeElementById(`pdf-annotate-screenreader-${annotationId}`)
+  removeElementById(`pdf-annotate-screenreader-${annotationId}-end`)
 }
 
 /**
@@ -64,21 +64,21 @@ function removeAnnotation(documentId, annotationId) {
  * @param {Object} comment The comment to insert a hint for
  */
 function insertComment(documentId, annotationId, comment) {
-	// let list = document.querySelector(`pdf-annotate-screenreader-comment-list-${annotationId}`);
-	// let promise;
+  // let list = document.querySelector(`pdf-annotate-screenreader-comment-list-${annotationId}`);
+  // let promise;
 
-	// if (!list) {
-	//   promise = renderScreenReaderComments(documentId, annotationId, []).then(() => {
-	//     list = document.querySelector(`pdf-annotate-screenreader-comment-list-${annotationId}`);
-	//     return true;
-	//   });
-	// } else {
-	//   promise = Promise.resolve(true);
-	// }
+  // if (!list) {
+  //   promise = renderScreenReaderComments(documentId, annotationId, []).then(() => {
+  //     list = document.querySelector(`pdf-annotate-screenreader-comment-list-${annotationId}`);
+  //     return true;
+  //   });
+  // } else {
+  //   promise = Promise.resolve(true);
+  // }
 
-	// promise.then(() => {
-	//   insertScreenReaderComment(comment);
-	// });
+  // promise.then(() => {
+  //   insertScreenReaderComment(comment);
+  // });
 }
 
 /**
@@ -88,7 +88,7 @@ function insertComment(documentId, annotationId, comment) {
  * @param {String} commentId The ID of the comment
  */
 function removeComment(documentId, commentId) {
-	removeElementById(`pdf-annotate-screenreader-comment-${commentId}`);
+  removeElementById(`pdf-annotate-screenreader-comment-${commentId}`)
 }
 
 /**
@@ -97,8 +97,8 @@ function removeComment(documentId, commentId) {
  * @param {String} elementID The ID of the element to be removed
  */
 function removeElementById(elementId) {
-	let el = document.getElementById(elementId);
-	if (el) {
-		el.parentNode.removeChild(el);
-	}
+  const el = document.getElementById(elementId)
+  if (el) {
+    el.parentNode.removeChild(el)
+  }
 }

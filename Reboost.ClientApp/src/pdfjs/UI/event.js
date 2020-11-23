@@ -1,12 +1,12 @@
-import EventEmitter from 'events';
+import EventEmitter from 'events'
 import {
-	findAnnotationAtPoint,
-	findSVGAtPoint
-} from './utils';
+  findAnnotationAtPoint,
+  findSVGAtPoint
+} from './utils'
 
-const emitter = new EventEmitter;
+const emitter = new EventEmitter()
 
-let clickNode;
+let clickNode
 
 /**
  * Handle document.click event
@@ -14,22 +14,22 @@ let clickNode;
  * @param {Event} e The DOM event to be handled
  */
 document.addEventListener('click', function handleDocumentClick(e) {
-	if (!findSVGAtPoint(e.clientX, e.clientY)) { return; }
+  if (!findSVGAtPoint(e.clientX, e.clientY)) { return }
 
-	let target = findAnnotationAtPoint(e.clientX, e.clientY);
+  const target = findAnnotationAtPoint(e.clientX, e.clientY)
 
-	// Emit annotation:blur if clickNode is no longer clicked
-	if (clickNode && clickNode !== target) {
-		emitter.emit('annotation:blur', clickNode);
-	}
+  // Emit annotation:blur if clickNode is no longer clicked
+  if (clickNode && clickNode !== target) {
+    emitter.emit('annotation:blur', clickNode)
+  }
 
-	// Emit annotation:click if target was clicked
-	if (target) {
-		emitter.emit('annotation:click', target);
-	}
+  // Emit annotation:click if target was clicked
+  if (target) {
+    emitter.emit('annotation:click', target)
+  }
 
-	clickNode = target;
-});
+  clickNode = target
+})
 
 // let mouseOverNode;
 // document.addEventListener('mousemove', function handleDocumentMousemove(e) {
@@ -48,6 +48,6 @@ document.addEventListener('click', function handleDocumentClick(e) {
 //   mouseOverNode = target;
 // });
 
-export function fireEvent() { emitter.emit(...arguments); }
-export function addEventListener() { emitter.on(...arguments); }
-export function removeEventListener() { emitter.removeListener(...arguments); }
+export function fireEvent() { emitter.emit(...arguments) }
+export function addEventListener() { emitter.on(...arguments) }
+export function removeEventListener() { emitter.removeListener(...arguments) }
