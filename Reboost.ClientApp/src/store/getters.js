@@ -13,7 +13,8 @@ const getters = {
   errorLogs: state => state.errorLog.logs,
   raters: state => state.raters,
   user: state => state.user,
-  role: state => state.user.role
+  role: state => state.user.role,
+  apiWaitingCount: state => state.apiWaitingCount
 }
 
 export default getters
