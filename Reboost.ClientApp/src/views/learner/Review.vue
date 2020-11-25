@@ -22,72 +22,6 @@
       </div>
     </el-card> -->
 
-    <!-- <div class="toolbar">
-      <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
-        ➚
-      </button>
-
-      <div class="spacer" />
-
-      <button class="rectangle" type="button" title="Rectangle" data-tooltype="area">
-&nbsp;
-      </button>
-      <button class="highlight" type="button" title="Highlight" data-tooltype="highlight">
-&nbsp;
-      </button>
-      <button class="strikeout" type="button" title="Strikeout" data-tooltype="strikeout">
-&nbsp;
-      </button>
-
-      <div class="spacer" />
-
-      <button class="text" type="button" title="Text Tool" data-tooltype="text" />
-      <select class="text-size" />
-      <div class="text-color" />
-
-      <div class="spacer" />
-
-      <div class="spacer" />
-
-      <button class="comment" type="button" title="Comment" data-tooltype="point">
-        🗨
-      </button>
-
-      <div class="spacer" />
-
-      <select class="scale">
-        <option value=".5">
-          50%
-        </option>
-        <option value="1">
-          100%
-        </option>
-        <option value="1.33">
-          133%
-        </option>
-        <option value="1.5">
-          150%
-        </option>
-        <option value="2">
-          200%
-        </option>
-      </select>
-
-      <a href="javascript://" class="rotate-ccw" title="Rotate Counter Clockwise">⟲</a>
-      <a href="javascript://" class="rotate-cw" title="Rotate Clockwise">⟳</a>
-
-      <div class="spacer" />
-
-      <a href="javascript://" class="clear" title="Clear">×</a>
-      <button id="restore" title="Restore">
-        Restore
-      </button>
-    </div> -->
-
-    <!-- <div id="rubric-wrapper">
-      <h4>Rubrics</h4>
-    </div> -->
-
     <div id="content-wrapper" style="background: rgb(248, 249, 250); height: 92.5vh; width: 100%;position: absolute; overflow: auto;">
       <!-- <div class="tip">
         <p>
@@ -108,7 +42,7 @@
         </p>
       </el-tag> -->
 
-      <div id="left-panel" style="float: left; width: 30%; position: absolute; min-width: 320px;">
+      <div id="left-panel" style="float: left; width: 30%; position: sticky; top: 0px; min-width: 320px; height: 100%;">
         <el-tabs type="border-card">
           <el-tab-pane label="Question">
 
@@ -134,13 +68,68 @@
           <el-tab-pane label="Help">Questions and Answers</el-tab-pane>
         </el-tabs>
       </div>
+      <div id="right-panel" style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);">
+        <div id="tool-bar" class="toolbar">
+          <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
+            ➚
+          </button>
 
-      <div
-        id="viewer"
-        class="pdfViewer"
-        :document-id="documentId"
-        style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);"
-      />
+          <div class="spacer" />
+
+          <button class="rectangle" type="button" title="Rectangle" data-tooltype="area" />
+          <button class="highlight" type="button" title="Highlight" data-tooltype="highlight" />
+          <button class="strikeout" type="button" title="Strikeout" data-tooltype="strikeout" />
+
+          <div class="spacer" />
+          <button class="text" type="button" title="Text Tool" data-tooltype="text" />
+          <select class="text-size" />
+          <div class="text-color" />
+
+          <div class="spacer" />
+
+          <div class="spacer" />
+
+          <button class="comment" type="button" title="Comment" data-tooltype="point">
+            🗨
+          </button>
+
+          <div class="spacer" />
+
+          <select class="scale">
+            <option value=".5">
+              50%
+            </option>
+            <option value="1">
+              100%
+            </option>
+            <option value="1.33">
+              133%
+            </option>
+            <option value="1.5">
+              150%
+            </option>
+            <option value="2">
+              200%
+            </option>
+          </select>
+
+          <a href="javascript://" class="rotate-ccw" title="Rotate Counter Clockwise">⟲</a>
+          <a href="javascript://" class="rotate-cw" title="Rotate Clockwise">⟳</a>
+
+          <div class="spacer" />
+
+          <a href="javascript://" class="clear" title="Clear">×</a>
+          <button id="restore" title="Restore">
+            Restore
+          </button>
+        </div>
+        <div
+          id="viewer"
+          class="pdfViewer"
+          :document-id="documentId"
+        />
+      </div>
+
     </div>
 
     <div id="comment-wrapper">
@@ -309,17 +298,10 @@ export default {
 
     const renderedPages = {}
     const self = this
-
-    //  document
-    //   .getElementById('content-wrapper')
-    //   .addEventListener('scroll', function(e) {
-    //     document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
-    //   })
-
     document
       .getElementById('content-wrapper')
       .addEventListener('scroll', function(e) {
-        document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
+        // document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
         // eslint-disable-next-line no-console
         const textTool = document.getElementById('textTool')
         textTool.style.visibility = 'hidden'
@@ -366,20 +348,23 @@ export default {
 
       // eslint-disable-next-line no-unused-vars
       const renderer = await UI.renderPage(1, self.RENDER_OPTIONS)
+
       const obj = {
         scale: self.RENDER_OPTIONS.scale,
-        rotation: self.RENDER_OPTIONS.rotate
+        rotation: self.RENDER_OPTIONS.rotatex
       }
       const viewport = renderer[0].getViewport(obj)
       self.PAGE_HEIGHT = viewport.height
 
       const pageWidth = document.getElementById('pageContainer1').offsetWidth
+      document.getElementById('tool-bar').style.width = pageWidth - 18 + 'px'
+
       this.viewerWidth = pageWidth + 250
-      this.commentleftPos = pageWidth + 15
+      this.commentleftPos = pageWidth - 15
 
       const viewer = document.getElementById('viewer')
       const commentWrapper = document.getElementById('comment-wrapper')
-      commentWrapper.style.left = pageWidth + 15 + 'px'
+      commentWrapper.style.left = pageWidth - 15 + 'px'
       viewer.appendChild(commentWrapper)
 
       this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
@@ -888,7 +873,7 @@ export default {
       let svgTop = 0
       if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * svgHeight) }
       const topPos = svgTop + rectTop - 35
-      newCommentWrapper.style = 'width: 100%; position: absolute; left: 5px; top: ' + topPos + 'px;'
+      newCommentWrapper.style = 'width: 100%; position: absolute; left: -20px; top: ' + topPos + 'px;'
       this.hideTextToolBar()
       const textArea = document.getElementById('comment-text-area')
       textArea.focus()
