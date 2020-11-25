@@ -22,7 +22,7 @@
       </div>
     </el-card> -->
 
-    <div class="toolbar">
+    <!-- <div class="toolbar">
       <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
         ➚
       </button>
@@ -82,7 +82,11 @@
       <button id="restore" title="Restore">
         Restore
       </button>
-    </div>
+    </div> -->
+
+    <!-- <div id="rubric-wrapper">
+      <h4>Rubrics</h4>
+    </div> -->
 
     <div id="content-wrapper" style="background: rgb(248, 249, 250); height: 92.5vh; width: 100%;position: absolute; overflow: auto;">
       <!-- <div class="tip">
@@ -107,15 +111,27 @@
       <div id="left-panel" style="float: left; width: 30%; position: absolute; min-width: 320px;">
         <el-tabs type="border-card">
           <el-tab-pane label="Question">
-            <div class="tip">
-              <p style="width: 98%;">
-                <b>Direction:</b> Read the question description below and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review.
-                <!-- <i class="el-icon-close" style="position: absolute; font-size: 16px;  cursor: pointer; right: 5px; top: 65px;" @click="showDirection = !showDirection" /> -->
-              </p>
 
+            <div v-if="showDirection" class="tip" transition="fade" style="margin-bottom: 10px;">
+              <p style="width: 98%;">
+                <b>Direction:</b> Read the question description and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review.
+              </p>
+              <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
+              <el-button size="mini" @click="showDirection = !showDirection">Never show this again</el-button>
             </div>
+
+            <div style="padding: 20px; border: #dcddde solid 1px; border-radius: 5px;">
+              <p>
+                <b><a href="#">TOEFL Independent Writing - Topic #1</a></b>
+              </p>
+              <p>Do you agree or disagree with the following statement?</p>
+              <p>"Always telling the truth is the most important consideration in any relationship."</p>
+              <p>Use specific reasons and examples to support your answer.</p>
+            </div>
+
           </el-tab-pane>
           <el-tab-pane label="Rubric">Rubric</el-tab-pane>
+          <el-tab-pane label="Help">Questions and Answers</el-tab-pane>
         </el-tabs>
       </div>
 
@@ -290,11 +306,21 @@ export default {
   mounted() {
     // Render stuff
     // #57 fix
+
     const renderedPages = {}
     const self = this
+
+    //  document
+    //   .getElementById('content-wrapper')
+    //   .addEventListener('scroll', function(e) {
+    //     document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
+    //   })
+
     document
       .getElementById('content-wrapper')
       .addEventListener('scroll', function(e) {
+        document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
+        // eslint-disable-next-line no-console
         const textTool = document.getElementById('textTool')
         textTool.style.visibility = 'hidden'
         const visiblePageNum =
