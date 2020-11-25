@@ -1,6 +1,28 @@
 <template>
-  <div>
-    <!-- <div class="toolbar">
+  <div style="border-top: 1px solid rgb(223 224 238); padding: 5px; background: rgb(248, 249, 250);">
+
+    <!-- <el-card class="box-card" style="margin-bottom: 5px;">
+      <div>
+        <p style="width: 98%;">
+          <b>TOEFL Independent Writing Topic 1</b> - Do you agree or disagree with the following statement?
+          Always telling the truth is the most important consideration in any relationship. Use specific reasons and examples to support your answer.
+        </p>
+
+        <p style="width: 98%;">
+          <b>Reading:</b> "A child’s education has never been about learning information and basic skills only. It has always included teaching the next generation how to be good members of society. Therefore, this cannot be the responsibility of the parents alone.
+
+          In order to be a good member of any society the individual must respect and obey the rules of their community and share their values. Educating children to understand the need to obey rules and respect others always begins in the home and is widely thought to be the responsibility of parents. They will certainly be the first to help children learn what is important in life, how they are expected to behave and what role they will play in their world.
+
+          However, learning to understand and share the value system of a whole society cannot be achieved just in the home. Once a child goes to school, they are entering a wider community where teachers and peers will have just as much influence as their parents do at home. At school, children will experience working and living with people from a whole variety of backgrounds from the wider society. This experience should teach them how to co-operate with each other and how to contribute to the life of their community.
+
+          But to be a valuable member of any community is not like learning a simple skill. It is something that an individual goes on learning throughout life and it is the responsibility of every member of a society to take responsibility for helping the younger generation to become active and able members of that society."
+
+        </p>
+
+      </div>
+    </el-card> -->
+
+    <div class="toolbar">
       <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
         ➚
       </button>
@@ -60,17 +82,48 @@
       <button id="restore" title="Restore">
         Restore
       </button>
-    </div> -->
+    </div>
 
-    <!-- <div id="rubric-wrapper">
-      <h4>Rubrics</h4>
-    </div> -->
+    <div id="content-wrapper" style="background: rgb(248, 249, 250); height: 92.5vh; width: 100%;position: absolute; overflow: auto;">
+      <!-- <div class="tip">
+        <p>
+          <b>TOEFL Independent Writing Topic #1</b> - Do you agree or disagree with the following statement? Always telling the truth is the most important consideration in any relationship. Use specific reasons and examples to support your answer.
+        </p>
+      </div> -->
 
-    <div id="content-wrapper">
+      <!-- <el-tag
+        v-if="showDirection"
+        key="direction"
+        closable
+        type=""
+        :disable-transitions="false"
+
+      >
+        <p>
+          <b>Direction:</b> Read the question description of the left and provide feedback to the response on the write. Both in-text comments and rubric feedback are required.
+        </p>
+      </el-tag> -->
+
+      <div id="left-panel" style="float: left; width: 30%; position: absolute; min-width: 320px;">
+        <el-tabs type="border-card">
+          <el-tab-pane label="Question">
+            <div class="tip">
+              <p style="width: 98%;">
+                <b>Direction:</b> Read the question description below and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review.
+                <!-- <i class="el-icon-close" style="position: absolute; font-size: 16px;  cursor: pointer; right: 5px; top: 65px;" @click="showDirection = !showDirection" /> -->
+              </p>
+
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Rubric">Rubric</el-tab-pane>
+        </el-tabs>
+      </div>
+
       <div
         id="viewer"
         class="pdfViewer"
         :document-id="documentId"
+        style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);"
       />
     </div>
 
@@ -207,12 +260,13 @@ export default {
   name: 'Document',
   data() {
     return {
+      showDirection: true,
       viewer: null,
       PAGE_HEIGHT: 1,
       NUM_PAGES: 0,
-      documentId: './static/test1.pdf',
+      documentId: './static/Meeting.pdf',
       RENDER_OPTIONS: {
-        documentId: './static/test1.pdf',
+        documentId: './static/Meeting.pdf',
         pdfDocument: null,
         scale:
           parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
@@ -265,6 +319,9 @@ export default {
     this.ClearToolbarButton()
     // this.ScaleAndRotate();
     // this.ClearToolbarButton();
+  },
+  beforeCreate: function() {
+    document.body.style = 'overflow: hidden'
   },
   methods: {
     async render() {
@@ -1071,5 +1128,4 @@ export default {
 @import '../../pdfjs/shared/document.css';
 @import '../../pdfjs/shared/toolbar.css';
 @import '../../pdfjs/shared/pdf_viewer.css';
-
 </style>
