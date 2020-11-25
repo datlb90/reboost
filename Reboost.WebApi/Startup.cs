@@ -1,28 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using Reboost.DataAccess;
+using Reboost.DataAccess.Entities;
 using Reboost.Service.Services;
 using Reboost.WebApi.Email;
 using Reboost.WebApi.Identity;
-using VueCliMiddleware;
-using Microsoft.AspNetCore.Authentication;
-using AutoMapper;
 using Reboost.WebApi.Utils;
-using Newtonsoft.Json;
+using System.Text;
 
 namespace Reboost.WebApi
 {
@@ -119,7 +112,9 @@ namespace Reboost.WebApi
             services.AddTransient<IRequestQueueService, RequestQueueService>();
             services.AddScoped<IRaterService, RaterService>();
             services.AddScoped<ILookUpService, LookUpService>();
+            services.AddScoped<IQuestionsService, QuestionsService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddTransient<IMailService, SendGridMailService>();
 
 
@@ -139,6 +134,8 @@ namespace Reboost.WebApi
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseGlobalExceptionHandler();
 
             //app.UseHttpsRedirection();
             //app.UseRouting();

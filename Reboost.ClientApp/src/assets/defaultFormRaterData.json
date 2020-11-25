@@ -1,0 +1,24 @@
+{
+    "Gender":[
+        {"id":"male","name":"Male"},
+        {"id":"female","name":"Female"},
+        {"id":"transgender","name":"Transgender"},
+        {"id":"thirdgender","name":"ThirdGender"},
+        {"id":"private","name":"Private"}
+    ],
+    "Occupation":[
+        {"id":"teacher","name":"Teacher"},
+        {"id":"student","name":"Student"},
+        {"id":"freelancer","name":"Freelancer"},
+        {"id":"writer","name":"Writer"}
+    ],
+    "Languages":[
+        {"id":"VN","name":"Vietnamese"},
+        {"id":"EN","name":"English"},
+        {"id":"CN","name":"Chinese"},
+        {"id":"JP","name":"Japanese"},
+        {"id":"SP","name":"Spanish"},
+        {"id":"FR","name":"French"},
+        {"id":"RS","name":"Russian"}
+    ]
+}

@@ -8,39 +8,13 @@ const raterService = {
         return http.get(`/rater/${id}`).then(rs=> rs.data);
     },
     insert(data){
-        let formData = new FormData();
-        let specialKeys = ['iDCardPhotos', 'iELTSCertificatePhotos', 'tOEFLCertificatePhotos'];
-
-        for(let key in data){
-            if(specialKeys.includes(key)){
-                for(let f of data[key]){
-                    formData.append(key, f);
-                }
-            }
-            else{
-                formData.set(key, data[key]);
-            }
-        }
-        return http.post('/rater/create', formData, { headers: {'Content-Type': 'multipart/form-data' } }).then(rs => rs.data);
+        return http.post('/rater/create', data, { headers: {'Content-Type': 'multipart/form-data' } }).then(rs => rs.data);
     },
     update(data){
-        let formData = new FormData();
-        let specialKeys = ['iDCardPhotos', 'iELTSCertificatePhotos', 'tOEFLCertificatePhotos'];
-
-        for(let key in data){
-            if(specialKeys.includes(key)){
-                for(let f of data[key]){
-                    formData.append(key, f);
-                }
-            }
-            else{
-                formData.set(key, data[key]);
-            }
-        }
-        return http.post('/rater/update', formData, { headers: {'Content-Type': 'multipart/form-data' } }).then(rs => rs.data);
+        return http.post('/rater/update', data, { headers: {'Content-Type': 'multipart/form-data' } }).then(rs => rs.data);
     },
     updateStatus(id, status){
-        return http.get(`/rater/status/${id}/${status}`).then(rs=> rs.data);
+        return http.get(`/rater/update/status/${id}/${status}`).then(rs=> rs.data);
     }
 }
 

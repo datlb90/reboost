@@ -1,0 +1,69 @@
+﻿using Reboost.DataAccess;
+using Reboost.DataAccess.Entities;
+using Reboost.Shared;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Reboost.Service.Services
+{
+    public interface IQuestionsService
+    {
+        Task<IEnumerable<Questions>> GetAllAsync();
+        Task<QuestionModel> GetByIdAsync(int id);
+        Task<Questions> CreateAsync(Questions question);
+        Task<Questions> UpdateAsync(Questions question);
+        Task<Questions> DeleteAsync(int id);
+        Task<List<Tasks>> GetTasksAsync();
+        Task<Dictionary<string, int>> GetCountQuestionByTasksAsync();
+        Task<IEnumerable<QuestionModel>> GetAllExAsync();
+
+    }
+    public class QuestionsService : BaseService, IQuestionsService
+    {
+        public QuestionsService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        {
+
+        }
+        public async Task<Questions> CreateAsync(Questions question)
+        {
+            return await _unitOfWork.Questions.Create(question);
+        }
+
+        public async Task<Questions> DeleteAsync(int id)
+        {
+            return await _unitOfWork.Questions.Delete(id);
+        }
+
+        public async Task<IEnumerable<Questions>> GetAllAsync()
+        {
+            return await _unitOfWork.Questions.GetAllAsync(null, "Task");
+        }
+
+        public async Task<QuestionModel> GetByIdAsync(int id)
+        {
+            return await _unitOfWork.Questions.GetByIdAsync(id);
+        }
+
+        public async Task<Questions> UpdateAsync(Questions question)
+        {
+            return await _unitOfWork.Questions.Update(question);
+        }
+
+        public async Task<List<Tasks>> GetTasksAsync()
+        {
+            return await _unitOfWork.Questions.GetTaskAsync();
+        }
+
+        public async Task<Dictionary<string, int>> GetCountQuestionByTasksAsync()
+        {
+            return await _unitOfWork.Questions.CountQuestByTaskAsync();
+        }
+
+        public async Task<IEnumerable<QuestionModel>> GetAllExAsync()
+        {
+            return await _unitOfWork.Questions.GetAllExAsync();
+        }
+    }
+}

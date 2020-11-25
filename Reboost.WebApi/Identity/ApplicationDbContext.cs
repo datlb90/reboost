@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Reboost.DataAccess.Entities;
 
 namespace Reboost.WebApi.Identity
 {
@@ -10,5 +11,10 @@ namespace Reboost.WebApi.Identity
         {
 
         }
+
+        //protected override void OnModelCreating(ModelBuilder builder)
+        //{
+        //    base.OnModelCreating(builder);
+        //}
     }
 }

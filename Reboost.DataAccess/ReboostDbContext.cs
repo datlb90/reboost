@@ -1,17 +1,38 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Reboost.DataAccess.Entities;
 
 namespace Reboost.DataAccess
 {
     public class ReboostDbContext : DbContext
     {
-        public DbSet<Documents> Documents { get; set; }
-        public DbSet<RequestQueue> RequestQueues { get; set; }
-        public DbSet<Photo> Photos{ get; set; }
-        public DbSet<Rater> Raters { get; set; }
-        public DbSet<UserScore> Scores { get; set; }
+        public virtual DbSet<CriteriaValues> CriteriaValues { get; set; }
+        public virtual DbSet<Documents> Documents { get; set; }
+        public virtual DbSet<InTextComments> InTextComments { get; set; }
+        public virtual DbSet<QuestionParts> QuestionParts { get; set; }
+        public virtual DbSet<Questions> Questions { get; set; }
+        public virtual DbSet<QuestionTypes> QuestionTypes { get; set; }
+        public virtual DbSet<RaterCredentials> RaterCredentials { get; set; }
+        public virtual DbSet<Raters> Raters { get; set; }
+        public virtual DbSet<RequestQueue> RequestQueue { get; set; }
+        public virtual DbSet<ResponseTemplates> ResponseTemplates { get; set; }
+        public virtual DbSet<ReviewData> ReviewData { get; set; }
+        public virtual DbSet<ReviewRankings> ReviewRankings { get; set; }
+        public virtual DbSet<ReviewRatings> ReviewRatings { get; set; }
+        public virtual DbSet<ReviewRequests> ReviewRequests { get; set; }
+        public virtual DbSet<Reviews> Reviews { get; set; }
+        public virtual DbSet<RubricCriteria> RubricCriteria { get; set; }
+        public virtual DbSet<Rubrics> Rubrics { get; set; }
+        public virtual DbSet<Submissions> Submissions { get; set; }
+        public virtual DbSet<sysdiagrams> sysdiagrams { get; set; }
+        public virtual DbSet<Tasks> Tasks { get; set; }
+        public virtual DbSet<Tests> Tests { get; set; }
+        public virtual DbSet<TestSections> TestSections { get; set; }
+        public virtual DbSet<UserRanks> UserRanks { get; set; }
+        public virtual DbSet<UserScores> UserScores { get; set; }
         public DbSet<LookUp> LookUps { get; set; }
+        public DbSet<User> Users { get; set; }
 
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
@@ -20,14 +41,23 @@ namespace Reboost.DataAccess
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Rater>()
-                    .HasMany(c => c.Photos)
-                    .WithOne(e => e.Rater)
-                    .HasForeignKey(e => e.UserId);
-            builder.Entity<Rater>()
-                    .HasMany(c => c.Scores)
-                    .WithOne(e => e.Rater)
-                    .HasForeignKey(e => e.UserId);
+            //builder.Entity<Raters>()
+            //        .HasMany(c => c.Photos)
+            //        .WithOne(e => e.Rater)
+            //        .HasForeignKey(e => e.UserId);
+            //builder.Entity<Raters>()
+            //        .HasMany(c => c.Scores)
+            //        .WithOne(e => e.Rater)
+            //        .HasForeignKey(e => e.UserId);
+
+            //builder.Entity<Tests>()
+            //    .HasMany(t => t.RaterCredentials)
+            //    .WithOne(c => c.Test)
+            //    .HasForeignKey(e => e.TestId);
+
+            //builder.Entity<Tests>().HasMany(t => t.TestSections).WithOne(s => s.Tests).HasForeignKey(s => s.TestId);
+            //builder.Entity<TestSections>().HasMany(t => t.UserScores).WithOne(s => s.TestSections).HasForeignKey(s => s.SectionId);
+            //builder.Entity<ApplicationUser>().HasMany(t => t.UserScores).WithOne(s => s.User).HasForeignKey(s => s.UserId);
         }
 
         /// <summary>

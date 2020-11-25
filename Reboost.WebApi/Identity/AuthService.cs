@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Reboost.WebApi.Email;
 using Microsoft.AspNetCore.Authentication;
+using Reboost.DataAccess.Entities;
 
 namespace Reboost.WebApi.Identity
 {
