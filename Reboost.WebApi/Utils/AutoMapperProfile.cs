@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Reboost.DataAccess.Entities;
-using Reboost.WebApi.Models;
+using Reboost.DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,8 @@ namespace Reboost.WebApi.Utils
     {
         public AutoMapperProfile()
         {
-            CreateMap<RaterModel, Rater>();
+            CreateMap<RaterRequestModel, Raters>();
+            CreateMap<Raters, RaterResponseModel>();
         }
     }
 }

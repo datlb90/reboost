@@ -21,7 +21,7 @@ namespace Reboost.DataAccess.Repositories
         public async Task<RequestQueue> GetTopPriorityRequest()
         {
             //RawSqlString sql = new RawSqlString();
-            var request = await ReboostDbContext.RequestQueues
+            var request = await ReboostDbContext.RequestQueue
                 .FromSqlRaw(@"UPDATE TOP(1) RequestQueue WITH (UPDLOCK, READPAST)
                             SET Status = 1
                             OUTPUT inserted.*

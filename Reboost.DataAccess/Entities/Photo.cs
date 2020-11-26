@@ -10,7 +10,7 @@ namespace Reboost.DataAccess.Entities
         public string FileName { get; set; }
         public byte[] File { get; set; }
         public string FileType { get; set; }
-        public Rater Rater { get; set; }
+        public Raters Rater { get; set; }
 
     }
 }

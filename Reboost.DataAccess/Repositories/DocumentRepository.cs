@@ -26,7 +26,7 @@ namespace Reboost.DataAccess.Repositories
                 WITH(UPDLOCK, HOLDLOCK) WHERE Status = 0 ORDER BY Priority DESC, RequestedDatetime ASC)")
                 .FirstOrDefaultAsync();
 
-            return await ReboostDbContext.Documents.Where(d => d.FileName == fileName).ToListAsync();
+            return await ReboostDbContext.Documents.Where(d => d.Filename == fileName).ToListAsync();
         }
 
         public async Task<IEnumerable<Documents>> GetByStatus(string status)
