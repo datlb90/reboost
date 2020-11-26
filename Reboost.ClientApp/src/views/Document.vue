@@ -206,9 +206,9 @@ export default {
       viewer: null,
       PAGE_HEIGHT: 1,
       NUM_PAGES: 0,
-      documentId: './static/test1.pdf',
+      documentId: './static/Meeting.pdf',
       RENDER_OPTIONS: {
-        documentId: './static/test1.pdf',
+        documentId: './static/Meeting.pdf',
         pdfDocument: null,
         scale:
           parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,

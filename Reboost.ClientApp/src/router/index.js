@@ -9,6 +9,7 @@ import Login from '../views/account/Login.vue'
 import Register from '../views/account/Register.vue'
 import RaterRegister from '../views/account/RaterRegister.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
+import Review from '../views/learner/Review.vue'
 // Pages
 import Landing from '../components/landing-pages/Landing'
 import RaterLanding from '../components/landing-pages/Rater'
@@ -55,8 +56,12 @@ import Checkout from '../components/other-pages/product/Checkout'
 import ItemDetails from '../components/other-pages/product/ItemDetails'
 
 import ManageRaters from '../views/admin/ManageRaters.vue'
+import ListQuestion from '../views/ListQuestion.vue'
 import Application from '../views/rater/Application.vue'
 import ApplicationDetail from '../views/rater/ApplicationDetail.vue'
+import PracticeWriting from '../views/PracticeWriting'
+import SelectYourTest from '../views/SelectYourTest'
+import RaterDetail from '../views/RaterDetail'
 
 Vue.use(VueRouter)
 
@@ -134,6 +139,15 @@ const router = new VueRouter({
       }
     },
     {
+      path: '/review',
+      name: 'Review',
+      component: Review,
+      meta: {
+        plainLayout: false,
+        landingPage: false
+      }
+    },
+    {
       path: '/test',
       name: 'Test',
       component: Test,
@@ -154,6 +168,11 @@ const router = new VueRouter({
       component: ManageRaters
     },
     {
+      path: '/listQuestion',
+      name: 'List Question',
+      component: ListQuestion
+    },
+    {
       path: '/rater/upload',
       name: 'RaterUpload',
       component: Application
@@ -162,6 +181,16 @@ const router = new VueRouter({
       path: '/rater/details/:id',
       component: ApplicationDetail,
       name: 'RaterDetails'
+    },
+    {
+      path: '/PracticeWriting/:id',
+      component: PracticeWriting,
+      name: 'PracticeWriting'
+    },
+    {
+      path: '/SelectYourTest',
+      component: SelectYourTest,
+      name: 'SelectYourTest'
     },
 
     // { path: '/', component: ITStartup },

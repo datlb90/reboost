@@ -24,11 +24,11 @@ body {
 
 #content-wrapper {
 	/* position: absolute; */
-	top: 35px;
+	/* top: 35px;
 	left: 22%;
 	right: 0;
-	bottom: 0;
-	overflow: auto;
+	bottom: 0; */
+	/* overflow: auto; */
 }
 
 #comment-wrapper {
