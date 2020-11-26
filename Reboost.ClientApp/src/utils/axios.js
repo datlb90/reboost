@@ -4,13 +4,12 @@
  * @see {@link https://github.com/axios/axios}
  * @module utils/axios
  */
-// import _ from 'lodash';
+import _ from 'lodash'
 import axios from 'axios'
 import * as urlUtils from '@/utils/url'
-// // import store from '../store';
-// import NProgress from 'nprogress';
+import store from '../store'
 
-// import { Notification } from 'element-ui';
+import { Notification } from 'element-ui'
 
 const config = {
   baseURL: urlUtils.getBaseApiURL(),
@@ -19,53 +18,51 @@ const config = {
 
 const instance = axios.create(config)
 
-// // Add a request interceptor
-// instance.interceptors.request.use(
-// 	function(config) {
-// 		store.dispatch('loading/startLoading');
-// 		let accessToken = store.state.auth.token.accessToken;
-// 		if (!_.isEmpty(accessToken)) {
-// 			config.headers.Authorization = `Bearer ${accessToken}`;
-// 		}
-// 		return config;
-// 	},
-// 	function(error) {
-// 		store.dispatch('loading/startLoading');
-// 		return Promise.reject(error);
-// 	}
-// );
+// Add a request interceptor
+instance.interceptors.request.use(
+  function(config) {
+    store.dispatch('loading/startLoading')
+    const accessToken = store.state.auth.user.token
+    console.log(accessToken)
+    if (!_.isEmpty(accessToken)) {
+      config.headers.Authorization = `Bearer ${accessToken}`
+    }
+    return config
+  },
+  function(error) {
+    store.dispatch('loading/startLoading')
+    return Promise.reject(error)
+  }
+)
 
-// instance.interceptors.response.use(
-// 	response => {
-// 		store.dispatch('loading/doneLoading');
-// 		return response;
-// 	},
-// 	error => {
-// 		store.dispatch('loading/doneLoading');
+instance.interceptors.response.use(
+  response => {
+    store.dispatch('loading/doneLoading')
+    return response
+  },
+  error => {
+    store.dispatch('loading/doneLoading')
 
-// 		// Check for errorHandle config
-// 		if (error.config.hasOwnProperty('errorHandle') && error.config.errorHandle === false) {
-// 			return Promise.reject(error);
-// 		}
+    // Check for errorHandle config
+    if (error.config.hasOwnProperty('errorHandle') && error.config.errorHandle === false) {
+      return Promise.reject(error)
+    }
 
-// 		// Handling error
-// 		if (error.response) {
-// 			let message = '';
-// 			if (error.response.data.Message)
-// 				message += error.response.data.Message + ' ';
-// 			if (error.response.data.ModelState)
-// 				message += error.response.data.ModelState.invalid_grant + ' ';
-// 			if (error.response.data.InnerException)
-// 				message += error.response.data.InnerException.ExceptionMessage;
+    // Handling error
+    if (error.response) {
+      let message = ''
+	  if (error.response.data.message) { message += error.response.data.message + ' ' }
+	  if (error.response.data.title) { message += error.response.data.title + ' ' }
+      if (error.response.data.modelState) { message += error.response.data.modelState.invalid_grant + ' ' }
+      if (error.response.data.innerException) { message += error.response.data.innerException.exceptionMessage }
 
-// 			Notification.error({
-// 				title: 'Error',
-// 				message: message
-// 			});
-// 		}
-
-// 	}
-// );
+      Notification.error({
+        title: 'Error',
+        message: message
+      })
+    }
+  }
+)
 
 // axios methods
 const methods = {

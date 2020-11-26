@@ -34,6 +34,7 @@
               scope.row.status === 'Approved'
                 ? 'success'
                 : scope.row.status === 'Applied'
+
                 ? 'primary'
                 : scope.row.status === 'Training Completed'
                 ? 'warning'
@@ -56,9 +57,6 @@
 </template>
 
 <script>
-// import {
-//   mapGetters
-// } from 'vuex'
 export default {
   name: 'ManageRaters',
   data() {
@@ -71,6 +69,18 @@ export default {
       filterDate: [],
       table: []
     }
+  },
+  computed: {
+    displayData() {
+      const table = this.searching()
+      return table.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
+    },
+    getAllRater() {
+      return this.$store.getters['rater/getAll']
+    }
+    // ...mapGetters({
+    //   getAllRater: 'rater/getAll'
+    // })
   },
   mounted() {
     this.$store.dispatch('rater/loadRaters')
@@ -133,14 +143,11 @@ export default {
     getAllRater() {
       return this.$store.getters['rater/getAll']
     }
-    // ...mapGetters({
-    //   getAllRater: 'rater/getAll'
-    // })
   }
 }
 </script>
 
-<style>
+<style scoped>
 .container {
   margin-top: 20px;
 }

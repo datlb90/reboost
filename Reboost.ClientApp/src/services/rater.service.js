@@ -18,5 +18,4 @@ const raterService = {
     }
 }
 
-
-export default raterService;
+export default raterService

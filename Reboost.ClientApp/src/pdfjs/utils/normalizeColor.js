@@ -1,4 +1,4 @@
-const REGEX_HASHLESS_HEX = /^([a-f0-9]{6}|[a-f0-9]{3})$/i;
+const REGEX_HASHLESS_HEX = /^([a-f0-9]{6}|[a-f0-9]{3})$/i
 
 /**
  * Normalize a color value
@@ -7,8 +7,8 @@ const REGEX_HASHLESS_HEX = /^([a-f0-9]{6}|[a-f0-9]{3})$/i;
  * @return {String}
  */
 export default function normalizeColor(color) {
-	if (REGEX_HASHLESS_HEX.test(color)) {
-		color = `#${color}`;
-	}
-	return color;
+  if (REGEX_HASHLESS_HEX.test(color)) {
+    color = `#${color}`
+  }
+  return color
 }

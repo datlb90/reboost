@@ -1,28 +1,28 @@
-import PDFJSAnnotate from '../PDFJSAnnotate';
-import appendChild from '../render/appendChild';
+import PDFJSAnnotate from '../PDFJSAnnotate'
+import appendChild from '../render/appendChild'
 import {
-	disableUserSelect,
-	enableUserSelect,
-	findSVGAtPoint,
-	getMetadata,
-	scaleDown
-} from './utils';
+  disableUserSelect,
+  enableUserSelect,
+  findSVGAtPoint,
+  getMetadata,
+  scaleDown
+} from './utils'
 
-let _enabled = false;
-let _penSize;
-let _penColor;
-let path;
-let lines;
+let _enabled = false
+let _penSize
+let _penColor
+let path
+let lines
 
 /**
  * Handle document.mousedown event
  */
 function handleDocumentMousedown() {
-	path = null;
-	lines = [];
+  path = null
+  lines = []
 
-	document.addEventListener('mousemove', handleDocumentMousemove);
-	document.addEventListener('mouseup', handleDocumentMouseup);
+  document.addEventListener('mousemove', handleDocumentMousemove)
+  document.addEventListener('mouseup', handleDocumentMouseup)
 }
 
 /**
@@ -31,27 +31,27 @@ function handleDocumentMousedown() {
  * @param {Event} e The DOM event to be handled
  */
 function handleDocumentMouseup(e) {
-	let svg;
-	if (lines.length > 1 && (svg = findSVGAtPoint(e.clientX, e.clientY))) {
-		let { documentId, pageNumber } = getMetadata(svg);
+  let svg
+  if (lines.length > 1 && (svg = findSVGAtPoint(e.clientX, e.clientY))) {
+    const { documentId, pageNumber } = getMetadata(svg)
 
-		PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, {
-			type: 'drawing',
-			width: _penSize,
-			color: _penColor,
-			lines
-		}
-		).then((annotation) => {
-			if (path) {
-				svg.removeChild(path);
-			}
+    PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, {
+      type: 'drawing',
+      width: _penSize,
+      color: _penColor,
+      lines
+    }
+    ).then((annotation) => {
+      if (path) {
+        svg.removeChild(path)
+      }
 
-			appendChild(svg, annotation);
-		});
-	}
+      appendChild(svg, annotation)
+    })
+  }
 
-	document.removeEventListener('mousemove', handleDocumentMousemove);
-	document.removeEventListener('mouseup', handleDocumentMouseup);
+  document.removeEventListener('mousemove', handleDocumentMousemove)
+  document.removeEventListener('mouseup', handleDocumentMouseup)
 }
 
 /**
@@ -60,7 +60,7 @@ function handleDocumentMouseup(e) {
  * @param {Event} e The DOM event to be handled
  */
 function handleDocumentMousemove(e) {
-	savePoint(e.clientX, e.clientY);
+  savePoint(e.clientX, e.clientY)
 }
 
 /**
@@ -69,13 +69,13 @@ function handleDocumentMousemove(e) {
  * @param {Event} e The DOM event to be handled
  */
 function handleDocumentKeyup(e) {
-	// Cancel rect if Esc is pressed
-	if (e.keyCode === 27) {
-		lines = null;
-		path.parentNode.removeChild(path);
-		document.removeEventListener('mousemove', handleDocumentMousemove);
-		document.removeEventListener('mouseup', handleDocumentMouseup);
-	}
+  // Cancel rect if Esc is pressed
+  if (e.keyCode === 27) {
+    lines = null
+    path.parentNode.removeChild(path)
+    document.removeEventListener('mousemove', handleDocumentMousemove)
+    document.removeEventListener('mouseup', handleDocumentMouseup)
+  }
 }
 
 /**
@@ -85,33 +85,33 @@ function handleDocumentKeyup(e) {
  * @param {Number} y The y coordinate of the point
  */
 function savePoint(x, y) {
-	let svg = findSVGAtPoint(x, y);
-	if (!svg) {
-		return;
-	}
+  const svg = findSVGAtPoint(x, y)
+  if (!svg) {
+    return
+  }
 
-	let rect = svg.getBoundingClientRect();
-	let point = scaleDown(svg, {
-		x: x - rect.left,
-		y: y - rect.top
-	});
+  const rect = svg.getBoundingClientRect()
+  const point = scaleDown(svg, {
+    x: x - rect.left,
+    y: y - rect.top
+  })
 
-	lines.push([point.x, point.y]);
+  lines.push([point.x, point.y])
 
-	if (lines.length <= 1) {
-		return;
-	}
+  if (lines.length <= 1) {
+    return
+  }
 
-	if (path) {
-		svg.removeChild(path);
-	}
+  if (path) {
+    svg.removeChild(path)
+  }
 
-	path = appendChild(svg, {
-		type: 'drawing',
-		color: _penColor,
-		width: _penSize,
-		lines
-	});
+  path = appendChild(svg, {
+    type: 'drawing',
+    color: _penColor,
+    width: _penSize,
+    lines
+  })
 }
 
 /**
@@ -121,31 +121,31 @@ function savePoint(x, y) {
  * @param {String} penColor The color of the lines drawn by the pen
  */
 export function setPen(penSize = 1, penColor = '000000') {
-	_penSize = parseInt(penSize, 10);
-	_penColor = penColor;
+  _penSize = parseInt(penSize, 10)
+  _penColor = penColor
 }
 
 /**
  * Enable the pen behavior
  */
 export function enablePen() {
-	if (_enabled) { return; }
+  if (_enabled) { return }
 
-	_enabled = true;
-	document.addEventListener('mousedown', handleDocumentMousedown);
-	document.addEventListener('keyup', handleDocumentKeyup);
-	disableUserSelect();
+  _enabled = true
+  document.addEventListener('mousedown', handleDocumentMousedown)
+  document.addEventListener('keyup', handleDocumentKeyup)
+  disableUserSelect()
 }
 
 /**
  * Disable the pen behavior
  */
 export function disablePen() {
-	if (!_enabled) { return; }
+  if (!_enabled) { return }
 
-	_enabled = false;
-	document.removeEventListener('mousedown', handleDocumentMousedown);
-	document.removeEventListener('keyup', handleDocumentKeyup);
-	enableUserSelect();
+  _enabled = false
+  document.removeEventListener('mousedown', handleDocumentMousedown)
+  document.removeEventListener('keyup', handleDocumentKeyup)
+  enableUserSelect()
 }
 

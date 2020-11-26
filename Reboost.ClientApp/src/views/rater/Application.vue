@@ -1,40 +1,39 @@
 <template>
-<div style="margin-top:25px;">
-  <el-row class="row-flex">
-    <el-col :span="14" class="col-border">
-      <el-steps :active="1" align-center>
-        <el-step title="Step 1" icon="el-icon-user" description="Create an account"></el-step>
-        <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials"></el-step>
-        <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning"></el-step>
-        <el-step title="Step 4" icon="el-icon-edit-outline" description="Start rating"></el-step>
-      </el-steps>
-    </el-col>
-  </el-row>
-  <el-row class="row-flex">
-    <el-col :span="14">
-      <div class="tip">
-        <p>Please fill out some basic information about yourself and upload your official test scores or any other supporting documents so we can verify your proficiency to become our rater.
-        </p>
-      </div>
-    </el-col>
-  </el-row>
-  <el-row class="row-flex">
-    <el-col :span="14" class="col-border padding-30">
-      <el-form ref="formRegister" :model="formRegister" label-width="180px" style="width:90%;">
-        
+  <div style="margin-top:25px;">
+    <el-row class="row-flex">
+      <el-col :span="14" class="col-border">
+        <el-steps :active="1" align-center>
+          <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
+          <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
+          <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning" />
+          <el-step title="Step 4" icon="el-icon-edit-outline" description="Start rating" />
+        </el-steps>
+      </el-col>
+    </el-row>
+    <el-row class="row-flex">
+      <el-col :span="14">
+        <div class="tip">
+          <p>Please fill out some basic information about yourself and upload your official test scores or any other supporting documents so we can verify your proficiency to become our rater.
+          </p>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row class="row-flex">
+      <el-col :span="14" class="col-border padding-30">
+        <el-form ref="formRegister" :model="formRegister" label-width="180px" style="width:90%;">
 
-        <el-form-item v-if="raterId" label="Current Status">
-          <el-tag
-            :type="
-              formRegister.status === 'Approved'
-                ? 'success'
-                : formRegister.status === 'Applied'
-                ? 'primary'
-                : formRegister.status === 'Training Completed'
-                ? 'warning'
-                : 'danger'
-            "
-            disable-transitions
+          <el-form-item v-if="raterId" label="Current Status">
+            <el-tag
+              :type="
+                formRegister.status === 'Approved'
+                  ? 'success'
+                  : formRegister.status === 'Applied'
+                    ? 'primary'
+                    : formRegister.status === 'Training Completed'
+                      ? 'warning'
+                      : 'danger'
+              "
+              disable-transitions
             >{{ formRegister.status }}</el-tag>
         </el-form-item>
         
@@ -157,7 +156,7 @@
             :auto-upload="false" list-type="picture">
               <el-button size="small" type="primary">Click to upload</el-button>
               <div slot="tip" class="el-upload__tip">
-                <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.</p>
               </div>
             </el-upload>
           </el-form-item>
@@ -239,6 +238,31 @@ export default {
       raterId: ''
     }
   },
+  computed: {
+    score: function() {
+      var x = []
+      for (let i = 0; i <= 100; i++) { x.push(i) }
+      return x
+    }
+    // gender: function () {
+    //   return ['male', 'female']
+    // },
+    // occupation: function () {
+    //   var x = [];
+    //   for (let i = 0; i <= 5; i++)
+    //     x.push(i);
+    //   return x
+    // },
+    // firstLanguage() {
+    //   var x = [];
+    //   for (let i = 0; i <= 5; i++)
+    //     x.push(i);
+    //   return x
+    // }
+  },
+  mounted() {
+    this.onLoad()
+  },
   methods: {
     onLoad(){
       const w = require('../../assets/defaultFormRaterData.json')
@@ -262,8 +286,8 @@ export default {
         this.loadDetail(this.$route.params.id);
       }
     },
-    loadDetail(id){
-      console.log('load detail', mapUtil);
+    loadDetail(id) {
+      console.log('load detail', mapUtil)
       raterService.getById(id).then(rs => {
         console.log('result load detail', rs);
         this.formRegister = mapUtil.map(rs, this.formRegister);
@@ -435,17 +459,15 @@ export default {
             })
             })
           }
-
-          
         } else {
-          console.log('error submit!!');
-          return false;
+          console.log('error submit!!')
+          return false
         }
-      });
+      })
     },
-    updateStatus(status){
+    updateStatus(status) {
       raterService.updateStatus(this.raterId, status).then(rs => {
-        this.formRegister.status = status;
+        this.formRegister.status = status
         this.$toasted.show('Update success', {
           icons: 'shopping_cart',
           theme: 'bubble',
@@ -455,49 +477,23 @@ export default {
       })
     },
     handleRemoveIdPhoto(file, fileList) {
-      this.formRegister.iDCardPhotos = fileList;
+      this.formRegister.iDCardPhotos = fileList
     },
     handleChangeIdPhoto(file, fileList) {
-      this.formRegister.iDCardPhotos = fileList;
+      this.formRegister.iDCardPhotos = fileList
     },
     handleChangeIELTS(file, fileList) {
-      this.formRegister.iELTSCertificatePhotos = fileList;
+      this.formRegister.iELTSCertificatePhotos = fileList
     },
     handleRemoveIELTS(file, fileList) {
-      this.formRegister.iELTSCertificatePhotos = fileList;
+      this.formRegister.iELTSCertificatePhotos = fileList
     },
     handleChangeTOEFL(file, fileList) {
-      this.formRegister.tOEFLCertificatePhotos = fileList;
+      this.formRegister.tOEFLCertificatePhotos = fileList
     },
     handleRemoveTOEFL(file, fileList) {
-      this.formRegister.tOEFLCertificatePhotos = fileList;
+      this.formRegister.tOEFLCertificatePhotos = fileList
     }
-  },
-  computed: {
-    score: function () {
-      var x = [];
-      for (let i = 0; i <= 100; i++)
-        x.push(i);
-      return x
-    },
-    // gender: function () {
-    //   return ['male', 'female']
-    // },
-    // occupation: function () {
-    //   var x = [];
-    //   for (let i = 0; i <= 5; i++)
-    //     x.push(i);
-    //   return x
-    // },
-    // firstLanguage() {
-    //   var x = [];
-    //   for (let i = 0; i <= 5; i++)
-    //     x.push(i);
-    //   return x
-    // }
-  },
-  mounted(){
-    this.onLoad();
   }
 }
 </script>

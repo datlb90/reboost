@@ -49,42 +49,89 @@ namespace Reboost.WebApi.Identity
             if (model == null)
                 throw new NullReferenceException("Reigster Model is null");
 
-            if (model.Password != model.ConfirmPassword)
-                return new UserManagerResponse
-                {
-                    Message = "Confirm password doesn't match the password",
-                    IsSuccess = false,
-                };
+            //if (model.Password != model.ConfirmPassword)
+            //    return new UserManagerResponse
+            //    {
+            //        Message = "Confirm password doesn't match the password",
+            //        IsSuccess = false,
+            //    };
 
 
             var identityUser = new ApplicationUser
             {
                 Email = model.Email,
-                UserName = model.Email,
-                FirstName = model.FirstName,
-                LastName = model.LastName
+                UserName = GetUsernameFromEmail(model.Email)
             };
 
             var result = await _userManger.CreateAsync(identityUser, model.Password);
-
             if (result.Succeeded)
             {
-                var confirmEmailToken = await _userManger.GenerateEmailConfirmationTokenAsync(identityUser);
 
-                var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
-                var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
+                var roleResult = await _userManger.AddToRoleAsync(identityUser, model.Role);
 
-                string url = $"{_configuration["AppUrl"]}/api/auth/confirmemail?userid={identityUser.Id}&token={validEmailToken}";
-
-                await _mailService.SendEmailAsync(identityUser.Email, "Confirm your email", $"<h1>Welcome to Auth Demo</h1>" +
-                    $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
-
-
-                return new UserManagerResponse
+                if (roleResult.Succeeded)
                 {
-                    Message = "User created successfully!",
-                    IsSuccess = true,
-                };
+                    var confirmEmailToken = await _userManger.GenerateEmailConfirmationTokenAsync(identityUser);
+
+                    var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+                    var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
+
+
+
+                    string url = $"{_configuration["AppUrl"]}/api/auth/confirmemail?userid={identityUser.Id}&token={validEmailToken}";
+
+                    await _mailService.SendEmailAsync(identityUser.Email, "Confirm your email", $"<h1>Welcome to Reboost</h1>" +
+                        $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
+
+
+                    var claims = new[]
+                    {
+                        new Claim("Email", model.Email),
+                        new Claim(ClaimTypes.NameIdentifier, identityUser.Id),
+                    };
+
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AuthSettings:JwtSecret"]));
+
+                    var token = new JwtSecurityToken(
+                        issuer: _configuration["AuthSettings:JwtIssuer"],
+                        audience: _configuration["AuthSettings:JwtAudience"],
+                        claims: claims,
+                        expires: DateTime.Now.AddDays(30),
+                        signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+
+                    string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                    var roles = await _userManger.GetRolesAsync(identityUser);
+                    if (roles == null)
+                    {
+                        return new UserManagerResponse
+                        {
+                            Message = "User has no role",
+                            IsSuccess = false,
+                        };
+                    }
+
+                    UserLoginModel userModel = new UserLoginModel
+                    {
+                        Id = identityUser.Id,
+                        Username = identityUser.UserName,
+                        Email = identityUser.Email,
+                        Role = roles.FirstOrDefault(), // Each user has only one role
+                        Token = tokenAsString,
+                        ExpireDate = token.ValidTo
+                    };
+
+                    return new UserManagerResponse
+                    {
+                        user = userModel,
+                        Message = "Account Registration Success!",
+                        IsSuccess = true,
+                    };
+
+
+                }
+
+               
             }
 
             return new UserManagerResponse
@@ -124,53 +171,81 @@ namespace Reboost.WebApi.Identity
                     var identityUser = new ApplicationUser
                     {
                         Email = email,
-                        UserName = email,
-                        FirstName = firstName == null ? email : firstName,
-                        LastName = lastName == null ? "" : lastName
+                        UserName = GetUsernameFromEmail(email)
+                        //FirstName = firstName == null ? email : firstName,
+                        //LastName = lastName == null ? "" : lastName
                     };
 
                     var result = await _userManger.CreateAsync(identityUser);
                     if (result.Succeeded)
+                    {
                         userId = identityUser.Id;
+                        user = identityUser;
+                    }
+                        
                 }
                 else
                 {
                     userId = user.Id;
                 }
+                var role = authResult.Properties.Items["role"];
+                var roleResult = await _userManger.AddToRoleAsync(user, role);
 
-                var userClaims = new[]
+                if (roleResult.Succeeded)
                 {
-                    new Claim("Email", email),
-                    new Claim(ClaimTypes.NameIdentifier, userId)
-                };
+                    var userClaims = new[]
+                    {
+                        new Claim("Email", email),
+                        new Claim(ClaimTypes.NameIdentifier, userId)
+                    };
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AuthSettings:JwtSecret"]));
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AuthSettings:JwtSecret"]));
 
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["AuthSettings:JwtIssuer"],
-                    audience: _configuration["AuthSettings:JwtAudience"],
-                    claims: userClaims,
-                    expires: DateTime.Now.AddDays(30),
-                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+                    var token = new JwtSecurityToken(
+                        issuer: _configuration["AuthSettings:JwtIssuer"],
+                        audience: _configuration["AuthSettings:JwtAudience"],
+                        claims: userClaims,
+                        expires: DateTime.Now.AddDays(30),
+                        signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
-                string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
+                    string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
 
-                return new UserManagerResponse
-                {
-                    Email = email,
-                    Message = tokenAsString,
-                    IsSuccess = true,
-                    ExpireDate = token.ValidTo
-                };
+                    var roles = await _userManger.GetRolesAsync(user);
+                    if (roles == null)
+                    {
+                        return new UserManagerResponse
+                        {
+                            Message = "User has no role",
+                            IsSuccess = false,
+                        };
+                    }
+
+                    UserLoginModel userModel = new UserLoginModel
+                    {
+                        Id = user.Id,
+                        Username = user.UserName,
+                        Email = user.Email,
+                        Role = roles.FirstOrDefault(), // Each user has only one role
+                        Token = tokenAsString,
+                        ExpireDate = token.ValidTo
+                    };
+
+                    return new UserManagerResponse
+                    {
+                        user = userModel,
+                        Message = tokenAsString,
+                        IsSuccess = true,
+                    };
+                }
+                
             }
-            else
+
+            return new UserManagerResponse
             {
-                return new UserManagerResponse
-                {
-                    IsSuccess = false
-                };
-            }
+                IsSuccess = false
+            };
         }
+
 
         private async Task<(IdentityUser user, string provider, string email, IEnumerable<Claim> claims)>
             FindUserFromExternalProviderAsync(AuthenticateResult result)
@@ -215,7 +290,6 @@ namespace Reboost.WebApi.Identity
             }
 
             var result = await _userManger.CheckPasswordAsync(user, model.Password);
-
             if (!result)
                 return new UserManagerResponse
                 {
@@ -240,12 +314,31 @@ namespace Reboost.WebApi.Identity
 
             string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
 
+            var roles = await _userManger.GetRolesAsync(user);
+            if (roles == null)
+            {
+                return new UserManagerResponse
+                {
+                    Message = "User has no role",
+                    IsSuccess = false,
+                };
+            }
+
+            UserLoginModel userModel = new UserLoginModel
+            {
+                Id = user.Id,
+                Username = user.UserName,
+                Email = user.Email,
+                Role = roles.FirstOrDefault(), // Each user has only one role
+                Token = tokenAsString,
+                ExpireDate = token.ValidTo
+            };
+
             return new UserManagerResponse
             {
-                Email = user.Email,
-                Message = tokenAsString,
+                user = userModel,
+                Message = "Login Success!",
                 IsSuccess = true,
-                ExpireDate = token.ValidTo
             };
         }
 
@@ -342,5 +435,19 @@ namespace Reboost.WebApi.Identity
             };
         }
 
+        public static string GetUsernameFromEmail(string text, string stopAt = "@")
+        {
+            if (!String.IsNullOrWhiteSpace(text))
+            {
+                int charLocation = text.IndexOf(stopAt, StringComparison.Ordinal);
+
+                if (charLocation > 0)
+                {
+                    return text.Substring(0, charLocation);
+                }
+            }
+
+            return String.Empty;
+        }
     }
 }

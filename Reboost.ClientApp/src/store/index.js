@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import getters from './getters'
-
+import createPersistedState from 'vuex-persistedstate'
 Vue.use(Vuex)
 
 // https://webpack.js.org/guides/dependency-management/#requirecontext
@@ -19,7 +19,9 @@ const modules = modulesFiles.keys().reduce((modules, modulePath) => {
 
 const store = new Vuex.Store({
   modules,
-  getters
+  getters,
+  // Keep the state of the app in the event of a page refresh.
+  plugins: [createPersistedState()]
 })
 
 export default store

@@ -69,8 +69,8 @@ namespace Reboost.WebApi.Controllers
         }
 
         // /api/auth/external
-        [HttpPost("external/{provider}/{returnUrl}")]
-        public IActionResult ExternalLogin(string provider, string returnUrl)
+        [HttpPost("external/{provider}/{role}/{returnUrl}")]
+        public IActionResult ExternalLogin(string provider, string role, string returnUrl)
         {
             var props = new AuthenticationProperties
             {
@@ -79,6 +79,7 @@ namespace Reboost.WebApi.Controllers
                 Items =
                     {
                         { "returnUrl", returnUrl },
+                        { "role", role },
                         { "scheme", provider },
                     }
             };
@@ -100,9 +101,9 @@ namespace Reboost.WebApi.Controllers
             var response = await _authService.LoginExternalAsync(result);
             if (response.IsSuccess)
             {
-                HttpContext.Response.Cookies.Append("email", response.Email, new CookieOptions { IsEssential = true });
+                HttpContext.Response.Cookies.Append("email", response.user.Email, new CookieOptions { IsEssential = true });
                 HttpContext.Response.Cookies.Append("token", response.Message, new CookieOptions { IsEssential = true });
-                HttpContext.Response.Cookies.Append("expireDate", response.ExpireDate.ToString(), new CookieOptions { IsEssential = true });
+                HttpContext.Response.Cookies.Append("expireDate", response.user.ExpireDate.ToString(), new CookieOptions { IsEssential = true });
 
                 var returnUrl = HttpUtility.UrlDecode(result.Properties.Items["returnUrl"]) ?? "~/";
                 if (string.IsNullOrEmpty(returnUrl) || returnUrl == "~/")

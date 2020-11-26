@@ -41,7 +41,7 @@
 
           <div class="others-option">
             <a href="/rater" class="btn btn-light">Become A Rater</a>
-            <a href="/test" class="btn btn-primary">Sign In</a>
+            <a href="/login" class="btn btn-primary">Sign In</a>
           </div>
         </nav>
       </div>

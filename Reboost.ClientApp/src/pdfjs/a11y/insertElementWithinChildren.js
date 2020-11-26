@@ -1,6 +1,6 @@
-import insertElementWithinElement from './insertElementWithinElement';
-import { pointIntersectsRect } from '../UI/utils';
-import { scaleUp } from '../UI/utils'; 
+import insertElementWithinElement from './insertElementWithinElement'
+import { pointIntersectsRect } from '../UI/utils'
+import { scaleUp } from '../UI/utils'
 
 /**
  * Insert an element at a point within the document.
@@ -14,38 +14,38 @@ import { scaleUp } from '../UI/utils';
  * @return {Boolean} True if element was able to be inserted, otherwise false
  */
 export default function insertElementWithinChildren(el, x, y, pageNumber) {
-	// Try and use most accurate method of inserting within an element
-	if (insertElementWithinElement(el, x, y, pageNumber, true)) {
-		return true;
-	}
+  // Try and use most accurate method of inserting within an element
+  if (insertElementWithinElement(el, x, y, pageNumber, true)) {
+    return true
+  }
 
-	// Fall back to inserting between elements
-	let svg = document.querySelector(`svg[data-pdf-annotate-page="${pageNumber}"]`);
-	let rect = svg.getBoundingClientRect();
-	let nodes = [...svg.parentNode.querySelectorAll('.textLayer > div')];
+  // Fall back to inserting between elements
+  const svg = document.querySelector(`svg[data-pdf-annotate-page="${pageNumber}"]`)
+  const rect = svg.getBoundingClientRect()
+  const nodes = [...svg.parentNode.querySelectorAll('.textLayer > div')]
 
-	y = scaleUp(svg, {y}).y + rect.top;
-	x = scaleUp(svg, {x}).x + rect.left;
+  y = scaleUp(svg, { y }).y + rect.top
+  x = scaleUp(svg, { x }).x + rect.left
 
-	// Find the best node to insert before
-	for (let i=0, l=nodes.length; i<l; i++) {
-		let n = nodes[i];
-		let r = n.getBoundingClientRect();
-		if (y <= r.top) {
-			n.parentNode.insertBefore(el, n);
-			return true;
-		}
-	}
+  // Find the best node to insert before
+  for (let i = 0, l = nodes.length; i < l; i++) {
+    const n = nodes[i]
+    const r = n.getBoundingClientRect()
+    if (y <= r.top) {
+      n.parentNode.insertBefore(el, n)
+      return true
+    }
+  }
 
-	// If all else fails try to append to the bottom
-	let textLayer = svg.parentNode.querySelector('.textLayer');
-	if (textLayer) {
-		let textRect = textLayer.getBoundingClientRect();
-		if (pointIntersectsRect(x, y, textRect)) {
-			textLayer.appendChild(el);
-			return true;
-		}
-	}
+  // If all else fails try to append to the bottom
+  const textLayer = svg.parentNode.querySelector('.textLayer')
+  if (textLayer) {
+    const textRect = textLayer.getBoundingClientRect()
+    if (pointIntersectsRect(x, y, textRect)) {
+      textLayer.appendChild(el)
+      return true
+    }
+  }
 
-	return false;
+  return false
 }
