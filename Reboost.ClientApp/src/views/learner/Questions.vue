@@ -4,74 +4,71 @@
       <h2>All Writing Topics</h2>
     </div>
     <div>
-      <hr />
+      <hr>
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div class="left-content">
           <div class="completed">
-            <span>{{ getCountQuestionByTasks['Completed'] }}/{{ this.totalRow }} Completed</span>
+            <span>{{ getCountQuestionByTasks['Completed'] }}/{{ totalRow }} Completed</span>
           </div>
           <div><span style="margin: 0 5px;">-</span></div>
           <div v-for="(value, name) in getCountQuestionByTasks" :key="name.value">
             <div v-if="name != 'Completed'" class="filter">
               <span>{{ name }}: {{ value }}</span>
             </div>
-            </div>
           </div>
+        </div>
         <div class="btnPickOne">
           <el-button @click="clearFilter">Pick One
-            <i class="el-icon-search"></i>
+            <i class="el-icon-search" />
           </el-button>
         </div>
       </div>
-      <hr />
+      <hr>
     </div>
     <div class="searchAndBtn">
       <div class="search">
-        <el-input placeholder="Type to search" v-model="textSearch"></el-input>
+        <el-input v-model="textSearch" placeholder="Type to search" />
       </div>
       <div class="btn-reset">
         <el-button @click="clearFilter">reset all filters</el-button>
       </div>
     </div>
-    <el-table ref="filterTable" :data="displayData" @row-click="rowClicked" style="width: 100%">
+    <el-table ref="filterTable" :data="displayData" style="width: 100%" @row-click="rowClicked">
       <el-table-column width="40">
         <template slot-scope="scope">
-          <i v-if="scope.row.status == 'Active'" class="el-icon-check check"></i>
+          <i v-if="scope.row.status == 'Active'" class="el-icon-check check" />
         </template>
       </el-table-column>
-      <el-table-column prop="id" label="#" width="40"> </el-table-column>
-      <el-table-column prop="title" label="Title" width="200"> </el-table-column>
+      <el-table-column prop="id" label="#" width="40" />
+      <el-table-column prop="title" label="Title" width="200" />
       <el-table-column
         prop="test"
         label="Test"
         column-key="test"
         :filters="filterTest"
         :filter-method="filterHandler"
-      >
-      </el-table-column>
+      />
       <el-table-column
         prop="section"
         label="Section"
         column-key="section"
         :filters="filterSection"
         :filter-method="filterHandler"
-      >
-      </el-table-column>
+      />
       <el-table-column
         prop="type"
         label="Type"
         column-key="type"
         :filters="filterType"
         :filter-method="filterHandler"
-      >
-      </el-table-column>
+      />
       <el-table-column
         label="Sample"
         :filters="filterSample"
         :filter-method="filterHandler"
       >
         <template slot-scope="scope">
-          <i v-if="scope.row.sample" class="el-icon-document" style="color: blue;"></i>
+          <i v-if="scope.row.sample" class="el-icon-document" style="color: blue;" />
         </template>
       </el-table-column>
       <el-table-column
@@ -79,35 +76,32 @@
         label="Average Score"
         sortable
         width="150"
-      >
-      </el-table-column>
+      />
       <el-table-column
         prop="submission"
         label="Submission"
         sortable
         width="140"
-      >
-      </el-table-column>
-      <el-table-column prop="like" label="Like" sortable>
-      </el-table-column>
+      />
+      <el-table-column prop="like" label="Like" sortable />
     </el-table>
     <div class="pagination">
       <div class="current-page">
         <!-- <el-input-number v-model="rowPerPage" controls-position="right" @change="handleChangeRowPerPage" :min="1"></el-input-number> -->
         <!-- <input type="numer" min="1" v-model="currentPage">
         <ejs-numerictextbox v-bind:value='value'></ejs-numerictextbox> -->
-        <input class="form-control text-box single-line" v-model="rowPerPage" data-val="true" type="number" value="rowPerPage" style="width: 70px;">
+        <input v-model="rowPerPage" class="form-control text-box single-line" data-val="true" type="number" value="rowPerPage" style="width: 70px;">
         <span style="margin-left: 10px">rows per page.</span>
       </div>
       <div class="pagination-page">
         <el-pagination
           background
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
           layout="total, prev, pager, next, jumper"
           :page-size="pageSize"
-          :total="totalRow">
-        </el-pagination>
+          :total="totalRow"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
         <!-- <div style="margin-right: 10px"><span>Go to page</span></div>
         <div class="go-to-page">
           <el-input v-model="gotoPage"></el-input>
@@ -144,26 +138,38 @@ export default {
         // "General Training Task 2\r\n": 1,
         // "Completed": 1
       }
-    };
+    }
+  },
+  computed: {
+    displayData() {
+      var table = this.searching()
+      return table.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
+    },
+    getAllQuestion() {
+      return this.$store.getters['question/getAll']
+    },
+    getCountQuestionByTasks() {
+      return this.$store.getters['question/getCountQuestionByTasks']
+    }
   },
   mounted() {
-    this.$store.dispatch("question/loadQuestions");
-    this.$store.dispatch("question/loadCountQuestionsByTasks");
+    this.$store.dispatch('question/loadQuestions')
+    this.$store.dispatch('question/loadCountQuestionsByTasks')
   },
   methods: {
     clearFilter() {
-      this.$refs.filterTable.clearFilter();
-      this.textSearch = "";
+      this.$refs.filterTable.clearFilter()
+      this.textSearch = ''
     },
     filterTag(value, row) {
-      return row.status === value;
+      return row.status === value
     },
     filterHandler(value, row, column) {
-      const property = column["property"];
-      return row[property] === value;
+      const property = column['property']
+      return row[property] === value
     },
     handleSizeChange(val) {
-      console.log(`${val} items per page`);
+      console.log(`${val} items per page`)
     },
     handleCurrentChange(val) {
       this.page = val
@@ -171,11 +177,11 @@ export default {
     // handleCurrentChange(val) {
     //   this.page = val
     // },
-    handleChangeRowPerPage(val){
+    handleChangeRowPerPage(val) {
       this.pageSize = val
     },
     rowClicked(row) {
-      console.log("row",row)
+      console.log('row', row)
       this.$router.push({
         name: 'PracticeWriting',
         params: {
@@ -191,21 +197,9 @@ export default {
       var table = this.getAllQuestion.filter(data => data.title.toLowerCase().includes(this.textSearch.toLowerCase()))
       this.totalRow = table.length
       return table
-    },
-  },
-  computed: {
-    displayData() {
-      var table = this.searching()
-      return table.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
-    },
-    getAllQuestion() {
-      return this.$store.getters["question/getAll"];
-    },
-    getCountQuestionByTasks() {
-      return this.$store.getters["question/getCountQuestionByTasks"];
     }
   }
-};
+}
 </script>
 <style scoped>
 .left-content{
@@ -250,7 +244,7 @@ export default {
 .pagination-page{
   display: flex;
   align-items: center;
-  
+
 }
 .go-to-page{
   width: 50px;

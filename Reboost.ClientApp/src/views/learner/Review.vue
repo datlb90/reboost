@@ -1151,4 +1151,12 @@ export default {
 @import '../../pdfjs/shared/document.css';
 @import '../../pdfjs/shared/toolbar.css';
 @import '../../pdfjs/shared/pdf_viewer.css';
+
+.tip {
+  padding: 8px 14px;
+  background-color: #ecf8ff;
+  border-radius: 4px;
+  border-left: 5px solid #50bfff;
+}
+
 </style>

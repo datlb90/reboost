@@ -54,14 +54,13 @@ import Shop from '../components/other-pages/product/Shop'
 import Cart from '../components/other-pages/product/Cart'
 import Checkout from '../components/other-pages/product/Checkout'
 import ItemDetails from '../components/other-pages/product/ItemDetails'
-
 import ManageRaters from '../views/admin/ManageRaters.vue'
-import ListQuestion from '../views/ListQuestion.vue'
-import Application from '../views/rater/Application.vue'
-import ApplicationDetail from '../views/rater/ApplicationDetail.vue'
-import PracticeWriting from '../views/PracticeWriting'
-import SelectYourTest from '../views/SelectYourTest'
-import RaterDetail from '../views/RaterDetail'
+import Questions from '../views/learner/Questions.vue'
+import RaterApplication from '../views/rater/Application.vue'
+import ApplicationDetail from '../views/admin/ApplicationDetail.vue'
+import PracticeWriting from '../views/learner/PracticeWriting'
+import SelectYourTest from '../views/learner/SelectYourTest'
+import ApplicationStatus from '../views/rater/ApplicationStatus'
 
 Vue.use(VueRouter)
 
@@ -163,24 +162,29 @@ const router = new VueRouter({
       component: AdminHome
     },
     {
-      path: '/admin',
-      name: 'Admin',
+      path: '/admin/raters',
+      name: 'ManageRaters',
       component: ManageRaters
     },
     {
-      path: '/listQuestion',
-      name: 'List Question',
-      component: ListQuestion
+      path: '/questions',
+      name: 'Questions',
+      component: Questions
     },
     {
-      path: '/rater/upload',
-      name: 'RaterUpload',
-      component: Application
+      path: '/rater/application',
+      name: 'RaterApplication',
+      component: RaterApplication
     },
     {
-      path: '/rater/details/:id',
+      path: '/admin/raters/application/:id',
       component: ApplicationDetail,
-      name: 'RaterDetails'
+      name: 'ApplicationDetail'
+    },
+    {
+      path: '/rater/application/status/:id',
+      component: ApplicationStatus,
+      name: 'ApplicationStatus'
     },
     {
       path: '/PracticeWriting/:id',
@@ -193,7 +197,6 @@ const router = new VueRouter({
       name: 'SelectYourTest'
     },
 
-    // { path: '/', component: ITStartup },
     { path: '/it-startup', component: ITStartup },
     { path: '/developer', component: Developer },
     { path: '/web-hosting', component: WebHosting },

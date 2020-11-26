@@ -105,9 +105,9 @@ export default {
         Password: this.form.password
       })
       if (user) {
-        if (user.role == 'Admin') { this.$router.push('/admin') }
-        if (user.role == 'Rater') { this.$router.push('/rater/home') }
-        if (user.role == 'Learner') { this.$router.push('/review') }
+        if (user.role == 'Admin') { this.$router.push('/admin/raters') }
+        if (user.role == 'Rater') { this.$router.push('/rater/application') }
+        if (user.role == 'Learner') { this.$router.push('/questions') }
       }
     }
   }

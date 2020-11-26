@@ -3,7 +3,7 @@
     <div class="container">
       <el-form ref="form" :model="form" label-width="120px">
         <el-breadcrumb class="breadcrumb-header" separator-class="el-icon-arrow-right">
-          <el-breadcrumb-item :to="{ path: '/appDetails' }">Application Lists</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/admin/raters' }">Application Lists</el-breadcrumb-item>
           <el-breadcrumb-item>Application Details</el-breadcrumb-item>
         </el-breadcrumb>
         <div class="content-container">
