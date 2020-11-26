@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Reboost.DataAccess.Entities;
+using Reboost.DataAccess.Models;
 using Reboost.Service.Services;
-using Reboost.WebApi.Models;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -18,6 +18,7 @@ namespace Reboost.WebApi.Controllers
     public class RaterController : BaseController<IRaterService>
     {
         private readonly IMapper _mapper;
+        //private IRaterCredentialsService _raterCredentialsService;
 
         public RaterController(IRaterService service, IMapper mapper) : base(service)
         {
@@ -26,189 +27,98 @@ namespace Reboost.WebApi.Controllers
 
         [HttpGet]
         [Route("")]
-        public async Task<IEnumerable<Rater>> GetAllAsync()
+        public async Task<IEnumerable<Raters>> GetAllAsync()
         {
             return await _service.GetAllAsync();
         }
 
         [HttpGet]
         [Route("{id}")]
-        public async Task<Rater> GetByIdAsync(int id)
+        public async Task<Raters> GetByIdAsync(int id)
         {
-            return await _service.GetByIdAsync(id);
+            var rater = await _service.GetByIdAsync(id);
+            var applyTo = await _service.GetApplyTo(id);
+            var raterModel = _mapper.Map<RaterResponseModel>(rater);
+            raterModel.ApplyTo = applyTo.ToDictionary(i => i, i => true);
+
+            return raterModel;
         }
         [HttpDelete]
         [Route("delete/{id}")]
-        public async Task<Rater> DeleteAsync(int id)
+        public async Task<Raters> DeleteAsync(int id)
         {
             return await _service.DeleteAsync(id);
         }
         [HttpPost]
         [Route("create")]
-        public async Task<Rater> CreateAsync([FromForm] RaterModel model)
+        public async Task<Raters> CreateAsync([FromForm] RaterRequestModel model)
         {
-            try
+            var _rater = _mapper.Map<Raters>(model);
+
+            foreach (var item in _rater.RaterCredentials)
             {
-                var _rater = _mapper.Map<Rater>(model);
-
-                _rater.Scores = JsonConvert.DeserializeObject<List<UserScore>>(model.ScoreJSON);
-
-                if(model.IELTSCertificatePhotos != null)
-                {
-                    foreach (var photo in model.IELTSCertificatePhotos)
-                    {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await photo.CopyToAsync(memoryStream);
-                            var _photo = new Photo
-                            {
-                                File = memoryStream.ToArray(),
-                                FileName = photo.FileName,
-                                FileType = "IELS Certificate"
-                            };
-
-                            _rater.Photos.Add(_photo);
-                        }
-                    }
-                }
-                if (model.TOEFLCertificatePhotos != null)
-                {
-                    foreach (var photo in model.TOEFLCertificatePhotos)
-                    {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await photo.CopyToAsync(memoryStream);
-                            var _photo = new Photo
-                            {
-                                File = memoryStream.ToArray(),
-                                FileName = photo.FileName,
-                                FileType = "TOEFL Certificate"
-                            };
-
-                            _rater.Photos.Add(_photo);
-                        }
-                    }
-                }
-                if (model.IDCardPhotos != null)
-                {
-                    foreach (var photo in model.IDCardPhotos)
-                    {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await photo.CopyToAsync(memoryStream);
-                            var _photo = new Photo
-                            {
-                                File = memoryStream.ToArray(),
-                                FileName = photo.FileName,
-                                FileType = "ID"
-                            };
-
-                            _rater.Photos.Add(_photo);
-                        }
-                    }
-                }
-
-
-                return await _service.CreateAsync(_rater);
+                var file = model.UploadedFiles.FirstOrDefault(f => f.FileName == item.FileName);
+                if (file != null)
+                    item.Data = GetBytesFromFile(file);
             }
-            catch (Exception ex)
-            {
-                return await Task.FromException<Rater>(ex);
-            }
+
+            return await _service.CreateAsync(_rater);
+            //return await Task.FromResult<Raters>(null);
         }
-        
+
         [HttpPost]
         [Route("update")]
-        public async Task<Rater> UpdateAsync([FromForm] RaterModel model)
+        public async Task<Raters> UpdateAsync([FromForm] RaterRequestModel model)
         {
-            try
+            var _rater = _mapper.Map<Raters>(model);
+
+            foreach (var item in _rater.RaterCredentials)
             {
-                var _rater = _mapper.Map<Rater>(model);
-                var _photos = new List<Photo>();
-
-                if (model.IELTSCertificatePhotos != null)
-                {
-                    foreach (var photo in model.IELTSCertificatePhotos)
-                    {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await photo.CopyToAsync(memoryStream);
-                            var _photo = new Photo
-                            {
-                                File = memoryStream.ToArray(),
-                                FileName = photo.FileName,
-                                FileType = "IELS Certificate"
-                            };
-
-                            _photos.Add(_photo);
-                        }
-                    }
-                }
-                if (model.TOEFLCertificatePhotos != null)
-                {
-                    foreach (var photo in model.TOEFLCertificatePhotos)
-                    {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await photo.CopyToAsync(memoryStream);
-                            var _photo = new Photo
-                            {
-                                File = memoryStream.ToArray(),
-                                FileName = photo.FileName,
-                                FileType = "TOEFL Certificate"
-                            };
-
-                            _photos.Add(_photo);
-                        }
-                    }
-                }
-                if (model.IDCardPhotos != null)
-                {
-                    foreach (var photo in model.IDCardPhotos)
-                    {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await photo.CopyToAsync(memoryStream);
-                            var _photo = new Photo
-                            {
-                                File = memoryStream.ToArray(),
-                                FileName = photo.FileName,
-                                FileType = "ID"
-                            };
-
-                            _photos.Add(_photo);
-                        }
-                    }
-                }
-
-                _rater.Photos = _photos;
-                _rater.Scores = JsonConvert.DeserializeObject<List<UserScore>>(model.ScoreJSON);
-
-                return await _service.UpdateAsync(_rater);
+                var file = model.UploadedFiles.FirstOrDefault(f => f.FileName == item.FileName);
+                if (file != null)
+                    item.Data = GetBytesFromFile(file);
             }
-            catch (Exception ex)
-            {
-                return await Task.FromException<Rater>(ex);
-            }
+
+            return await _service.UpdateAsync(_rater);
         }
-
-        [HttpGet("status/{id}/{status}")]
-        public async Task<Rater> UpdateStatus(int id, string status) {
+        
+        [HttpGet("update/status/{id}/{status}")]
+        public async Task<Raters> UpdateStatus(int id, string status) {
             return await _service.UpdateStatusAsync(id, status);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Upload([FromForm] UploadModel data) {
 
-            //data.File.
-            return Ok(await Task.FromResult(new { Result = "Success" }));
+        #region private functions
+        private byte[] GetBytesFromFile(IFormFile formFile)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                formFile.CopyTo(memoryStream);
+                return memoryStream.ToArray();
+            }
         }
-    }
+        private async Task<IEnumerable<RaterCredentials>> MappUploadFile(IEnumerable<IFormFile> iFormFiles, string type)
+        {
+            var files = new List<RaterCredentials>();
+            foreach (var formFile in iFormFiles)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await formFile.CopyToAsync(memoryStream);
+                    var _raterCredentials = new RaterCredentials
+                    {
+                        Data = memoryStream.ToArray(),
+                        FileName = formFile.FileName,
+                        CredentialType = type,
+                        FileExtension = Path.GetExtension(formFile.FileName) ?? ""
+                    };
 
-    public class UploadModel {
-        [FromForm(Name = "FileName")]
-        public string FileName { get; set; }
-        [FromForm(Name = "Files")]
-        public List<IFormFile> Files { get; set; }
+                    files.Add(_raterCredentials);
+                }
+            }
+
+            return files;
+        }
+        #endregion
     }
 }

@@ -12,6 +12,7 @@ const getters = {
   permission_routes: state => state.permission.routes,
   errorLogs: state => state.errorLog.logs,
   raters: state => state.raters,
+  questions: state => state.questions,
   user: state => state.user,
   role: state => state.user.role,
   apiWaitingCount: state => state.apiWaitingCount

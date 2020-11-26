@@ -1,7 +1,10 @@
 ﻿using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
+using Reboost.DataAccess.Models;
+using Reboost.Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,49 +12,86 @@ namespace Reboost.Service.Services
 {
     public interface IRaterService
     {
-        Task<IEnumerable<Rater>> GetAllAsync();
-        Task<Rater> GetByIdAsync(int id);
-        Task<Rater> CreateAsync(Rater rater);
-        Task<Rater> UpdateAsync(Rater rater);
-        Task<Rater> UpdateStatusAsync(int id, string status);
-        Task<Rater> DeleteAsync(int id);
+        Task<IEnumerable<Raters>> GetAllAsync();
+        Task<Raters> GetByIdAsync(int id);
+        Task<Raters> CreateAsync(Raters rater);
+        Task<Raters> UpdateAsync(Raters rater);
+        Task<Raters> UpdateStatusAsync(int id, string status);
+        Task<Raters> DeleteAsync(int id);
+        Task<List<string>> GetApplyTo(int raterId);
     }
 
-    public class RaterService : BaseService,IRaterService
+    public class RaterService : BaseService, IRaterService
     {
         public RaterService(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
 
         }
-        public async Task<Rater> CreateAsync(Rater rater)
+        public async Task<Raters> CreateAsync(Raters rater)
         {
+            var existed = await _unitOfWork.Raters.GetByUserIdAsync(rater.UserId);
+            if (existed != null)
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "Rater existed");
+            }
+
+            var user = await _unitOfWork.Users.GetByIdAsync(rater.UserId);
+            if (user == null)
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "User not existed");
+            }
+
+            user.FirstName = rater.User.FirstName;
+            user.LastName = rater.User.LastName;
+
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.Users.UpdateScoreAsync(rater.UserId, rater.User.UserScores.ToList());
+
+            rater.User = null;
             return await _unitOfWork.Raters.Create(rater);
         }
 
-        public async Task<Rater> DeleteAsync(int id)
+        public async Task<Raters> DeleteAsync(int id)
         {
             return await _unitOfWork.Raters.Delete(id);
         }
 
-        public async Task<IEnumerable<Rater>> GetAllAsync()
+        public async Task<IEnumerable<Raters>> GetAllAsync()
         {
             return await _unitOfWork.Raters.GetAllAsync();
         }
 
-        public async Task<Rater> GetByIdAsync(int id)
+        public async Task<Raters> GetByIdAsync(int id)
         {
-            return await _unitOfWork.Raters.GetByIdAsync(id, "Scores");
+            return await _unitOfWork.Raters.GetDetailByIdAsync(id);
+        }
+        public async Task<List<string>> GetApplyTo(int raterId)
+        {
+            return await _unitOfWork.Raters.GetApplyTo(raterId);
         }
 
-        public async Task<Rater> UpdateAsync(Rater rater)
+        public async Task<Raters> UpdateAsync(Raters rater)
         {
-            return await _unitOfWork.Raters.Update(rater);
+            var user = await _unitOfWork.Users.GetByIdAsync(rater.UserId);
+            if (user == null)
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "User not existed");
+            }
+
+            user.FirstName = rater.User.FirstName;
+            user.LastName = rater.User.LastName;
+
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.Users.UpdateScoreAsync(rater.UserId, rater.User.UserScores.ToList());
+
+            rater.User = null;
+            return await _unitOfWork.Raters.UpdateWithCredentialAsync(rater);
         }
-        public async Task<Rater> UpdateStatusAsync(int id, string status)
+
+        public async Task<Raters> UpdateStatusAsync(int id, string status)
         {
             var rater = await _unitOfWork.Raters.GetByIdAsync(id);
             rater.Status = status;
-
             return await _unitOfWork.Raters.Update(rater);
         }
     }
