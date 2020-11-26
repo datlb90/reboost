@@ -62,12 +62,12 @@
               <p>"Always telling the truth is the most important consideration in any relationship."</p>
               <p>Use specific reasons and examples to support your answer.</p>
             </div>
-
           </el-tab-pane>
           <el-tab-pane label="Rubric">Rubric</el-tab-pane>
           <el-tab-pane label="Help">Questions and Answers</el-tab-pane>
         </el-tabs>
       </div>
+
       <div id="right-panel" style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);">
         <div id="tool-bar" class="toolbar">
           <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
@@ -260,6 +260,7 @@ import {
 } from '@/pdfjs/UI/utils'
 import { addEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
+import http from '@/utils/axios'
 
 export default {
   name: 'Document',
@@ -273,8 +274,7 @@ export default {
       RENDER_OPTIONS: {
         documentId: './static/Meeting.pdf',
         pdfDocument: null,
-        scale:
-          parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
+        scale: parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
         rotate: parseInt(localStorage.getItem(`${this.documentId}/rotate`), 10) || 0
       },
       newComment: '',
@@ -332,10 +332,22 @@ export default {
     document.body.style = 'overflow: hidden'
   },
   methods: {
+    base64ToArrayBuffer(base64) {
+      const binaryString = window.atob(base64)
+      const binaryLen = binaryString.length
+      const bytes = new Uint8Array(binaryLen)
+      for (let i = 0; i < binaryLen; i++) {
+        const ascii = binaryString.charCodeAt(i)
+        bytes[i] = ascii
+      }
+      return bytes
+    },
     async render() {
       const self = this
-      const pdf = await PDFJS.getDocument(this.RENDER_OPTIONS.documentId)
-        .promise
+      const response = await http.get('http://localhost:6990/api/document/2')
+      const arrayBuffer = self.base64ToArrayBuffer(response.data.data)
+
+      const pdf = await PDFJS.getDocument(arrayBuffer).promise
       self.RENDER_OPTIONS.pdfDocument = pdf
       self.viewer = document.getElementById('viewer')
       self.viewer.innerHTML = ''

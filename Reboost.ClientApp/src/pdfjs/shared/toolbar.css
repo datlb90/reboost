@@ -8,9 +8,14 @@ body {
 }
 
 .toolbar {
-  background-color: #eaeaea;
-  border: 1px solid #d0d0d0;
-  height: 35px;
+  /* background-color: #eaeaea;
+  border: 1px solid #d0d0d0; */
+  background-color: #f4f6f9;
+  border: 1px solid #d7dae1;
+  border-bottom: none;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  height: 40px;
   position: sticky;
   top: 0;
   left: 0;
