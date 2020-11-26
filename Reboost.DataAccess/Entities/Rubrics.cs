@@ -19,6 +19,5 @@ namespace Reboost.DataAccess.Entities
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<RubricCriteria> RubricCriteria { get; set; }
-        //public virtual Tasks Tasks { get; set; }
     }
 }

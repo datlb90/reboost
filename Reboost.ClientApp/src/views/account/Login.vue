@@ -107,7 +107,7 @@ export default {
       if (user) {
         if (user.role == 'Admin') { this.$router.push('/admin') }
         if (user.role == 'Rater') { this.$router.push('/rater/home') }
-        if (user.role == 'Learner') { this.$router.push('/') }
+        if (user.role == 'Learner') { this.$router.push('/review') }
       }
     }
   }

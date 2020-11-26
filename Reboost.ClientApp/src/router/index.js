@@ -9,6 +9,7 @@ import Login from '../views/account/Login.vue'
 import Register from '../views/account/Register.vue'
 import RaterRegister from '../views/account/RaterRegister.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
+import Review from '../views/learner/Review.vue'
 // Pages
 import Landing from '../components/landing-pages/Landing'
 import RaterLanding from '../components/landing-pages/Rater'
@@ -134,6 +135,15 @@ const router = new VueRouter({
       component: RaterRegister,
       meta: {
         plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
+      path: '/review',
+      name: 'Review',
+      component: Review,
+      meta: {
+        plainLayout: false,
         landingPage: false
       }
     },

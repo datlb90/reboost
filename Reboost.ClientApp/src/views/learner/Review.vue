@@ -1,73 +1,135 @@
 <template>
-  <div>
-    <div class="toolbar">
-      <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
-        ➚
-      </button>
+  <div style="border-top: 1px solid rgb(223 224 238); padding: 5px; background: rgb(248, 249, 250);">
 
-      <div class="spacer" />
+    <!-- <el-card class="box-card" style="margin-bottom: 5px;">
+      <div>
+        <p style="width: 98%;">
+          <b>TOEFL Independent Writing Topic 1</b> - Do you agree or disagree with the following statement?
+          Always telling the truth is the most important consideration in any relationship. Use specific reasons and examples to support your answer.
+        </p>
 
-      <button class="rectangle" type="button" title="Rectangle" data-tooltype="area">
-&nbsp;
-      </button>
-      <button class="highlight" type="button" title="Highlight" data-tooltype="highlight">
-&nbsp;
-      </button>
-      <button class="strikeout" type="button" title="Strikeout" data-tooltype="strikeout">
-&nbsp;
-      </button>
+        <p style="width: 98%;">
+          <b>Reading:</b> "A child’s education has never been about learning information and basic skills only. It has always included teaching the next generation how to be good members of society. Therefore, this cannot be the responsibility of the parents alone.
 
-      <div class="spacer" />
+          In order to be a good member of any society the individual must respect and obey the rules of their community and share their values. Educating children to understand the need to obey rules and respect others always begins in the home and is widely thought to be the responsibility of parents. They will certainly be the first to help children learn what is important in life, how they are expected to behave and what role they will play in their world.
 
-      <button class="text" type="button" title="Text Tool" data-tooltype="text" />
-      <select class="text-size" />
-      <div class="text-color" />
+          However, learning to understand and share the value system of a whole society cannot be achieved just in the home. Once a child goes to school, they are entering a wider community where teachers and peers will have just as much influence as their parents do at home. At school, children will experience working and living with people from a whole variety of backgrounds from the wider society. This experience should teach them how to co-operate with each other and how to contribute to the life of their community.
 
-      <div class="spacer" />
+          But to be a valuable member of any community is not like learning a simple skill. It is something that an individual goes on learning throughout life and it is the responsibility of every member of a society to take responsibility for helping the younger generation to become active and able members of that society."
 
-      <div class="spacer" />
+        </p>
 
-      <button class="comment" type="button" title="Comment" data-tooltype="point">
-        🗨
-      </button>
+      </div>
+    </el-card> -->
 
-      <div class="spacer" />
+    <div id="content-wrapper" style="background: rgb(248, 249, 250); height: 92.5vh; width: 100%;position: absolute; overflow: auto;">
+      <!-- <div class="tip">
+        <p>
+          <b>TOEFL Independent Writing Topic #1</b> - Do you agree or disagree with the following statement? Always telling the truth is the most important consideration in any relationship. Use specific reasons and examples to support your answer.
+        </p>
+      </div> -->
 
-      <select class="scale">
-        <option value=".5">
-          50%
-        </option>
-        <option value="1">
-          100%
-        </option>
-        <option value="1.33">
-          133%
-        </option>
-        <option value="1.5">
-          150%
-        </option>
-        <option value="2">
-          200%
-        </option>
-      </select>
+      <!-- <el-tag
+        v-if="showDirection"
+        key="direction"
+        closable
+        type=""
+        :disable-transitions="false"
 
-      <a href="javascript://" class="rotate-ccw" title="Rotate Counter Clockwise">⟲</a>
-      <a href="javascript://" class="rotate-cw" title="Rotate Clockwise">⟳</a>
+      >
+        <p>
+          <b>Direction:</b> Read the question description of the left and provide feedback to the response on the write. Both in-text comments and rubric feedback are required.
+        </p>
+      </el-tag> -->
 
-      <div class="spacer" />
+      <div id="left-panel" style="float: left; width: 30%; position: sticky; top: 0px; min-width: 320px; height: 100%;">
+        <el-tabs type="border-card">
+          <el-tab-pane label="Question">
 
-      <a href="javascript://" class="clear" title="Clear">×</a>
-      <button id="restore" title="Restore">
-        Restore
-      </button>
-    </div>
+            <div v-if="showDirection" class="tip" transition="fade" style="margin-bottom: 10px;">
+              <p style="width: 98%;">
+                <b>Direction:</b> Read the question description and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review.
+              </p>
+              <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
+              <el-button size="mini" @click="showDirection = !showDirection">Never show this again</el-button>
+            </div>
 
-    <div id="rubric-wrapper">
-      <h4>Rubrics</h4>
-    </div>
+            <div style="padding: 20px; border: #dcddde solid 1px; border-radius: 5px;">
+              <p>
+                <b><a href="#">TOEFL Independent Writing - Topic #1</a></b>
+              </p>
+              <p>Do you agree or disagree with the following statement?</p>
+              <p>"Always telling the truth is the most important consideration in any relationship."</p>
+              <p>Use specific reasons and examples to support your answer.</p>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Rubric">Rubric</el-tab-pane>
+          <el-tab-pane label="Help">Questions and Answers</el-tab-pane>
+        </el-tabs>
+      </div>
 
-    <div id="content-wrapper">
-      <div id="viewer" class="pdfViewer" :style="{ width: viewerWidth + 'px' }" :document-id="documentId" />
+      <div id="right-panel" style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);">
+        <div id="tool-bar" class="toolbar">
+          <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
+            ➚
+          </button>
+
+          <div class="spacer" />
+
+          <button class="rectangle" type="button" title="Rectangle" data-tooltype="area" />
+          <button class="highlight" type="button" title="Highlight" data-tooltype="highlight" />
+          <button class="strikeout" type="button" title="Strikeout" data-tooltype="strikeout" />
+
+          <div class="spacer" />
+          <button class="text" type="button" title="Text Tool" data-tooltype="text" />
+          <select class="text-size" />
+          <div class="text-color" />
+
+          <div class="spacer" />
+
+          <div class="spacer" />
+
+          <button class="comment" type="button" title="Comment" data-tooltype="point">
+            🗨
+          </button>
+
+          <div class="spacer" />
+
+          <select class="scale">
+            <option value=".5">
+              50%
+            </option>
+            <option value="1">
+              100%
+            </option>
+            <option value="1.33">
+              133%
+            </option>
+            <option value="1.5">
+              150%
+            </option>
+            <option value="2">
+              200%
+            </option>
+          </select>
+
+          <a href="javascript://" class="rotate-ccw" title="Rotate Counter Clockwise">⟲</a>
+          <a href="javascript://" class="rotate-cw" title="Rotate Clockwise">⟳</a>
+
+          <div class="spacer" />
+
+          <a href="javascript://" class="clear" title="Clear">×</a>
+          <button id="restore" title="Restore">
+            Restore
+          </button>
+        </div>
+        <div
+          id="viewer"
+          class="pdfViewer"
+          :document-id="documentId"
+        />
+      </div>
+
     </div>
 
     <div id="comment-wrapper">
@@ -198,11 +260,13 @@ import {
 } from '@/pdfjs/UI/utils'
 import { addEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
+import http from '@/utils/axios'
 
 export default {
   name: 'Document',
   data() {
     return {
+      showDirection: true,
       viewer: null,
       PAGE_HEIGHT: 1,
       NUM_PAGES: 0,
@@ -210,8 +274,7 @@ export default {
       RENDER_OPTIONS: {
         documentId: './static/Meeting.pdf',
         pdfDocument: null,
-        scale:
-          parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
+        scale: parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
         rotate: parseInt(localStorage.getItem(`${this.documentId}/rotate`), 10) || 0
       },
       newComment: '',
@@ -232,11 +295,14 @@ export default {
   mounted() {
     // Render stuff
     // #57 fix
+
     const renderedPages = {}
     const self = this
     document
       .getElementById('content-wrapper')
       .addEventListener('scroll', function(e) {
+        // document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
+        // eslint-disable-next-line no-console
         const textTool = document.getElementById('textTool')
         textTool.style.visibility = 'hidden'
         const visiblePageNum =
@@ -262,11 +328,26 @@ export default {
     // this.ScaleAndRotate();
     // this.ClearToolbarButton();
   },
+  beforeCreate: function() {
+    document.body.style = 'overflow: hidden'
+  },
   methods: {
+    base64ToArrayBuffer(base64) {
+      const binaryString = window.atob(base64)
+      const binaryLen = binaryString.length
+      const bytes = new Uint8Array(binaryLen)
+      for (let i = 0; i < binaryLen; i++) {
+        const ascii = binaryString.charCodeAt(i)
+        bytes[i] = ascii
+      }
+      return bytes
+    },
     async render() {
       const self = this
-      const pdf = await PDFJS.getDocument(this.RENDER_OPTIONS.documentId)
-        .promise
+      const response = await http.get('http://localhost:6990/api/document/2')
+      const arrayBuffer = self.base64ToArrayBuffer(response.data.data)
+
+      const pdf = await PDFJS.getDocument(arrayBuffer).promise
       self.RENDER_OPTIONS.pdfDocument = pdf
       self.viewer = document.getElementById('viewer')
       self.viewer.innerHTML = ''
@@ -279,20 +360,23 @@ export default {
 
       // eslint-disable-next-line no-unused-vars
       const renderer = await UI.renderPage(1, self.RENDER_OPTIONS)
+
       const obj = {
         scale: self.RENDER_OPTIONS.scale,
-        rotation: self.RENDER_OPTIONS.rotate
+        rotation: self.RENDER_OPTIONS.rotatex
       }
       const viewport = renderer[0].getViewport(obj)
       self.PAGE_HEIGHT = viewport.height
 
       const pageWidth = document.getElementById('pageContainer1').offsetWidth
+      document.getElementById('tool-bar').style.width = pageWidth - 18 + 'px'
+
       this.viewerWidth = pageWidth + 250
-      this.commentleftPos = pageWidth + 15
+      this.commentleftPos = pageWidth - 15
 
       const viewer = document.getElementById('viewer')
       const commentWrapper = document.getElementById('comment-wrapper')
-      commentWrapper.style.left = pageWidth + 15 + 'px'
+      commentWrapper.style.left = pageWidth - 15 + 'px'
       viewer.appendChild(commentWrapper)
 
       this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
@@ -801,7 +885,7 @@ export default {
       let svgTop = 0
       if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * svgHeight) }
       const topPos = svgTop + rectTop - 35
-      newCommentWrapper.style = 'width: 100%; position: absolute; left: 5px; top: ' + topPos + 'px;'
+      newCommentWrapper.style = 'width: 100%; position: absolute; left: -20px; top: ' + topPos + 'px;'
       this.hideTextToolBar()
       const textArea = document.getElementById('comment-text-area')
       textArea.focus()
@@ -1064,7 +1148,7 @@ export default {
 </script>
 
 <style scoped>
-@import '../pdfjs/shared/document.css';
-@import '../pdfjs/shared/toolbar.css';
-@import '../pdfjs/shared/pdf_viewer.css';
+@import '../../pdfjs/shared/document.css';
+@import '../../pdfjs/shared/toolbar.css';
+@import '../../pdfjs/shared/pdf_viewer.css';
 </style>

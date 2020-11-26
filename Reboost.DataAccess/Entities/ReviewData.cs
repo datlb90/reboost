@@ -10,7 +10,6 @@ namespace Reboost.DataAccess.Entities
         public int CriteriaId { get; set; }
         public Nullable<decimal> Score { get; set; }
         public string Comment { get; set; }
-
         public virtual Reviews Reviews { get; set; }
     }
 }
