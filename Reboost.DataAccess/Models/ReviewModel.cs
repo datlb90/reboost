@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Reboost.Shared
+namespace Reboost.DataAccess.Models
 {
     public class ReviewModel
     {

@@ -9,7 +9,7 @@ namespace Reboost.DataAccess.Entities
     {
         public string UserId { get; set; }
         public int SectionId { get; set; }
-        public int Score { get; set; }
+        public double Score { get; set; }
         public System.DateTime UpdatedDate { get; set; }
 
         public virtual TestSections Section { get; set; }

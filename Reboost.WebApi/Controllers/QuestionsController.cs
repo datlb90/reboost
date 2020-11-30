@@ -56,6 +56,11 @@ namespace Reboost.WebApi.Controllers
         {
             return await _service.GetTasksAsync();
         }
-
+        [HttpGet]
+        [Route("summaryPerUser/{userId}")]
+        public async Task<List<SummeryPerUser>> GetSummaryByUserId([FromRoute] string userId)
+        {
+            return await _service.GetSummaryByUserId(userId);
+        }
     }
 }

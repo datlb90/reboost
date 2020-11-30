@@ -9,6 +9,9 @@ const questionService = {
   },
   getCountQuestionByTasks() {
     return http.get('/questions/summary').then(rs => rs.data)
+  },
+  getCountQuestionsByUser(userId) {
+    return http.get(`/questions/summaryPerUser/${userId}`).then(rs => rs.data)
   }
 }
 

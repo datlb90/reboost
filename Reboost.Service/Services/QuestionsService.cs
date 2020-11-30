@@ -18,6 +18,7 @@ namespace Reboost.Service.Services
         Task<List<Tasks>> GetTasksAsync();
         Task<Dictionary<string, int>> GetCountQuestionByTasksAsync();
         Task<IEnumerable<QuestionModel>> GetAllExAsync();
+        Task<List<SummeryPerUser>> GetSummaryByUserId(string UserId);
 
     }
     public class QuestionsService : BaseService, IQuestionsService
@@ -64,6 +65,11 @@ namespace Reboost.Service.Services
         public async Task<IEnumerable<QuestionModel>> GetAllExAsync()
         {
             return await _unitOfWork.Questions.GetAllExAsync();
+        }
+
+        public async Task<List<SummeryPerUser>> GetSummaryByUserId(string userId)
+        {
+            return await _unitOfWork.Questions.GetSummaryByUserId(userId);
         }
     }
 }

@@ -77,9 +77,7 @@
               { required: true, message: 'Occupation is required'}
             ]"
           >
-            <el-select v-model="formRegister.occupation" placeholder="Please select an suits you best" style="width: 100%;">
-              <el-option v-for="item in occupation" :key="item.id" :label="item.name" :value="item.name" />
-            </el-select>
+            <el-input v-model="formRegister.occupation" placeholder="Please input your occupation" />
           </el-form-item>
           <el-form-item
             label="First Language"
@@ -88,8 +86,13 @@
               { required: true, message: 'First Language is required'}
             ]"
           >
-            <el-select v-model="formRegister.firstLanguage" placeholder="Please select an suits you best" style="width: 100%;">
-              <el-option v-for="item in firstLanguage" :key="item.id" :label="item.name" :value="item.name" />
+            <el-select v-model="formRegister.firstLanguage" filterable placeholder="Please select your first language">
+              <el-option
+                v-for="item in firstLanguage"
+                :key="item.id"
+                :label="item.name"
+                :value="item.name"
+              />
             </el-select>
           </el-form-item>
           <el-form-item label="Apply to Become">
@@ -99,31 +102,42 @@
             </div>
           </el-form-item>
           <div v-if="formRegister.applyTo.IELTS">
-            <el-form-item label="IELTS Test Scores">
+            <el-form-item
+              label="IELTS Test Scores"
+              :rules="[
+                { required: true, message: 'IELTS Test Scores is required'}
+              ]"
+            >
               <el-row :gutter="24" style="display:flex; justify-content: space-between;">
                 <el-col :span="6">
                   <el-select v-model="formRegister.ieltsTestScore.writting" placeholder="Writting">
-                    <el-option v-for="item in score" :key="item" :label="item" :value="item" />
+                    <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                   </el-select>
                 </el-col>
                 <el-col :span="6">
-                  <el-select v-model="formRegister.ieltsTestScore.reading" placeholder="Writting">
-                    <el-option v-for="item in score" :key="item" :label="item" :value="item" />
+                  <el-select v-model="formRegister.ieltsTestScore.reading" placeholder="Reading">
+                    <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                   </el-select>
                 </el-col>
                 <el-col :span="6">
-                  <el-select v-model="formRegister.ieltsTestScore.listening" placeholder="Writting">
-                    <el-option v-for="item in score" :key="item" :label="item" :value="item" />
+                  <el-select v-model="formRegister.ieltsTestScore.listening" placeholder="Listening">
+                    <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                   </el-select>
                 </el-col>
                 <el-col :span="6">
-                  <el-select v-model="formRegister.ieltsTestScore.speaking" placeholder="Writting">
-                    <el-option v-for="item in score" :key="item" :label="item" :value="item" />
+                  <el-select v-model="formRegister.ieltsTestScore.speaking" placeholder="Speaking">
+                    <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                   </el-select>
                 </el-col>
               </el-row>
+              <div v-if="formRegister.applyTo.IELTS && !ieltsScoresIsNUll" style="font-size:12px; color: red;"> IELTS Test Scores is required </div>
             </el-form-item>
-            <el-form-item label="IELTS Credentials" prop="iELTSCertificatePhotos">
+            <el-form-item
+              label="IELTS Credentials"
+              prop="iELTSCertificatePhotos"
+              :rules="[
+                { required: true, message: 'IELTS Credentials Photos is required'}]"
+            >
               <el-upload class="upload-demo" action="" :file-list="formRegister.iELTSCertificatePhotos" :on-change="handleChangeIELTS" :on-remove="handleRemoveIELTS" :auto-upload="false" list-type="picture">
                 <el-button size="small" type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
@@ -133,31 +147,42 @@
             </el-form-item>
           </div>
           <div v-if="formRegister.applyTo.TOEFL">
-            <el-form-item label="TOEFL Test Scores">
+            <el-form-item
+              label="TOEFL Test Scores"
+              :rules="[
+                { required: true, message: 'TOEFL Test Scores is required'}
+              ]"
+            >
               <el-row :gutter="24" style="display:flex; justify-content: space-between;">
                 <el-col :span="6">
                   <el-select v-model="formRegister.toeflTestScore.writting" placeholder="Writting">
-                    <el-option v-for="item in score" :key="item" :label="item" :value="item" />
+                    <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                   </el-select>
                 </el-col>
                 <el-col :span="6">
                   <el-select v-model="formRegister.toeflTestScore.reading" placeholder="Reading">
-                    <el-option v-for="item in score" :key="item" :label="item" :value="item" />
+                    <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                   </el-select>
                 </el-col>
                 <el-col :span="6">
                   <el-select v-model="formRegister.toeflTestScore.listening" placeholder="Listening">
-                    <el-option v-for="item in score" :key="item" :label="item" :value="item" />
+                    <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                   </el-select>
                 </el-col>
                 <el-col :span="6">
                   <el-select v-model="formRegister.toeflTestScore.speaking" placeholder="Speaking">
-                    <el-option v-for="item in score" :key="item" :label="item" :value="item" />
+                    <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                   </el-select>
                 </el-col>
               </el-row>
+              <div v-if="formRegister.applyTo.TOEFL && !toeflScoresIsNUll" style="font-size:12px; color: red;"> TOEFL Test Scores is required </div>
             </el-form-item>
-            <el-form-item label="TOEFL Credentials" prop="tOEFLCertificatePhotos">
+            <el-form-item
+              label="TOEFL Credentials"
+              prop="tOEFLCertificatePhotos"
+              :rules="[
+                { required: true, message: 'TOEFL Credentials Photos is required'}]"
+            >
               <el-upload
                 class="upload-demo"
                 action=""
@@ -169,28 +194,43 @@
               >
                 <el-button size="small" type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
-                  <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.</p>
+                  <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
                 </div>
               </el-upload>
             </el-form-item>
           </div>
 
-          <el-form-item ref="photoId" label="Photo ID" prop="iDCardPhotos">
-            <el-upload class="upload-demo" action="" :file-list="formRegister.iDCardPhotos" :on-change="handleChangeIdPhoto" :on-remove="handleRemoveIdPhoto" :auto-upload="false" list-type="picture">
+          <el-form-item
+            label="Photo ID"
+            prop="iDCardPhotos"
+            :rules="[
+              { required: true, message: 'IDPhotos is required'}]"
+          >
+            <el-upload
+              class="upload-demo"
+              action=""
+              :file-list="formRegister.iDCardPhotos"
+              :on-change="handleChangeIdPhoto"
+              :on-remove="handleRemoveIdPhoto"
+              :auto-upload="false"
+              list-type="picture"
+            >
               <el-button size="small" type="primary">Click to upload</el-button>
               <div slot="tip" class="el-upload__tip">
                 <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.</p>
               </div>
             </el-upload>
           </el-form-item>
-          <el-form-item label="Biography">
+          <el-form-item
+            label="Biography"
+          >
             <el-input v-model="formRegister.biography" type="textarea" :rows="5" placeholder="Tell us a little bit about yourself and the reason why you apply to become our rater" />
           </el-form-item>
           <el-form-item v-if="raterId" label="Note">
             <el-input v-model="formRegister.note" type="textarea" :rows="5" placeholder="Note" />
           </el-form-item>
           <el-form-item>
-            <el-button v-if="!raterId" type="primary" @click="onSubmit('formRegister', 'create')">Submit</el-button>
+            <el-button v-if="!raterId" type="primary" @click="onSubmit('formRegister', 'create')">Create</el-button>
             <el-button v-if="!raterId">Cancel</el-button>
             <el-button v-if="raterId" class="button" size="medium" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
             <el-button v-if="raterId" class="button" size="medium" type="success" @click="updateStatus('Approved')">Approve</el-button>
@@ -206,6 +246,7 @@
 // @ is an alias to /src
 import raterService from '../../services/rater.service'
 import moment from 'moment'
+// import Notification from 'element-ui'
 import * as mapUtil from '@/utils/model-mapping'
 import * as stringUtil from '@/utils/string'
 
@@ -226,16 +267,16 @@ export default {
           TOEFL: false
         },
         ieltsTestScore: {
-          writting: 0,
-          reading: 0,
-          listening: 0,
-          speaking: 0
+          writting: null,
+          reading: null,
+          listening: null,
+          speaking: null
         },
         toeflTestScore: {
-          writting: 0,
-          reading: 0,
-          listening: 0,
-          speaking: 0
+          writting: null,
+          reading: null,
+          listening: null,
+          speaking: null
         },
         iDCardPhotos: [],
         iELTSCertificatePhotos: [],
@@ -244,29 +285,57 @@ export default {
         note: '',
         appliedDate: new Date()
       },
+      ieltsScores: [],
+      toeflScores: [],
       occupation: [],
       firstLanguage: [],
       gender: [],
-      raterId: ''
+      raterId: '',
+      toeflScoresIsNUll: true,
+      ieltsScoresIsNUll: true
     }
   },
   computed: {
-    score: function() {
-      var x = []
-      for (let i = 0; i <= 100; i++) { x.push(i) }
-      return x
-    }
+    // gender: function () {
+    //   return ['male', 'female']
+    // },
+    // occupation: function () {
+    //   var x = [];
+    //   for (let i = 0; i <= 5; i++)
+    //     x.push(i);
+    //   return x
+    // },
+    // firstLanguage() {
+    //   var x = [];
+    //   for (let i = 0; i <= 5; i++)
+    //     x.push(i);
+    //   return x
+    // }
   },
   mounted() {
     this.onLoad()
-    console.log(this.$store.state.auth.user.id)
   },
   methods: {
     onLoad() {
       const w = require('../../assets/defaultFormRaterData.json')
       this.firstLanguage = w.Languages
-      this.occupation = w.Occupation
       this.gender = w.Gender
+
+      for (let i = 0; i <= 9; i += 0.5) {
+        this.ieltsScores.push(i.toFixed(1))
+      }
+      for (let i = 0; i <= 30; i += 1) {
+        this.toeflScores.push(i)
+      }
+      // lookupService.getByType('OCCUPATION').then(rs => {
+      //   this.occupation = rs;
+      // });
+      // lookupService.getByType('FIRST_LANGUAGE').then(rs => {
+      //   this.firstLanguage = rs;
+      // });
+      // lookupService.getByType('GENDER').then(rs => {
+      //   this.gender = rs;
+      // });
 
       if (this.$route.params.id) {
         console.log('ID', this.$route.params.id)
@@ -329,8 +398,16 @@ export default {
     onSubmit(formName, createOrUpdate) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          console.log(this.formRegister)
-
+          this.toeflScoresIsNUll = this.TOEFLScoresRequiredCheck()
+          this.ieltsScoresIsNUll = this.IELTScoresRequiredCheck()
+          if ((!this.IELTScoresRequiredCheck() && this.formRegister.applyTo.IELTS) || (!this.TOEFLScoresRequiredCheck() && this.formRegister.applyTo.TOEFL)) {
+            this.$notify.error({
+              title: 'Error',
+              message: 'All Scores Are Required!',
+              duration: 2000
+            })
+            return
+          }
           const formData = new FormData()
 
           formData.set('User[firstName]', this.formRegister.firstName)
@@ -343,8 +420,7 @@ export default {
           formData.set('Status', 'Applied')
           formData.set('AppliedDate', moment().format('yyyy-MM-DD hh:mm:ss'))
           formData.set('LastActivityDate', moment().format('yyyy-MM-DD hh:mm:ss'))
-          console.log(this.$store.state.auth.user.id)
-          formData.set('UserId', this.$store.state.auth.user.id) // 'c7b56124-7d74-4017-841d-0447084240e4' // TODO: get current user id
+          formData.set('UserId', 'c7b56124-7d74-4017-841d-0447084240e4') // TODO: get current user id
 
           let count = 0
           for (const p of this.formRegister.iDCardPhotos) {
@@ -423,21 +499,21 @@ export default {
 
           if (createOrUpdate == 'create') {
             raterService.insert(formData).then(rs => {
-              this.$toasted.show('Upload success', {
-                icons: 'shopping_cart',
-                theme: 'bubble',
-                position: 'top-right',
-                duration: 3000
+              this.$notify({
+                title: 'Success',
+                message: 'Created success',
+                type: 'success',
+                duration: 2000
               })
             })
           } else if (createOrUpdate == 'update') {
             formData.set('Id', this.formRegister.id)
             raterService.update(formData).then(rs => {
-              this.$toasted.show('Update success', {
-                icons: 'shopping_cart',
-                theme: 'bubble',
-                position: 'top-right',
-                duration: 3000
+              this.$notify({
+                title: 'Success',
+                message: 'Update success',
+                type: 'success',
+                duration: 2000
               })
             })
           }
@@ -450,11 +526,10 @@ export default {
     updateStatus(status) {
       raterService.updateStatus(this.raterId, status).then(rs => {
         this.formRegister.status = status
-        this.$toasted.show('Update success', {
-          icons: 'shopping_cart',
-          theme: 'bubble',
-          position: 'top-right',
-          duration: 3000
+        this.$notify.error({
+          title: 'Error',
+          message: 'Error occured!',
+          duration: 2000
         })
       })
     },
@@ -475,6 +550,18 @@ export default {
     },
     handleRemoveTOEFL(file, fileList) {
       this.formRegister.tOEFLCertificatePhotos = fileList
+    },
+    TOEFLScoresRequiredCheck() {
+      if (this.formRegister.toeflTestScore.listening == null || this.formRegister.toeflTestScore.reading == null || this.formRegister.toeflTestScore.writting == null || this.formRegister.toeflTestScore.speaking == null) {
+        return false
+      }
+      return true
+    },
+    IELTScoresRequiredCheck() {
+      if (this.formRegister.ieltsTestScore.listening == null || this.formRegister.ieltsTestScore.reading == null || this.formRegister.ieltsTestScore.writting == null || this.formRegister.ieltsTestScore.speaking == null) {
+        return false
+      }
+      return true
     }
   }
 }

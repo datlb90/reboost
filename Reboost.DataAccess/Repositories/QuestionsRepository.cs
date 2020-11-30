@@ -16,6 +16,7 @@ namespace Reboost.DataAccess.Repositories
         Task<Dictionary<string, int>> CountQuestByTaskAsync();
         Task<List<QuestionModel>> GetAllExAsync();
         Task<QuestionModel> GetByIdAsync(int id);
+        Task<List<SummeryPerUser>> GetSummaryByUserId(string userId);
 
     }
     public class QuestionsRepository : Repository<Questions>, IQuestionsRepository
@@ -79,7 +80,7 @@ namespace Reboost.DataAccess.Repositories
                             Submission = result.GetFieldValue<int>("Submission"),
                             Like = result.GetFieldValue<int>("LikeCount"),
                             Status = result.GetFieldValue<string>("Status")
-                        }); ;
+                        });
                     }
 
                     return await Task.FromResult(entities);
@@ -92,7 +93,7 @@ namespace Reboost.DataAccess.Repositories
 
             using (var command = context.Database.GetDbConnection().CreateCommand())
             {
-                command.CommandText = "select q.Id as Id, q.Title, ts.Name as Test, q.type as Type, q.hasSample as Sample, t.Name as Section, q.AverageScore as AverageScore, q.SubmissionCount as Submission, q.LikeCount as LikeCount, q.DisLikeCount as DisLikeCount"
+                command.CommandText = "select q.Id as Id, q.Title, ts.Name as Test, q.type as Type, q.hasSample as Sample, t.Name as Section, q.AverageScore as AverageScore, q.SubmissionCount as Submission, q.LikeCount as LikeCount, q.DisLikeCount as DisLikeCount, t.Direction as Direction"
                     + " From Questions q"
                     + " INNER JOIN Tasks t ON q.TaskId = t.Id"
                     + " INNER JOIN TestSections s ON t.SectionId = s.Id"
@@ -118,7 +119,6 @@ namespace Reboost.DataAccess.Repositories
 
                     while (result.Read())
                     {
-
                         entities.Id = result.GetFieldValue<int>("Id");
                         entities.Title = result.GetFieldValue<string>("Title");
                         entities.Section = result.GetFieldValue<string>("Section");
@@ -128,9 +128,35 @@ namespace Reboost.DataAccess.Repositories
                         entities.AverageScore = result.GetFieldValue<string>("AverageScore");
                         entities.Submission = result.GetFieldValue<int>("Submission");
                         entities.Like = result.GetFieldValue<int>("LikeCount");
+                        entities.Direction = result.GetFieldValue<string>("Direction");
                         entities.Dislike = result.GetFieldValue<int>("DisLikeCount");
                         entities.QuestionsPart = resultPartsModel;
+                    }
+                    return await Task.FromResult(entities);
+                }
+            }
+        }
 
+        public async Task<List<SummeryPerUser>> GetSummaryByUserId(string userId)
+        {
+            using (var command = context.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = "Select Section, COUNT(Section) as Count From(select t.Name as Section, sm.UserId as UserId From Questions q INNER JOIN Tasks t ON q.TaskId = t.Id INNER JOIN TestSections s ON t.SectionId = s.Id INNER JOIN Tests ts ON s.TestId = ts.Id INNER JOIN Submissions sm ON q.Id = sm.QuestionId and sm.UserId = '" + userId + "') nq Group By Section";
+
+                command.CommandType = CommandType.Text;
+
+                context.Database.OpenConnection();
+
+                using (var result = command.ExecuteReader())
+                {
+                    var entities = new List<SummeryPerUser>();
+                    while (result.Read())
+                    {
+                        entities.Add(new SummeryPerUser
+                        {
+                            Section = result.GetFieldValue<string>("Section"),
+                            Count = result.GetFieldValue<int>("Count")
+                        });
                     }
                     return await Task.FromResult(entities);
                 }

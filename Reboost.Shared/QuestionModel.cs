@@ -17,7 +17,16 @@ namespace Reboost.Shared
         public int Like { get; set; }
         public int Dislike { get; set; }
         public string Status { get; set; }
+        public string Direction { get; set; }
+        public string UserId { get; set; }
+
         public List<QuestionPartModel> QuestionsPart { get; set; }
 
+    }
+
+    public class SummeryPerUser
+    {
+        public string Section { get; set; }
+        public int Count { get; set; }
     }
 }

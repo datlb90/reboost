@@ -10,6 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="iTextSharp" Version="5.5.13.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Reboost.Shared\Reboost.Shared.csproj" />
     <ProjectReference Include="..\Reboost.DataAccess\Reboost.DataAccess.csproj" />
   </ItemGroup>

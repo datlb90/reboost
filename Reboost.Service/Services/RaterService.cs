@@ -1,9 +1,11 @@
-﻿using Reboost.DataAccess;
+﻿using Microsoft.AspNetCore.Http;
+using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using Reboost.Shared;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,8 +16,8 @@ namespace Reboost.Service.Services
     {
         Task<IEnumerable<Raters>> GetAllAsync();
         Task<Raters> GetByIdAsync(int id);
-        Task<Raters> CreateAsync(Raters rater);
-        Task<Raters> UpdateAsync(Raters rater);
+        Task<Raters> CreateAsync(Raters rater, List<IFormFile> uploadFiles);
+        Task<Raters> UpdateAsync(Raters rater, List<IFormFile> uploadFiles);
         Task<Raters> UpdateStatusAsync(int id, string status);
         Task<Raters> DeleteAsync(int id);
         Task<List<string>> GetApplyTo(int raterId);
@@ -27,8 +29,15 @@ namespace Reboost.Service.Services
         {
 
         }
-        public async Task<Raters> CreateAsync(Raters rater)
+        public async Task<Raters> CreateAsync(Raters rater, List<IFormFile> uploadFiles)
         {
+            foreach (var item in rater.RaterCredentials)
+            {
+                var file = uploadFiles.FirstOrDefault(f => f.FileName == item.FileName);
+                if (file != null)
+                    item.Data = GetBytesFromFile(file);
+            }
+
             var existed = await _unitOfWork.Raters.GetByUserIdAsync(rater.UserId);
             if (existed != null)
             {
@@ -58,7 +67,7 @@ namespace Reboost.Service.Services
 
         public async Task<IEnumerable<Raters>> GetAllAsync()
         {
-            return await _unitOfWork.Raters.GetAllAsync();
+            return await _unitOfWork.Raters.GetAllAsync(null, "User");
         }
 
         public async Task<Raters> GetByIdAsync(int id)
@@ -70,8 +79,15 @@ namespace Reboost.Service.Services
             return await _unitOfWork.Raters.GetApplyTo(raterId);
         }
 
-        public async Task<Raters> UpdateAsync(Raters rater)
+        public async Task<Raters> UpdateAsync(Raters rater, List<IFormFile> uploadFiles)
         {
+            foreach (var item in rater.RaterCredentials)
+            {
+                var file = uploadFiles.FirstOrDefault(f => f.FileName == item.FileName);
+                if (file != null)
+                    item.Data = GetBytesFromFile(file);
+            }
+
             var user = await _unitOfWork.Users.GetByIdAsync(rater.UserId);
             if (user == null)
             {
@@ -93,6 +109,15 @@ namespace Reboost.Service.Services
             var rater = await _unitOfWork.Raters.GetByIdAsync(id);
             rater.Status = status;
             return await _unitOfWork.Raters.Update(rater);
+        }
+
+        private byte[] GetBytesFromFile(IFormFile formFile)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                formFile.CopyTo(memoryStream);
+                return memoryStream.ToArray();
+            }
         }
     }
 }

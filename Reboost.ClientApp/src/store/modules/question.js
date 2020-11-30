@@ -3,7 +3,8 @@ import questionService from '@/services/question.service'
 const state = {
   questions: [],
   selectedQuestion: {},
-  countQuestions: {}
+  countQuestions: {},
+  countQuestionsByUser: {}
 }
 
 const actions = {
@@ -22,6 +23,12 @@ const actions = {
       console.log('Action load count questions', result)
       commit('SET_COUNT_QUESTIONS', result)
     })
+  },
+  loadCountQuestionByUser({ commit }, id) {
+    questionService.getCountQuestionsByUser(id).then(result => {
+      console.log('Action load count question by user', result)
+      commit('SET_COUNT_QUESTION_BY_USER', result)
+    })
   }
 }
 
@@ -34,13 +41,17 @@ const mutations = {
   },
   SET_COUNT_QUESTIONS: (state, countQuestions) => {
     state.countQuestions = countQuestions
+  },
+  SET_COUNT_QUESTION_BY_USER: (state, countQuestionsByUser) => {
+    state.countQuestionsByUser = countQuestionsByUser
   }
 }
 
 const getters = {
   getAll: state => state.questions,
   getSelected: state => state.selectedQuestion,
-  getCountQuestionByTasks: state => state.countQuestions
+  getCountQuestionByTasks: state => state.countQuestions,
+  getCountQuestionsByUser: state => state.countQuestionsByUser
   // getSelected: state => state.selectedRater
 }
 

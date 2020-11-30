@@ -26,13 +26,19 @@ namespace Reboost.Service.Services
     public class DocumentService : IDocumentService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public DocumentService(IUnitOfWork unitOfWork)
+        private readonly IPDFService _pdfService;
+
+        public DocumentService(IUnitOfWork unitOfWork, IPDFService pdfServive)
         {
             this._unitOfWork = unitOfWork;
+            _pdfService = pdfServive;
         }
 
         public async Task<Documents> Create(Documents newDocument)
         {
+            newDocument.Status = "Submitted";
+            newDocument.CreatedDate = DateTime.Now;
+            newDocument.Data = _pdfService.WriteParagraph(newDocument.Text);
             return await _unitOfWork.Documents.Create(newDocument);
         }
 

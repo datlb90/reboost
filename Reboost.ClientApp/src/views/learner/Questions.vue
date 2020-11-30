@@ -8,13 +8,11 @@
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div class="left-content">
           <div class="completed">
-            <span>{{ getCountQuestionByTasks['Completed'] }}/{{ totalRow }} Completed</span>
+            <span> {{ taskCompleted }} /{{ totalRow }} Completed</span>
           </div>
           <div><span style="margin: 0 5px;">-</span></div>
-          <div v-for="(value, name) in getCountQuestionByTasks" :key="name.value">
-            <div v-if="name != 'Completed'" class="filter">
-              <span>{{ name }}: {{ value }}</span>
-            </div>
+          <div v-for="item in getCountQuestionByUser" :key="item">
+            <span class="filter">{{ item.section }}: {{ item.count }}</span>
           </div>
         </div>
         <div class="btnPickOne">
@@ -33,25 +31,24 @@
         <el-button @click="clearFilter">reset all filters</el-button>
       </div>
     </div>
-    <el-table ref="filterTable" :data="displayData" style="width: 100%" @row-click="rowClicked">
-      <el-table-column width="40">
+    <el-table ref="filterTable" :data="displayData" stripe style="width: 100%" @row-click="rowClicked">
+      <el-table-column prop="id" label="#" width="35" />
+      <el-table-column label="Title">
         <template slot-scope="scope">
-          <i v-if="scope.row.status == 'Active'" class="el-icon-check check" />
+          <span class="title-row">{{ scope.row.title }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="id" label="#" width="40" />
-      <el-table-column prop="title" label="Title" width="200" />
       <el-table-column
         prop="test"
         label="Test"
+        width="60"
         column-key="test"
-        :filters="filterTest"
-        :filter-method="filterHandler"
       />
       <el-table-column
         prop="section"
         label="Section"
         column-key="section"
+        width="170"
         :filters="filterSection"
         :filter-method="filterHandler"
       />
@@ -59,38 +56,39 @@
         prop="type"
         label="Type"
         column-key="type"
+        width="140"
         :filters="filterType"
         :filter-method="filterHandler"
       />
       <el-table-column
+        width="80"
         label="Sample"
-        :filters="filterSample"
-        :filter-method="filterHandler"
       >
         <template slot-scope="scope">
           <i v-if="scope.row.sample" class="el-icon-document" style="color: blue;" />
         </template>
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         prop="averageScore"
         label="Average Score"
         sortable
         width="150"
-      />
+      /> -->
       <el-table-column
         prop="submission"
         label="Submission"
         sortable
-        width="140"
+        width="130"
       />
-      <el-table-column prop="like" label="Like" sortable />
+      <el-table-column prop="like" label="Like" width="75" sortable />
+      <el-table-column label="Status" prop="status" width="70" />
     </el-table>
     <div class="pagination">
       <div class="current-page">
         <!-- <el-input-number v-model="rowPerPage" controls-position="right" @change="handleChangeRowPerPage" :min="1"></el-input-number> -->
         <!-- <input type="numer" min="1" v-model="currentPage">
         <ejs-numerictextbox v-bind:value='value'></ejs-numerictextbox> -->
-        <input v-model="rowPerPage" class="form-control text-box single-line" data-val="true" type="number" value="rowPerPage" style="width: 70px;">
+        <input v-model="rowPerPage" class="form-control text-box single-line" data-val="true" type="number" value="rowPerPage" style="width: 70px;" @change="handleChangeRowPerPage">
         <span style="margin-left: 10px">rows per page.</span>
       </div>
       <div class="pagination-page">
@@ -117,8 +115,6 @@ export default {
       textSearch: null,
       table: [],
       filterTest: [],
-      filterSection: [],
-      filterType: [],
       filterSample: [],
       completed: 5,
       total: 5,
@@ -129,15 +125,25 @@ export default {
       totalRow: 10,
       rowPerPage: 5,
       pageSize: 5,
-      summary: {
-        // "Independent Writing": 1,
-        // "Integrated Writing\r\n": 1,
-        // "Academic Writing Task 1\r\n": 1,
-        // "Academic Writing Task 2\r\n": 1,
-        // "General Training Task 1\r\n": 1,
-        // "General Training Task 2\r\n": 1,
-        // "Completed": 1
-      }
+      // filterTest: [
+      //   { text: "TOEFL", value: "TOEFL"},
+      //   { text: "IELTS", value: "IELTS"}
+      // ],
+      filterSection: [
+        { text: 'Independent Writing', value: 'Independent Writing' },
+        { text: 'Integrated Writing', value: 'Integrated Writing' },
+        { text: 'Academic Writing Task 1', value: 'Academic Writing Task 1' },
+        { text: 'Academic Writing Task 2', value: 'Academic Writing Task 2' },
+        { text: 'General Training Task 1', value: 'General Training Task 1' },
+        { text: 'General Training Task 2', value: 'General Training Task 2' }
+      ],
+      filterType: [
+        { text: 'Agree/Disagree', value: 'Agree/Disagree' },
+        { text: 'Summary', value: 'Summary' },
+        { text: 'Diagram Report', value: 'Diagram Report\r\n' },
+        { text: 'Discuss Views', value: 'Discuss Views' },
+        { text: 'Writing Letter', value: 'Writing Letter' }
+      ]
     }
   },
   computed: {
@@ -145,16 +151,24 @@ export default {
       var table = this.searching()
       return table.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
     },
+    taskCompleted() {
+      var data = this.getCountQuestionByUser
+      var count = 0
+      data.forEach(element => {
+        count += element.count
+      })
+      return count
+    },
     getAllQuestion() {
       return this.$store.getters['question/getAll']
     },
-    getCountQuestionByTasks() {
-      return this.$store.getters['question/getCountQuestionByTasks']
+    getCountQuestionByUser() {
+      return this.$store.getters['question/getCountQuestionsByUser']
     }
   },
   mounted() {
     this.$store.dispatch('question/loadQuestions')
-    this.$store.dispatch('question/loadCountQuestionsByTasks')
+    this.$store.dispatch('question/loadCountQuestionByUser', 'c7b56124-7d74-4017-841d-0447084240e4')
   },
   methods: {
     clearFilter() {
@@ -178,7 +192,8 @@ export default {
     //   this.page = val
     // },
     handleChangeRowPerPage(val) {
-      this.pageSize = val
+      console.log(typeof this.rowPerPage)
+      this.pageSize = +this.rowPerPage
     },
     rowClicked(row) {
       console.log('row', row)
@@ -190,11 +205,16 @@ export default {
       })
     },
     searching() {
+      const test = window.location.pathname
+      const new_test = test.slice(11,).toUpperCase()
       if (!this.textSearch) {
-        this.totalRow = this.getAllQuestion.length
-        return this.getAllQuestion
+        var table = this.getAllQuestion
+        table = table.filter(t => t.test == new_test)
+        this.totalRow = table.length
+        return table
       }
-      var table = this.getAllQuestion.filter(data => data.title.toLowerCase().includes(this.textSearch.toLowerCase()))
+      table = this.getAllQuestion.filter(data => data.title.toLowerCase().includes(this.textSearch.toLowerCase()))
+      table = table.filter(t => t.test == new_test)
       this.totalRow = table.length
       return table
     }
@@ -202,6 +222,30 @@ export default {
 }
 </script>
 <style scoped>
+.container {
+  margin-top: 20px;
+}
+
+.search {
+  width: 40%;
+}
+
+.searchAndBtn {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+}
+
+.pagination-container {
+  background: #fff;
+  padding: 32px 16px;
+}
+
+.pagination {
+  margin: 2rem;
+  width: 100%;
+  justify-content: center;
+}
 .left-content{
   display: flex;
   width: 85%;
@@ -244,7 +288,6 @@ export default {
 .pagination-page{
   display: flex;
   align-items: center;
-
 }
 .go-to-page{
   width: 50px;
@@ -252,5 +295,8 @@ export default {
 .current-page{
   display: flex;
   align-items: center;
+}
+.title-row{
+  font-weight: bold;
 }
 </style>

@@ -1,75 +1,54 @@
 <template>
   <el-row>
-    <el-col :span="18" :offset="3" class="padding-10">
+    <el-col :span="24" class="padding-10">
       <el-row>
-        <el-col :span="24" class="padding-10">
+        <el-col v-if="col != 24" :span="13" class="padding-10">
           <el-tabs type="border-card">
             <el-tab-pane label="Topic" style="padding: 0 5px;">
               <el-row>
                 <el-col style="padding: 0 10px; ">
                   <div style="display: flex; justify-content: space-between;">
                     <div>
-                      <div class="title-tab">1. Question Title</div>
-                      <div style="margin-top: 5px; display: flex;">
-                        <div style="font-size: 15px; color: #44ce6f; margin-right: 25px;">{{ getDataQuestion.test }} {{ getDataQuestion.title }}</div>
-                        <div style="display: flex;  margin-right: 20px;">
-                          <img class="img-icon" src="@/assets/img/like.png" alt="">
-                          <label for="" style="font-weight: 200; font-size: 13px;">{{ getDataQuestion.like }}</label>
-                        </div>
-                        <div style="display: flex;  margin-right: 20px;">
-                          <img class="img-icon" src="@/assets/img/dislike.png" alt="">
-                          <label for="" style="font-weight: 200; font-size: 13px;">{{ getDataQuestion.dislike }}</label>
-                        </div>
-                        <div style="display: flex;  margin-right: 20px;">
-                          <img class="img-icon" src="@/assets/img/heart.png" alt="">
-                          <label for="" style="font-weight: 200; font-size: 13px;">Add to List</label>
-                        </div>
-                        <div style="display: flex;  margin-right: 20px;">
-                          <img class="img-icon" src="@/assets/img/share.png" alt="">
-                          <label for="" style="font-weight: 200; font-size: 13px;">Share</label>
-                        </div>
-                      </div>
+                      <div v-if="!isShowListeningTab && getReading != ''" class="title-tab">1. Reading Passage</div>
+                      <div v-if="isShowListeningTab" class="title-tab">2. Reading Passage</div>
+                      <div v-if="getReading == '' && getChart != ''" class="title-tab">1. Chart Passage</div>
+                      <div v-if="getReading != '' && getChart != '' && isShowChart" class="title-tab">2. Chart Passage</div>
+                      <div style="margin-top: 5px; display: flex;" />
                     </div>
-                    <div style="display: flex; align-items: center;">
-                      <el-button type="success" @click="test()">SUBMIT</el-button>
-                    </div>
+
                   </div>
 
-                  <hr style="margin: 20px 0;">
-                  <div class="tip">
-                    <p style="line-height: 21px;"> <span style="font-weight: 600; font-size: 13px;">Direction: </span> Please use your best guess if you don't already have one</p>
-                  </div>
+                  <hr style="margin: 0;">
+
                 </el-col>
               </el-row>
               <el-row>
-                <el-col v-if="!isShowListeningTab && getReading != ''" :span="12" class="padding-10">
-                  <div style="width: 100%;">
-                    <div class="header-passage">
-                      READ A SHORT PASSAGE
-                    </div>
-                    <div class="body-passage">
-                      <div class="body-practice">
-                        <div class="tip" style="display: flex; align-items: center; justify-content: space-between;">
-                          <div>
-                            <p style="line-height: 21px;"> <span style="font-weight: 600; font-size: 13px;">Direction: </span> Please use your best guess if you don't already have one</p>
-                          </div>
-                          <div v-if="getListenting != ''" style="margin-left: 14px;">
-                            <el-button size="medium" class="btn-start" @click="toggleBtnShowTab()">START</el-button>
-                          </div>
-                        </div>
+                <div v-if="!isShowListeningTab && getReading != ''">
+                  <div class="body-practice">
+                    <div v-if="!closeTimer" class="tip" style="display: flex; align-items: center; justify-content: space-between;">
+                      <div style="flex-grow: 1;">
+                        <p style="line-height: 21px;"> <span style="font-weight: 600; font-size: 13px;">Direction: </span> Give yourseft 3 minutes to read the passage.</p>
                       </div>
-                      <div v-if="getReading != ''" class="body-practice">
-                        <p style="line-height: 21px; text-align: justify;"> {{ getReading.content }}</p>
+                      <div v-if="!isShowTimer">
+                        <el-button size="medium" @click="toggleBtnShowTab()">START</el-button>
+                      </div>
+                      <div v-if="getListenting != ''" style="margin-left: 14px;">
+                        <div v-if="isShowTimer && !closeTimer">
+                          {{ minute }} : {{ second }}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </el-col>
-                <el-col v-if="col == 12 && getReading =='' && getListenting != '' || isShowListeningTab" :span="12" class="padding-10">
-                  <div style="width: 100%;">
+                  <div v-if="getReading != ''" class="body-practice">
+                    <p v-if="isShowTimer && !closeTimer" style="line-height: 21px; text-align: justify;"> {{ getReading.content }}</p>
+                  </div>
+                </div>
+                <el-col v-if="col == 12 && getReading =='' && getListenting != '' || isShowListeningTab || getReading == ''" :span="24" class="padding-10">
+                  <div v-if="isShowListeningTab" style="width: 100%;">
                     <div class="header-passage" style="display:flex; justify-content: space-between;">
                       LISTEN TO PART OF LECTURE ON THE SAME TOPIC
                       <div v-if="getReading != ''">
-                        <el-button size="medium" class="btn-start" @click="toggleBtnShowTab()">Back</el-button>
+                        <el-button size="medium" @click="BackClick()">Back</el-button>
                       </div>
                     </div>
                     <div class="body-passage">
@@ -95,21 +74,19 @@
                       </div>
                     </div>
                   </div>
-                </el-col>
-                <el-col :span="col" class="padding-10" style="height: 100%;">
-                  <el-row style="margin-bottom: 15px;">
-                    <el-col :span="24" class="question-con">
-                      <span style="font-weight: bold;">Question:</span>
-                      {{ getQuestion.content }}
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col>
-                      <div style="height: 100%">
-                        <editor-text api-key="biyg6d0lkbqha5om2iu2q5i4qq0ecq58nlrn5n2wd9b5vtuh" style="height: 800px" :init="initTextArea" />
+                  <div v-if="isShowChart || (getReading == '' && getChart != '')" style="width: 100%;">
+                    <div class="header-passage" style="display:flex; justify-content: space-between;">
+                      CHART
+                      <div v-if="getReading != ''">
+                        <el-button @click="BackClick()">Back</el-button>
                       </div>
-                    </el-col>
-                  </el-row>
+                    </div>
+                    <div class="body-passage" />
+                    <div class="body-practice" style="padding: 30px;" />
+                    <div style="display: flex; justify-content: center;">
+                      <img src="../../assets/chart/1.png" :alt="getChart.content" style="max-height: 300px; max-width: 500px;">
+                    </div>
+                  </div>
                 </el-col>
               </el-row>
             </el-tab-pane>
@@ -117,6 +94,64 @@
             <el-tab-pane label="Discussions">Discussions</el-tab-pane>
             <el-tab-pane label="Similiar">Similiar</el-tab-pane>
           </el-tabs>
+        </el-col>
+        <el-col :span="col" class="padding-10">
+          <el-row>
+            <el-col style="padding: 0 10px; ">
+              <div style="display: flex; justify-content: space-between;">
+                <div>
+                  <div class="title-tab">1. {{ getDataQuestion.title }}</div>
+                  <div style="margin-top: 5px; display: flex;">
+                    <div style="font-size: 15px; color: #44ce6f; margin-right: 25px;">{{ getDataQuestion.test }} {{ getDataQuestion.section }}</div>
+                    <div style="display: flex;  margin-right: 20px;">
+                      <img class="img-icon" src="../../assets/img/like.png" alt="">
+                      <label for="" style="font-weight: 200; font-size: 13px;">{{ getDataQuestion.like }}</label>
+                    </div>
+                    <div style="display: flex;  margin-right: 20px;">
+                      <img class="img-icon" src="../../assets/img/dislike.png" alt="">
+                      <label for="" style="font-weight: 200; font-size: 13px;">{{ getDataQuestion.dislike }}</label>
+                    </div>
+                    <div style="display: flex;  margin-right: 20px;">
+                      <img class="img-icon" src="../../assets/img/heart.png" alt="">
+                      <label for="" style="font-weight: 200; font-size: 13px;">Add to List</label>
+                    </div>
+                    <div style="display: flex;  margin-right: 20px;">
+                      <img class="img-icon" src="../../assets/img/share.png" alt="">
+                      <label for="" style="font-weight: 200; font-size: 13px;">Share</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr style="margin: 20px 0;">
+              <div class="tip">
+                <p style="line-height: 21px;"> <span style="font-weight: 600; font-size: 13px;">Direction: </span>{{ getDataQuestion.direction }}</p>
+              </div>
+            </el-col>
+          </el-row>
+          <el-col :span="24" class="padding-10" style="height: 100%;">
+            <el-row style="margin-bottom: 15px;">
+              <el-col :span="24" class="question-con">
+                <span style="font-weight: bold;">Question:</span>
+                {{ getQuestion.content }}
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col>
+                <div style="height: 100%">
+                  <div class="header-passage" style="display:flex; justify-content: space-between; border: 1px solid #ccc; border-bottom: none;">
+                    <div v-if="getQuestion != ''">
+                      <el-button @click="ToggleShowCount()">Hide Word Count</el-button>
+                    </div>
+                    <div v-if="getQuestion != ''">
+                      <el-button @click="Submit()">Submit & Request Review</el-button>
+                    </div>
+                  </div>
+                  <editor-text api-key="biyg6d0lkbqha5om2iu2q5i4qq0ecq58nlrn5n2wd9b5vtuh" :init="initTextArea" @PreInit="ToggleShowCount()" />
+                </div>
+              </el-col>
+            </el-row>
+          </el-col>
         </el-col>
       </el-row>
     </el-col>
@@ -127,6 +162,7 @@
 // @ is an alias to /src
 // import http from '@/utils/axios'
 import Editor from '@tinymce/tinymce-vue'
+import questionService from '../../services/question.service'
 export default {
   name: 'PracticeWriting',
   components: {
@@ -136,16 +172,22 @@ export default {
     return {
       textarea: '',
       initTextArea: {
-        height: 400,
+        height: 430,
         selector: 'textarea', // change this value according to your HTML
         plugins: 'wordcount',
         toolbar: '',
         content_style: 'body { line-height: 5px; font-size: 15px; }',
         menubar: false,
-        branding: false
+        branding: false,
+        placeholder: 'Write your essay here...'
       },
+      isShowTimer: false,
       isShowListeningTab: false,
-      isShowScript: false
+      isShowChart: false,
+      isShowScript: false,
+      minute: 0,
+      second: 1,
+      closeTimer: false
     }
   },
   computed: {
@@ -158,7 +200,9 @@ export default {
     },
     getReading() {
       if (typeof (this.getDataQuestionParts) != 'undefined') {
-        if (this.getDataQuestionParts.find(u => u.name == 'Reading')) { return this.getDataQuestionParts.find(u => u.name == 'Reading') }
+        if (this.getDataQuestionParts.find(u => u.name == 'Reading')) {
+          return this.getDataQuestionParts.find(u => u.name == 'Reading')
+        }
       }
       return ''
     },
@@ -172,24 +216,36 @@ export default {
     },
     getQuestion() {
       if (typeof (this.getDataQuestionParts) != 'undefined') {
-        if (this.getDataQuestionParts.find(u => u.name == 'Question')) { return this.getDataQuestionParts.find(u => u.name == 'Question') }
+        if (this.getDataQuestionParts.find(u => u.name == 'Question')) {
+          return this.getDataQuestionParts.find(u => u.name == 'Question')
+        }
       }
       return ''
     },
     col() {
       if (typeof (this.getDataQuestionParts) != 'undefined') {
-        if (!this.getDataQuestionParts.find(u => u.name == 'Reading' || u.name == 'Listening')) {
+        if (this.getDataQuestionParts.length == 1) {
           return 24
         }
       }
-      return 12
+      return 11
     },
-    // getChart(){
-    //   return this.getDataQuestionParts.find(u => u.name == "Chart")
-    // },
+    getChart() {
+      if (typeof (this.getDataQuestionParts) != 'undefined') {
+        if (this.getDataQuestionParts.find(u => u.name == 'Chart')) {
+          var chart = this.getDataQuestionParts.find(u => u.name == 'Chart')
+          chart.content = '../../assets/' + chart.content.trim()
+          return chart
+        }
+      }
+      return ''
+      // return this.getDataQuestionParts.find(u => u.name == "Chart")
+    },
     getTranscript() {
       if (typeof (this.getDataQuestionParts) != 'undefined') {
-        if (this.getDataQuestionParts.find(u => u.name == 'Transcript')) { return this.getDataQuestionParts.find(u => u.name == 'Transcript') }
+        if (this.getDataQuestionParts.find(u => u.name == 'Transcript')) {
+          return this.getDataQuestionParts.find(u => u.name == 'Transcript')
+        }
       }
       return ''
     }
@@ -198,12 +254,39 @@ export default {
     this.$store.dispatch('question/loadQuestion', +this.$route.params.id)
   },
   methods: {
-    test() {},
+    Submit() {
+      var data = {
+        filename: new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() + new Date().getDate().toString() + new Date().getHours().toString() + new Date().getMinutes().toString() + new Date().getSeconds().toString() + '.pdf',
+        text: '123'
+      }
+      // console.log(data);
+      questionService.createDocument(data)
+    },
     toggleBtnShowTab() {
-      this.isShowListeningTab = !this.isShowListeningTab
+      // this.isShowListeningTab = !this.isShowListeningTab;
+      this.isShowTimer = true
+      var abc = setInterval(() => {
+        this.second--
+        if (this.second < 0) {
+          this.second = 59
+          this.minute--
+          if (this.minute < 0) {
+            clearInterval(abc)
+            if (this.getListenting != '') { this.isShowListeningTab = true }
+            if (this.getChart != '') { this.isShowChart = true }
+          }
+        }
+      }, 1000)
+    },
+    BackClick() {
+      this.isShowListeningTab = false
+      this.closeTimer = true
     },
     toggleBtnShowScript() {
       this.isShowScript = !this.isShowScript
+    },
+    ToggleShowCount() {
+      this.initTextArea.height = 3000
     }
   }
 }
@@ -225,7 +308,7 @@ export default {
 }
 
 .header-passage {
-  padding: 0 20px;
+  padding: 5px 10px;
   min-height: 40px;
   line-height: 37px;
   font-size: 13px;
@@ -276,14 +359,18 @@ export default {
 }
 
 .tip {
-  padding: 5px 14px;
+  padding: 10px 15px;
   background-color: #ecf8ff;
   border-radius: 4px;
   border-left: 5px solid #50bfff;
 }
 
-.script-select:hover{
+.script-select:hover {
   cursor: pointer;
   background-color: #f5f7fa;
+}
+
+.el-tab-pane {
+  min-height: 650px;
 }
 </style>
