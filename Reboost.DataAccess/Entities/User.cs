@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Reboost.DataAccess.Entities;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 
 namespace Reboost.DataAccess.Entities
 {
-    [Table("AspNetUsers")]
     public class User
     {
-        [Key]
         public string Id { get; set; }
 
         public string FirstName { get; set; }
@@ -18,5 +19,14 @@ namespace Reboost.DataAccess.Entities
         public string Username { get; set; }
 
         public virtual ICollection<UserScores> UserScores { get; set; }
+    }
+
+    public class UserConfiguration
+    {
+        public UserConfiguration(EntityTypeBuilder<User> entity)
+        {
+            entity.ToTable("AspNetUsers", "dbo");
+            entity.HasKey(e => e.Id);
+        }
     }
 }

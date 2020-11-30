@@ -147,7 +147,7 @@
                       <el-button @click="Submit()">Submit & Request Review</el-button>
                     </div>
                   </div>
-                  <editor-text api-key="biyg6d0lkbqha5om2iu2q5i4qq0ecq58nlrn5n2wd9b5vtuh" :init="initTextArea" @PreInit="ToggleShowCount()" />
+                  <editor-text v-model="writingContent" api-key="biyg6d0lkbqha5om2iu2q5i4qq0ecq58nlrn5n2wd9b5vtuh" :init="initTextArea" @PreInit="ToggleShowCount()" />
                 </div>
               </el-col>
             </el-row>
@@ -162,7 +162,7 @@
 // @ is an alias to /src
 // import http from '@/utils/axios'
 import Editor from '@tinymce/tinymce-vue'
-import questionService from '../../services/question.service'
+import documentService from '../../services/document.service'
 export default {
   name: 'PracticeWriting',
   components: {
@@ -187,7 +187,8 @@ export default {
       isShowScript: false,
       minute: 0,
       second: 1,
-      closeTimer: false
+      closeTimer: false,
+      writingContent: ''
     }
   },
   computed: {
@@ -257,10 +258,10 @@ export default {
     Submit() {
       var data = {
         filename: new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() + new Date().getDate().toString() + new Date().getHours().toString() + new Date().getMinutes().toString() + new Date().getSeconds().toString() + '.pdf',
-        text: '123'
+        text: this.writingContent
       }
       // console.log(data);
-      questionService.createDocument(data)
+      documentService.submitDocument(data)
     },
     toggleBtnShowTab() {
       // this.isShowListeningTab = !this.isShowListeningTab;

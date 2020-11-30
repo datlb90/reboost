@@ -311,12 +311,16 @@ export default {
     //     x.push(i);
     //   return x
     // }
+    currentUser() {
+      return this.$store.getters['auth/getUser']
+    }
   },
   mounted() {
     this.onLoad()
   },
   methods: {
     onLoad() {
+      console.log('CURRENT USER', this.currentUser)
       const w = require('../../assets/defaultFormRaterData.json')
       this.firstLanguage = w.Languages
       this.gender = w.Gender
@@ -420,7 +424,7 @@ export default {
           formData.set('Status', 'Applied')
           formData.set('AppliedDate', moment().format('yyyy-MM-DD hh:mm:ss'))
           formData.set('LastActivityDate', moment().format('yyyy-MM-DD hh:mm:ss'))
-          formData.set('UserId', 'c7b56124-7d74-4017-841d-0447084240e4') // TODO: get current user id
+          formData.set('UserId', this.currentUser.id) // TODO: get current user id
 
           let count = 0
           for (const p of this.formRegister.iDCardPhotos) {

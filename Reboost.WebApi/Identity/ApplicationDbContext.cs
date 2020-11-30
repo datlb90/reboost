@@ -11,10 +11,5 @@ namespace Reboost.WebApi.Identity
         {
 
         }
-
-        //protected override void OnModelCreating(ModelBuilder builder)
-        //{
-        //    base.OnModelCreating(builder);
-        //}
     }
 }

@@ -6,7 +6,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Reboost.WebApi.Identity
 {
-    //[Table("AspNetUsers")]
     public class ApplicationUser : IdentityUser
     {
        public virtual ICollection<UserScores> UserScores { get; set; }
