@@ -104,7 +104,7 @@ export default {
         Role: 'Rater'
       })
       if (user) {
-        this.$router.push('/rater/apply')
+        this.$router.push('/rater/application')
       }
     }
   }

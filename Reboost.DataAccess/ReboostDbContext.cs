@@ -41,6 +41,9 @@ namespace Reboost.DataAccess
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            base.OnModelCreating(builder);
+            new UserConfiguration(builder.Entity<User>());
+
             //builder.Entity<Raters>()
             //        .HasMany(c => c.Photos)
             //        .WithOne(e => e.Rater)
