@@ -10,6 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ExcelDataReader" Version="3.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Reboost.Shared\Reboost.Shared.csproj" />
     <ProjectReference Include="..\Reboost.DataAccess\Reboost.DataAccess.csproj" />
   </ItemGroup>

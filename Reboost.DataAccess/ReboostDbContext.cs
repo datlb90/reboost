@@ -24,6 +24,7 @@ namespace Reboost.DataAccess
         public virtual DbSet<Reviews> Reviews { get; set; }
         public virtual DbSet<RubricCriteria> RubricCriteria { get; set; }
         public virtual DbSet<Rubrics> Rubrics { get; set; }
+        public virtual DbSet<Samples> Samples { get; set; }
         public virtual DbSet<Submissions> Submissions { get; set; }
         public virtual DbSet<sysdiagrams> sysdiagrams { get; set; }
         public virtual DbSet<Tasks> Tasks { get; set; }

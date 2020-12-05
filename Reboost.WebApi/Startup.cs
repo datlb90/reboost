@@ -113,8 +113,11 @@ namespace Reboost.WebApi
             services.AddScoped<IRaterService, RaterService>();
             services.AddScoped<ILookUpService, LookUpService>();
             services.AddScoped<IQuestionsService, QuestionsService>();
+            services.AddScoped<IQuestionPartService, QuestionPartService>();
+            services.AddScoped<ISampleService, SampleService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IDataIngestionService, DataIngestionService>();
             services.AddTransient<IMailService, SendGridMailService>();
 
 
@@ -153,6 +156,8 @@ namespace Reboost.WebApi
                     name: "spa-fallback",
                     defaults: new { controller = "CatchAll", action = "Index" });
             });
+
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
             //app.UseEndpoints(endpoints =>
             //{

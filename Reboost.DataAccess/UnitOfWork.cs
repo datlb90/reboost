@@ -11,8 +11,9 @@ namespace Reboost.DataAccess
         IRaterRepository Raters { get; }
         ILookUpRepository LookUps { get; }
         IQuestionsRepository Questions { get; }
+        IQuestionPartRepository QuestionParts { get; }
+        ISampleRepository Samples { get; }
         IUserRepository Users { get; }
-
         Task<int> CommitAsync();
     }
 
@@ -24,6 +25,8 @@ namespace Reboost.DataAccess
         private RaterRepository _raterRepository;
         private LookUpRepository _lookUpRepository;
         private QuestionsRepository _questionsRepository;
+        private QuestionPartRepository _questionPartRepository;
+        private SampleRepository _sampleRepository;
         private UserRepository _userRepository;
 
         public UnitOfWork(ReboostDbContext context)
@@ -36,7 +39,10 @@ namespace Reboost.DataAccess
         public IRaterRepository Raters => _raterRepository = _raterRepository ?? new RaterRepository(_context);
         public ILookUpRepository LookUps => _lookUpRepository = _lookUpRepository ?? new LookUpRepository(_context);
         public IQuestionsRepository Questions => _questionsRepository = _questionsRepository ?? new QuestionsRepository(_context);
+        public IQuestionPartRepository QuestionParts => _questionPartRepository = _questionPartRepository ?? new QuestionPartRepository(_context);
+        public ISampleRepository Samples => _sampleRepository = _sampleRepository ?? new SampleRepository(_context);
         public IUserRepository Users => _userRepository = _userRepository ?? new UserRepository(_context);
+        
         public async Task<int> CommitAsync()
         {
             return await _context.SaveChangesAsync();
