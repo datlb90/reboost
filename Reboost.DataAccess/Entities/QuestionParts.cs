@@ -9,7 +9,6 @@ namespace Reboost.DataAccess.Entities
         public int QuestionId { get; set; }
         public string Name { get; set; }
         public string Content { get; set; }
-        public int order { get; set; }
-        public virtual Questions Question { get; set; }
+        public int Order { get; set; }
     }
 }

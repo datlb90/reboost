@@ -12,6 +12,7 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IQuestionsRepository : IRepository<Questions>
     {
+        Task<Questions> GetByTitle(string title);
         Task<List<Tasks>> GetTaskAsync();
         Task<Dictionary<string, int>> CountQuestByTaskAsync();
         Task<List<QuestionModel>> GetAllExAsync();
@@ -26,6 +27,11 @@ namespace Reboost.DataAccess.Repositories
     {
         public QuestionsRepository(ReboostDbContext context) : base(context)
         { }
+
+        public async Task<Questions> GetByTitle(string title)
+        {
+            return await ReboostDbContext.Questions.Where(q => q.Title == title).FirstOrDefaultAsync();
+        }
 
         public async Task<List<Tasks>> GetTaskAsync()
         {

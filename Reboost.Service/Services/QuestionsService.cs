@@ -10,6 +10,7 @@ namespace Reboost.Service.Services
 {
     public interface IQuestionsService
     {
+        Task<Questions> GetByTitle(string title);
         Task<IEnumerable<Questions>> GetAllAsync();
         Task<QuestionModel> GetByIdAsync(int id);
         Task<Questions> CreateAsync(Questions question);
@@ -30,6 +31,12 @@ namespace Reboost.Service.Services
         {
 
         }
+
+        public async Task<Questions> GetByTitle(string title)
+        {
+            return await _unitOfWork.Questions.GetByTitle(title);
+        }
+
         public async Task<Questions> CreateAsync(Questions question)
         {
             return await _unitOfWork.Questions.Create(question);
