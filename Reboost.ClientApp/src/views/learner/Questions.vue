@@ -144,71 +144,20 @@ export default {
     currentUser() {
       return this.$store.getters['auth/getUser']
     },
-    // displayData() {
-    //   var table = this.searching()
-    //   return table.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
-    // },
     taskCompleted() {
       return this.summary.reduce((prev, cur) => (prev + cur.count), 0)
     }
-    // handlingData() {
-    //   var table = this.questions
-    //   var listQuestionCompleted = this.getStatusQuestion
-    //   table.forEach(rs => {
-    //     var check = listQuestionCompleted.filter(r => rs.Id == r)
-    //     if (check) {
-    //       rs.status = 'Completed'
-    //     } else {
-    //       rs.status = 'To do'
-    //     }
-    //   })
-    //   return table
-    // },
-    // handlingSummary() {
-    //   const testName = this.loadTest
-    //   var data = this.getCountQuestionByUser
-    //   if (testName.length == 2) {
-    //     return data
-    //   }
-    //   data = data.filter(rs => rs.name == testName[0])
-    //   console.log('data', data)
-    //   return data
-    // }
-    // getAllQuestion() {
-    //   return this.$store.getters['question/getAll']
-    // },
-    // getCountQuestionByUser() {
-    //   return this.$store.getters['question/getCountQuestionsByUser']
-    // },
-    // getTestByUser() {
-    //   return this.$store.getters['question/getTestByUser']
-    // },
-    // getStatusQuestion() {
-    //   return this.$store.getters['question/getStatusQuestion']
-    // }
   },
   mounted() {
     this.$store.dispatch('question/loadAllQuestionByUser', this.currentUser.id).then(questions => {
-      // console.log('QUESTION LOAD COMPLETED', this.$store.getters['question/getAll'])
       this.questionCached = this.$store.getters['question/getAll']
       this.totalRow = this.questionsCount = this.questionCached.length
 
       this.loadTable()
     })
-    // this.$store.dispatch('question/loadQuestions').then(() => {
-    //   this.questions = this.$store.getters['question/getAll']
-    // })
     this.$store.dispatch('question/loadSummaryByUser', this.currentUser.id).then(() => {
-      // this.countQuestions = this.$store.getters['question/getCountQuestionsByUser']
-      console.log('QUESTION_SUMMARY', this.$store.getters['question/getSummaryByUser'])
       this.summary = this.$store.getters['question/getSummaryByUser']
     })
-    // this.$store.dispatch('question/loadTestByUser', this.currentUser.id).then(() => {
-    //   this.loadTest = this.$store.getters['question/getTestByUser']
-    // })
-    // this.$store.dispatch('question/loadStatusQuestion', this.currentUser.id).then(() => {
-    //   this.loadStatus = this.$store.getters['question/getStatusQuestion']
-    // })
   },
   methods: {
     loadTable() {
@@ -224,19 +173,6 @@ export default {
       this.filterSection = Object.keys(_.groupBy(this.questions, 'section')).map(k => ({ text: k, value: k }))
       this.filterType = Object.keys(_.groupBy(this.questions, 'type')).map(k => ({ text: k, value: k }))
     },
-    // loadSummary() {
-    //   const usersByColor = users.reduce((acc, value) => {
-    //     // Group initialization
-    //     if (!acc[value.color]) {
-    //       acc[value.color] = []
-    //     }
-
-    //     // Grouping
-    //     acc[value.color].push(value)
-
-    //     return acc
-    //   }, {})
-    // },
     clearFilter() {
       this.$refs.filterTable.clearFilter()
       this.textSearch = ''
@@ -257,9 +193,6 @@ export default {
       this.page = val
       this.loadTable()
     },
-    // handleCurrentChange(val) {
-    //   this.page = val
-    // },
     handleChangeRowPerPage(val) {
       console.log(typeof this.rowPerPage)
       this.pageSize = +this.rowPerPage
@@ -275,39 +208,6 @@ export default {
     },
     search() {
       this.loadTable()
-      // const testName = this.loadTest
-      // var table = this.handlingData
-      // this.filterType = []
-      // this.filterSection = []
-      // for (const i of table) {
-      //   var section = { text: i.section, value: i.section }
-      //   var type = { text: i.type, value: i.type }
-      //   this.filterSection.push(section)
-      //   this.filterType.push(type)
-      // }
-
-      // this.filterSection = this.filterSection.filter((item, index) => this.filterSection.indexOf(item) === index)
-      // this.filterType = this.filterType.filter((item, index) => this.filterType.indexOf(item) === index)
-
-      // console.log(table)
-      // if (testName.length == 2) {
-      //   if (!this.textSearch) {
-      //     this.totalRow = table.length
-      //     return table
-      //   }
-      //   table = table.filter(data => data.title.toLowerCase().includes(this.textSearch.toLowerCase()))
-      //   this.totalRow = table.length
-      //   return table
-      // } else {
-      //   table = table.filter(data => data.test.includes(testName[0]))
-      //   if (!this.textSearch) {
-      //     this.totalRow = table.length
-      //     return table
-      //   }
-      //   table = table.filter(data => data.title.toLowerCase().includes(this.textSearch.toLowerCase()))
-      //   this.totalRow = table.length
-      //   return table
-      // }
     }
   }
 }
