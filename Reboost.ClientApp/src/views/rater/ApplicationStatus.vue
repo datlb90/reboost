@@ -20,18 +20,18 @@
             <div class="">
               <el-tag
                 :type="
-                  status === 'In Review'
+                  status === 'Applied'
                     ? 'primary'
                     :status === 'Verified'
                       ? 'success'
                       :status === 'Denied'
                         ? 'danger'
-                        : 'danger'
+                        : 'warning'
                 "
               >{{ status }}</el-tag>
             </div>
           </div>
-          <div :class="[status === 'In Review' ? 'inReview' : 'hidden']">
+          <div :class="[status === 'Applied' ? 'inReview' : 'hidden']">
             <p>Thank you for applying. Your application is curretly in review. We will notify you via email if your application is approved, denied, or if we need additional information.</p>
           </div>
           <div :class="[status === 'Verified' ? 'verified' : 'hidden']">
@@ -45,16 +45,18 @@
           <div v-if="status==='Verified'" class="button-container">
             <el-button>Complete Training Now</el-button>
           </div>
-          <div class="note-container">
+          <div v-if="note && note.length" class="note-container">
             <div class="label-container">
               Note
             </div>
-            <el-input
-              v-model="note"
-              type="textarea"
-              :rows="2"
-              placeholder="Please input"
-            />
+            <div>
+              <el-input
+                v-model="note"
+                type="textarea"
+                :rows="2"
+                placeholder="Please input"
+              />
+            </div>
           </div>
         </div>
       </el-col>
@@ -76,8 +78,8 @@ export default {
       inReview: true,
       verified: true,
       denied: true,
-      status: 'In Review',
-      note: ''
+      status: '',
+      note: undefined
     }
   },
   computed: {
@@ -98,6 +100,7 @@ export default {
       raterService.getById(id).then(rs => {
         console.log('result load detail', rs)
         this.status = rs.status
+        this.note = rs.note
       })
     }
   }

@@ -14,7 +14,7 @@ namespace Reboost.DataAccess.Repositories
         //Task<LookUp> GetByIdAsync(int id);
         Task<List<LookUp>> GetByType(string type);
     }
-    public class LookUpRepository : Repository<LookUp>, ILookUpRepository
+    public class LookUpRepository : BaseRepository<LookUp>, ILookUpRepository
     {
         public LookUpRepository(ReboostDbContext context) : base(context)
         { }

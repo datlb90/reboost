@@ -12,7 +12,7 @@ namespace Reboost.DataAccess.Repositories
         Task<RequestQueue> GetTopPriorityRequest();
     }
 
-    public class RequestQueueRepository : Repository<RequestQueue>, IRequestQueueRepository
+    public class RequestQueueRepository : BaseRepository<RequestQueue>, IRequestQueueRepository
     {
         public RequestQueueRepository(ReboostDbContext context)
            : base(context)

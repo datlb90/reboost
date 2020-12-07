@@ -19,6 +19,10 @@ namespace Reboost.Service.Services
         Task<List<Tasks>> GetTasksAsync();
         Task<Dictionary<string, int>> GetCountQuestionByTasksAsync();
         Task<IEnumerable<QuestionModel>> GetAllExAsync();
+        Task<IEnumerable<QuestionModel>> GetAllByUserAsync(string userId);
+        Task<List<SummaryPerUser>> GetSummaryByUserId(string UserId);
+        Task<List<string>> GetTestForCurrentUsers(string UserId);
+        Task<List<int>> GetQuestionCompletedIdByUser(string UserId);
 
     }
     public class QuestionsService : BaseService, IQuestionsService
@@ -71,6 +75,25 @@ namespace Reboost.Service.Services
         public async Task<IEnumerable<QuestionModel>> GetAllExAsync()
         {
             return await _unitOfWork.Questions.GetAllExAsync();
+        }
+        public async Task<IEnumerable<QuestionModel>> GetAllByUserAsync(string userId)
+        {
+            return await _unitOfWork.Questions.GetAllByUserAsync(userId);
+        }
+
+        public async Task<List<SummaryPerUser>> GetSummaryByUserId(string userId)
+        {
+            return await _unitOfWork.Questions.GetSummaryByUserId(userId);
+        }
+
+        public async Task<List<string>> GetTestForCurrentUsers(string UserId)
+        {
+            return await _unitOfWork.Questions.GetTestForCurrentUsers(UserId);
+        }
+
+        public async Task<List<int>> GetQuestionCompletedIdByUser(string UserId)
+        {
+            return await _unitOfWork.Questions.GetQuestionCompletedIdByUser(UserId);
         }
     }
 }

@@ -91,6 +91,9 @@ export default {
       var x = []
       for (let i = 0; i <= 100; i++) { x.push(i) }
       return x
+    },
+    currentUser() {
+      return this.$store.getters['auth/getUser']
     }
   },
   methods: {
@@ -111,7 +114,7 @@ export default {
         })
       }
       if (this.scoreIELTS || this.scoreTOEFL) {
-        userService.addScore('260f3f38-c19e-4d65-80f3-8112998af02e', data)
+        userService.addScore(this.currentUser.id, data)
         this.$router.push('/questions')
       }
     },

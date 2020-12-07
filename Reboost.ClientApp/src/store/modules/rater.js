@@ -8,7 +8,14 @@ const state = {
 const actions = {
   loadRaters({ commit }) {
     raterService.getAll().then(result => {
+      result.forEach(rater => {
+        if (rater.user) {
+          rater.fullName = rater.user.firstName + ' ' + rater.user.lastName
+        }
+      })
+
       console.log('Action load raters', result)
+
       commit('SET_RATERS', result)
     })
   },

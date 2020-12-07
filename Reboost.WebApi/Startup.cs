@@ -119,6 +119,9 @@ namespace Reboost.WebApi
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IDataIngestionService, DataIngestionService>();
             services.AddTransient<IMailService, SendGridMailService>();
+            services.AddScoped<IPDFService, PDFService>();
+            services.AddScoped<ISubmissionService, SubmissionService>();
+
 
 
             services.AddControllers().AddNewtonsoftJson(option => option.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
