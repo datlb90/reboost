@@ -24,9 +24,19 @@ namespace Reboost.Shared
 
     }
 
-    public class SummeryPerUser
+    public class SummaryPerUser
     {
         public string Section { get; set; }
         public int Count { get; set; }
+        public string Name { get; set; }
+    }
+    public class TestForCurrentUser
+    {
+        public int Id { get; set; }
+        public string UserId { get; set; }
+        public int Score { get; set; }
+        public DateTime UpdateDate { get; set; }
+        public string TestSectionName { get; set; }
+        public string TestName { get; set; }
     }
 }

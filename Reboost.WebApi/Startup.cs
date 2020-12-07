@@ -117,6 +117,7 @@ namespace Reboost.WebApi
             services.AddScoped<IUserService, UserService>();
             services.AddTransient<IMailService, SendGridMailService>();
             services.AddScoped<IPDFService, PDFService>();
+            services.AddScoped<ISubmissionService, SubmissionService>();
 
 
 

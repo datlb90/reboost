@@ -38,7 +38,7 @@ namespace Reboost.WebApi.Controllers
             var rater = await _service.GetByIdAsync(id);
             var applyTo = await _service.GetApplyTo(id);
             var raterModel = _mapper.Map<RaterResponseModel>(rater);
-            raterModel.ApplyTo = applyTo.ToDictionary(i => i, i => true);
+            raterModel.ApplyTo = applyTo;
 
             return raterModel;
         }

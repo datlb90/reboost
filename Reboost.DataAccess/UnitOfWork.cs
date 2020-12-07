@@ -12,6 +12,7 @@ namespace Reboost.DataAccess
         ILookUpRepository LookUps { get; }
         IQuestionsRepository Questions { get; }
         IUserRepository Users { get; }
+        ISubmissionRepository Submission { get; }
 
         Task<int> CommitAsync();
     }
@@ -25,6 +26,7 @@ namespace Reboost.DataAccess
         private LookUpRepository _lookUpRepository;
         private QuestionsRepository _questionsRepository;
         private UserRepository _userRepository;
+        private SubmissionRepository _submissionRepository;
 
         public UnitOfWork(ReboostDbContext context)
         {
@@ -37,6 +39,8 @@ namespace Reboost.DataAccess
         public ILookUpRepository LookUps => _lookUpRepository = _lookUpRepository ?? new LookUpRepository(_context);
         public IQuestionsRepository Questions => _questionsRepository = _questionsRepository ?? new QuestionsRepository(_context);
         public IUserRepository Users => _userRepository = _userRepository ?? new UserRepository(_context);
+        public ISubmissionRepository Submission => _submissionRepository = _submissionRepository ?? new SubmissionRepository(_context);
+
         public async Task<int> CommitAsync()
         {
             return await _context.SaveChangesAsync();

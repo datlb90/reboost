@@ -29,6 +29,12 @@ namespace Reboost.WebApi.Controllers
             return await _service.GetAllExAsync();
         }
 
+        [HttpGet("list/{userId}")]
+        public async Task<IEnumerable<QuestionModel>> GetAllByUser(string userId)
+        {
+            return await _service.GetAllByUserAsync(userId);
+        }
+
         [HttpGet]
         [Route("getById/{id}")]
         public async Task<QuestionModel> GetByIdAsync([FromRoute] int id)
@@ -58,9 +64,21 @@ namespace Reboost.WebApi.Controllers
         }
         [HttpGet]
         [Route("summaryPerUser/{userId}")]
-        public async Task<List<SummeryPerUser>> GetSummaryByUserId([FromRoute] string userId)
+        public async Task<List<SummaryPerUser>> GetSummaryByUserId([FromRoute] string userId)
         {
             return await _service.GetSummaryByUserId(userId);
+        }
+        [HttpGet]
+        [Route("testForCurrentUsers/{userId}")]
+        public async Task<List<string>> GetTestForCurrentUsers([FromRoute] string userId)
+        {
+            return await _service.GetTestForCurrentUsers(userId);
+        }
+        [HttpGet]
+        [Route("questionCompletedIdByUser/{userId}")]
+        public async Task<List<int>> GetQuestionCompletedIdByUser([FromRoute] string userId)
+        {
+            return await _service.GetQuestionCompletedIdByUser(userId);
         }
     }
 }

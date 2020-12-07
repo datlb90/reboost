@@ -45,7 +45,7 @@
           <div v-if="status==='Verified'" class="button-container">
             <el-button>Complete Training Now</el-button>
           </div>
-          <div v-if="note!=''" class="note-container">
+          <div v-if="note && note.length" class="note-container">
             <div class="label-container">
               Note
             </div>
@@ -78,8 +78,8 @@ export default {
       inReview: true,
       verified: true,
       denied: true,
-      status: 'In Review',
-      note: ''
+      status: '',
+      note: undefined
     }
   },
   computed: {
@@ -100,6 +100,7 @@ export default {
       raterService.getById(id).then(rs => {
         console.log('result load detail', rs)
         this.status = rs.status
+        this.note = rs.note
       })
     }
   }

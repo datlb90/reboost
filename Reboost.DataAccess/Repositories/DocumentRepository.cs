@@ -13,7 +13,7 @@ namespace Reboost.DataAccess.Repositories
         Task<IEnumerable<Documents>> GetByStatus(string status);
     }
 
-    public class DocumentRespository : Repository<Documents>, IDocumentRepository
+    public class DocumentRespository : BaseRepository<Documents>, IDocumentRepository
     {
         public DocumentRespository(ReboostDbContext context)
             : base(context)

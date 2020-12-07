@@ -39,6 +39,7 @@ namespace Reboost.Service.Services
             newDocument.Status = "Submitted";
             newDocument.CreatedDate = DateTime.Now;
             newDocument.Data = _pdfService.WriteParagraph(newDocument.Text);
+
             return await _unitOfWork.Documents.Create(newDocument);
         }
 

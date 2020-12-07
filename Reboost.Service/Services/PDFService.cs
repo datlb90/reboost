@@ -23,7 +23,6 @@ namespace Reboost.Service.Services
                 doc.Add(new Paragraph(paragraph));
                 doc.Close();
                 writer.Close();
-                
 
                 var bytes = ms.ToArray();
                 return bytes;

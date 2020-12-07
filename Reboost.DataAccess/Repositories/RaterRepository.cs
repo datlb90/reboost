@@ -21,7 +21,7 @@ namespace Reboost.DataAccess.Repositories
         Task<List<string>> GetApplyTo(int raterId);
         Task<Raters> UpdateWithCredentialAsync(Raters rater);
     }
-    public class RaterRepository : Repository<Raters>, IRaterRepository
+    public class RaterRepository : BaseRepository<Raters>, IRaterRepository
     {
         private ReboostDbContext ReboostDbContext => context as ReboostDbContext;
 

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Reboost.DataAccess.Entities;
+using Reboost.DataAccess.Models;
 using Reboost.Service.Services;
 
 namespace Reboost.WebApi.Controllers
@@ -17,17 +18,28 @@ namespace Reboost.WebApi.Controllers
     public class DocumentController : ControllerBase
     {
         private readonly IDocumentService _docService;
+        private readonly ISubmissionService _submissionService;
 
-        public DocumentController(IDocumentService docService)
+        public DocumentController(IDocumentService docService, ISubmissionService submissionService)
         {
             _docService = docService;
+            _submissionService = submissionService;
         }
 
         [HttpPost]
         [Route("")]
-        public async Task<Documents> Create(Documents newDocument)
+        public async Task<Documents> Create(DocumentRequestModel model)
         {
-            return await _docService.Create(newDocument);
+            var newDoc = await _docService.Create(model);
+            await _submissionService.CreateAsync(new Submissions { 
+                DocId = newDoc.Id,
+                UserId = model.UserId,
+                QuestionId = model.QuestionId,
+                SubmittedDate = DateTime.Now,
+                Type = "Submission"
+            });
+
+            return newDoc;
         }
 
         [HttpPut]

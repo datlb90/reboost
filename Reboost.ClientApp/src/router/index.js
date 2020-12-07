@@ -167,7 +167,7 @@ const router = new VueRouter({
       component: ManageRaters
     },
     {
-      path: '/questions/:type',
+      path: '/questions',
       name: 'Questions',
       component: Questions
     },

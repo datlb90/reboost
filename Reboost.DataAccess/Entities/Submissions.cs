@@ -7,7 +7,6 @@ namespace Reboost.DataAccess.Entities
 {
     public class Submissions : BaseEntity
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Submissions()
         {
             this.ReviewRequests = new HashSet<ReviewRequests>();

@@ -12,6 +12,6 @@ namespace Reboost.DataAccess.Models
     }
     public class RaterResponseModel : Raters
     {
-        public Dictionary<string, bool> ApplyTo { get; set; }
+        public List<string> ApplyTo { get; set; }
     }
 }
