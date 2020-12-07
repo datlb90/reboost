@@ -124,9 +124,6 @@ export default {
   font-size: 11px;
   margin-top: 8px;
 }
-.submission{
-
-}
 .view{
   display: -webkit-box;
 }

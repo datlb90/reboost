@@ -14,7 +14,7 @@ namespace Reboost.DataAccess.Repositories
     {
     }
 
-    public class SampleRepository : Repository<Samples>, ISampleRepository
+    public class SampleRepository : BaseRepository<Samples>, ISampleRepository
     {
         public SampleRepository(ReboostDbContext context)
          : base(context)

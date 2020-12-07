@@ -14,7 +14,7 @@ namespace Reboost.DataAccess.Repositories
     {
     }
 
-    public class QuestionPartRepository :  Repository<QuestionParts>, IQuestionPartRepository
+    public class QuestionPartRepository :  BaseRepository<QuestionParts>, IQuestionPartRepository
     {
         public QuestionPartRepository(ReboostDbContext context)
          : base(context)
