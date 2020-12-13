@@ -16,6 +16,8 @@ namespace Reboost.DataAccess.Repositories
         Task<List<User>> GetAllAsync();
         Task<User> UpdateScoreAsync(string userId, List<UserScores> score);
         Task<User> UpdateAsync(User user);
+        Task<List<UserScores>> GetUserScores(string userId);
+
     }
 
     public class UserRepository : IUserRepository
@@ -41,6 +43,11 @@ namespace Reboost.DataAccess.Repositories
         public async Task<List<User>> GetAllAsync()
         {
             return await _context.Users.Include("UserScores").AsNoTracking().ToListAsync();
+        }
+
+        public async Task<List<UserScores>> GetUserScores(string userId)
+        {
+            return await _context.UserScores.Where(u => u.UserId == userId).ToListAsync();
         }
 
         public async Task<User> GetByEmailAync(string email)

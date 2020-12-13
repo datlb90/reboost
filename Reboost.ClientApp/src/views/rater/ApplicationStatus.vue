@@ -1,35 +1,35 @@
 <template>
-  <div style="margin-top:25px;">
+  <div style="margin-top:25px;" :style="{visibility: loadCompleted?'visible':'hidden'}">
     <el-row class="row-flex">
-      <el-col :span="14" class="col-border">
+      <el-col :span="15" class="col-border">
         <el-steps :active="1" align-center>
-          <el-step title="Step 1" icon="far fa-user-circle" description="Create an account" />
-          <el-step title="Step 2" icon="fas fa-file-upload" description="Upload credentials" />
+          <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
+          <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
           <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning" />
           <el-step title="Step 4" icon="el-icon-edit-outline" description="Start rating" />
         </el-steps>
       </el-col>
     </el-row>
     <el-row class="row-flex">
-      <el-col :span="14" class="col-border">
+      <el-col :span="15" class="col-border">
         <div class="margin-container">
           <div class="flex-box">
             <div class="label-container">
               Application status
             </div>
-            <div class="">
-              <el-tag
-                :type="
-                  status === 'Applied'
-                    ? 'primary'
-                    :status === 'Verified'
-                      ? 'success'
-                      :status === 'Denied'
-                        ? 'danger'
-                        : 'warning'
-                "
-              >{{ status }}</el-tag>
-            </div>
+
+            <el-tag
+              :type="
+                status === 'Applied'
+                  ? 'primary'
+                  :status === 'Verified'
+                    ? 'success'
+                    :status === 'Denied'
+                      ? 'danger'
+                      : 'warning'
+              "
+            >{{ status }}</el-tag>
+
           </div>
           <div :class="[status === 'Applied' ? 'inReview' : 'hidden']">
             <p>Thank you for applying. Your application is curretly in review. We will notify you via email if your application is approved, denied, or if we need additional information.</p>
@@ -43,7 +43,7 @@
             </p>
           </div>
           <div v-if="status==='Verified'" class="button-container">
-            <el-button>Complete Training Now</el-button>
+            <el-button size="mini">Complete Training Now</el-button>
           </div>
           <div v-if="note && note.length" class="note-container">
             <div class="label-container">
@@ -55,6 +55,7 @@
                 type="textarea"
                 :rows="2"
                 placeholder="Please input"
+                :disabled="true"
               />
             </div>
           </div>
@@ -73,6 +74,7 @@ export default {
   name: 'ApplicationStatus',
   data() {
     return {
+      loadCompleted: false,
       raterId: '',
       isUpload: false,
       inReview: true,
@@ -98,6 +100,7 @@ export default {
     loadDetail(id) {
       console.log('load detail', mapUtil)
       raterService.getById(id).then(rs => {
+        this.loadCompleted = true
         console.log('result load detail', rs)
         this.status = rs.status
         this.note = rs.note
@@ -121,23 +124,26 @@ export default {
 }
 
 .inReview {
-  padding: 8px 14px;
-  background-color: #ecf8ff;
+  padding: 5px 10px;
+  font-size: 12px;
   border-radius: 4px;
+  background-color: #ecf8ff;
   border-left: 5px solid #50bfff;
 }
 
 .verified{
-  padding: 8px 14px;
-  background-color: #ecffee;
+  padding: 5px 10px;
+  font-size: 12px;
   border-radius: 4px;
+  background-color: #ecffee;
   border-left: 5px solid #12ee2f;
 }
 
 .denied{
-  padding: 8px 14px;
-  background-color: #ffecec;
+  padding: 5px 10px;
+  font-size: 12px;
   border-radius: 4px;
+  background-color: #ffecec;
   border-left: 5px solid #ee1212;
 }
 

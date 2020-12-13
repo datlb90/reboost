@@ -34,7 +34,7 @@ namespace Reboost.DataAccess
         public virtual DbSet<UserScores> UserScores { get; set; }
         public DbSet<LookUp> LookUps { get; set; }
         public DbSet<User> Users { get; set; }
-
+        public virtual DbSet<RubricMilestones> RubricMilestones { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
             : base(options)

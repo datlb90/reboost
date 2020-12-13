@@ -21,6 +21,13 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.GetAllAsync();
             return Ok(rs);
         }
+
+        [HttpGet("getUserScore/{userId}")]
+        public async Task<IActionResult> GetUserScore([FromRoute] string userId)
+        {
+            var rs = await _service.GetUserScores(userId);
+            return Ok(rs);
+        }
         [HttpPost("addScore/{userId}")]
         public async Task<IActionResult> AddScores([FromRoute] string userId, [FromBody] List<UserScores> userScores)
         {

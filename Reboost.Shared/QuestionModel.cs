@@ -28,7 +28,6 @@ namespace Reboost.Shared
     {
         public string Section { get; set; }
         public int Count { get; set; }
-        public string Name { get; set; }
     }
     public class TestForCurrentUser
     {
@@ -38,5 +37,15 @@ namespace Reboost.Shared
         public DateTime UpdateDate { get; set; }
         public string TestSectionName { get; set; }
         public string TestName { get; set; }
+    }
+    public class SampleForQuestion
+    {
+        public int Id { get; set; }
+        public int QuestionId { get; set; }
+        public string SampleText { get; set; }
+        public decimal? BandScore { get; set; }
+        public string Comment { get; set; }
+        public DateTime LastActivityDate { get; set; }
+        public string Title { get; set; }
     }
 }

@@ -12,6 +12,7 @@ namespace Reboost.Service.Services
         Task<List<User>> GetAllAsync();
         Task<User> GetByIdAsync(string id);
         Task<User> AddScoreAsync(string userId, List<UserScores> userScores);
+        Task<List<UserScores>> GetUserScores(string userId);
 
     }
 
@@ -30,6 +31,10 @@ namespace Reboost.Service.Services
         public async Task<User> AddScoreAsync(string userId,List<UserScores> userScores)
         {
             return await _unitOfWork.Users.UpdateScoreAsync(userId,userScores);
+        }
+        public async Task<List<UserScores>> GetUserScores(string userId)
+        {
+            return await _unitOfWork.Users.GetUserScores(userId);
         }
 
         public async Task<User> GetByIdAsync(string id) {

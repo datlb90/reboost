@@ -1,5 +1,5 @@
 <template>
-  <el-row>
+  <el-row :style="{visibility: loadCompleted?'visible':'hidden'}">
     <el-col :span="18" :offset="3" class="padding-10" style="min-width: 480px;">
       <el-row>
         <el-col style="padding: 0 10px; margin-top: 20px;">
@@ -72,6 +72,7 @@ export default {
   name: 'SelectYourTest',
   data() {
     return {
+      loadCompleted: false,
       textarea: '',
       initTextArea: {
         height: 500,
@@ -83,7 +84,9 @@ export default {
       scoreIELTS: null,
       scoreTOEFL: null,
       selectIELTS: false,
-      selectTOEFL: false
+      selectTOEFL: false,
+      ieltsScore: null,
+      toeflScore: null
     }
   },
   computed: {
@@ -93,8 +96,51 @@ export default {
       return x
     },
     currentUser() {
-      return this.$store.getters['auth/getUser']
+      var data = this.$store.getters['auth/getUser']
+      console.log(data)
+      return data
     }
+  },
+  // <<<<<<< HEAD
+  mounted() {
+    var data = this.$store.getters['auth/getUser']
+    userService.getUserScore(data.id).then(rs => {
+      this.loadCompleted = true
+      console.log(rs)
+      if (rs.length > 0) {
+        rs.forEach(r => {
+          if (r.sectionId == 4) {
+            this.scoreTOEFL = r.score
+            this.selectTOEFL = true
+          }
+          if (r.sectionId == 8) {
+            this.scoreIELTS = r.score
+            this.selectIELTS = true
+          }
+        })
+      }
+    })
+    // =======
+    //   watch: {
+    //     ieltsScore(score) {
+    //       localStorage.ieltsScore = score
+    //     },
+    //     toeflScore(score) {
+    //       localStorage.toeflScore = score
+    //     }
+    //   },
+    //   mounted() {
+    //     if (localStorage.ieltsScore) {
+    //       this.scoreIELTS = JSON.parse(localStorage.getItem('ieltsScore')) || []
+    //       this.selectIELTS = true
+    //       console.log('IEL', this.scoreIELTS)
+    //     }
+    //     if (localStorage.toeflScore) {
+    //       this.scoreTOEFL = JSON.parse(localStorage.getItem('toeflScore')) || []
+    //       this.selectTOEFL = true
+    //       console.log('TOE', this.scoreTOEFL)
+    //     }
+    // >>>>>>> 0e31af36f03a5bcb7f8c0145bb5b6b16859dddf7
   },
   methods: {
     submit() {
@@ -105,6 +151,7 @@ export default {
           score: this.scoreIELTS,
           updatedDate: new Date()
         })
+        window.localStorage.setItem('ieltsScore', this.scoreIELTS)
       }
       if (this.scoreTOEFL != null) {
         data.push({
@@ -112,10 +159,12 @@ export default {
           score: this.scoreTOEFL,
           updatedDate: new Date()
         })
+        window.localStorage.setItem('toeflScore', this.scoreTOEFL)
       }
       if (this.scoreIELTS || this.scoreTOEFL) {
-        userService.addScore(this.currentUser.id, data)
-        this.$router.push('/questions')
+        userService.addScore(this.currentUser.id, data).then(rs => {
+          this.$router.push('/questions')
+        })
       }
     },
     selectScoreIELTS() {

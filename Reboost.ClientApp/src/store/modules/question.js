@@ -6,7 +6,8 @@ const state = {
   countQuestions: {},
   countQuestionsByUser: {},
   testByUser: {},
-  statusQuestion: {}
+  statusQuestion: {},
+  sampleByQuestion: []
 }
 
 const actions = {
@@ -48,6 +49,12 @@ const actions = {
       console.log('Action load status question', result)
       commit('SET_STATUS_QUESTION', result)
     })
+  },
+  loadSampleByQuestion({ commit }, id) {
+    return questionService.getSampleByQuestion(id).then(result => {
+      console.log('Action load sample by question', result)
+      commit('SET_SAMPLE_QUESTION', result)
+    })
   }
 }
 
@@ -69,6 +76,9 @@ const mutations = {
   },
   SET_STATUS_QUESTION: (state, statusQuestion) => {
     state.statusQuestion = statusQuestion
+  },
+  SET_SAMPLE_QUESTION: (state, sampleByQuestion) => {
+    state.sampleByQuestion = sampleByQuestion
   }
 }
 
@@ -78,7 +88,8 @@ const getters = {
   getCountQuestionByTasks: state => state.countQuestions,
   getSummaryByUser: state => state.countQuestionsByUser,
   getTestByUser: state => state.testByUser,
-  getStatusQuestion: state => state.statusQuestion
+  getStatusQuestion: state => state.statusQuestion,
+  getSampleByQuestion: state => state.sampleByQuestion
   // getSelected: state => state.selectedRater
 }
 

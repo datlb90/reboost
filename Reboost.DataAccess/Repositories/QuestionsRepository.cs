@@ -20,6 +20,7 @@ namespace Reboost.DataAccess.Repositories
         Task<List<SummaryPerUser>> GetSummaryByUserId(string userId);
         Task<List<string>> GetTestForCurrentUsers(string UserId);
         Task<List<int>> GetQuestionCompletedIdByUser(string UserId);
+        Task<List<SampleForQuestion>> GetSamplesForQuestion(int questionId);
         Task<List<QuestionModel>> GetAllByUserAsync(string userId);
 
     }
@@ -42,6 +43,9 @@ namespace Reboost.DataAccess.Repositories
         {
             get { return context as ReboostDbContext; }
         }
+
+        public object SamplesForQuestion { get; private set; }
+
         public async Task<Dictionary<string, int>> CountQuestByTaskAsync()
         {
             Dictionary<string, int> dicTask = new Dictionary<string, int>();
@@ -170,29 +174,6 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<List<SummaryPerUser>> GetSummaryByUserId(string userId)
         {
-            //using (var command = context.Database.GetDbConnection().CreateCommand())
-            //{
-            //    command.CommandText = "Select Section, COUNT(Section) as Count, nq.Name From(select t.Name as Section, sm.UserId as UserId, ts.Name From Questions q INNER JOIN Tasks t ON q.TaskId = t.Id INNER JOIN TestSections s ON t.SectionId = s.Id INNER JOIN Tests ts ON s.TestId = ts.Id INNER JOIN Submissions sm ON q.Id = sm.QuestionId and sm.UserId = '" + userId + "') nq Group By Section, nq.Name";
-
-            //    command.CommandType = CommandType.Text;
-
-            //    context.Database.OpenConnection();
-
-            //    using (var result = command.ExecuteReader())
-            //    {
-            //        var entities = new List<SummeryPerUser>();
-            //        while (result.Read())
-            //        {
-            //            entities.Add(new SummeryPerUser
-            //            {
-            //                Section = result.GetFieldValue<string>("Section"),
-            //                Count = result.GetFieldValue<int>("Count"),
-            //                Name = result.GetFieldValue<string>("Name")
-            //            });
-            //        }
-            //        return await Task.FromResult(entities);
-            //    }
-            //}
             var tests = await GetTestForCurrentUsers(userId);
             var query = from sub in ReboostDbContext.Submissions
                         join quest in ReboostDbContext.Questions on sub.QuestionId equals quest.Id
@@ -206,8 +187,39 @@ namespace Reboost.DataAccess.Repositories
                             Section = g.Key,
                             Count = g.Count()
                         };
+            var tasks = from task in ReboostDbContext.Tasks
+                        select new SummaryPerUser
+                        {
+                            Section = task.Name,
+                            Count = 0
+                        };
+            
+            var listQuery = new List<SummaryPerUser>();
+            foreach (var item in query)
+            {
+                var newquery = new SummaryPerUser();
+                newquery.Section = item.Section;
+                newquery.Count = item.Count;
+                listQuery.Add(newquery);
+            }
 
-            return await query.ToListAsync();
+            var listTask = new List<SummaryPerUser>();
+            foreach (var item in tasks)
+            {
+                var newquery = new SummaryPerUser();
+                newquery.Section = item.Section;
+                newquery.Count = item.Count;
+                foreach (var _item in listQuery)
+                {
+                    if(newquery.Section == _item.Section)
+                    {
+                        newquery.Count = _item.Count;
+                    }
+                }
+                listTask.Add(newquery);
+            }
+
+            return listTask;
         }
 
         public async Task<List<string>> GetTestForCurrentUsers(string UserId)
@@ -225,6 +237,15 @@ namespace Reboost.DataAccess.Repositories
                           join s in ReboostDbContext.Submissions on qs.Id equals s.QuestionId
                           where s.UserId == UserId
                           select qs.Id).ToListAsync();
+        }
+
+        public async Task<List<SampleForQuestion>> GetSamplesForQuestion(int questionId)
+        {
+            return await (from s in ReboostDbContext.Samples
+                          join q in ReboostDbContext.Questions on s.QuestionId equals q.Id
+                          where q.Id == questionId 
+                          select new SampleForQuestion {  Id = s.Id, QuestionId = s.QuestionId, SampleText = s.SampleText, BandScore = s.BandScore, Comment = s.Comment, LastActivityDate = s.LastActivityDate, Title = q.Title }).ToListAsync();
+            
         }
     }
 }

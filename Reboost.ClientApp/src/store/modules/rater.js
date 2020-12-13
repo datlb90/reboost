@@ -7,7 +7,7 @@ const state = {
 
 const actions = {
   loadRaters({ commit }) {
-    raterService.getAll().then(result => {
+    return raterService.getAll().then(result => {
       result.forEach(rater => {
         if (rater.user) {
           rater.fullName = rater.user.firstName + ' ' + rater.user.lastName
@@ -20,7 +20,7 @@ const actions = {
     })
   },
   loadRater({ commit }, id) {
-    raterService.getById(id).then(rs => {
+    return raterService.getById(id).then(rs => {
       console.log('Rater: ', rs)
       commit('SET_RATER', rs)
     })

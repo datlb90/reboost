@@ -80,5 +80,11 @@ namespace Reboost.WebApi.Controllers
         {
             return await _service.GetQuestionCompletedIdByUser(userId);
         }
+        [HttpGet]
+        [Route("sampleForQuestion/{questionId}")]
+        public async Task<List<SampleForQuestion>> GetSamplesForQuestion([FromRoute] int questionId)
+        {
+            return await _service.GetSamplesForQuestion(questionId);
+        }
     }
 }
