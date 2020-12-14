@@ -1,7 +1,7 @@
 <template>
   <div style="margin-top:25px;">
     <el-row class="row-flex">
-      <el-col :span="14" class="col-border">
+      <el-col :span="15" class="col-border">
         <el-steps :active="1" align-center>
           <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
           <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
@@ -11,18 +11,10 @@
       </el-col>
     </el-row>
     <el-row class="row-flex">
-      <el-col :span="14">
-        <div class="tip">
-          <p>Please fill out some basic information about yourself and upload your official test scores or any other supporting documents so we can verify your proficiency to become our rater.
-          </p>
-        </div>
-      </el-col>
-    </el-row>
-    <el-row class="row-flex">
-      <el-col :span="14" class="col-border padding-30">
+      <el-col :span="15" class="col-border">
         <el-form ref="formRegister" :model="formRegister" label-width="180px" style="width:90%;">
 
-          <el-form-item v-if="raterId" label="Current Status">
+          <el-form-item v-if="raterId" size="mini" label="Current Status">
             <el-tag
               :type="
                 formRegister.status === 'Verified'
@@ -37,16 +29,19 @@
             >{{ formRegister.status }}</el-tag>
           </el-form-item>
 
-          <el-form-item v-if="raterId" label="Applied Date" prop="appliedDate">
+          <el-form-item v-if="raterId" size="mini" label="Applied Date" prop="appliedDate">
             <el-input
               v-model="formRegister.appliedDate"
+
               :disabled="true"
             />
           </el-form-item>
 
           <el-form-item
+            size="mini"
             label="First Name"
             prop="firstName"
+
             :rules="[
               { required: true, message: 'First name is required'}
             ]"
@@ -54,6 +49,7 @@
             <el-input v-model="formRegister.firstName" type="text" />
           </el-form-item>
           <el-form-item
+            size="mini"
             label="Last Name"
             prop="lastName"
             :rules="[
@@ -63,6 +59,7 @@
             <el-input v-model="formRegister.lastName" type="text" />
           </el-form-item>
           <el-form-item
+            size="mini"
             label="Gender"
             prop="gender"
             :rules="[
@@ -74,6 +71,7 @@
             </el-select>
           </el-form-item>
           <el-form-item
+            size="mini"
             label="Occupation"
             prop="occupation"
             :rules="[
@@ -83,13 +81,14 @@
             <el-input v-model="formRegister.occupation" placeholder="Please input your occupation" />
           </el-form-item>
           <el-form-item
+            size="mini"
             label="First Language"
             prop="firstLanguage"
             :rules="[
               { required: true, message: 'First Language is required'}
             ]"
           >
-            <el-select v-model="formRegister.firstLanguage" filterable placeholder="Please select your first language">
+            <el-select v-model="formRegister.firstLanguage" style="width:250px" filterable placeholder="Please select your first language">
               <el-option
                 v-for="item in firstLanguage"
                 :key="item.id"
@@ -98,8 +97,8 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="Apply to Become" prop="applyTo" :rules="[{ type: 'array', required: true, message: 'Apply to is required' }]">
-            <div style="transform:translateY(10px)">
+          <el-form-item size="mini" label="Apply to Become" prop="applyTo" :rules="[{ type: 'array', required: true, message: 'Apply to is required' }]">
+            <div style="transform:translateY(5px)">
               <el-checkbox-group v-model="formRegister.applyTo">
                 <el-checkbox label="IELTS Rater" name="applyTo" />
                 <el-checkbox label="TOEFL Rater" name="applyTo" />
@@ -108,50 +107,55 @@
           </el-form-item>
           <div v-if="applyToIELTSChecked">
             <el-form-item
+              size="mini"
               label="IELTS Test Scores"
               :rules="[
                 { required: true, message: 'IELTS Test Scores is required'}
               ]"
             >
-              <el-row :gutter="24" style="display:flex; justify-content: space-between;">
-                <el-col :span="6">
-                  <el-form-item prop="ieltsTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
-                    <el-select v-model="formRegister.ieltsTestScore.writting" placeholder="Writting">
+              <el-row :span="24" style="display: flex; flex-wrap: wrap;">
+                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="ScoresSelector">
+                    <el-select slot="append" v-model="formRegister.ieltsTestScore.writting" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="6">
-                  <el-form-item prop="ieltsTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
-                    <el-select v-model="formRegister.ieltsTestScore.reading" placeholder="Reading">
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                  </el-input>
+                </el-form-item>
+                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="ScoresSelector">
+                    <el-select slot="append" v-model="formRegister.ieltsTestScore.reading" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="6">
-                  <el-form-item prop="ieltsTestScore.listening" :rules="[ { required: true, message: 'Required' } ]">
-                    <el-select v-model="formRegister.ieltsTestScore.listening" placeholder="Listening">
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Reading</label>
+                  </el-input>
+                </el-form-item>
+                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.listening" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="ScoresSelector">
+                    <el-select slot="append" v-model="formRegister.ieltsTestScore.listening" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="6">
-                  <el-form-item prop="ieltsTestScore.speaking" :rules="[ { required: true, message: 'Required' } ]">
-                    <el-select v-model="formRegister.ieltsTestScore.speaking" placeholder="Speaking">
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Listening</label>
+                  </el-input>
+                </el-form-item>
+                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.speaking" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="ScoresSelector">
+                    <el-select slot="append" v-model="formRegister.ieltsTestScore.speaking" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                  </el-form-item>
-                </el-col>
-              </el-row>
-            </el-form-item>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Speaking</label>
+                  </el-input>
+                </el-form-item>
+              </el-row></el-form-item>
             <el-form-item
+              size="mini"
               label="IELTS Credentials"
               prop="iELTSCertificatePhotos"
               :rules="[
                 { required: true, message: 'IELTS Credentials Photos is required'}]"
             >
               <el-upload class="upload-demo" action="" :file-list="formRegister.iELTSCertificatePhotos" :on-change="handleChangeIELTS" :on-remove="handleRemoveIELTS" :auto-upload="false" list-type="picture">
-                <el-button size="small" type="primary">Click to upload</el-button>
+                <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
                   <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
                 </div>
@@ -160,43 +164,49 @@
           </div>
           <div v-if="applyToTOEFLChecked">
             <el-form-item
+              size="mini"
               label="TOEFL Test Scores"
               :rules="[
                 { required: true, message: 'TOEFL Test Scores is required'}
               ]"
             >
-              <el-row :gutter="24" style="display:flex; justify-content: space-between;">
-                <el-col :span="6">
-                  <el-form-item prop="ieltsTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
-                    <el-select v-model="formRegister.toeflTestScore.writting" placeholder="Writting">
+              <el-row :span="24" style="display: flex; flex-wrap: wrap;">
+                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="ScoresSelector">
+                    <el-select slot="append" v-model="formRegister.toeflTestScore.writting" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="6">
-                  <el-form-item prop="ieltsTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
-                    <el-select v-model="formRegister.toeflTestScore.reading" placeholder="Reading">
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                  </el-input>
+                </el-form-item>
+                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="ScoresSelector">
+                    <el-select slot="append" v-model="formRegister.toeflTestScore.reading" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="6">
-                  <el-form-item prop="ieltsTestScore.listening" :rules="[ { required: true, message: 'Required' } ]">
-                    <el-select v-model="formRegister.toeflTestScore.listening" placeholder="Listening">
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Reading</label>
+                  </el-input>
+                </el-form-item>
+                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.listening" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="ScoresSelector">
+                    <el-select slot="append" v-model="formRegister.toeflTestScore.listening" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="6">
-                  <el-form-item prop="ieltsTestScore.speaking" :rules="[ { required: true, message: 'Required' } ]">
-                    <el-select v-model="formRegister.toeflTestScore.speaking" placeholder="Speaking">
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Listening</label>
+                  </el-input>
+                </el-form-item>
+                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.speaking" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="ScoresSelector">
+                    <el-select slot="append" v-model="formRegister.toeflTestScore.speaking" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                  </el-form-item>
-                </el-col>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Speaking</label>
+                  </el-input>
+                </el-form-item>
               </el-row>
             </el-form-item>
             <el-form-item
+              size="mini"
               label="TOEFL Credentials"
               prop="tOEFLCertificatePhotos"
               :rules="[
@@ -211,7 +221,7 @@
                 :auto-upload="false"
                 list-type="picture"
               >
-                <el-button size="small" type="primary">Click to upload</el-button>
+                <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
                   <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
                 </div>
@@ -220,6 +230,7 @@
           </div>
 
           <el-form-item
+            size="mini"
             label="Photo ID"
             prop="iDCardPhotos"
             :rules="[
@@ -234,26 +245,27 @@
               :auto-upload="false"
               list-type="picture"
             >
-              <el-button size="small" type="primary">Click to upload</el-button>
+              <el-button type="primary">Click to upload</el-button>
               <div slot="tip" class="el-upload__tip">
                 <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.</p>
               </div>
             </el-upload>
           </el-form-item>
           <el-form-item
+            size="mini"
             label="Biography"
           >
             <el-input v-model="formRegister.biography" type="textarea" :rows="5" placeholder="Tell us a little bit about yourself and the reason why you apply to become our rater" />
           </el-form-item>
-          <el-form-item v-if="raterId" label="Note">
+          <el-form-item v-if="raterId" size="mini" label="Note">
             <el-input v-model="formRegister.note" type="textarea" :rows="5" placeholder="Note" />
           </el-form-item>
-          <el-form-item>
-            <el-button v-if="!raterId" type="primary" @click="onSubmit('formRegister', 'create')">Create</el-button>
-            <el-button v-if="!raterId">Cancel</el-button>
-            <el-button v-if="raterId" class="button" size="medium" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
-            <el-button v-if="raterId" class="button" size="medium" type="success" @click="updateStatus('Approved')">Approve</el-button>
-            <el-button v-if="raterId" class="button" size="medium" type="danger" @click="updateStatus('Rejected')">Reject</el-button>
+          <el-form-item size="mini" style="margin: 0;">
+            <el-button v-if="!raterId" type="primary" size="mini" @click="onSubmit('formRegister', 'create')">Create</el-button>
+            <el-button v-if="!raterId" size="mini">Cancel</el-button>
+            <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
+            <el-button v-if="raterId" class="button" size="mini" type="success" @click="updateStatus('Approved')">Approve</el-button>
+            <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus('Rejected')">Reject</el-button>
           </el-form-item>
         </el-form>
       </el-col>
@@ -334,9 +346,11 @@ export default {
       for (let i = 0; i <= 9; i += 0.5) {
         this.ieltsScores.push(i.toFixed(1))
       }
+      this.ieltsScores.reverse()
       for (let i = 0; i <= 30; i += 1) {
         this.toeflScores.push(i)
       }
+      this.toeflScores.reverse()
       // lookupService.getByType('OCCUPATION').then(rs => {
       //   this.occupation = rs;
       // });
@@ -493,25 +507,27 @@ export default {
           }
 
           if (createOrUpdate == 'create') {
-            raterService.insert(formData).then(rs => {
-              this.$notify({
-                title: 'Success',
-                message: 'Created success',
-                type: 'success',
-                duration: 2000
-              })
-              this.$router.push('/rater/application/status/' + rs.id)
-            })
+            console.log(formData)
+            // raterService.insert(formData).then(rs => {
+            //   this.$notify({
+            //     title: 'Success',
+            //     message: 'Created success',
+            //     type: 'success',
+            //     duration: 2000
+            //   })
+            //   this.$router.push('/rater/application/status/' + rs.id)
+            // })
           } else if (createOrUpdate == 'update') {
             formData.set('Id', this.formRegister.id)
-            raterService.update(formData).then(rs => {
-              this.$notify({
-                title: 'Success',
-                message: 'Update success',
-                type: 'success',
-                duration: 2000
-              })
-            })
+            console.log(formData)
+            // raterService.update(formData).then(rs => {
+            //   this.$notify({
+            //     title: 'Success',
+            //     message: 'Update success',
+            //     type: 'success',
+            //     duration: 2000
+            //   })
+            // })
           }
         } else {
           console.log('error submit!!')
@@ -592,6 +608,32 @@ export default {
   justify-content: flex-end;
   align-items: center;
   height: 40px;
+}
+
+</style>
+<style>
+
+#ScoresSelector{
+  width: 0px;
+  padding: 0px;
+  border: none;
+}
+#ScoresSelector+.el-input-group__append > .el-select {
+  width: 70px !important;
+}
+.el-input > .el-input-group__prepend{
+  background-color: #FFF;
+}
+.el-input > .el-input-group__append{
+  background-color: #FFF;
+}
+
+#ScoresSelection > .el-form-item__content > .el-input > .el-input-group__prepend{
+  padding-left: 10px;
+  padding-right: 30px;
+  border-right: 1px solid #dcdfe6;
+  color: #909399;
+  background-color: #f5f7fa;
 }
 
 </style>

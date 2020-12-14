@@ -6,6 +6,9 @@ const userService = {
   },
   addScore(id, data) {
     return http.post(`/user/addScore/${id}`, data).then(rs => rs.data)
+  },
+  getUserScore(id) {
+    return http.get(`/user/getUserScore/${id}`).then(rs => rs.data)
   }
 }
 

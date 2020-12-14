@@ -6,10 +6,10 @@ namespace Reboost.DataAccess.Entities
 {
     public class RubricCriteria : BaseEntity
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public RubricCriteria()
         {
             this.CriteriaValues = new HashSet<CriteriaValues>();
+            this.RubricMilestone = new HashSet<RubricMilestones>();
         }
 
         public int RubricId { get; set; }
@@ -21,6 +21,7 @@ namespace Reboost.DataAccess.Entities
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<CriteriaValues> CriteriaValues { get; set; }
-        public virtual Rubrics Rubrics { get; set; }
+        public virtual ICollection<RubricMilestones> RubricMilestone { get; set; }
+        public virtual Rubrics Rubric { get; set; }
     }
 }

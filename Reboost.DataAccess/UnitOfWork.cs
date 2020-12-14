@@ -14,7 +14,9 @@ namespace Reboost.DataAccess
         IQuestionPartRepository QuestionParts { get; }
         ISampleRepository Samples { get; }
         IUserRepository Users { get; }
+        IRubricRepository Rubrics { get; }
         ISubmissionRepository Submission { get; }
+
         Task<int> CommitAsync();
     }
 
@@ -29,6 +31,7 @@ namespace Reboost.DataAccess
         private QuestionPartRepository _questionPartRepository;
         private SampleRepository _sampleRepository;
         private UserRepository _userRepository;
+        private RubricRepository _rubricRepository;
         private SubmissionRepository _submissionRepository;
 
         public UnitOfWork(ReboostDbContext context)
@@ -44,7 +47,9 @@ namespace Reboost.DataAccess
         public IQuestionPartRepository QuestionParts => _questionPartRepository = _questionPartRepository ?? new QuestionPartRepository(_context);
         public ISampleRepository Samples => _sampleRepository = _sampleRepository ?? new SampleRepository(_context);
         public IUserRepository Users => _userRepository = _userRepository ?? new UserRepository(_context);
+        public IRubricRepository Rubrics => _rubricRepository = _rubricRepository ?? new RubricRepository(_context);
         public ISubmissionRepository Submission => _submissionRepository = _submissionRepository ?? new SubmissionRepository(_context);
+
         public async Task<int> CommitAsync()
         {
             return await _context.SaveChangesAsync();
