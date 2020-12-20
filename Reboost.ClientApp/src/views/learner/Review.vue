@@ -344,7 +344,7 @@ export default {
     },
     async render() {
       const self = this
-      const response = await http.get('http://localhost:6990/api/document/9')
+      const response = await http.get('http://localhost:6990/api/document/12')
       const arrayBuffer = self.base64ToArrayBuffer(response.data.data)
 
       const pdf = await PDFJS.getDocument(arrayBuffer).promise

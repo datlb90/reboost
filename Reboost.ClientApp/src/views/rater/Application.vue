@@ -32,7 +32,6 @@
           <el-form-item v-if="raterId" size="mini" label="Applied Date" prop="appliedDate">
             <el-input
               v-model="formRegister.appliedDate"
-
               :disabled="true"
             />
           </el-form-item>
@@ -41,7 +40,6 @@
             size="mini"
             label="First Name"
             prop="firstName"
-
             :rules="[
               { required: true, message: 'First name is required'}
             ]"
@@ -114,32 +112,32 @@
               ]"
             >
               <el-row :span="24" style="display: flex; flex-wrap: wrap;">
-                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
-                  <el-input id="ScoresSelector">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.ieltsTestScore.writting" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
                     <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
-                  <el-input id="ScoresSelector">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.ieltsTestScore.reading" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
                     <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Reading</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.listening" :rules="[ { required: true, message: 'Required' } ]">
-                  <el-input id="ScoresSelector">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.listening" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.ieltsTestScore.listening" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
                     <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Listening</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.speaking" :rules="[ { required: true, message: 'Required' } ]">
-                  <el-input id="ScoresSelector">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.speaking" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.ieltsTestScore.speaking" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
@@ -154,7 +152,7 @@
               :rules="[
                 { required: true, message: 'IELTS Credentials Photos is required'}]"
             >
-              <el-upload class="upload-demo" action="" :file-list="formRegister.iELTSCertificatePhotos" :on-change="handleChangeIELTS" :on-remove="handleRemoveIELTS" :auto-upload="false" list-type="picture">
+              <el-upload class="upload-demo" action="" :on-preview="previewImage" :file-list="formRegister.iELTSCertificatePhotos" :on-change="handleChangeIELTS" :on-remove="handleRemoveIELTS" :auto-upload="false" list-type="picture">
                 <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
                   <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
@@ -171,32 +169,32 @@
               ]"
             >
               <el-row :span="24" style="display: flex; flex-wrap: wrap;">
-                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
-                  <el-input id="ScoresSelector">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.toeflTestScore.writting" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
                     <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
-                  <el-input id="ScoresSelector">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.toeflTestScore.reading" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
                     <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Reading</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.listening" :rules="[ { required: true, message: 'Required' } ]">
-                  <el-input id="ScoresSelector">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.listening" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.toeflTestScore.listening" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
                     <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Listening</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="ScoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.speaking" :rules="[ { required: true, message: 'Required' } ]">
-                  <el-input id="ScoresSelector">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.speaking" :rules="[ { required: true, message: 'Required' } ]">
+                  <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.toeflTestScore.speaking" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
@@ -215,6 +213,7 @@
               <el-upload
                 class="upload-demo"
                 action=""
+                :on-preview="previewImage"
                 :on-change="handleChangeTOEFL"
                 :on-remove="handleRemoveTOEFL"
                 :file-list="formRegister.tOEFLCertificatePhotos"
@@ -239,6 +238,7 @@
             <el-upload
               class="upload-demo"
               action=""
+              :on-preview="previewImage"
               :file-list="formRegister.iDCardPhotos"
               :on-change="handleChangeIdPhoto"
               :on-remove="handleRemoveIdPhoto"
@@ -270,6 +270,16 @@
         </el-form>
       </el-col>
     </el-row>
+    <div :class="{ 'isActive': toggleImagePopup }" class="previewImageContainer">
+      <el-image
+        style="max-width: 90%; max-height: 90%"
+        :src="popUpImageUrl"
+        :fit="fit"
+      />
+      <div class="closePopUpIMG" @click="toggleImagePopup=!toggleImagePopup">
+        <i class="fas fa-times-circle" style="background-color: white;border: solid 1px;border-radius: 50%;" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -320,7 +330,9 @@ export default {
       gender: [],
       raterId: '',
       toeflScoresIsNUll: true,
-      ieltsScoresIsNUll: true
+      ieltsScoresIsNUll: true,
+      toggleImagePopup: false,
+      popUpImageUrl: null
     }
   },
   computed: {
@@ -505,37 +517,34 @@ export default {
             formData.set(`User[UserScores][${count}][UpdatedDate]`, s.updatedDate)
             count++
           }
-
           if (createOrUpdate == 'create') {
-            console.log(formData)
-            // raterService.insert(formData).then(rs => {
-            //   this.$notify({
-            //     title: 'Success',
-            //     message: 'Created success',
-            //     type: 'success',
-            //     duration: 2000
-            //   })
-            //   this.$router.push('/rater/application/status/' + rs.id)
-            // })
+            raterService.insert(formData).then(rs => {
+              this.$notify({
+                title: 'Success',
+                message: 'Created success',
+                type: 'success',
+                duration: 2000
+              })
+              this.$router.push('/rater/application/status/' + rs.id)
+            })
           } else if (createOrUpdate == 'update') {
             formData.set('Id', this.formRegister.id)
-            console.log(formData)
-            // raterService.update(formData).then(rs => {
-            //   this.$notify({
-            //     title: 'Success',
-            //     message: 'Update success',
-            //     type: 'success',
-            //     duration: 2000
-            //   })
-            // })
+            raterService.update(formData).then(rs => {
+              this.$notify({
+                title: 'Success',
+                message: 'Update success',
+                type: 'success',
+                duration: 2000
+              })
+            })
           }
         } else {
           console.log('error submit!!')
-          // this.$notify.error({
-          //   title: 'Error',
-          //   message: 'Error occured!',
-          //   duration: 2000
-          // })
+          this.$notify.error({
+            title: 'Error',
+            message: 'Error occured!',
+            duration: 2000
+          })
           return false
         }
       })
@@ -570,6 +579,10 @@ export default {
     },
     getApplyTo(testName) {
       return this.formRegister.applyTo.find(a => a.indexOf(testName) >= 0) != undefined
+    },
+    previewImage(e) {
+      this.popUpImageUrl = e.url
+      this.toggleImagePopup = !this.toggleImagePopup
     }
   }
 }
@@ -611,29 +624,59 @@ export default {
 }
 
 </style>
-<style>
 
-#ScoresSelector{
+<style>
+#scoresSelector{
   width: 0px;
   padding: 0px;
   border: none;
 }
-#ScoresSelector+.el-input-group__append > .el-select {
-  width: 70px !important;
+#scoresSelector+.el-input-group__append > .el-select {
+  width: 80px;
 }
-.el-input > .el-input-group__prepend{
-  background-color: #FFF;
+#scoresSelector+.el-input-group__append{
+  background-color: #FFF !important ;
 }
-.el-input > .el-input-group__append{
-  background-color: #FFF;
+#scoresSelection .el-form-item__content .el-input .el-input-group__prepend  {
+  background-color:#f5f7fa !important;
+  color: #909399 !important;
+  border: 1px solid #dcdfe6 !important;
+  padding: 0px 25px 0 10px !important;
+  box-sizing: border-box !important;
+}
+#scoresSelection > .el-form-item__content > .el-input > .el-input-group__prepend > .el-button{
+  width: 100px;
 }
 
-#ScoresSelection > .el-form-item__content > .el-input > .el-input-group__prepend{
-  padding-left: 10px;
-  padding-right: 30px;
-  border-right: 1px solid #dcdfe6;
-  color: #909399;
-  background-color: #f5f7fa;
+.previewImageContainer{
+  display: none;
+  position: fixed;
+  top:0;
+  z-index: 9999;
+  background-color: rgba(0,0,0,0.5);
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+.previewImageContainer.isActive{
+  display: flex;
+}
+.closePopUpIMG{
+  position: fixed;
+  font-size: 2rem;
+  top:5px;
+  right: 5px;
+}
+.el-input-group {
+    line-height: normal;
+    display: inline-table;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 0px !important;
+    padding: 0 !important;
 }
 
 </style>
+

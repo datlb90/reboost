@@ -78,9 +78,11 @@ export default {
       this.toggleMenu('hide')
     },
     reset() {
-      for (const item of this.data) {
-        item.checked = false
-      }
+      // for (const item of this.data) {
+      //   item.checked = false
+      //   console.log(item)
+      // }
+      // this.data = this.data.map(i => ({ ...i, checked: false }))
       this.$emit('reset')
     }
   }
@@ -103,6 +105,7 @@ export default {
     white-space: nowrap;
     font-weight: bold;
     width: 100%;
+    user-select: none;
 }
 .c-dropdown-menu--footer a{
   cursor: pointer;

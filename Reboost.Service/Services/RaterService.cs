@@ -83,6 +83,7 @@ namespace Reboost.Service.Services
         {
             foreach (var item in rater.RaterCredentials)
             {
+                item.RaterId = rater.Id;
                 var file = uploadFiles.FirstOrDefault(f => f.FileName == item.FileName);
                 if (file != null)
                     item.Data = GetBytesFromFile(file);
@@ -99,9 +100,12 @@ namespace Reboost.Service.Services
 
             await _unitOfWork.Users.UpdateAsync(user);
             await _unitOfWork.Users.UpdateScoreAsync(rater.UserId, rater.User.UserScores.ToList());
+            await _unitOfWork.RaterCredential.UpdateManyByRaterAync(rater.Id, rater.RaterCredentials.ToList());
 
             rater.User = null;
-            return await _unitOfWork.Raters.UpdateWithCredentialAsync(rater);
+            rater.RaterCredentials = null;
+            var rs = await _unitOfWork.Raters.Update(rater);
+            return rs;
         }
 
         public async Task<Raters> UpdateStatusAsync(int id, string status)

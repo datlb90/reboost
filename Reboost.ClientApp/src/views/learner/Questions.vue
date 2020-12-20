@@ -26,20 +26,34 @@
     <div class="searchAndBtn">
       <div class="search">
         <div>
-          <el-input v-model="textSearch" placeholder="Type to search" @input="search()" />
+          <el-input v-model="textSearch" size="mini" placeholder="Type to search" @input="search()" />
         </div>
         <div class="filter-toolbar">
-          <dropdown-menu id="ddFilterSection" v-model="filterSection" style="margin-right: 20px" :tittle="'Test Section'" @confirm="loadTable()" @reset="loadTable()" />
-          <dropdown-menu v-model="filterType" style="margin-right: 20px" :tittle="'Type'" @confirm="loadTable()" @reset="loadTable()" />
-          <dropdown-menu v-model="filterStatus" :tittle="'Status'" @confirm="loadTable()" @reset="loadTable()" />
+          <dropdown-menu id="ddFilterSection" v-model="filterSection" style="margin-right: 20px" :tittle="'Test Section'" @confirm="search()" @reset="resetFilterSection()" />
+          <dropdown-menu v-model="filterType" style="margin-right: 20px" :tittle="'Type'" @confirm="search()" @reset="resetFilterType()" />
+          <dropdown-menu v-model="filterStatus" :tittle="'Status'" @confirm="search()" @reset="resetFilterStatus()" />
         </div>
       </div>
       <div class="btn-reset">
-        <el-button size="mini" @click="clearFilter">reset all filters</el-button>
+        <el-button size="mini" @click="clearFilter">Reset all filters</el-button>
       </div>
     </div>
+    <div class="tag-selection">
+      <el-tag
+        v-for="tag in selectionTag"
+        :key="tag"
+        size="mini"
+        type="success"
+        effect="dark"
+        closable
+        :disable-transitions="false"
+        @close="handleClose(tag)"
+      >
+        {{ tag }}
+      </el-tag>
+    </div>
     <el-table ref="filterTable" :data="questions" stripe style="width: 100%">
-      <el-table-column type="index" label="#" width="50" />
+      <el-table-column prop="id" label="#" width="50" />
       <el-table-column label="Title">
         <template slot-scope="scope">
           <span class="title-row cursor" @click="rowClicked(scope.row)">{{ scope.row.title }}</span>
@@ -61,7 +75,7 @@
         label="Sample"
       >
         <template slot-scope="scope">
-          <div v-if="scope.row.sample" class="showTitle">
+          <div v-if="scope.row.sample" class="show-title">
             <el-tooltip class="item" effect="dark" content="Sample responses are available for this topic." placement="bottom">
               <i class="el-icon-document" style="color: blue;" />
             </el-tooltip>
@@ -134,10 +148,7 @@ export default {
       questionsCount: 0,
       rowPerPage: 5,
       pageSize: 50,
-      filterStatus: [
-        { text: 'Completed', value: 'Completed' },
-        { text: 'To do', value: 'To do' }
-      ],
+      filterStatus: [],
       typeSuccess: 'success',
       filterSection: [],
       filterType: [],
@@ -147,9 +158,7 @@ export default {
       questions: [],
       questionCached: [],
       summary: [],
-      selectedSection: -1,
-      selectedType: -1,
-      selectedStatus: -1
+      selectionTag: []
     }
   },
   computed: {
@@ -166,6 +175,7 @@ export default {
       this.totalRow = this.questionsCount = this.questionCached.length
       this.filterSection = Object.keys(_.groupBy(this.questionCached, 'section')).map(k => ({ text: k }))
       this.filterType = Object.keys(_.groupBy(this.questionCached, 'type')).map(k => ({ text: k }))
+      this.filterStatus = Object.keys(_.groupBy(this.questionCached, 'status')).map(k => ({ text: k }))
       this.loadTable()
     })
     this.$store.dispatch('question/loadSummaryByUser', this.currentUser.id).then(() => {
@@ -186,15 +196,9 @@ export default {
     },
     clearFilter() {
       this.textSearch = ''
-      this.filterSection.forEach(element => {
-        element.checked = false
-      })
-      this.filterType.forEach(element => {
-        element.checked = false
-      })
-      this.filterStatus.forEach(element => {
-        element.checked = false
-      })
+      this.filterSection = this.filterSection.map(i => ({ ...i, checked: false }))
+      this.filterType = this.filterType.map(i => ({ ...i, checked: false }))
+      this.filterStatus = this.filterStatus.map(i => ({ ...i, checked: false }))
       this.loadTable()
     },
     filterHandler(value, row, column) {
@@ -223,8 +227,8 @@ export default {
       })
     },
     clickPickOne() {
-      var chosenNumber = Math.floor(Math.random() * this.questions.length)
-      var id = this.questions[chosenNumber].id
+      var chosenNumber = Math.floor(Math.random() * this.questionCached.length)
+      var id = this.questionCached[chosenNumber].id
       this.$router.push({
         name: 'PracticeWriting',
         params: {
@@ -233,13 +237,17 @@ export default {
       })
     },
     search() {
+      this.page = 1
       this.loadTable()
     },
     filter() {
       const result = []
+      this.selectionTag = []
       const _filteredSection = this.filterSection.filter(s => s.checked).map(s => s.text)
       const _filteredType = this.filterType.filter(s => s.checked).map(s => s.text)
       const _filteredStatus = this.filterStatus.filter(s => s.checked).map(s => s.text)
+
+      this.selectionTag = _filteredSection.concat(_filteredType, _filteredStatus)
 
       for (const q of this.questionCached) {
         let pass = true
@@ -265,6 +273,33 @@ export default {
       // result = result.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
 
       return result
+    },
+    handleClose(tag) {
+      this.selectionTag.splice(this.selectionTag.indexOf(tag), 1)
+      const _filteredSection = this.filterSection.filter(s => s.text == tag)
+      const _filteredType = this.filterType.filter(s => s.text == tag)
+      const _filteredStatus = this.filterStatus.filter(s => s.text == tag)
+      if (_filteredSection.length > 0) {
+        this.filterSection.find(s => s.text == tag).checked = false
+      } else if (_filteredType.length > 0) {
+        this.filterType.find(s => s.text == tag).checked = false
+      } else if (_filteredStatus.length > 0) {
+        console.log(this.filterStatus, tag)
+        this.filterStatus.find(s => s.text == tag).checked = false
+      }
+      this.loadTable()
+    },
+    resetFilterSection() {
+      this.filterSection = this.filterSection.map(i => ({ ...i, checked: false }))
+      this.loadTable()
+    },
+    resetFilterType() {
+      this.filterType = this.filterType.map(i => ({ ...i, checked: false }))
+      this.loadTable()
+    },
+    resetFilterStatus() {
+      this.filterStatus = this.filterStatus.map(i => ({ ...i, checked: false }))
+      this.loadTable()
     }
     // filterBySection(data) {
     //   const filtered = this.questionCached.filter(r => data.includes(r.section))
@@ -309,6 +344,7 @@ el-table{
   display: flex;
   justify-content: space-between;
   margin: 20px 0;
+  margin-bottom: 5px;
 }
 
 .pagination-container {
@@ -370,10 +406,13 @@ el-table{
 .cursor{
   cursor: pointer;
 }
-.showTitle{
+.show-title{
   cursor: pointer;
 }
-.showTitleText{
+.show-title i{
+  margin-bottom: 0;
+}
+.show-title-text{
   visibility: hidden;
   width: 320px;
   background-color: black;
@@ -385,7 +424,7 @@ el-table{
   position: absolute;
   z-index: 2000;
 }
-.showTitle:hover .showTitleText{
+.show-title:hover .show-title-text{
     visibility: visible;
     margin-left: -160px;
     margin-top: 20px;
@@ -406,5 +445,13 @@ el-table{
     margin-left: 40px;
     z-index: 1;
 }
-
+.el-tag + .el-tag {
+  margin-left: 10px;
+}
+.tag-selection{
+  margin-left: 240px;
+}
+.el-table::before {
+  height: 0 !important;
+}
 </style>

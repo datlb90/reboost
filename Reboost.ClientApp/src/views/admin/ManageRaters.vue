@@ -5,13 +5,13 @@
     </div>
     <div class="searchAndBtn">
       <div class="search">
-        <el-input v-model="textSearch" placeholder="Type to search" />
+        <el-input v-model="textSearch" size="mini" placeholder="Type to search" />
       </div>
       <div class="btn-reset">
-        <el-button @click="clearFilter">reset all filters</el-button>
+        <el-button size="mini" @click="clearFilter">reset all filters</el-button>
       </div>
     </div>
-    <el-table ref="filterTable" :data="displayData" style="width: 100%">
+    <el-table ref="filterTable" size="mini" :data="displayData" style="width: 100%">
       <el-table-column prop="fullName" label="Application Name" width="160" />
       <el-table-column prop="appliedDate" label="Application Date" sortable width="180" column-key="appliedDate" :filters="filterDate" :filter-method="filterHandler" />
       <el-table-column prop="occupation" label="Occupation" width="140" />
@@ -32,6 +32,7 @@
       >
         <template slot-scope="scope">
           <el-tag
+            size="mini"
             :type="
               scope.row.status === 'Approved'
                 ? 'success'
@@ -53,7 +54,7 @@
       </el-table-column>
     </el-table>
     <div class="pagination">
-      <el-pagination background layout="prev, pager, next" :page-size="pageSize" :total="total" @current-change="handleCurrentChange" />
+      <el-pagination size="mini" background layout="prev, pager, next" :page-size="pageSize" :total="total" @current-change="handleCurrentChange" />
     </div>
   </div>
 </template>
