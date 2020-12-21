@@ -113,16 +113,14 @@
 
           </el-tab-pane>
           <el-tab-pane label="Samples" style="height: 100%; position: relative;">
-            <div class="par-content" style="padding-right: 10px;">
-              Tab sample
-            </div>
-
-          </el-tab-pane>
-          <el-tab-pane label="Rubric">
             <div class="par-content">
-              Tab Rubric
+              <tab-samples />
             </div>
-
+          </el-tab-pane>
+          <el-tab-pane label="Rubric" style="height: 100%; position: relative;">
+            <div class="par-content">
+              <tabRubric />
+            </div>
           </el-tab-pane>
           <el-tab-pane label="Discussions">
             <tabDisCussion />
@@ -155,7 +153,8 @@
 // import http from '@/utils/axios'
 import documentService from '../../services/document.service'
 import TabDisCussion from '../learner/PracticeWriting_TabDiscussion.vue'
-
+import TabRubric from '../learner/PracticeWriting_TabRubric.vue'
+import TabSamples from '../learner/PracticeWriting_TabSamples.vue'
 import {
   Splitpanes,
   Pane
@@ -167,7 +166,9 @@ export default {
   components: {
     'splitpanes': Splitpanes,
     'pane': Pane,
-    'tabDisCussion': TabDisCussion
+    'tabDisCussion': TabDisCussion,
+    'tabRubric': TabRubric,
+    'tab-samples': TabSamples
   },
   data() {
     return {
@@ -378,10 +379,11 @@ export default {
   height: 100%;
   min-height: 0 !important;
 }
-</style><style scoped>
+</style>
+<style scoped>
 .par-content {
   position: absolute;
-  /* padding: 0; */
+  padding-right: 10px;
   top: 0;
   left: 0;
   overflow-y: scroll;
