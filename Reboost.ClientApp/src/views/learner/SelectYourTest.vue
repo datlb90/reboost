@@ -7,67 +7,157 @@
           <el-divider style="margin-top: 5px;" />
         </el-col>
       </el-row>
-      <el-row>
-        <el-col :span="12" class="padding-10" style="padding-right: 15px;">
-          <el-row style="margin-bottom: 25px;">
-            <el-col :span="24">
-              <div class="image-ielts" :class="{'question-con': selectIELTS}" style="height: 225px; padding: 0; border: 1px solid #ebeef5;" @click="selectScoreIELTS()">
-                <img src="@/assets/img/LogoIELTS.png" alt="" style="height:100%; width: 100%;">
-              </div>
-            </el-col>
-          </el-row>
-          <el-row style="margin-bottom: 25px;" :class="{'show': selectIELTS, 'hide-container': !selectIELTS}">
-            <el-col :span="24" class="select-score-ielts question-con">
-              <span style="font-style:normal ;font-size: 15px; margin-right: 15px;">Select You Current IELTS Writing Score</span>
-              <el-select v-model="scoreIELTS" style="width: 140px" placeholder="Select Score">
-                <el-option v-for="item in score" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-col>
-          </el-row>
-          <el-row class="row-flex" :class="{'show': selectIELTS, 'hide-container': !selectIELTS}">
-            <el-col :span="24">
-              <div class="tip">
-                <p>Please use your best guess if you don't already have one</p>
-              </div>
-            </el-col>
-          </el-row>
-        </el-col>
-        <el-col :span="12" class="padding-10" style="padding-left: 15px;">
-          <el-row style="margin-bottom: 25px;">
-            <el-col :span="24">
-              <div style="height: 225px; padding: 0; border: 1px solid #ebeef5;" class="image-ielts" :class="{'question-con': selectTOEFL}" @click="selectScoreTOEFL()">
-                <img src="@/assets/img/LogoTOEFL.png" alt="" style="height:100%; width: 100%;">
-              </div>
-            </el-col>
-          </el-row>
-          <el-row style="margin-bottom: 25px;" :class="{'show': selectTOEFL, 'hide-container': !selectTOEFL}">
-            <el-col :span="24" class="select-score-ielts question-con">
-              <span style="font-style:normal ;font-size: 15px; margin-right: 15px;">Select You Current TOEFL Writing Score</span>
-              <el-select v-model="scoreTOEFL" style="width: 140px" placeholder="Select Score">
-                <el-option v-for="item in score" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-col>
-          </el-row>
-          <el-row class="row-flex" :class="{'show': selectTOEFL, 'hide-container': !selectTOEFL}">
-            <el-col :span="24">
-              <div class="tip">
-                <p>Please use your best guess if you don't already have one</p>
-              </div>
-            </el-col>
-          </el-row>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col class="padding-10">
-          <el-button @click="submit">Continue</el-button>
-        </el-col>
-      </el-row>
+      <el-form ref="formData" :model="formData" style="width:90%;">
+        <el-row>
+          <el-col :span="12" class="padding-10" style="padding-right: 15px;">
+            <el-row style="margin-bottom: 25px;">
+              <el-col :span="24">
+                <div class="image-ielts" :class="{'question-con': selectIELTS}" style="height: 225px; padding: 0; border: 1px solid #ebeef5;" @click="selectScoreIELTS()">
+                  <img src="@/assets/img/LogoIELTS.png" alt="" style="height:100%; width: 100%;">
+                </div>
+              </el-col>
+            </el-row>
+
+            <div v-if="selectIELTS" style="margin-bottom: 25px;">
+              <el-col :span="24" class="select-score-ielts question-con">
+                <div style="margin-bottom:10px">
+                  <span style="font-style:normal ;font-size: 15px; margin: 0 5px 5px;">Select You Current IELTS Writing Score</span>
+                  <el-popover
+                    placement="top-start"
+                    title="Tips"
+                    width="500"
+                    trigger="hover"
+                    content="Please use your best guess if you don't already have one"
+                  >
+                    <span slot="reference"><i class="el-icon-question" style="font-size:14px;" /></span>
+                  </el-popover>
+                </div>
+                <el-form-item
+                  size="mini"
+                  :rules="[
+                    { required: true, message: 'IELTS Test Scores is required'}
+                  ]"
+                >
+                  <el-row :span="24" style="display: flex; flex-wrap: wrap; justify-content:center;">
+                    <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.WRITING" :rules="[ { required: true, message: 'Required' } ]">
+                      <el-input id="scoresSelector">
+                        <el-select slot="append" v-model="formData.ieltsTestScore.WRITING" placeholder="...">
+                          <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
+                        </el-select>
+                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                      </el-input>
+                    </el-form-item>
+                    <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.READING" :rules="[ { required: true, message: 'Required' } ]">
+                      <el-input id="scoresSelector">
+                        <el-select slot="append" v-model="formData.ieltsTestScore.READING" placeholder="...">
+                          <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
+                        </el-select>
+                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Reading</label>
+                      </el-input>
+                    </el-form-item>
+                    <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.LISTENING" :rules="[ { required: true, message: 'Required' } ]">
+                      <el-input id="scoresSelector">
+                        <el-select slot="append" v-model="formData.ieltsTestScore.LISTENING" placeholder="...">
+                          <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
+                        </el-select>
+                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Listening</label>
+                      </el-input>
+                    </el-form-item>
+                    <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.SPEAKING" :rules="[ { required: true, message: 'Required' } ]">
+                      <el-input id="scoresSelector">
+                        <el-select slot="append" v-model="formData.ieltsTestScore.SPEAKING" placeholder="...">
+                          <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
+                        </el-select>
+                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Speaking</label>
+                      </el-input>
+                    </el-form-item>
+                  </el-row>
+                </el-form-item>
+              </el-col>
+            </div>
+          </el-col>
+
+          <el-col :span="12" class="padding-10" style="padding-left: 15px;">
+            <el-row style="margin-bottom: 25px;">
+              <el-col :span="24">
+                <div style="height: 225px; padding: 0; border: 1px solid #ebeef5;" class="image-ielts" :class="{'question-con': selectTOEFL}" @click="selectScoreTOEFL()">
+                  <img src="@/assets/img/LogoTOEFL.png" alt="" style="height:100%; width: 100%;">
+                </div>
+              </el-col>
+            </el-row>
+            <div v-if="selectTOEFL" style="margin-bottom: 25px;">
+              <el-col :span="24" class="select-score-ielts question-con">
+                <div style="margin-bottom:10px">
+                  <span style="font-style:normal ;font-size: 15px; margin: 0 5px 5px;">Select You Current IELTS Writing Score</span>
+                  <el-popover
+                    placement="top-start"
+                    title="Tips"
+                    width="500"
+                    trigger="hover"
+                    content="Please use your best guess if you don't already have one"
+                  >
+                    <span slot="reference"><i class="el-icon-question" style="font-size:14px;" /></span>
+                  </el-popover>
+                </div>
+                <el-form-item
+                  size="mini"
+                  :rules="[
+                    { required: true, message: 'TOEFL Test Scores is required'}
+                  ]"
+                >
+                  <el-row :span="24" style="display: flex; flex-wrap: wrap; justify-content:center;">
+                    <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.WRITING" :rules="[ { required: true, message: 'Required' } ]">
+                      <el-input id="scoresSelector">
+                        <el-select slot="append" v-model="formData.toeflTestScore.WRITING" placeholder="...">
+                          <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
+                        </el-select>
+                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                      </el-input>
+                    </el-form-item>
+                    <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.READING" :rules="[ { required: true, message: 'Required' } ]">
+                      <el-input id="scoresSelector">
+                        <el-select slot="append" v-model="formData.toeflTestScore.READING" placeholder="...">
+                          <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
+                        </el-select>
+                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Reading</label>
+                      </el-input>
+                    </el-form-item>
+                    <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.LISTENING" :rules="[ { required: true, message: 'Required' } ]">
+                      <el-input id="scoresSelector">
+                        <el-select slot="append" v-model="formData.toeflTestScore.LISTENING" placeholder="...">
+                          <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
+                        </el-select>
+                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Listening</label>
+                      </el-input>
+                    </el-form-item>
+                    <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.SPEAKING" :rules="[ { required: true, message: 'Required' } ]">
+                      <el-input id="scoresSelector">
+                        <el-select slot="append" v-model="formData.toeflTestScore.SPEAKING" placeholder="...">
+                          <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
+                        </el-select>
+                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Speaking</label>
+                      </el-input>
+                    </el-form-item>
+                  </el-row>
+                </el-form-item>
+              </el-col>
+            </div>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col class="padding-10">
+            <el-button size="mini" @click="submit('formData')">Continue</el-button>
+          </el-col>
+        </el-row>
+      </el-form>
     </el-col>
   </el-row>
 </template>
 
 <script>
 import userService from '@/services/user.service'
+import moment from 'moment'
+import { SCORES } from '../../app.constant'
 export default {
   name: 'SelectYourTest',
   data() {
@@ -81,99 +171,107 @@ export default {
         toolbar: '',
         menubar: false
       },
-      scoreIELTS: null,
-      scoreTOEFL: null,
+      formData: {
+        ieltsTestScore: {
+          WRITING: null,
+          READING: null,
+          LISTENING: null,
+          SPEAKING: null
+        },
+        toeflTestScore: {
+          WRITING: null,
+          READING: null,
+          LISTENING: null,
+          SPEAKING: null
+        }
+      },
       selectIELTS: false,
       selectTOEFL: false,
-      ieltsScore: null,
-      toeflScore: null
+      toeflScores: [],
+      ieltsScores: []
     }
   },
   computed: {
-    score: function() {
-      var x = []
-      for (let i = 0; i <= 100; i++) { x.push(i) }
-      return x
-    },
     currentUser() {
       var data = this.$store.getters['auth/getUser']
       console.log(data)
       return data
     }
   },
-  // <<<<<<< HEAD
   mounted() {
-    var data = this.$store.getters['auth/getUser']
-    userService.getUserScore(data.id).then(rs => {
-      this.loadCompleted = true
-      console.log(rs)
-      if (rs.length > 0) {
-        rs.forEach(r => {
-          if (r.sectionId == 4) {
-            this.scoreTOEFL = r.score
-            this.selectTOEFL = true
-          }
-          if (r.sectionId == 8) {
-            this.scoreIELTS = r.score
-            this.selectIELTS = true
-          }
-        })
-      }
-    })
-    // =======
-    //   watch: {
-    //     ieltsScore(score) {
-    //       localStorage.ieltsScore = score
-    //     },
-    //     toeflScore(score) {
-    //       localStorage.toeflScore = score
-    //     }
-    //   },
-    //   mounted() {
-    //     if (localStorage.ieltsScore) {
-    //       this.scoreIELTS = JSON.parse(localStorage.getItem('ieltsScore')) || []
-    //       this.selectIELTS = true
-    //       console.log('IEL', this.scoreIELTS)
-    //     }
-    //     if (localStorage.toeflScore) {
-    //       this.scoreTOEFL = JSON.parse(localStorage.getItem('toeflScore')) || []
-    //       this.selectTOEFL = true
-    //       console.log('TOE', this.scoreTOEFL)
-    //     }
-    // >>>>>>> 0e31af36f03a5bcb7f8c0145bb5b6b16859dddf7
+    this.loadData()
   },
   methods: {
-    submit() {
-      var data = []
-      if (this.scoreIELTS != null) {
-        data.push({
-          sectionId: 8,
-          score: this.scoreIELTS,
-          updatedDate: new Date()
-        })
-        window.localStorage.setItem('ieltsScore', this.scoreIELTS)
+    loadData() {
+      for (let i = 0; i <= 9; i += 0.5) {
+        this.ieltsScores.push(i.toFixed(1))
       }
-      if (this.scoreTOEFL != null) {
-        data.push({
-          sectionId: 4,
-          score: this.scoreTOEFL,
-          updatedDate: new Date()
-        })
-        window.localStorage.setItem('toeflScore', this.scoreTOEFL)
+      this.ieltsScores.reverse()
+      for (let i = 0; i <= 30; i += 1) {
+        this.toeflScores.push(i)
       }
-      if (this.scoreIELTS || this.scoreTOEFL) {
-        userService.addScore(this.currentUser.id, data).then(rs => {
-          this.$router.push('/questions')
-        })
-      }
+      this.toeflScores.reverse()
+      userService.getUserScore(this.currentUser.id).then(scores => {
+        this.loadCompleted = true
+        console.log(scores)
+
+        if (scores.length > 0) {
+          for (const key in this.formData.ieltsTestScore) {
+            for (const s of scores) {
+              if (s.sectionId == SCORES.IELTS[key].sectionId) {
+                this.formData.ieltsTestScore[key] = s.score
+                this.selectIELTS = true
+              }
+            }
+          }
+          for (const key in this.formData.toeflTestScore) {
+            for (const s of scores) {
+              if (s.sectionId == SCORES.TOEFL[key].sectionId) {
+                this.formData.toeflTestScore[key] = s.score
+                this.selectTOEFL = true
+              }
+            }
+          }
+        }
+      })
+    },
+    submit(formName) {
+      var scores = []
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          if (this.selectIELTS) {
+            for (const key in this.formData.ieltsTestScore) {
+              if (this.formData.ieltsTestScore[key]) {
+                scores.push({
+                  sectionId: SCORES.IELTS[key].sectionId,
+                  score: this.formData.ieltsTestScore[key],
+                  updatedDate: moment().format('yyyy-MM-DD')
+                })
+              }
+            }
+          }
+          if (this.selectTOEFL) {
+            for (const key in this.formData.toeflTestScore) {
+              if (this.formData.toeflTestScore[key]) {
+                scores.push({
+                  sectionId: SCORES.TOEFL[key].sectionId,
+                  score: this.formData.toeflTestScore[key],
+                  updatedDate: moment().format('yyyy-MM-DD')
+                })
+              }
+            }
+          }
+          userService.addScore(this.currentUser.id, scores).then(rs => {
+            this.$router.push('/questions')
+          })
+        }
+      })
     },
     selectScoreIELTS() {
       this.selectIELTS = !this.selectIELTS
-      this.scoreIELTS = null
     },
     selectScoreTOEFL() {
       this.selectTOEFL = !this.selectTOEFL
-      this.scoreTOEFL = null
     }
   }
 }
@@ -258,3 +356,23 @@ export default {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
 }
 </style>
+<style>
+
+#scoresSelection .el-input .el-input-group__prepend{
+  padding: 0 30px 0 15px;
+}
+
+.previewImageContainer.isActive{
+  display: flex;
+}
+.closePopUpIMG{
+  position: fixed;
+  font-size: 2rem;
+  top:5px;
+  right: 5px;
+}
+.padding{
+  padding: 5px;
+}
+</style>
+

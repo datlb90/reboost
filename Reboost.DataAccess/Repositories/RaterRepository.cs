@@ -30,10 +30,36 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<Raters> GetDetailByIdAsync(int id)
         {
-            return await ReboostDbContext.Raters
-                .Include(r => r.RaterCredentials)
-                .Include(r => r.User).ThenInclude(u => u.UserScores)
-                .AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
+            //return await ReboostDbContext.Raters
+            //    .Include(r => r.RaterCredentials)
+            //    .Include(r => r.User).ThenInclude(u => u.UserScores)
+            //    .AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
+
+            //var data = await (from r in ReboostDbContext.Raters
+            //              join rc in ReboostDbContext.RaterCredentials on r.Id equals rc.RaterId
+            //              join u in ReboostDbContext.Users on r.UserId equals u.Id
+            //              join sc in ReboostDbContext.UserScores on u.Id equals sc.UserId
+            //              where r.Id == id
+            //              select new Raters { 
+            //                  RaterCredentials = 
+            //              })
+
+            //             .FirstOrDefaultAsync();
+
+            var rater = await (from r in ReboostDbContext.Raters
+                            where r.Id == id
+                            select r)
+                            .FirstOrDefaultAsync();
+
+            var credentials = ReboostDbContext.RaterCredentials.AsNoTracking().Where(c => c.RaterId == id).ToList();
+            rater.RaterCredentials = credentials;
+
+            var user = ReboostDbContext.Users.AsNoTracking().Where(u => u.Id == rater.UserId).FirstOrDefault();
+            var scores = ReboostDbContext.UserScores.AsNoTracking().Where(s => s.UserId == user.Id).ToList();
+            user.UserScores = scores;
+            rater.User = user;
+
+            return rater;
         }
 
         public async Task<List<string>> GetApplyTo(int raterId)
@@ -59,7 +85,11 @@ namespace Reboost.DataAccess.Repositories
             ReboostDbContext.RemoveRange(credentials);
             await ReboostDbContext.SaveChangesAsync();
 
-            return await Update(rater);
+            rater.RaterCredentials = null;
+
+            var rs = await Update(rater);
+
+            return rs;
         }
     }
 }

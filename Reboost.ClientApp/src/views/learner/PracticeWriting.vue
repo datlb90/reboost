@@ -2,7 +2,7 @@
   <div id="practiceWritingContainer" :style="{ height: containerHeight, visibility: loadCompleted?'visible': 'hidden' }">
     <splitpanes class="default-theme" vertical style="height: 100%; width: 100%;">
       <pane>
-        <el-tabs type="border-card" style="height: 100%">
+        <el-tabs type="border-card" style="height: 100%;">
           <el-tab-pane label="Topic">
             <div style="height: 100%;display: flex; flex-direction: column">
               <div style="margin-bottom: 8px;">
@@ -24,23 +24,21 @@
                         </div>
                       </div>
                       <div>
-                        <el-switch v-model="isTest" style="display: block" active-color="#13ce66" inactive-color="#ff4949" active-text="Test" inactive-text="Practice" @change="changedOption()" />
+                        <!-- <el-switch v-model="isTest" style="display: block" active-color="#13ce66" inactive-color="#ff4949" active-text="Test" inactive-text="Practice" @change="changedOption()" /> -->
+                        <el-checkbox v-model="isTest" size="mini" border @change="changedOption()">Test Mode</el-checkbox>
                       </div>
                     </div>
                     <hr style="margin: 0; margin-bottom: 8px;">
                     <div class="tip" style=" margin-bottom: 8px;">
-                      <pre style="font-size: 13px; color: #6084a4;"> <span style="font-weight: 600;">Direction: </span>{{ getDataQuestion.direction }}</pre>
+                      <pre style="font-size: 13px; color: #6084a4;"> <span style="font-weight: 600;">Direction: </span> <span v-if="hideDirection == 'Hide'" v-html="getDataQuestion.direction" /> <span class="hide-direction" @click="toggleDirection()">{{ hideDirection }}</span></pre>
                     </div>
                   </el-col>
                 </el-row>
                 <el-row style="margin-bottom: 8px;">
                   <el-col :span="24" class="question-con">
                     <div>
-                      <pre style="font-size: 13px; font-style: italic;"> <span style="font-weight: 600;">Question:</span>
-                      {{ getQuestion.content }}
-                      </pre>
+                      <pre style="font-size: 13px;"><span style="font-weight: 600;">Question: </span>{{ getQuestion.content }}</pre>
                     </div>
-
                   </el-col>
                 </el-row>
                 <el-row>
@@ -48,7 +46,6 @@
                     <div class="header-practice" style="margin-bottom: 8px; display: flex;">
                       <div style="flex-grow: 1; display: flex; align-items: center;">
                         Reading Passage
-
                       </div>
                       <div v-if="!isShowTimer">
                         <el-button size="mini" @click="toggleBtnShowTab()">Go to listening</el-button>
@@ -66,9 +63,6 @@
                         </div>
                       </div>
                     </div>
-                    <div v-if="getReading != '' && 0" class="body-practice" style="margin-bottom: 8px;">
-                      <pre v-if="isShowTimer && !closeTimer || true"> {{ getReading.content }}</pre>
-                    </div>
                   </div>
                   <el-col v-if="getReading =='' && getListening != '' || isShowListeningTab || getReading == ''" :span="24">
                     <div v-if="isShowListeningTab" style="width: 100%;">
@@ -82,11 +76,9 @@
                       </div>
                       <hr style="margin:0; margin-bottom: 8px; ">
                       <div>
-
                         <audio v-if="getListening != ''" controls style="width: 100%; height: 35px; margin-bottom: 3px;">
                           <source :src="'/assets/' + getListening.content" type="audio/mpeg">
                         </audio>
-
                         <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
                           <div style="flex-grow: 1;">
                             <i class="el-icon-document-copy" />
@@ -97,17 +89,6 @@
                           </div>
                         </div>
 
-                      </div>
-                    </div>
-                    <div v-if="isShowChart || (getReading == '' && getChart != '')" style="width: 100%;">
-                      <div class="header-passage" style="display:none; justify-content: space-between;">
-                        CHART
-                        <div v-if="getReading != ''">
-                          <el-button size="mini" @click="backClick()">Back</el-button>
-                        </div>
-                      </div>
-                      <div style="display: flex; justify-content: center;">
-                        <img src="../../assets/chart/1.png" :alt="getChart.content" style="height: 400px; width: 100%;">
                       </div>
                     </div>
                   </el-col>
@@ -121,20 +102,27 @@
                   <div v-if="isShowScript && isShowListeningTab" class="body-transcript" style="margin: 0;">
                     <pre> {{ getTranscript.content }}</pre>
                   </div>
-
+                </div>
+                <div v-if="isShowChart || (getReading == '' && getChart != '')" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%;">
+                  <div style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center;">
+                    <img src="../../assets/chart/1.png" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
+                  </div>
                 </div>
               </div>
             </div>
 
           </el-tab-pane>
           <el-tab-pane label="Samples" style="height: 100%; position: relative;">
-            <div class="par-content">
-              Tab sample goes here
+            <div class="par-content" style="padding-right: 10px;">
+              Tab sample
             </div>
 
           </el-tab-pane>
           <el-tab-pane label="Rubric">
-            Tab rubric goes here
+            <div class="par-content">
+              Tab Rubric
+            </div>
+
           </el-tab-pane>
           <el-tab-pane label="Discussions">
             <tabDisCussion />
@@ -167,6 +155,7 @@
 // import http from '@/utils/axios'
 import documentService from '../../services/document.service'
 import TabDisCussion from '../learner/PracticeWriting_TabDiscussion.vue'
+
 import {
   Splitpanes,
   Pane
@@ -189,15 +178,16 @@ export default {
       isShowListeningTab: false,
       isShowChart: false,
       isShowScript: false,
-      isShowReading: false,
+      isShowReading: true,
       minute: 0,
       second: 3,
       closeTimer: false,
       writingContent: '',
       questionId: undefined,
-      isTest: true,
+      isTest: false,
       countWord: 0,
-      isShowCountWord: true
+      isShowCountWord: true,
+      hideDirection: 'Hide'
     }
   },
   computed: {
@@ -206,6 +196,13 @@ export default {
     },
     getDataQuestion() {
       var data = this.$store.getters['question/getSelected']
+      if (data.direction) {
+        data.direction = data.direction.trim()
+
+        if (data.direction.substr(data.direction.length - 1) == '\n') {
+          data.direction = data.direction.substring(0, data.direction.length - 1)
+        }
+      }
       return data
     },
     getDataQuestionParts() {
@@ -276,8 +273,6 @@ export default {
         userId: this.currentUser.id,
         questionId: +this.questionId
       }
-      console.log('SUBMIT_DATA', data)
-
       documentService.submitDocument(data).then(rs => {
         this.$notify({
           title: 'Success',
@@ -311,6 +306,8 @@ export default {
         }, 1000)
       } else {
         this.isShowReading = false
+        this.isShowTimer = false
+
         if (this.getListening != '') {
           this.isShowListeningTab = true
         }
@@ -319,9 +316,16 @@ export default {
         }
       }
     },
+    toggleDirection() {
+      if (this.hideDirection == 'Hide') { this.hideDirection = 'Show' } else {
+        this.hideDirection = 'Hide'
+      }
+    },
     backClick() {
       this.isShowListeningTab = false
-      this.closeTimer = true
+      if (this.minute <= 0 && this.second == 59) {
+        this.closeTimer = true
+      }
       this.isShowReading = true
     },
     toggleBtnShowScript() {
@@ -336,6 +340,11 @@ export default {
     changedOption() {
       if (!this.isTest) {
         this.isShowReading = true
+        this.minute = 0
+        this.second = 3
+        this.closeTimer = false
+        this.isShowScript = false
+        this.isShowTimer = false
       } else {
         if (!this.closeTimer) {
           this.isShowReading = false
@@ -347,6 +356,14 @@ export default {
 </script>
 
 <style>
+
+.hide-direction {
+  font-weight: bold;
+  color: #409EFF;
+}
+.hide-direction:hover{
+  cursor: pointer;
+}
 .el-tabs--border-card {
   display: flex !important;
   flex-direction: column !important;
