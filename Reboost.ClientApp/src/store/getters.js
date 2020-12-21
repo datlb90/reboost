@@ -15,7 +15,8 @@ const getters = {
   questions: state => state.questions,
   user: state => state.user,
   role: state => state.user.role,
-  apiWaitingCount: state => state.apiWaitingCount
+  apiWaitingCount: state => state.apiWaitingCount,
+  rubric: state => state.rubric
 }
 
 export default getters
