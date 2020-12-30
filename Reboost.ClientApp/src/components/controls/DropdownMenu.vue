@@ -1,8 +1,9 @@
 <template>
   <div class="c-dropdown-menu">
     <div class="c-dropdown-menu--title" @click="toggleMenu()">
-      <span>{{ tittle }}</span>
-      <i class="el-icon-arrow-down el-icon--right" />
+      <span style="white-space: nowrap;">{{ tittle }}
+        <i class="el-icon-arrow-down el-icon--right" />
+      </span>
     </div>
     <div ref="menu" class="c-dropdown-menu--menu">
       <ul class="c-dropdown-menu--menu--inner">
@@ -124,7 +125,7 @@ export default {
     right: 0px;
     -webkit-box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
     box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-    /* padding: 5px 0px; */
+    z-index: 1;
     background-color: white;
 }
 .c-dropdown-menu--menu.show{

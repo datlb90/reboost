@@ -17,7 +17,7 @@ namespace Reboost.DataAccess.Repositories
         Task<User> UpdateScoreAsync(string userId, List<UserScores> score);
         Task<User> UpdateAsync(User user);
         Task<List<UserScores>> GetUserScores(string userId);
-
+        Task<bool> HasSubmissionOnTaskOf(string userId, int questionId);
     }
 
     public class UserRepository : IUserRepository
@@ -71,6 +71,25 @@ namespace Reboost.DataAccess.Repositories
             _context.Entry(user).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return user;
+        }
+
+        public async Task<bool> HasSubmissionOnTaskOf(string userId, int questionId)
+        {
+            var userSubmissionTasks = from s in _context.Submissions
+                                      join q in _context.Questions on s.QuestionId equals q.Id
+                                      join t in _context.Tasks on q.TaskId equals t.Id
+                                      where s.UserId == userId
+                                      select t;
+
+            var questionTask = await (from q in _context.Questions
+                                join t in _context.Tasks on q.TaskId equals t.Id
+                                where q.Id == questionId
+                                select t).FirstOrDefaultAsync();
+
+            if (questionTask == null)
+                return false;
+
+            return userSubmissionTasks.Any(t => t.Id == questionTask.Id);
         }
     }
 }
