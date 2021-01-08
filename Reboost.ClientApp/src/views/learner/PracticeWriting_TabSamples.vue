@@ -8,7 +8,7 @@
               <span>Sample Response #{{ index+1 }}</span>
             </div>
             <div class="box-card__title__right">
-              <span>Band Score: {{ item.bandScore }}</span>
+              <span>Band Score: {{ item.bandScore ? item.bandScore : "Not Available" }}</span>
             </div>
           </div>
           <div class="box-card__content">

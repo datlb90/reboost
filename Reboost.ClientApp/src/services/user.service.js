@@ -9,6 +9,9 @@ const userService = {
   },
   getUserScore(id) {
     return http.get(`/user/getUserScore/${id}`).then(rs => rs.data)
+  },
+  hasSubmissionOnTaskOf(userId, questionId) {
+    return http.get(`/user/hasSubmissionOnTaskOf/${userId}/${questionId}`).then(rs => rs.data)
   }
 }
 

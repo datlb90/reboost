@@ -34,68 +34,69 @@
                     </div>
                   </el-col>
                 </el-row>
-                <el-row style="margin-bottom: 8px;">
-                  <el-col :span="24" class="question-con">
-                    <div>
-                      <pre style="font-size: 13px;"><span style="font-weight: 600;">Question: </span>{{ getQuestion.content }}</pre>
-                    </div>
-                  </el-col>
-                </el-row>
-                <el-row>
-                  <div v-if="!isShowListeningTab && getReading != ''">
-                    <div class="header-practice" style="margin-bottom: 8px; display: flex;">
-                      <div style="flex-grow: 1; display: flex; align-items: center;">
-                        Reading Passage
-                      </div>
-                      <div v-if="!isShowTimer">
-                        <el-button size="mini" @click="toggleBtnShowTab()">Go to listening</el-button>
-                      </div>
-                    </div>
-                    <div v-if="!closeTimer" class="body-practice" style="margin-bottom: 8px;">
-                      <div class="tip" style="display: flex; align-items: center; justify-content: space-between;">
-                        <div style="flex-grow: 1;">
-                          <pre style="font-size: 13px; color: #6084a4;"> <span style="font-weight: 600;">Direction: </span>Give yourseft 3 minutes to read the passage.</pre>
-                        </div>
-                        <div v-if="getListening != ''" style="margin-left: 14px;">
-                          <div v-if="isShowTimer && !closeTimer">
-                            {{ minute }} : {{ second }}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <el-col v-if="getReading =='' && getListening != '' || isShowListeningTab || getReading == ''" :span="24">
-                    <div v-if="isShowListeningTab" style="width: 100%;">
-                      <div class="header-practice" style="display:flex; justify-content: space-between;margin-bottom: 8px; ">
-                        <div style="display: flex; align-items: center;">
-                          LISTEN TO PART OF LECTURE ON THE SAME TOPIC
-                        </div>
-                        <div v-if="getReading != ''">
-                          <el-button size="mini" @click="backClick()">Back</el-button>
-                        </div>
-                      </div>
-                      <hr style="margin:0; margin-bottom: 8px; ">
-                      <div>
-                        <audio v-if="getListening != ''" controls style="width: 100%; height: 35px; margin-bottom: 3px;">
-                          <source :src="'/assets/' + getListening.content" type="audio/mpeg">
-                        </audio>
-                        <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
-                          <div style="flex-grow: 1;">
-                            <i class="el-icon-document-copy" />
-                            Audio Script
-                          </div>
-                          <div :class="{'rotate-icon' : isShowScript}">
-                            <i class="fas fa-caret-down" />
-                          </div>
-                        </div>
 
+              </div>
+              <div id="parent-scroll" style="flex-grow: 1;position: relative;">
+                <div id="child-scroll" class="par-content default">
+                  <el-row style="margin-bottom: 8px;">
+                    <el-col :span="24" class="question-con">
+                      <div>
+                        <pre style="font-size: 13px;"><span style="font-weight: 600;">Question: </span>{{ getQuestion.content }}</pre>
+                      </div>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <div v-if="!isShowListeningTab && getReading != ''">
+                      <div class="header-practice" style="margin-bottom: 8px; display: flex;">
+                        <div style="flex-grow: 1; display: flex; align-items: center;">
+                          Reading Passage
+                        </div>
+                        <div v-if="!isShowTimer">
+                          <el-button size="mini" @click="toggleBtnShowTab()">Go to listening</el-button>
+                        </div>
+                      </div>
+                      <div v-if="!closeTimer" class="body-practice" style="margin-bottom: 8px;">
+                        <div class="tip" style="display: flex; align-items: center; justify-content: space-between;">
+                          <div style="flex-grow: 1;">
+                            <pre style="font-size: 13px; color: #6084a4;"> <span style="font-weight: 600;">Direction: </span>Give yourseft 3 minutes to read the passage.</pre>
+                          </div>
+                          <div v-if="getListening != ''" style="margin-left: 14px;">
+                            <div v-if="isShowTimer && !closeTimer">
+                              {{ minute }} : {{ second }}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </el-col>
-                </el-row>
-              </div>
-              <div style="flex-grow: 1;position: relative;">
-                <div class="par-content" style="padding: 0; margin: 0;">
+                    <el-col v-if="getReading =='' && getListening != '' || isShowListeningTab || getReading == ''" :span="24">
+                      <div v-if="isShowListeningTab" style="width: 100%;">
+                        <div class="header-practice" style="display:flex; justify-content: space-between;margin-bottom: 8px; ">
+                          <div style="display: flex; align-items: center;">
+                            LISTEN TO PART OF LECTURE ON THE SAME TOPIC
+                          </div>
+                          <div v-if="getReading != ''">
+                            <el-button size="mini" @click="backClick()">Back</el-button>
+                          </div>
+                        </div>
+                        <hr style="margin:0; margin-bottom: 8px; ">
+                        <div>
+                          <audio v-if="getListening != ''" controls style="width: 100%; height: 35px; margin-bottom: 3px;">
+                            <source :src="'/assets/' + getListening.content" type="audio/mpeg">
+                          </audio>
+                          <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
+                            <div style="flex-grow: 1;">
+                              <i class="el-icon-document-copy" />
+                              Audio Script
+                            </div>
+                            <div :class="{'rotate-icon' : isShowScript}">
+                              <i class="fas fa-caret-down" />
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </el-col>
+                  </el-row>
                   <div v-if="getReading != '' && !isShowListeningTab && isShowReading" style="margin: 0;">
                     <pre> {{ getReading.content }}</pre>
                   </div>
@@ -122,8 +123,10 @@
               <tabRubric />
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Discussions">
-            <tabDisCussion />
+          <el-tab-pane label="Discussions" style="height: 100%; position: relative;">
+            <div class="par-content" style="padding-right: 10px;">
+              <tabDisCussion />
+            </div>
           </el-tab-pane>
           <el-tab-pane label="Similiar">Similiar</el-tab-pane>
         </el-tabs>
@@ -140,7 +143,7 @@
             </div>
           </div>
           <div style="flex-grow: 1;">
-            <textarea v-model="writingContent" class="textarea-style" @keyup="countWords()" />
+            <textarea v-model="writingContent" placeholder="Please input..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
           </div>
         </div>
       </pane>
@@ -152,6 +155,7 @@
 // @ is an alias to /src
 // import http from '@/utils/axios'
 import documentService from '../../services/document.service'
+import userService from '../../services/user.service'
 import TabDisCussion from '../learner/PracticeWriting_TabDiscussion.vue'
 import TabRubric from '../learner/PracticeWriting_TabRubric.vue'
 import TabSamples from '../learner/PracticeWriting_TabSamples.vue'
@@ -258,7 +262,18 @@ export default {
       this.calculateContainerHeight()
       this.loadCompleted = true
     })
+    userService.hasSubmissionOnTaskOf(this.currentUser.id, this.questionId).then(rs => {
+      if (rs) {
+        this.hideDirection = 'Show'
+      }
+    })
     window.addEventListener('resize', this.calculateContainerHeight.bind(this))
+    this.setIntervalForScroll = setInterval(() => {
+      this.calculateStylePaddingScroll()
+    }, 80)
+  },
+  destroyed() {
+    clearInterval(this.setIntervalForScroll)
   },
   methods: {
     calculateContainerHeight() {
@@ -266,6 +281,15 @@ export default {
       const containerHeight = window.innerHeight - headerHeight
       const elContainer = document.getElementById('practiceWritingContainer')
       elContainer.style.height = containerHeight + 'px'
+    },
+    calculateStylePaddingScroll() {
+      const parentHeight = document.getElementById('parent-scroll').offsetHeight
+      const childHeight = document.getElementById('child-scroll').scrollHeight
+      if (parentHeight >= childHeight) {
+        document.getElementById('child-scroll').style.paddingRight = '0'
+      } else {
+        document.getElementById('child-scroll').style.paddingRight = '10px'
+      }
     },
     submit() {
       var data = {
@@ -411,6 +435,10 @@ export default {
 
 .padding-10 {
   padding: 0px;
+}
+.default{
+  padding: 0;
+  margin: 0;
 }
 
 .question-con {

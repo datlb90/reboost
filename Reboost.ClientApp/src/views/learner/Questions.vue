@@ -23,53 +23,65 @@
       </div>
       <hr>
     </div>
-    <div class="searchAndBtn">
-      <div class="search">
+
+    <el-row :gutter="40">
+      <el-col :md="6" class="filter-container">
         <div>
           <el-input v-model="textSearch" size="mini" placeholder="Type to search" @input="search()" />
         </div>
+      </el-col>
+      <el-col :md="12" class="filter-container">
         <div class="filter-toolbar">
+          <i class="el-icon-document" style="margin-right: 15px; cursor: pointer;" @click="filterSample" />
           <dropdown-menu id="ddFilterSection" v-model="filterSection" style="margin-right: 20px" :tittle="'Test Section'" @confirm="search()" @reset="resetFilterSection()" />
           <dropdown-menu v-model="filterType" style="margin-right: 20px" :tittle="'Type'" @confirm="search()" @reset="resetFilterType()" />
           <dropdown-menu v-model="filterStatus" :tittle="'Status'" @confirm="search()" @reset="resetFilterStatus()" />
         </div>
-      </div>
-      <div class="btn-reset">
-        <el-button size="mini" @click="clearFilter">Reset all filters</el-button>
-      </div>
-    </div>
-    <div class="tag-selection">
-      <el-tag
-        v-for="tag in selectionTag"
-        :key="tag"
-        size="mini"
-        type="success"
-        effect="dark"
-        closable
-        :disable-transitions="false"
-        @close="handleClose(tag)"
-      >
-        {{ tag }}
-      </el-tag>
-    </div>
-    <el-table ref="filterTable" :data="questions" stripe style="width: 100%">
+        <div class="tag-selection">
+          <el-tag
+            v-for="tag in selectionTag"
+            :key="tag"
+            size="mini"
+            type="success"
+            effect="dark"
+            closable
+            :disable-transitions="false"
+            @close="handleClose(tag)"
+          >
+            {{ tag }}
+          </el-tag>
+        </div>
+      </el-col>
+
+      <el-col :md="6" class="filter-container">
+        <div style="text-align: right;">
+          <el-button size="mini" @click="clearFilter">Reset all filters</el-button>
+        </div>
+      </el-col>
+
+    </el-row>
+
+    <el-table ref="filterTable" :data="questions" stripe style="width: 100%;">
       <el-table-column prop="id" label="#" width="50" />
       <el-table-column label="Title">
         <template slot-scope="scope">
-          <span class="title-row cursor" @click="rowClicked(scope.row)">{{ scope.row.title }}</span>
+          <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.title }}</span>
         </template>
       </el-table-column>
       <el-table-column
         label="Test Section"
       >
         <template slot-scope="scope">
-          {{ scope.row.test }} {{ scope.row.section }}
+          <span style="word-break: break-word">{{ scope.row.test }} {{ scope.row.section }}</span>
         </template>
       </el-table-column>
       <el-table-column
-        prop="type"
         label="Type"
-      />
+      >
+        <template slot-scope="scope">
+          <span style="word-break: break-word">{{ scope.row.type }}</span>
+        </template>
+      </el-table-column>
       <el-table-column
         width="80"
         label="Sample"
@@ -138,7 +150,6 @@ export default {
     return {
       textSearch: null,
       table: [],
-      filterSample: [],
       completed: 5,
       total: 5,
       page: 1,
@@ -158,7 +169,8 @@ export default {
       questions: [],
       questionCached: [],
       summary: [],
-      selectionTag: []
+      selectionTag: [],
+      checkSample: false
     }
   },
   computed: {
@@ -241,7 +253,7 @@ export default {
       this.loadTable()
     },
     filter() {
-      const result = []
+      let result = []
       this.selectionTag = []
       const _filteredSection = this.filterSection.filter(s => s.checked).map(s => s.text)
       const _filteredType = this.filterType.filter(s => s.checked).map(s => s.text)
@@ -271,7 +283,10 @@ export default {
       // this.totalRow = result.length
 
       // result = result.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
-
+      if (this.checkSample) {
+        result = result.filter(rs => rs.sample == true)
+      }
+      result = result.sort((a, b) => a.id - b.id)
       return result
     },
     handleClose(tag) {
@@ -300,6 +315,11 @@ export default {
     resetFilterStatus() {
       this.filterStatus = this.filterStatus.map(i => ({ ...i, checked: false }))
       this.loadTable()
+    },
+    filterSample() {
+      this.checkSample = !this.checkSample
+      this.page = 1
+      this.loadTable()
     }
     // filterBySection(data) {
     //   const filtered = this.questionCached.filter(r => data.includes(r.section))
@@ -327,6 +347,11 @@ export default {
 }
 </script>
 <style scoped>
+@media only screen and (max-width: 990px) {
+  .filter-container{
+    padding: 5px 0;
+  }
+}
 .newcontainer {
   padding: 0 120px;
   margin-top: 20px;
@@ -357,7 +382,7 @@ el-table{
 }
 .left-content{
   display: flex;
-  width: 85%;
+  flex-wrap: wrap;
 }
 .check {
   color: green;
@@ -441,15 +466,15 @@ el-table{
   margin-left: 5px;
 }
 .filter-toolbar{
-      display: inherit;
-    margin-left: 40px;
+    display: flex;
     z-index: 1;
+    align-items: center;
 }
 .el-tag + .el-tag {
   margin-left: 10px;
 }
 .tag-selection{
-  margin-left: 240px;
+  margin-top: 10px;
 }
 .el-table::before {
   height: 0 !important;

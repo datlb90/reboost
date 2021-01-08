@@ -40,10 +40,11 @@ namespace Reboost.DataAccess.Repositories
         public async Task<List<RubricsModel>> getByQuestionId(int id)
         {
             var query = await (from q in ReboostDbContext.Questions
-                               join t in ReboostDbContext.Tasks on q.TaskId equals t.Id
-                               join r in ReboostDbContext.Rubrics on t.Id equals r.TaskId
+                               join r in ReboostDbContext.Rubrics on q.TaskId  equals r.TaskId
+                               //join t in ReboostDbContext.Tasks on r.TaskId equals t.Id
                                join rc in ReboostDbContext.RubricCriteria on r.Id equals rc.RubricId
                                join rm in ReboostDbContext.RubricMilestones on rc.Id equals rm.CriteriaId
+                               
                                where q.Id == id
                                select new RubricsQuery
                                {
@@ -64,6 +65,7 @@ namespace Reboost.DataAccess.Repositories
             }).ToList();
 
             return group;
+
         }
     }
 }
