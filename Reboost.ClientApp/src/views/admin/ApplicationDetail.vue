@@ -86,7 +86,7 @@
               { required: true, message: 'First Language is required'}
             ]"
           >
-            <el-select v-model="formRegister.firstLanguage" style="width:250px" filterable placeholder="Please select your first language">
+            <el-select v-model="formRegister.firstLanguage" style="width:40%" filterable placeholder="Please select your first language">
               <el-option
                 v-for="item in firstLanguage"
                 :key="item.id"
@@ -482,7 +482,7 @@ export default {
               if (p.raw) {
                 formData.append(`UploadedFiles`, p.raw)
               } else {
-                formData.append(`UploadedFiles`, stringUtil.stof(p.url, p.name))
+                formData.append(`UploadedFiles`, stringUtil.base64ToArrayBuffer(p.url, p.name))
               }
             }
           }

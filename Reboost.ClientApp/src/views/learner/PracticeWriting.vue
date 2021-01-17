@@ -2,7 +2,7 @@
   <div id="practiceWritingContainer" :style="{ height: containerHeight, visibility: loadCompleted?'visible': 'hidden' }">
     <splitpanes class="default-theme" vertical style="height: 100%; width: 100%;">
       <pane>
-        <el-tabs type="border-card" style="height: 100%;">
+        <el-tabs type="border-card" style="height: 100%;" @tab-click="showDiscussion">
           <el-tab-pane label="Topic">
             <div style="height: 100%;display: flex; flex-direction: column">
               <div style="margin-bottom: 8px;">
@@ -120,26 +120,39 @@
           </el-tab-pane>
           <el-tab-pane label="Rubric" style="height: 100%; position: relative;">
             <div class="par-content">
-              <tabRubric />
+              <tab-rubric />
             </div>
           </el-tab-pane>
           <el-tab-pane label="Discussions" style="height: 100%; position: relative;">
             <div class="par-content" style="padding-right: 10px;">
-              <tabDisCussion />
+              <tab-discussion />
             </div>
           </el-tab-pane>
           <el-tab-pane label="Similiar">Similiar</el-tab-pane>
         </el-tabs>
       </pane>
-      <pane>
+      <pane v-if="!tabDisCussionShowed">
         <div style="height: 100%; display: flex; flex-direction: column;">
           <div class="header-passage" style="display:flex; justify-content: space-between; border: 1px solid #e2e2e2; padding: 5px;">
-            <div v-if="getQuestion != ''">
+            <div v-if="getQuestion != '' && !writtingSubmitted">
               <el-button size="mini" @click="ToggleShowCount()">Hide Word Count</el-button>
               <span v-if="isShowCountWord && countWord != 0" style="margin-left: 15px;">Words: {{ countWord }}</span>
             </div>
+            <div v-if="writtingSubmitted">
+              <el-tag type="success">Your writting has been successfully submitted. You can request a review now.</el-tag>
+            </div>
             <div v-if="getQuestion != ''">
-              <el-button size="mini" @click="submit()">Submit & Request Review</el-button>
+              <el-button v-if="!writtingSubmitted" size="mini" @click="submit()">Submit & Request Review</el-button>
+              <el-dropdown v-if="!writtingSubmitted" size="mini" @command="checkoutVisibles">
+                <el-button size="mini">
+                  Get Writting Preview
+                </el-button>
+                <el-dropdown-menu slot="dropdown" size="mini">
+                  <el-dropdown-item>Free Peer Review</el-dropdown-item>
+                  <el-dropdown-item command="checkout">Pro Rater Review</el-dropdown-item>
+                  <el-dropdown-item divided>View Review Sample</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
             </div>
           </div>
           <div style="flex-grow: 1;">
@@ -164,14 +177,13 @@ import {
   Pane
 } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
-
 export default {
   name: 'PracticeWriting',
   components: {
     'splitpanes': Splitpanes,
     'pane': Pane,
-    'tabDisCussion': TabDisCussion,
-    'tabRubric': TabRubric,
+    'tab-discussion': TabDisCussion,
+    'tab-rubric': TabRubric,
     'tab-samples': TabSamples
   },
   data() {
@@ -192,7 +204,9 @@ export default {
       isTest: false,
       countWord: 0,
       isShowCountWord: true,
-      hideDirection: 'Hide'
+      hideDirection: 'Hide',
+      tabDisCussionShowed: false,
+      writtingSubmitted: false
     }
   },
   computed: {
@@ -256,7 +270,7 @@ export default {
       return ''
     }
   },
-  mounted() {
+  async mounted() {
     this.questionId = this.$route.params.id
     this.$store.dispatch('question/loadQuestion', +this.questionId).then(rs => {
       this.calculateContainerHeight()
@@ -264,6 +278,7 @@ export default {
     })
     userService.hasSubmissionOnTaskOf(this.currentUser.id, this.questionId).then(rs => {
       if (rs) {
+        this.email = this.currentUser.email
         this.hideDirection = 'Show'
       }
     })
@@ -303,8 +318,9 @@ export default {
           title: 'Success',
           message: 'Submit success',
           type: 'success',
-          duration: 2000
+          duration: 1000
         })
+        this.writtingSubmitted = true
       })
     },
     toggleBtnShowTab() {
@@ -375,6 +391,15 @@ export default {
           this.isShowReading = false
         }
       }
+    },
+    showDiscussion(e) {
+      if (e.label == 'Discussions') {
+        this.tabDisCussionShowed = true
+        this.$router.push('/PracticeWriting/' + this.getDataQuestion.id + '/discuss').catch(() => {})
+      } else {
+        this.$router.push('/PracticeWriting/' + this.getDataQuestion.id).catch(() => {})
+        this.tabDisCussionShowed = false
+      }
     }
   }
 }
@@ -403,8 +428,28 @@ export default {
   height: 100%;
   min-height: 0 !important;
 }
+#practiceWritingCheckoutContainer .el-dialog .el-dialog__header{
+  padding: 20px 0 0 0 !important;
+  height: 60px;
+}
+#practiceWritingCheckoutContainer .el-dialog .el-dialog__body{
+  padding: 0 !important;
+}
+
 </style>
 <style scoped>
+
+.payment-method-title{
+  display: flex;
+  align-items: center;
+}
+.dialog-body{
+  padding: 10px 0 10px 0;
+  display: flex;
+  align-items: center;
+  border-bottom: solid 1px rgb(187, 187, 187);
+}
+
 .par-content {
   position: absolute;
   padding-right: 10px;

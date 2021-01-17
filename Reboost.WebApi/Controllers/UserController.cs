@@ -39,8 +39,8 @@ namespace Reboost.WebApi.Controllers
         //    return Ok(await _service.Update(user));
         //}
 
-        [HttpGet("checkCompletedQuestion/{userId}/{questionId}")]
-        public async Task<IActionResult> CheckCompletedQuestion([FromRoute] string userId, [FromRoute] int questionId)
+        [HttpGet("hasSubmissionOnTaskOf/{userId}/{questionId}")]
+        public async Task<IActionResult> HasSubmissionOnTaskOf([FromRoute] string userId, [FromRoute] int questionId)
         {
             return Ok(await _service.HasSubmissionOnTaskOf(userId, questionId));
         }

@@ -17,7 +17,7 @@ namespace Reboost.DataAccess
         IRubricRepository Rubrics { get; }
         ISubmissionRepository Submission { get; }
         IRaterCredentialRepository RaterCredential { get; }
-
+        IDiscussionRepository Discussion { get; }
         Task<int> CommitAsync();
     }
 
@@ -35,7 +35,7 @@ namespace Reboost.DataAccess
         private RubricRepository _rubricRepository;
         private SubmissionRepository _submissionRepository;
         private RaterCredentialRepository _raterCredentialRepository;
-
+        private DiscussionRepository _discussionRepository;
         public UnitOfWork(ReboostDbContext context)
         {
             _context = context;
@@ -52,7 +52,7 @@ namespace Reboost.DataAccess
         public IRubricRepository Rubrics => _rubricRepository = _rubricRepository ?? new RubricRepository(_context);
         public ISubmissionRepository Submission => _submissionRepository = _submissionRepository ?? new SubmissionRepository(_context);
         public IRaterCredentialRepository RaterCredential => _raterCredentialRepository = _raterCredentialRepository ?? new RaterCredentialRepository(_context);
-
+        public IDiscussionRepository Discussion => _discussionRepository = _discussionRepository ?? new DiscussionRepository(_context);
         public async Task<int> CommitAsync()
         {
             return await _context.SaveChangesAsync();
