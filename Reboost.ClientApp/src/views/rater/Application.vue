@@ -482,7 +482,7 @@ export default {
               if (p.raw) {
                 formData.append(`UploadedFiles`, p.raw)
               } else {
-                formData.append(`UploadedFiles`, stringUtil.stof(p.url, p.name))
+                formData.append(`UploadedFiles`, stringUtil.base64ToArrayBuffer(p.url, p.name))
               }
             }
           }

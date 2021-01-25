@@ -62,15 +62,12 @@ namespace Reboost.DataAccess.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RubricCriteriaId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RubricCriteriaId");
+                    b.HasIndex("CriteriaId");
 
                     b.ToTable("CriteriaValues");
                 });
@@ -165,13 +162,10 @@ namespace Reboost.DataAccess.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Direction")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Position")
+                    b.Property<int>("Order")
                         .HasColumnType("int");
 
                     b.Property<int>("QuestionId")
@@ -274,15 +268,12 @@ namespace Reboost.DataAccess.Migrations
                     b.Property<int>("RaterId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RatersId")
-                        .HasColumnType("int");
-
                     b.Property<int>("TestId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RatersId");
+                    b.HasIndex("RaterId");
 
                     b.HasIndex("TestId");
 
@@ -321,9 +312,11 @@ namespace Reboost.DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Raters");
                 });
@@ -569,17 +562,40 @@ namespace Reboost.DataAccess.Migrations
                     b.Property<int>("RubricId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RubricsId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("Weight")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RubricsId");
+                    b.HasIndex("RubricId");
 
                     b.ToTable("RubricCriteria");
+                });
+
+            modelBuilder.Entity("Reboost.DataAccess.Entities.RubricMilestones", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("BandScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CriteriaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CriteriaId");
+
+                    b.ToTable("RubricMilestones");
                 });
 
             modelBuilder.Entity("Reboost.DataAccess.Entities.Rubrics", b =>
@@ -604,6 +620,33 @@ namespace Reboost.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Rubrics");
+                });
+
+            modelBuilder.Entity("Reboost.DataAccess.Entities.Samples", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<decimal?>("BandScore")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LastActivityDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SampleText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Samples");
                 });
 
             modelBuilder.Entity("Reboost.DataAccess.Entities.Submissions", b =>
@@ -727,7 +770,7 @@ namespace Reboost.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AspNetUsers");
+                    b.ToTable("AspNetUsers","dbo");
                 });
 
             modelBuilder.Entity("Reboost.DataAccess.Entities.UserRanks", b =>
@@ -766,8 +809,8 @@ namespace Reboost.DataAccess.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("Score")
-                        .HasColumnType("int");
+                    b.Property<double>("Score")
+                        .HasColumnType("float");
 
                     b.Property<int>("SectionId")
                         .HasColumnType("int");
@@ -816,9 +859,11 @@ namespace Reboost.DataAccess.Migrations
 
             modelBuilder.Entity("Reboost.DataAccess.Entities.CriteriaValues", b =>
                 {
-                    b.HasOne("Reboost.DataAccess.Entities.RubricCriteria", "RubricCriteria")
+                    b.HasOne("Reboost.DataAccess.Entities.RubricCriteria", "Criteria")
                         .WithMany("CriteriaValues")
-                        .HasForeignKey("RubricCriteriaId");
+                        .HasForeignKey("CriteriaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Reboost.DataAccess.Entities.InTextComments", b =>
@@ -848,15 +893,24 @@ namespace Reboost.DataAccess.Migrations
 
             modelBuilder.Entity("Reboost.DataAccess.Entities.RaterCredentials", b =>
                 {
-                    b.HasOne("Reboost.DataAccess.Entities.Raters", "Raters")
+                    b.HasOne("Reboost.DataAccess.Entities.Raters", "Rater")
                         .WithMany("RaterCredentials")
-                        .HasForeignKey("RatersId");
+                        .HasForeignKey("RaterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Reboost.DataAccess.Entities.Tests", "Test")
                         .WithMany("RaterCredentials")
                         .HasForeignKey("TestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Reboost.DataAccess.Entities.Raters", b =>
+                {
+                    b.HasOne("Reboost.DataAccess.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Reboost.DataAccess.Entities.ResponseTemplates", b =>
@@ -884,9 +938,20 @@ namespace Reboost.DataAccess.Migrations
 
             modelBuilder.Entity("Reboost.DataAccess.Entities.RubricCriteria", b =>
                 {
-                    b.HasOne("Reboost.DataAccess.Entities.Rubrics", "Rubrics")
+                    b.HasOne("Reboost.DataAccess.Entities.Rubrics", "Rubric")
                         .WithMany("RubricCriteria")
-                        .HasForeignKey("RubricsId");
+                        .HasForeignKey("RubricId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Reboost.DataAccess.Entities.RubricMilestones", b =>
+                {
+                    b.HasOne("Reboost.DataAccess.Entities.RubricCriteria", "Criteria")
+                        .WithMany("RubricMilestone")
+                        .HasForeignKey("CriteriaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Reboost.DataAccess.Entities.Submissions", b =>

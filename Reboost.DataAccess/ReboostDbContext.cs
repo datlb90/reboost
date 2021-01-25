@@ -35,6 +35,10 @@ namespace Reboost.DataAccess
         public DbSet<LookUp> LookUps { get; set; }
         public DbSet<User> Users { get; set; }
         public virtual DbSet<RubricMilestones> RubricMilestones { get; set; }
+        public virtual DbSet<Discussion> Discussion { get; set; }
+        public virtual DbSet<DiscussionVote> DiscussionVote { get; set; }
+        public virtual DbSet<Tags> Tags { get; set; }
+        public virtual DbSet<Payments> Payments { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
             : base(options)
