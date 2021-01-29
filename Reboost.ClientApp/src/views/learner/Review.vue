@@ -70,7 +70,82 @@
 
       <div id="right-panel" style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);">
         <div id="tool-bar" class="toolbar">
-          <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
+          <div class="tool-group-buttons-container" style="">
+            <div data-element="highlightToolGroupButton" class="tool-group-button">
+              <div class="toolbar-btn-wrapper">
+                <el-tooltip class="item" effect="dark" content="Hide Question & Rubric (H)" placement="bottom">
+                  <button class="toolbar-btn">
+                    <div class="icon">
+                      <i class="toolbar-icon fas fa-angle-double-left" />
+                    </div>
+                  </button>
+                </el-tooltip>
+
+              </div>
+
+              <div class="toolbar-btn-wrapper">
+                <el-tooltip class="item" effect="dark" content="Note (N)" placement="bottom">
+                  <button class="toolbar-btn">
+                    <div class="icon">
+                      <i class="toolbar-icon far fa-sticky-note" />
+                    </div>
+                  </button>
+                </el-tooltip>
+
+              </div>
+              <div class="toolbar-btn-wrapper">
+                <el-tooltip class="item" effect="dark" content="Free Text (T)" placement="bottom">
+                  <button class="toolbar-btn">
+                    <div class="icon">
+                      <i class="toolbar-icon fas fa-pen-alt" />
+                    </div>
+                  </button>
+                </el-tooltip>
+              </div>
+
+              <div class="toolbar-btn-wrapper">
+                <el-tooltip class="item" effect="dark" content="Rectangle (R)" placement="bottom">
+                  <button class="toolbar-btn">
+                    <div class="icon">
+                      <i class="far fa-square" />
+                    </div>
+                  </button>
+                </el-tooltip>
+
+              </div>
+            </div>
+
+            <el-dropdown size="mini" split-button style="margin-left: 10px;">
+              100%
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item icon="fas fa-expand-arrows-alt"> Fit to width</el-dropdown-item>
+                <el-dropdown-item icon="fas fa-expand-alt"> Fit to page</el-dropdown-item>
+                <el-dropdown-item divided> 50% </el-dropdown-item>
+                <el-dropdown-item>100%</el-dropdown-item>
+                <el-dropdown-item>125%</el-dropdown-item>
+                <el-dropdown-item>150%</el-dropdown-item>
+                <el-dropdown-item>200%</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+
+            <div data-element="highlightToolGroupButton" class="tool-group-button">
+              <button class="toolbar-btn" style="margin-left: 5px;">
+                <div class="icon">
+                  <i class="toolbar-icon fas fa-plus" />
+                </div>
+              </button>
+
+              <button class="toolbar-btn">
+                <div class="icon">
+                  <i class="toolbar-icon fas fa-minus" />
+                </div>
+              </button>
+            </div>
+
+            <el-button type="primary" size="mini" style="position: absolute; right: 0px;" @click="submit()">Submit Review</el-button>
+          </div>
+
+          <!-- <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
             ➚
           </button>
 
@@ -121,7 +196,8 @@
           <a href="javascript://" class="clear" title="Clear">×</a>
           <button id="restore" title="Restore">
             Restore
-          </button>
+          </button> -->
+
         </div>
         <div
           id="viewer"
@@ -274,7 +350,7 @@ export default {
       RENDER_OPTIONS: {
         documentId: './static/Meeting.pdf',
         pdfDocument: null,
-        scale: parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
+        scale: 1.3, // parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
         rotate: parseInt(localStorage.getItem(`${this.documentId}/rotate`), 10) || 0
       },
       newComment: '',
@@ -368,15 +444,15 @@ export default {
       const viewport = renderer[0].getViewport(obj)
       self.PAGE_HEIGHT = viewport.height
 
-      const pageWidth = document.getElementById('pageContainer1').offsetWidth
-      document.getElementById('tool-bar').style.width = pageWidth - 18 + 'px'
+      const pageWidth = document.getElementById('page1').offsetWidth
+      document.getElementById('tool-bar').style.width = pageWidth + 'px'
 
       this.viewerWidth = pageWidth + 250
-      this.commentleftPos = pageWidth - 15
+      this.commentleftPos = pageWidth
 
       const viewer = document.getElementById('viewer')
       const commentWrapper = document.getElementById('comment-wrapper')
-      commentWrapper.style.left = pageWidth - 15 + 'px'
+      commentWrapper.style.left = pageWidth + 'px'
       viewer.appendChild(commentWrapper)
 
       this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
