@@ -61,6 +61,9 @@ import ApplicationDetail from '../views/admin/ApplicationDetail.vue'
 import PracticeWriting from '../views/learner/PracticeWriting'
 import SelectYourTest from '../views/learner/SelectYourTest'
 import ApplicationStatus from '../views/rater/ApplicationStatus'
+import DiscussionDetail from '../views/learner/PracticeWriting_TabDiscussion_Detail.vue'
+import DiscussionList from '../views/learner/PracticeWriting_TabDiscussion_List.vue'
+import Subscribe from '../views/rater/Subscribe.vue'
 
 Vue.use(VueRouter)
 
@@ -189,12 +192,27 @@ const router = new VueRouter({
     {
       path: '/PracticeWriting/:id',
       component: PracticeWriting,
-      name: 'PracticeWriting'
+      name: 'PracticeWriting',
+      children: [{
+      	path: 'discuss/:discussId',
+        component: DiscussionDetail,
+        name: 'DiscussionDetail'
+      },
+      {
+      	path: 'discuss',
+        component: DiscussionList,
+        name: 'DiscussionList'
+      }]
     },
     {
       path: '/SelectYourTest',
       component: SelectYourTest,
       name: 'SelectYourTest'
+    },
+    {
+      path: '/Subscribe',
+      component: Subscribe,
+      name: 'Subscribe'
     },
 
     { path: '/it-startup', component: ITStartup },

@@ -15,6 +15,7 @@ using Reboost.Service.Services;
 using Reboost.WebApi.Email;
 using Reboost.WebApi.Identity;
 using Reboost.WebApi.Utils;
+using Stripe;
 using System.Text;
 
 namespace Reboost.WebApi
@@ -122,7 +123,9 @@ namespace Reboost.WebApi
             services.AddScoped<IPDFService, PDFService>();
             services.AddScoped<IRubricService, RubricService>();
             services.AddScoped<ISubmissionService, SubmissionService>();
-
+            services.AddScoped<IDiscussionService, DiscussionService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IStripeService, StripeService>();
 
 
             services.AddControllers().AddNewtonsoftJson(option => option.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
@@ -137,6 +140,8 @@ namespace Reboost.WebApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            StripeConfiguration.ApiKey = "sk_test_51I9tu1D04tWYlOu2YZ56fZ4sMfOsXSmRdJ0t3iu5fzdeyOVtL6w3rSb74NTh45kNeDKcbrH9uTQnigaoCwixS9y100zPTgMYoc";
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

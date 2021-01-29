@@ -21,5 +21,6 @@ namespace Reboost.Shared
         public string Role { get; set; }
         public string Token { get; set; }
         public DateTime? ExpireDate { get; set; }
+        public string? StripeCustomerId { get; set; }
     }
 }

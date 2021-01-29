@@ -27,19 +27,27 @@ export default {
     event: ['confirm,', 'reset']
   },
   props: { data: { type: Array, default: () => [] }, tittle: { type: String, default: 'Unknown' }},
-  mounted() {
-    document.addEventListener('click', (e) => {
-      let exist = false
-      for (const el of e.path) {
-        if (el.classList && el.className == 'c-dropdown-menu') {
-          exist = true
-          break
+  data() {
+    return {
+      clickHandler: (e) => {
+        let exist = false
+        for (const el of e.path) {
+          if (el.classList && el.className == 'c-dropdown-menu') {
+            exist = true
+            break
+          }
+        }
+        if (!exist) {
+          this.toggleMenu('hide')
         }
       }
-      if (!exist) {
-        this.toggleMenu('hide')
-      }
-    })
+    }
+  },
+  mounted() {
+    document.addEventListener('click', this.clickHandler)
+  },
+  destroyed() {
+    document.removeEventListener('click', this.clickHandler)
   },
   methods: {
     generateId(text) {

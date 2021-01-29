@@ -4,7 +4,7 @@
     id="header"
     :class="['headroom navbar-style-two', {'is-sticky': isSticky}]"
     style=" padding-top: 0px; padding-bottom: 0px; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);
-    position: relative; padding-right: 20px;"
+    position: relative; padding-right: 20px;z-index:1032"
   >
     <div class="startp-nav">
       <div class="container" style=" max-width: 100%;">

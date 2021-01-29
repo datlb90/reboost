@@ -11,9 +11,11 @@ namespace Reboost.Service.Services
     {
         Task<List<User>> GetAllAsync();
         Task<User> GetByIdAsync(string id);
+        Task<User> GetByEmailAsync(string email);
         Task<User> AddScoreAsync(string userId, List<UserScores> userScores);
         Task<List<UserScores>> GetUserScores(string userId);
         Task<bool> HasSubmissionOnTaskOf(string userId, int questionId);
+        Task<User> UpdateStripeIdAsync(User user, string id);
     }
 
     public class UserService: BaseService, IUserService
@@ -43,6 +45,15 @@ namespace Reboost.Service.Services
         public async Task<bool> HasSubmissionOnTaskOf(string userId, int questionId)
         {
             return await _unitOfWork.Users.HasSubmissionOnTaskOf(userId, questionId);
+        }
+        public async Task<User> GetByEmailAsync(string email)
+        {
+            return await _unitOfWork.Users.GetByEmailAync(email);
+        }
+        public async Task<User> UpdateStripeIdAsync(User user, string stripeId)
+        {
+            user.StripeCustomerID = stripeId;
+            return await _unitOfWork.Users.UpdateAsync(user);
         }
     }
 }

@@ -1,283 +1,219 @@
 <template>
-  <div class="test">
-    <!-- <div>
-			<p>Hello {{ username }}</p>
-		</div>
-		<el-alert
-			title="warning alert"
-			type="warning"
-		/> -->
-    <div>
-      <div
-        style="width: 400px;
-					margin: auto;
-					padding: 30px;
-					border: #d4d3d3 solid 1px;
-					border-radius: 8px;
-					background-color: white;     margin-top: 10%;"
-      >
-        <div>
-          <el-form :model="form">
-            <div style="    margin: auto;    width: 140px; padding-left: 10px; padding-bottom: 20px;">
-              <router-link class="navbar-brand" to="/" style="padding-top: 0px;">
-                <img src="@/assets/logo/green_logo.png" alt="logo" style="width: 140px;">
-              </router-link>
-              <!-- <el-button plain>
-                Reboost Logo
-              </el-button> -->
-              <!-- <p class="welcome">
-                Welcome back, please login to your account.
-              </p> -->
-            </div>
-            <el-form-item style="text-align: left;">
-              <span style="font-size: 15px; font-weight: bold; color: rgb(78 126 154);">
-                Username or email
-              </span>
-              <el-input id="email" v-model="form.username" type="text" />
-              <br>
-            </el-form-item>
-            <el-form-item style="text-align: left;">
-              <span style="font-size: 15px; font-weight: bold; color:rgb(78 126 154);">
-                Password
-              </span>
-
-              <a href="https://netid.usf.edu/una/?display=reset" style="float: right; color: rgb(101 139 179); text-decoration: none;">
-                Forgot Password?
-              </a>
-
-              <el-input id="password" v-model="form.password" type="password" autocomplete="off" />
-            </el-form-item>
-            <!-- <el-form-item>
-              <el-checkbox style="float: left;">
-                Remember Me
-              </el-checkbox>
-              <a href="https://netid.usf.edu/una/?display=reset" style="float: right; color: #409eff; text-decoration: none;">
-                Forgot Password?
-              </a>
-            </el-form-item> -->
-            <el-form-item>
-              <!-- <el-button type="primary" style="width: 100%;" @click="login()">
-                Sign in to Reboost
-              </el-button> -->
-              <a href="#" class="btn btn-primary" style="width: 100%;" @click="login()">Sign In</a>
-            </el-form-item>
-
-            <!-- <el-form-item>
-              <form ref="googleLoginForm" method="post" :action="googleFormAction">
-                <el-button type="primary" style="width: 100%;" @click="submitGoogleLoginForm()">
-                  Sign in with Google
-                </el-button>
-              </form>
-            </el-form-item>
-
-            <el-form-item>
-              <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
-                <el-button type="primary" style="width: 100%;" @click="submitFacebookLoginForm()">
-                  Sign in with Facebook
-                </el-button>
-              </form>
-            </el-form-item> -->
-
-            <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
-              By logging in, I agree to the
-              <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
-                terms
-              </a> and
-              <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
-                policies
-              </a>
-            </div>
-            <hr>
-            <el-form-item style="margin-bottom: 5px;">
-              <a href="#" class="btn btn-light" style="width: 100%;text-transform: none; color: #246185;">New to Reboost? Register Now!</a>
-
-            </el-form-item>
-          </el-form>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="access_token" style="width: 30%; margin: auto; margin-top: 20px; text-align: center;">
-      <el-button type="primary" plain @click="apiCall()">
-        Api Call
-      </el-button>
-      <!-- <el-button type="primary" plain @click="logout()">
-        Logout
-      </el-button> -->
-    </div>
-
-    <el-table
-      v-if="weathers && weathers.length > 0"
-      :data="weathers"
-      border
-      style="width: 50%; margin: auto; margin-top: 20px;"
-    >
-      <el-table-column
-        prop="date"
-        label="Date"
-        width="180"
-      />
-      <el-table-column
-        prop="temperatureC"
-        label="Temperature C"
-        width="180"
-      />
-      <el-table-column
-        prop="temperatureF"
-        label="Temperature F"
-      />
-      <el-table-column
-        prop="summary"
-        label="Summary"
-      />
-    </el-table>
+  <div class="about">
+    <form id="payment-form">
+      <div id="card-element"><!--Stripe.js injects the Card Element--></div>
+      <button id="submit">
+        <div id="spinner" class="spinner hidden" />
+        <span id="button-text">Pay</span>
+      </button>
+      <p id="card-error" role="alert" />
+      <p class="result-message hidden">
+        Payment succeeded, see the result in your
+        <a href="" target="_blank">Stripe dashboard.</a> Refresh the page to pay again.
+      </p>
+    </form>
   </div>
 </template>
+
 <script>
 // @ is an alias to /src
-import http from '@/utils/axios'
+// import http from '@/utils/axios'
+import { loadStripe } from '@stripe/stripe-js'
 export default {
-  name: 'Test',
+  name: 'About',
   data() {
     return {
-      weathers: [],
-      user: null,
-      mgr: null,
-      username: 'guest',
-      form: {
-        username: '',
-        password: ''
-      },
-      access_token: null,
-      fbSignInParams: {
-        scope: 'email',
-        return_scopes: true
-      },
-      googleExternalLogin: null,
-      returnUrl: '/about',
-      googleFormAction: null,
-      facebookFormAction: null
+      email: null,
+      token: null
     }
   },
   async created() {
-    this.googleFormAction = 'api/auth/external/google/' + encodeURIComponent(this.returnUrl)
-    this.facebookFormAction = 'api/auth/external/facebook/' + encodeURIComponent(this.returnUrl)
-    // this.oauthSignIn()
+
+  },
+  async mounted() {
+    const stripe = await loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx')
+    var elements = stripe.elements()
+    var style = {
+      base: {
+        color: '#32325d',
+        fontFamily: 'Arial, sans-serif',
+        fontSmoothing: 'antialiased',
+        fontSize: '16px',
+        '::placeholder': {
+          color: '#32325d'
+        }
+      },
+      invalid: {
+        fontFamily: 'Arial, sans-serif',
+        color: '#fa755a',
+        iconColor: '#fa755a'
+      }
+    }
+    var card = elements.create('card', { style: style })
+    card.mount('#card-element')
   },
   methods: {
-    oauthSignIn() {
-      // Google's OAuth 2.0 endpoint for requesting an access token
-      var oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth'
-
-      // Create <form> element to submit parameters to OAuth 2.0 endpoint.
-      var form = document.createElement('form')
-      form.setAttribute('method', 'GET') // Send as a GET request.
-      form.setAttribute('action', oauth2Endpoint)
-
-      // Parameters to pass to OAuth 2.0 endpoint.
-      var params = { 'client_id': '296436268455-jec5622h7o285l5thb6es3cs2dkv4m45.apps.googleusercontent.com',
-        'redirect_uri': 'http://localhost:3011/about',
-        'response_type': 'token',
-        'scope': 'https://www.googleapis.com/auth/drive.metadata.readonly',
-        'include_granted_scopes': 'true',
-        'state': 'pass-through value' }
-
-      // Add form parameters as hidden input values.
-      for (var p in params) {
-        var input = document.createElement('input')
-        input.setAttribute('type', 'hidden')
-        input.setAttribute('name', p)
-        input.setAttribute('value', params[p])
-        form.appendChild(input)
-      }
-
-      // Add form to page and submit it to open the OAuth 2.0 endpoint.
-      document.body.appendChild(form)
-      form.submit()
-    },
-    submitGoogleLoginForm() {
-      this.$refs.googleLoginForm.submit()
-    },
-    submitFacebookLoginForm() {
-      this.$refs.facebookLoginForm.submit()
-    },
-    login() {
-      const that = this
-      http.post('http://localhost:6990/api/auth/login', {
-        Email: this.form.username,
-        Password: this.form.password
-      })
-        .then(function(response) {
-          console.log(response)
-          that.username = response.data.email
-          that.access_token = response.data.message
-          that.$notify.success({
-            title: 'Success',
-            message: 'You have successfully logged in.'
-          })
-        })
-        .catch(function(error) {
-          // console.log(error)
-          that.$notify.error({
-            title: 'Error',
-            message: error
-          })
-        })
-    },
-    apiCall() {
-      const config = {
-        headers: { Authorization: `Bearer ${this.access_token}` }
-      }
-      const url = 'http://localhost:6990/api/weatherforecast'
-      // let url = 'https://edvision.ai/api/weatherforecast';
-      http.get(
-        url,
-        config
-      ).then(response => {
-        if (response && response.data.length > 0) {
-          this.weathers = response.data
-        }
-      }).catch(error => {
-        console.log(error)
-        this.$notify.error({
-          title: 'Error',
-          message: 'Username or password is incorrect.'
-        })
-      })
-    }
   }
 }
 </script>
-
-<style>
-hr
-{
-	margin-bottom: 20px;
-	border-bottom: 1px;
-	border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.el-form-item__content{
-	line-height: 20px !important;
-}
-</style>
-
 <style scoped>
-.g-signin-button {
-  /* This is where you control how the button looks. Be creative! */
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 3px;
-  background-color: #3c82f7;
-  color: #fff;
-  box-shadow: 0 3px 0 #0f69ff;
+/* Variables */
+* {
+  box-sizing: border-box;
 }
-.fb-signin-button {
-  /* This is where you control how the button looks. Be creative! */
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 3px;
-  background-color: #4267b2;
-  color: #fff;
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  height: 100vh;
+  width: 100vw;
+}
+form {
+  width: 30vw;
+  min-width: 500px;
+  align-self: center;
+  box-shadow: 0px 0px 0px 0.5px rgba(50, 50, 93, 0.1),
+    0px 2px 5px 0px rgba(50, 50, 93, 0.1), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.07);
+  border-radius: 7px;
+  padding: 40px;
+}
+input {
+  border-radius: 6px;
+  margin-bottom: 6px;
+  padding: 12px;
+  border: 1px solid rgba(50, 50, 93, 0.1);
+  height: 44px;
+  font-size: 16px;
+  width: 100%;
+  background: white;
+}
+.result-message {
+  line-height: 22px;
+  font-size: 16px;
+}
+.result-message a {
+  color: rgb(89, 111, 214);
+  font-weight: 600;
+  text-decoration: none;
+}
+.hidden {
+  display: none;
+}
+#card-error {
+  color: rgb(105, 115, 134);
+  text-align: left;
+  font-size: 13px;
+  line-height: 17px;
+  margin-top: 12px;
+}
+#card-element {
+  border-radius: 4px 4px 0 0 ;
+  padding: 12px;
+  border: 1px solid rgba(50, 50, 93, 0.1);
+  height: 44px;
+  width: 100%;
+  background: white;
+}
+#payment-request-button {
+  margin-bottom: 32px;
+}
+/* Buttons and links */
+button {
+  background: #5469d4;
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+  border-radius: 0 0 4px 4px;
+  border: 0;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: block;
+  transition: all 0.2s ease;
+  box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
+  width: 100%;
+}
+button:hover {
+  filter: contrast(115%);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* spinner/processing state, errors */
+.spinner,
+.spinner:before,
+.spinner:after {
+  border-radius: 50%;
+}
+.spinner {
+  color: #ffffff;
+  font-size: 22px;
+  text-indent: -99999px;
+  margin: 0px auto;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  box-shadow: inset 0 0 0 2px;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+}
+.spinner:before,
+.spinner:after {
+  position: absolute;
+  content: "";
+}
+.spinner:before {
+  width: 10.4px;
+  height: 20.4px;
+  background: #5469d4;
+  border-radius: 20.4px 0 0 20.4px;
+  top: -0.2px;
+  left: -0.2px;
+  -webkit-transform-origin: 10.4px 10.2px;
+  transform-origin: 10.4px 10.2px;
+  -webkit-animation: loading 2s infinite ease 1.5s;
+  animation: loading 2s infinite ease 1.5s;
+}
+.spinner:after {
+  width: 10.4px;
+  height: 10.2px;
+  background: #5469d4;
+  border-radius: 0 10.2px 10.2px 0;
+  top: -0.1px;
+  left: 10.2px;
+  -webkit-transform-origin: 0px 10.2px;
+  transform-origin: 0px 10.2px;
+  -webkit-animation: loading 2s infinite ease;
+  animation: loading 2s infinite ease;
+}
+@-webkit-keyframes loading {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes loading {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@media only screen and (max-width: 600px) {
+  form {
+    width: 80vw;
+  }
 }
 </style>
