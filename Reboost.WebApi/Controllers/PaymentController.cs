@@ -51,7 +51,7 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("intent")]
         public async Task<IActionResult> GetNewIntent([FromBody] CreateIntentModel amount)
         {
-            string customerId = this.GetCustomerId().ToString();
+            string customerId = await this.GetCustomerId();
 
             PaymentIntent paymentIntent = await _stripeService.CreateIntentAsync(customerId, amount.Amount);
             return Ok(paymentIntent);
