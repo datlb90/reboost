@@ -25,6 +25,32 @@ const paymentService = {
   },
   subscribe(data) {
     return http.post('/payment/subscribe', { methodId: data.methodId, priceId: data.priceId }).then(rs => rs.data)
+  },
+  createAccount(userId) {
+    return http.get(`/payment/account/create/${userId}`).then(rs => rs.data)
+  },
+  getStripeAccount(userId) {
+    return http.get(`/payment/account/${userId}`).then(rs => rs.data)
+  },
+  transferMoney(data) {
+    return http.post('/payment/transfer', data).then(rs => rs.data)
+  },
+  payout(data) {
+    return http.post('/payment/payout', data).then(rs => rs.data)
+  },
+  transferHistories(userId) {
+    // return http.get('/payment/transfer').then(rs => rs.data)
+    return http.get('/payment/out/' + userId).then(rs => rs.data)
+  },
+  balance(customerId) {
+    return http.get('/payment/balance/' + customerId).then(rs => rs.data)
+  },
+  loginLink(customerId) {
+    console.log('VAO SERVICE')
+    return http.get('/payment/loginLink/' + customerId)
+  },
+  getCustomerSubscriptions(customerId) {
+    return http.get('/payment/subscribe/' + customerId).then(rs => rs.data)
   }
 }
 export default paymentService

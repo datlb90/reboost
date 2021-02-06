@@ -14,6 +14,12 @@ namespace Reboost.DataAccess.Repositories
     {
         Task<Payments> GetDetailByPaymentId(string id);
         Task<List<Payments>> GetAllPaymentsByUserId(string id);
+        Task<UserStripeAccounts> UpdateUserStripeAccounts(UserStripeAccounts acct);
+        Task<UserStripeAccounts> GetAccount(string userId);
+        Task<IEnumerable<Payments>> GetOutPaymentByUserId(string userId);
+        //Task<IEnumerable<Payments>> GetPaymentByUser(string userId);
+        //Task<List<PaymentHistory>> GetAllPaymentHistory();
+        //Task<PaymentHistory> CreateNewPaymentHistory(PaymentHistory ph);
     }
     public class PaymentRepository : BaseRepository<Payments>, IPaymentRepository
     {
@@ -35,5 +41,34 @@ namespace Reboost.DataAccess.Repositories
                           where q.UserId == id
                           select q).ToListAsync();
         }
+        public async Task<UserStripeAccounts> UpdateUserStripeAccounts(UserStripeAccounts acct)
+        {
+            await ReboostDbContext.UserStripeAccounts.AddAsync(acct);
+            await ReboostDbContext.SaveChangesAsync();
+            return acct;
+        }
+        public async Task<UserStripeAccounts> GetAccount(string userId)
+        {
+            return await (from q in ReboostDbContext.UserStripeAccounts
+                          where q.UserId == userId
+                          select q).FirstOrDefaultAsync();
+        }
+        public async Task<IEnumerable<Payments>> GetOutPaymentByUserId(string userId) {
+            return await ReboostDbContext.Payments.AsNoTracking().Where(p => p.UserId == userId && p.Type == "OUT").ToListAsync();
+        }
+        //public async Task<IEnumerable<Payments>> GetPaymentByUser(string userId) {
+        //    return await ReboostDbContext.Payments.AsNoTracking().Where(p => p.UserId == userId).ToListAsync();
+        //}
+        //public async Task<List<PaymentHistory>> GetAllPaymentHistory()
+        //{
+        //    return await (from p in ReboostDbContext.PaymentHistory
+        //                  select p).ToListAsync();
+        //}
+        //public async Task<PaymentHistory> CreateNewPaymentHistory(PaymentHistory ph)
+        //{
+        //    await ReboostDbContext.PaymentHistory.AddAsync(ph);
+        //    await ReboostDbContext.SaveChangesAsync();
+        //    return ph;
+        //}
     }
 }

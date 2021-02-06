@@ -36,7 +36,8 @@
                   <small class="currency-notice">(prices are marked in USD)</small>
                 </div>  <!-- End of body -->
                 <div class="footer">
-                  <button type="button" class="button button-default subscribe-button" @click="planSelected(item.id)">Subscribe</button>
+                  <button v-if="!subscribedPlans.find(p => p.product == item.id)" type="button" class="button button-default subscribe-button" @click="planSelected(item.id)">Subscribe</button>
+                  <button v-else type="button" class="button button-default subscribe-button" disabled="true">Subscribed</button>
                 </div>  <!-- End of footer -->
               </div>
             </div>
@@ -66,7 +67,8 @@ export default {
       productsList: [],
       pricesList: [],
       checkoutVisible: false,
-      priceId: ''
+      priceId: '',
+      subscribedPlans: []
     }
   },
   computed: {
@@ -88,6 +90,11 @@ export default {
   async mounted() {
     this.$store.dispatch('payment/loadProducts')
     this.$store.dispatch('payment/loadPrices')
+    paymentService.getCustomerSubscriptions(this.currentUser.stripeCustomerId).then(rs => {
+      console.log('USER SUBSCRIPTION FULL', rs)
+      this.subscribedPlans = rs.data.map(s => s.items.data[0].plan)
+      console.log('USER SUBSCRIPTION', this.subscribedPlans)
+    })
   },
   methods: {
     formatPrice(id) {

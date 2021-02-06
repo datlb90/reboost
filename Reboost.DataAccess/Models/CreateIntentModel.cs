@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Reboost.DataAccess.Entities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -19,6 +20,11 @@ namespace Reboost.DataAccess.Models
     }
     public class BankAccountCreateModel
     {
-        public string UserId { get; set; }
+        public string AccountId { get; set; }
+    }
+    public class TransferModel : Payments
+    {
+        public string Destination { get; set; }
+        //public int Amount { get; set; }
     }
 }

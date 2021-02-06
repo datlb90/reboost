@@ -39,6 +39,7 @@ namespace Reboost.DataAccess
         public virtual DbSet<DiscussionVote> DiscussionVote { get; set; }
         public virtual DbSet<Tags> Tags { get; set; }
         public virtual DbSet<Payments> Payments { get; set; }
+        public virtual DbSet<UserStripeAccounts> UserStripeAccounts { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
             : base(options)

@@ -14,11 +14,11 @@
     <div class="dicussion-detail__body">
       <div>
         <div class="grid-content bg-purple">
-          <el-button :class="{ background: clickedUpVote}" style="width: 42px" icon="el-icon-caret-top" plain size="mini" @click="onUp" />
+          <el-button :disabled="questionOwners" :class="{ background: clickedUpVote}" style="width: 42px" icon="el-icon-caret-top" plain size="mini" @click="onUp" />
           <div class="valueCurrent">
             <span>{{ selectedDiscussion ? selectedDiscussion.votes : 0 }}</span>
           </div>
-          <el-button :class="{ background: clickedDownVote}" style="margin: 0; width: 42px; margin-bottom: 10px;" icon="el-icon-caret-bottom" plain size="mini" @click="onDown" />
+          <el-button :disabled="questionOwners" :class="{ background: clickedDownVote}" style="margin: 0; width: 42px; margin-bottom: 10px;" icon="el-icon-caret-bottom" plain size="mini" @click="onDown" />
         </div>
       </div>
       <div style="margin-left: 30px">
@@ -214,10 +214,12 @@
 <script>
 import disussionService from '../../services/discussion.service'
 import moment from 'moment'
+import { RequestSpamGuard } from '../../utils/guard'
 export default {
   name: 'DiscussionDetail',
   data() {
     return {
+      spamGuard: new RequestSpamGuard(),
       discussionId: null,
       selectedDiscussion: { user: { lastName: '', firstName: '' }},
       listComments: [],
@@ -243,7 +245,8 @@ export default {
       tags: [],
       topicTitle: '',
       topicContent: '',
-      selectedTags: []
+      selectedTags: [],
+      questionOwners: false
     }
   },
   computed: {
@@ -287,6 +290,9 @@ export default {
           } else if (voted[0].status == -1) {
             this.clickedDownVote = true
           }
+        }
+        if (this.selectedDiscussion.userId == this.currentUser.id) {
+          this.questionOwners = true
         }
       })
     },
@@ -366,137 +372,181 @@ export default {
       // this.discussion = !this.discussion
     },
     onUp() {
-      if (this.clickedDownVote) {
-        this.selectedDiscussion.votes += 2
-        this.clickedUpVote = true
-        this.clickedDownVote = false
-        var discussion = {
-          DiscussionId: this.selectedDiscussion.id,
-          UserId: this.currentUser.id,
-          Status: 1
-        }
-        this.UpVote(discussion)
-        return
-      } else if (this.clickedUpVote) {
-        this.selectedDiscussion.votes -= 1
-        this.clickedUpVote = false
-        discussion = {
-          DiscussionId: this.selectedDiscussion.id,
-          UserId: this.currentUser.id,
-          Status: 0
-        }
-        this.UpVote(discussion)
-        return
-      }
-      this.selectedDiscussion.votes += 1
-      this.clickedUpVote = true
-      this.clickedDownVote = false
-      discussion = {
-        DiscussionId: this.selectedDiscussion.id,
-        UserId: this.currentUser.id,
-        Status: 1
-      }
-      this.UpVote(discussion)
+      this.spamGuard.check()
+        .then(() => {
+          if (this.clickedDownVote) {
+            this.selectedDiscussion.votes += 2
+            this.clickedUpVote = true
+            this.clickedDownVote = false
+            var discussion = {
+              DiscussionId: this.selectedDiscussion.id,
+              UserId: this.currentUser.id,
+              Status: 1
+            }
+            this.UpVote(discussion)
+            return
+          } else if (this.clickedUpVote) {
+            this.selectedDiscussion.votes -= 1
+            this.clickedUpVote = false
+            discussion = {
+              DiscussionId: this.selectedDiscussion.id,
+              UserId: this.currentUser.id,
+              Status: 0
+            }
+            this.UpVote(discussion)
+            return
+          }
+          this.selectedDiscussion.votes += 1
+          this.clickedUpVote = true
+          this.clickedDownVote = false
+          discussion = {
+            DiscussionId: this.selectedDiscussion.id,
+            UserId: this.currentUser.id,
+            Status: 1
+          }
+          this.UpVote(discussion)
+        })
+        .catch(() => {
+          this.$notify({
+            title: 'Error',
+            message: 'You are voting too frequently. Please wait.',
+            type: 'error',
+            duration: 3000
+          })
+        })
     },
     onDown() {
-      if (this.clickedUpVote) {
-        this.selectedDiscussion.votes -= 2
-        this.clickedDownVote = true
-        this.clickedUpVote = false
-        var discussion = {
-          DiscussionId: this.selectedDiscussion.id,
-          UserId: this.currentUser.id,
-          Status: -1
-        }
-        this.DownVote(discussion)
-        return
-      } else if (this.clickedDownVote) {
-        this.selectedDiscussion.votes += 1
-        this.clickedDownVote = false
-        discussion = {
-          DiscussionId: this.selectedDiscussion.id,
-          UserId: this.currentUser.id,
-          Status: 0
-        }
-        this.DownVote(discussion)
-        return
-      }
-      this.selectedDiscussion.votes -= 1
-      this.clickedUpVote = false
-      this.clickedDownVote = true
-      discussion = {
-        DiscussionId: this.selectedDiscussion.id,
-        UserId: this.currentUser.id,
-        Status: -1
-      }
-      this.DownVote(discussion)
+      this.spamGuard.check()
+        .then(() => {
+          if (this.clickedUpVote) {
+            this.selectedDiscussion.votes -= 2
+            this.clickedDownVote = true
+            this.clickedUpVote = false
+            var discussion = {
+              DiscussionId: this.selectedDiscussion.id,
+              UserId: this.currentUser.id,
+              Status: -1
+            }
+            this.DownVote(discussion)
+            return
+          } else if (this.clickedDownVote) {
+            this.selectedDiscussion.votes += 1
+            this.clickedDownVote = false
+            discussion = {
+              DiscussionId: this.selectedDiscussion.id,
+              UserId: this.currentUser.id,
+              Status: 0
+            }
+            this.DownVote(discussion)
+            return
+          }
+          this.selectedDiscussion.votes -= 1
+          this.clickedUpVote = false
+          this.clickedDownVote = true
+          discussion = {
+            DiscussionId: this.selectedDiscussion.id,
+            UserId: this.currentUser.id,
+            Status: -1
+          }
+          this.DownVote(discussion)
+        })
+        .catch(() => {
+          this.$notify({
+            title: 'Error',
+            message: 'You are voting too frequently. Please wait.',
+            type: 'error',
+            duration: 3000
+          })
+        })
     },
     onUpOtherComment(discussion) {
-      if (discussion.clickedDownVoteComment) {
-        discussion.votes += 2
-        discussion.clickedUpVoteComment = true
-        discussion.clickedDownVoteComment = false
-        var _discussion = {
-          DiscussionId: discussion.id,
-          UserId: this.currentUser.id,
-          Status: 1
-        }
-        this.UpVote(_discussion)
-        return
-      } else if (discussion.clickedUpVoteComment) {
-        discussion.votes -= 1
-        discussion.clickedUpVoteComment = false
-        _discussion = {
-          DiscussionId: discussion.id,
-          UserId: this.currentUser.id,
-          Status: 0
-        }
-        console.log(discussion)
-        this.UpVote(_discussion)
-        return
-      }
-      discussion.votes += 1
-      discussion.clickedUpVoteComment = true
-      discussion.clickedDownVoteComment = false
-      _discussion = {
-        DiscussionId: discussion.id,
-        UserId: this.currentUser.id,
-        Status: 1
-      }
-      this.UpVote(_discussion)
+      this.spamGuard.check()
+        .then(() => {
+          if (discussion.clickedDownVoteComment) {
+            discussion.votes += 2
+            discussion.clickedUpVoteComment = true
+            discussion.clickedDownVoteComment = false
+            var _discussion = {
+              DiscussionId: discussion.id,
+              UserId: this.currentUser.id,
+              Status: 1
+            }
+            this.UpVote(_discussion)
+            return
+          } else if (discussion.clickedUpVoteComment) {
+            discussion.votes -= 1
+            discussion.clickedUpVoteComment = false
+            _discussion = {
+              DiscussionId: discussion.id,
+              UserId: this.currentUser.id,
+              Status: 0
+            }
+            console.log(discussion)
+            this.UpVote(_discussion)
+            return
+          }
+          discussion.votes += 1
+          discussion.clickedUpVoteComment = true
+          discussion.clickedDownVoteComment = false
+          _discussion = {
+            DiscussionId: discussion.id,
+            UserId: this.currentUser.id,
+            Status: 1
+          }
+          this.UpVote(_discussion)
+        })
+        .catch(() => {
+          this.$notify({
+            title: 'Error',
+            message: 'You are voting too frequently. Please wait.',
+            type: 'error',
+            duration: 3000
+          })
+        })
     },
     onDownOtherComment(discussion) {
-      if (discussion.clickedUpVoteComment) {
-        discussion.votes -= 2
-        discussion.clickedUpVoteComment = false
-        discussion.clickedDownVoteComment = true
-        var _discussion = {
-          DiscussionId: discussion.id,
-          UserId: this.currentUser.id,
-          Status: -1
-        }
-        this.DownVote(_discussion)
-        return
-      } else if (discussion.clickedDownVoteComment) {
-        discussion.votes += 1
-        discussion.clickedDownVoteComment = false
-        _discussion = {
-          DiscussionId: discussion.id,
-          UserId: this.currentUser.id,
-          Status: 0
-        }
-        this.DownVote(_discussion)
-        return
-      }
-      discussion.votes -= 1
-      discussion.clickedUpVoteComment = false
-      discussion.clickedDownVoteComment = true
-      _discussion = {
-        DiscussionId: discussion.id,
-        UserId: this.currentUser.id,
-        Status: -1
-      }
-      this.DownVote(_discussion)
+      this.spamGuard.check()
+        .then(() => {
+          if (discussion.clickedUpVoteComment) {
+            discussion.votes -= 2
+            discussion.clickedUpVoteComment = false
+            discussion.clickedDownVoteComment = true
+            var _discussion = {
+              DiscussionId: discussion.id,
+              UserId: this.currentUser.id,
+              Status: -1
+            }
+            this.DownVote(_discussion)
+            return
+          } else if (discussion.clickedDownVoteComment) {
+            discussion.votes += 1
+            discussion.clickedDownVoteComment = false
+            _discussion = {
+              DiscussionId: discussion.id,
+              UserId: this.currentUser.id,
+              Status: 0
+            }
+            this.DownVote(_discussion)
+            return
+          }
+          discussion.votes -= 1
+          discussion.clickedUpVoteComment = false
+          discussion.clickedDownVoteComment = true
+          _discussion = {
+            DiscussionId: discussion.id,
+            UserId: this.currentUser.id,
+            Status: -1
+          }
+          this.DownVote(_discussion)
+        })
+        .catch(() => {
+          this.$notify({
+            title: 'Error',
+            message: 'You are voting too frequently. Please wait.',
+            type: 'error',
+            duration: 3000
+          })
+        })
     },
     UpdateDiscussion(discussion) {
       this.$store.dispatch('discussion/updateDiscussion', discussion).then(() => {

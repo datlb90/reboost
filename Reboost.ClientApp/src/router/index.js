@@ -64,6 +64,8 @@ import ApplicationStatus from '../views/rater/ApplicationStatus'
 import DiscussionDetail from '../views/learner/PracticeWriting_TabDiscussion_Detail.vue'
 import DiscussionList from '../views/learner/PracticeWriting_TabDiscussion_List.vue'
 import Subscribe from '../views/rater/Subscribe.vue'
+import StartRating from '../views/rater/StartRating.vue'
+import Payout from '../views/rater/Payout.vue'
 
 Vue.use(VueRouter)
 
@@ -213,6 +215,16 @@ const router = new VueRouter({
       path: '/Subscribe',
       component: Subscribe,
       name: 'Subscribe'
+    },
+    {
+      path: '/rater/startRating',
+      component: StartRating,
+      name: 'StartRating'
+    },
+    {
+      path: '/rater/payout',
+      component: Payout,
+      name: 'Payout'
     },
 
     { path: '/it-startup', component: ITStartup },

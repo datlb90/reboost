@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Reboost.DataAccess.Entities;
-using Stripe;
-using Reboost.Service.Services;
-using Reboost.WebApi.Identity;
-using AutoMapper;
 using Reboost.DataAccess.Models;
+using Reboost.Service.Services;
+using Stripe;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -51,59 +49,99 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("intent")]
         public async Task<IActionResult> GetNewIntent([FromBody] CreateIntentModel amount)
         {
-            string customerId = this.GetCustomerId().ToString();
+            string customerId = await this.GetCustomerId();
 
             PaymentIntent paymentIntent = await _stripeService.CreateIntentAsync(customerId, amount.Amount);
             return Ok(paymentIntent);
         }
-        
+
         [HttpPost("subscribe")]
         public async Task<IActionResult> CreateNewSubcription([FromBody] CreateSubscriptionModel model)
         {
-            string customerId = this.GetCustomerId().ToString();
+            string customerId = await this.GetCustomerId();
 
             Subscription subscription = await _stripeService.CreateSubcription(customerId, model.priceId, model.methodId);
             return Ok(subscription);
         }
-
-        [HttpPost("account/create")]
-        public async Task<IActionResult> CreateBankAccount([FromBody] BankAccountCreateModel model)
+        [HttpGet("subscribe/{customerId}")]
+        public async Task<IActionResult> GetUserSubscriptions([FromRoute] string customerId)
         {
-            Token token = await _stripeService.CreateBankAccountTokenAsync();
-            Account bankAccount = await _stripeService.CreateAccountAsync(model.UserId, token.Id);
+            StripeList<Subscription> subscriptions = await _stripeService.GetSubscriptionAsync(customerId);
+            return Ok(subscriptions);
+        }
+        [HttpGet("account/create/{UserId}")]
+        public async Task<IActionResult> CreateBankAccount(string UserId)
+        {
 
-            return Ok(bankAccount);
+            AccountLink linkAccount = await _stripeService.CreateAccountAsync(UserId);
+
+            return Ok(linkAccount);
         }
 
         [HttpGet("account/list")]
         public async Task<IActionResult> GetAllBankAccount([FromBody] BankAccountCreateModel model)
         {
-            StripeList<Account> accountList = await _stripeService.GetAllBankAccountAsync(model.UserId);
+            StripeList<Account> accountList = await _stripeService.GetAllBankAccountAsync(model.AccountId);
 
             return Ok(accountList);
         }
 
-        [HttpPost("payout")]
-        public async Task<IActionResult> CreatePayout([FromBody] CreateIntentModel amount)
+        [HttpGet("account/{userId}")]
+        public async Task<IActionResult> GetAccountListById(string userId)
         {
-            //StripeList<BankAccount> accountList = await _stripeService.GetAllBankAccountAsync("cus_ImuGb5bF0SG7pp");
-            Payout rs = await _stripeService.CreatePayoutAsync(amount.Amount, "ba_1ID5R9Ri9PbTN1XbCkx0G9li");
+            Account account = await _stripeService.GetAccount(userId);
+            if(account == null)
+            {
+                return Ok("null");
+            }
+            return Ok(account);
+        }
+
+
+        [HttpPost("payout")]
+        public async Task<IActionResult> CreatePayout([FromBody] TransferModel model)
+        {
+            Payout rs = await _stripeService.CreatePayoutAsync(model.Amount, model.Destination);
             return Ok(rs);
         }
 
         [HttpPost("transfer")]
-        public async Task<IActionResult> CreateTranfer([FromBody] CreateIntentModel amount)
+        public async Task<IActionResult> CreateTranfer([FromBody] TransferModel model)
         {
-            Transfer tf = await _stripeService.CreateTransferAsync(amount.Amount, "acct_1IDTlYDFjbd39QL3");
+            Transfer tf = await _stripeService.CreateTransferAsync(model.Amount, model.Destination);
+            
+            await _service.CreatePaymentAsync(new Payments { 
+                Amount = model.Amount,
+                Currency = model.Currency,
+                Description = "Pay for review",
+                PaymentDate = DateTime.Now,
+                PaymentId = tf.Id,
+                Status = "success",
+                Type = "OUT",
+                UserId = model.UserId
+            });
+            //PaymentHistory ph = new PaymentHistory()
+            //{
+            //    Amount = tf.Amount,
+            //    CreatedDate = tf.Created.ToUniversalTime(),
+            //    Name = "transfer"
+            //};
+            //await _service.CreateNewPaymentAsync(ph);
             return Ok(tf);
         }
 
-        [HttpPost("method/attach")]
-        public async  Task<IActionResult> AttachMethodToCustomer([FromBody] AttachMethodModel model)
-        {
-            string customerId = this.GetCustomerId().ToString();
+        //[HttpGet("transfer")]
+        //public async Task<IActionResult> GetAllTransferHistory()
+        //{
+        //    return Ok(await _service.GetAllPaymentHistory());
+        //}
 
-            PaymentMethod customer = await _stripeService.AttachMethodAsync(customerId,model.methodId);
+        [HttpPost("method/attach")]
+        public async Task<IActionResult> AttachMethodToCustomer([FromBody] AttachMethodModel model)
+        {
+            string customerId = await this.GetCustomerId();
+
+            PaymentMethod customer = await _stripeService.AttachMethodAsync(customerId, model.methodId);
             return Ok(customer);
         }
 
@@ -146,10 +184,35 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.GetAllPaymentByUserIdAsync(userId);
             return rs;
         }
+        [HttpGet("out/{userId}")]
+        public async Task<IEnumerable<Payments>> GetOutPaymentByUserId([FromRoute] string userId)
+        {
+            var rs = await _service.GetOutPaymentByUserId(userId);
+            return rs;
+        }
+
         [HttpPost("create")]
         public async Task<Payments> CreatePayment([FromBody] Payments pm)
         {
             return await _service.CreatePaymentAsync(pm);
+        }
+
+        [HttpGet("balance/{accountId}")]
+        public async Task<Balance> GetBalanceAsync(string accountId)
+        {
+            return await _stripeService.GetBalanceAsync(accountId);
+        }
+
+        [HttpGet("loginLink/{accountId}")]
+        public async Task<object> GetLoginLink(string accountId)
+        {
+            return await _stripeService.GetLoginLinkAsync(accountId);
+        }
+
+        [HttpGet("account/connected/{userId}")]
+        public async Task<bool> CheckAccountConnected(string userId)
+        {
+            return await _stripeService.UserCompletedOnboarding(userId);
         }
     }
 }
