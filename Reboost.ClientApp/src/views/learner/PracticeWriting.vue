@@ -142,8 +142,8 @@
               <el-tag type="success">Your writting has been successfully submitted. You can request a review now.</el-tag>
             </div>
             <div v-if="getQuestion != ''">
-              <el-button v-if="!writtingSubmitted" size="mini" @click="submit()">Submit & Request Review</el-button>
-              <el-dropdown v-if="writtingSubmitted" size="mini" @command="checkoutVisibles">
+              <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit & Request Review</el-button>
+              <el-dropdown v-if="writtingSubmitted || hasSubmitionForThisQuestion" size="mini" @command="checkoutVisibles">
                 <el-button size="mini">
                   Get Writting Preview
                 </el-button>
@@ -153,6 +153,7 @@
                   <el-dropdown-item divided>View Review Sample</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
+              <el-button v-if="hasSubmitionForThisQuestion" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Save</el-button>
             </div>
           </div>
           <div style="flex-grow: 1;">
@@ -212,8 +213,8 @@ export default {
       hideDirection: 'Hide',
       tabDisCussionShowed: false,
       writtingSubmitted: false,
-      checkoutVisible: false
-
+      checkoutVisible: false,
+      hasSubmitionForThisQuestion: false
     }
   },
   computed: {
@@ -293,11 +294,24 @@ export default {
     this.setIntervalForScroll = setInterval(() => {
       this.calculateStylePaddingScroll()
     }, 80)
+
+    this.loadData()
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
   },
   methods: {
+    loadData() {
+      documentService.search(this.currentUser.id, this.questionId).then(rs => {
+        console.log('Current user submition for this question', rs)
+        if (rs && rs.length > 0) {
+          const latestSubmition = rs[0]
+          this.writingContent = latestSubmition.text
+          this.hasSubmitionForThisQuestion = true
+          this.countWords()
+        }
+      })
+    },
     calculateContainerHeight() {
       const headerHeight = document.getElementById('header').clientHeight
       const containerHeight = window.innerHeight - headerHeight
@@ -337,6 +351,7 @@ export default {
           duration: 1000
         })
         this.writtingSubmitted = true
+        this.hasSubmitionForThisQuestion = true
       })
     },
     toggleBtnShowTab() {

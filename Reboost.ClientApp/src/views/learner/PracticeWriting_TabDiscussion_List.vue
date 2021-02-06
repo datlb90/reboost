@@ -30,7 +30,7 @@
                 <div class="titleQuestion font-weight-normal">
                   <div class="title-tag-container">
                     <router-link :to="getDiscussionDetailUrl(item)" class="nav-link">{{ item ? item.title : '' }}</router-link>
-                    <el-tag
+                    <!-- <el-tag
                       v-for="tag in item.tags"
                       :key="tag.id"
                       class="tag-title"
@@ -39,7 +39,7 @@
                       size="mini"
                     >
                       {{ tag.name }}
-                    </el-tag>
+                    </el-tag> -->
                   </div>
                 </div>
                 <div class="info-content font-weight-light">
@@ -77,32 +77,26 @@
       :visible.sync="addDialogVisible"
       width="70%"
     >
-      <el-input v-model="topicTitle" size="mini" style="width: 50%; padding-left: 10px" placeholder="Enter topic title..." />
-      <el-input
-        v-model="topicContent"
-        class="text-box-content"
-        type="textarea"
-        size="mini"
-        :autosize="{ minRows: 5, maxRows: 10}"
-        placeholder="Input your topic content here ..."
-      />
-      <el-select
-        v-model="selectedTags"
-        multiple
-        filterable
-        default-first-option
-        placeholder="Choose tags for your topic"
-        style="padding: 10px 10px 0 10px;"
-        size="mini"
-      >
-        <el-option
-          v-for="item in tags"
-          :key="item.id"
-          :label="item.name"
-          :value="item.id"
-        />
-      </el-select>
-
+      <el-form ref="formPostDiscussion" :model="formPostDiscussion" size="mini">
+        <el-form-item
+          prop="topicTitle"
+          :rules="[{ required: true, message: 'Please input title', trigger: 'blur' }]"
+        >
+          <el-input v-model="formPostDiscussion.topicTitle" size="mini" style="width: 50%;" placeholder="Enter topic title..." />
+        </el-form-item>
+        <el-form-item
+          prop="topicContent"
+          :rules="[{ required: true, message: 'Please input content', trigger: 'blur' }]"
+        >
+          <el-input
+            v-model="formPostDiscussion.topicContent"
+            type="textarea"
+            size="mini"
+            :autosize="{ minRows: 5, maxRows: 10}"
+            placeholder="Input your topic content here ..."
+          />
+        </el-form-item>
+      </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="mini" @click="addDialogVisible = false">Close</el-button>
         <el-button size="mini" type="primary" @click="submitDiscussion()">Post <i class="el-icon-s-promotion" /></el-button>
@@ -117,6 +111,10 @@ export default {
   components: {},
   data() {
     return {
+      formPostDiscussion: {
+        topicTitle: '',
+        topicContent: ''
+      },
       search: '',
       discussion: true,
       addDialogVisible: false,
@@ -154,7 +152,7 @@ export default {
   },
   mounted() {
     this.loadDiscussions()
-    this.loadTags()
+    // this.loadTags()
   },
   methods: {
     filterSelect(value) {
@@ -187,22 +185,22 @@ export default {
       })
     },
     submitDiscussion() {
-      var selected = []
-      for (var item of this.selectedTags) {
-        selected.push(this.tags.filter(t => t.id == item))
-      }
-      console.log('TAG selected', selected)
-      disussionService.insert({
-        QuestionId: this.currentQuestion.id,
-        UserId: this.currentUser.id,
-        Title: this.topicTitle,
-        Content: this.topicContent,
-        Level: 0,
-        Tags: selected.map(t => ({ Id: t[0].id, Name: t[0].name }))
-      }).then(rs => {
-        this.loadDiscussions()
+      this.$refs['formPostDiscussion'].validate((valid) => {
+        if (valid) {
+          disussionService.insert({
+            questionId: this.currentQuestion.id,
+            userId: this.currentUser.id,
+            title: this.formPostDiscussion.topicTitle,
+            content: this.formPostDiscussion.topicContent,
+            level: 0
+          }).then(rs => {
+            this.loadDiscussions()
+          })
+          this.addDialogVisible = false
+        } else {
+          return false
+        }
       })
-      this.addDialogVisible = false
     },
     searchDiscussion() {
       if (this.searchDelayHandle) {

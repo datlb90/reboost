@@ -1,4 +1,5 @@
-﻿using Reboost.DataAccess.Entities;
+﻿using Reboost.DataAccess;
+using Reboost.DataAccess.Entities;
 using Stripe;
 using System;
 using System.Collections.Generic;
@@ -17,14 +18,22 @@ namespace Reboost.Service.Services
         Task<StripeList<Price>> ListAllPrices();
         Task<Subscription> CreateSubcription(string userId, string priceId, string methodId);
         Task<PaymentMethod> AttachMethodAsync(string userId, string methodId);
-        Task<Token> CreateBankAccountTokenAsync();
-        Task<Account> CreateAccountAsync(string userId, string token);
-        Task<Payout> CreatePayoutAsync(int amount, string customerId);
+        Task<AccountLink> CreateAccountAsync(string UserId);
+        Task<Payout> CreatePayoutAsync(decimal amount, string customerId);
         Task<StripeList<Account>> GetAllBankAccountAsync(string customerId);
-        Task<Transfer> CreateTransferAsync(int amount, string accountId);
+        Task<Transfer> CreateTransferAsync(decimal amount, string accountId);
+        Task<Account> GetAccount(string userId);
+        Task<Balance> GetBalanceAsync(string customerId);
+        Task<object> GetLoginLinkAsync(string accountId);
+        Task<StripeList<Subscription>> GetSubscriptionAsync(string customerId);
+        Task<bool> UserCompletedOnboarding(string userId);
+
     }
-    public class StripeService: IStripeService
+    public class StripeService : BaseService, IStripeService
     {
+        public StripeService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        {
+        }
         public async Task<Customer> CreateCustomerAsync(User user) {
             var options = new CustomerCreateOptions
             {
@@ -102,88 +111,44 @@ namespace Reboost.Service.Services
               options
             );
         }
-
-        public async Task<Token> CreateBankAccountTokenAsync()
-        {
-            var options = new TokenCreateOptions
-            {
-                BankAccount = new TokenBankAccountOptions
-                {
-                    Country = "US",
-                    Currency = "usd",
-                    AccountHolderName = "To Nhan",
-                    AccountHolderType = "individual",
-                    RoutingNumber = "110000000",
-                    AccountNumber = "000123456789",
-                    
-                },
-            };
-            return await new TokenService().CreateAsync(options);
-           
-        }
-
-        public async Task<Account> CreateAccountAsync(string customerId, string token)
+        public async Task<AccountLink> CreateAccountAsync(string userId)
         {
             var opt = new AccountCreateOptions
             {
                 Type = "express",
-                Country = "US",
-                Email = "nhanth191.3@gmail.com",
-                BusinessType = "individual",
-                BusinessProfile = new AccountBusinessProfileOptions
-                {
-                    Url = "customer.com",
-                },
-                //TosAcceptance = new AccountTosAcceptanceOptions
-                //{
-                //    Date = DateTime.Today,
-                //    Ip = "27.65.61.146",
-                //},
-                Individual = new AccountIndividualOptions
-                {
-                    FirstName ="Quang",
-                    LastName = "Duy",
-                    SsnLast4 ="1233",
-                    Phone = "+15448887665",
-                    Address = new AddressOptions
-                    {
-                        City = "Dover",
-                        Country = "US",
-                        Line1 = "Deborah Lane",
-                        Line2 = "Deborah Lane",
-                        PostalCode = "03820",
-                        State = "NH"
-                    },
-                    Email = "nhanth191.3@gmail.com",
-                    Dob = new DobOptions
-                    {
-                        Day = 1,
-                        Month = 1,
-                        Year = 1990
-                    }
-                },
-                Capabilities = new AccountCapabilitiesOptions
-                {
-                    CardPayments = new AccountCapabilitiesCardPaymentsOptions
-                    {
-                        Requested = true,
-                    },
-                    Transfers = new AccountCapabilitiesTransfersOptions
-                    {
-                        Requested = true,
-                    }
-                },
             };
-            Account acc = await new AccountService().CreateAsync(opt);
+            var accountId = "";
 
-            var options = new ExternalAccountCreateOptions
+            var userAccount = await _unitOfWork.Payment.GetAccount(userId);
+            if(userAccount != null)
             {
-                ExternalAccount = token,
-            };
-            var service = new ExternalAccountService();
-            service.Create(acc.Id, options);
+                accountId = userAccount.StripeAccountId;
+            }
+            else
+            {
+                Account acc = await new AccountService().CreateAsync(opt);
+                accountId = acc.Id;
+                await _unitOfWork.Payment.UpdateUserStripeAccounts(new UserStripeAccounts { UserId = userId, StripeAccountId = accountId });
+            }
 
-            return await new AccountService().GetAsync(acc.Id);
+            var options = new AccountLinkCreateOptions
+            {
+                Account = accountId,
+                RefreshUrl = "http://localhost:3011/rater/StartRating",
+                ReturnUrl = "http://localhost:3011/rater/StartRating/" + accountId,
+                Type = "account_onboarding",
+            };
+            
+            return await new AccountLinkService().CreateAsync(options);
+        }
+        public async Task<Account> GetAccount(string userId)
+        {
+            UserStripeAccounts acc = await _unitOfWork.Payment.GetAccount(userId);
+            if(acc == null || string.IsNullOrEmpty(acc.StripeAccountId))
+            {
+                return await Task.FromResult<Account>(null);
+            }
+            return await new AccountService().GetAsync(acc.StripeAccountId);
         }
 
         public async Task<StripeList<Account>> GetAllBankAccountAsync(string customerId)
@@ -192,27 +157,70 @@ namespace Reboost.Service.Services
             return await service.ListAsync();
         }
 
-        public async Task<Payout> CreatePayoutAsync(int amount, string customerId)
+        public async Task<Payout> CreatePayoutAsync(decimal amount, string customerId)
         {
             var options = new PayoutCreateOptions
             {
-                Amount = amount,
+                Amount = (long)amount,
                 Currency = "usd",
-                Destination = customerId
+                //Method = "instant"
+                StatementDescriptor = "Reboost"
             };
-            return await new PayoutService().CreateAsync(options);
+            var requestOptions = new RequestOptions();
+            requestOptions.StripeAccount = customerId;
+            return await new PayoutService().CreateAsync(options, requestOptions);
         }
 
-        public async Task<Transfer> CreateTransferAsync(int amount, string accountId)
+        public async Task<Transfer> CreateTransferAsync(decimal amount, string destination)
         {
             var options = new TransferCreateOptions
             {
-                Amount = amount,
+                Amount = (long)amount,
                 Currency = "usd",
-                Destination = accountId,
+                Destination = destination,
             };
             return await new TransferService().CreateAsync(options);
         }
-        //public async Task<Account> CreateAccountAsync()
+
+        public async Task<Balance> GetBalanceAsync(string accountId)
+        {
+            var requestOptions = new RequestOptions();
+            requestOptions.StripeAccount = accountId;
+            var service = new BalanceService();
+            Balance balance = await service.GetAsync(requestOptions);
+            return balance;
+        }
+
+        public async Task<object> GetLoginLinkAsync(string accountId)
+        {
+            var service = new LoginLinkService();
+            return await service.CreateAsync(accountId);
+        }
+
+        public async Task<StripeList<Subscription>> GetSubscriptionAsync(string customerId)
+        {
+            var options = new SubscriptionListOptions
+            {
+                Customer = customerId
+            };
+            var service = new SubscriptionService();
+            StripeList<Subscription> subscriptions = await service.ListAsync(
+              options
+            );
+            return subscriptions;
+        }
+        public async Task<bool> UserCompletedOnboarding(string userId) {
+            var account = await GetAccount(userId);
+            if(account == null)
+            {
+                return false;
+            }
+
+            var service = new AccountService();
+            var accountDetail = await service.GetAsync(account.Id);
+
+            return accountDetail.DetailsSubmitted;
+        }
     }
+
 }

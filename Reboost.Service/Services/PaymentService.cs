@@ -18,6 +18,9 @@ namespace Reboost.Service.Services
         Task<List<Payments>> GetAllPaymentByUserIdAsync(string id);
         Task<Payments> CreatePaymentAsync(Payments pm);
         Task<User> UpdateStripeId(User user, string id);
+        Task<IEnumerable<Payments>> GetOutPaymentByUserId(string userId);
+        //Task<List<PaymentHistory>> GetAllPaymentHistory();
+        //Task<PaymentHistory> CreateNewPaymentAsync(PaymentHistory ph);
     }
     public class PaymentService :BaseService, IPaymentService
     {
@@ -45,5 +48,18 @@ namespace Reboost.Service.Services
             user.StripeCustomerID = id;
             return await _unitOfWork.Users.UpdateAsync(user);
         }
+        public async Task<IEnumerable<Payments>> GetOutPaymentByUserId(string userId)
+        {
+            return await _unitOfWork.Payment.GetOutPaymentByUserId(userId);
+        }
+
+        //public async Task<List<PaymentHistory>> GetAllPaymentHistory()
+        //{
+        //    return await _unitOfWork.Payment.GetAllPaymentHistory();
+        //}
+        //public async Task<PaymentHistory> CreateNewPaymentAsync(PaymentHistory ph)
+        //{
+        //    return await _unitOfWork.Payment.CreateNewPaymentHistory(ph);
+        //}
     }
 }

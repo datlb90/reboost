@@ -11,6 +11,7 @@ namespace Reboost.DataAccess.Repositories
     {
         Task<IEnumerable<Documents>> GetByFileName(string fileName);
         Task<IEnumerable<Documents>> GetByStatus(string status);
+        Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId);
     }
 
     public class DocumentRespository : BaseRepository<Documents>, IDocumentRepository
@@ -33,10 +34,18 @@ namespace Reboost.DataAccess.Repositories
         {
             return await ReboostDbContext.Documents.Where(d => d.Status == status).ToListAsync();
         }
-
+        public async Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId)
+        {
+            return await (from doc in ReboostDbContext.Documents
+                         join sub in ReboostDbContext.Submissions on doc.Id equals sub.DocId
+                         where sub.UserId == userId && sub.QuestionId == questionId
+                         orderby sub.SubmittedDate descending
+                         select doc).ToListAsync();
+        }
         private ReboostDbContext ReboostDbContext
         {
             get { return context as ReboostDbContext; }
         }
+        
     }
 }

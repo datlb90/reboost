@@ -116,6 +116,7 @@
 import { loadStripe } from '@stripe/stripe-js'
 import paymentService from '../../services/payment.service'
 import * as moment from 'moment'
+import { configs } from '../../app.constant'
 export default {
   name: 'Checkout',
   props: { visible: { type: Boolean, default: true },
@@ -124,7 +125,7 @@ export default {
   data() {
     return {
       dlVisible: false,
-      value: '',
+      value: '0',
       firstName: '',
       lastName: '',
       email: null,
@@ -137,7 +138,7 @@ export default {
       checkoutDisable: true,
       newMethod: false,
       selectedMethod: null,
-      amount: 3500,
+      amount: 35000,
       paymentIntent: null,
       total: null
     }
@@ -154,8 +155,17 @@ export default {
     }
   },
   watch: {
-    visible: function(newVal, oldVal) { // watch it
+    visible: function(newVal, oldVal) {
       this.dlVisible = newVal
+    },
+    currentMethods: function(val) {
+      if (!val || val.length == 0) {
+        this.changeMethod('0')
+      } else {
+        console.log('CURRENT MENOTH CHANGED', val[0].id)
+        this.changeMethod(val[0].id)
+        this.value = val[0].id
+      }
     }
   },
   async created() {
@@ -183,7 +193,7 @@ export default {
         console.log('this.paymentIntent', this.paymentIntent)
       })
 
-      this.stripe = await loadStripe('pk_test_51I9tu1D04tWYlOu2cVzeLBsGuDK4aRvfkR4tJb18W20hxgtf4989r2JeSbuua653nGkzY6IlFU7JTPYKyqne64VP00CLSFo42c')
+      this.stripe = await loadStripe(configs.stripeApiKey)
       var elements = this.stripe.elements()
       var style = {
         base: {
@@ -222,17 +232,7 @@ export default {
       }
     },
     nextStep() {
-      this.activeStep = this.activeStep == 1 ? 2 : 1
-    },
-    completeCheckout() {
-      var paymentMethod = null
-      if (!this.selectedMethod) {
-        paymentMethod = {
-          card: this.card,
-          billing_details: {
-            name: this.firstName + ' ' + this.lastName
-          }
-        }
+      if (this.newMethod) {
         this.stripe.createPaymentMethod({
           type: 'card',
           card: this.card,
@@ -240,25 +240,56 @@ export default {
             name: this.firstName + ' ' + this.lastName
           }
         })
-          .then(result => {
-            paymentService.attachMethod(result.paymentMethod.id).then(rs => {
-              paymentMethod = rs.id
-              this.selectedMethod = rs
-
-              if (this.subcribe == '') {
-                this.confirmPayment(paymentMethod)
-              } else {
-                this.$emit('subscribed', this.selectedMethod)
-                this.clearSection()
-              }
-            })
+          .then(rs => {
+            console.log('create payment method result', rs)
+            this.selectedMethod = rs.paymentMethod
+            this.lastName = this.selectedMethod.billing_details.name
+            this.credit = '**** **** **** ' + this.selectedMethod.card.last4
+            this.activeStep = this.activeStep == 1 ? 2 : 1
           })
       } else {
-        paymentMethod = this.selectedMethod[0].id
+        this.activeStep = this.activeStep == 1 ? 2 : 1
+      }
+    },
+    completeCheckout() {
+      // var paymentMethod = null
+      if (this.newMethod) {
+        // paymentMethod = {
+        //   card: this.card,
+        //   billing_details: {
+        //     name: this.firstName + ' ' + this.lastName
+        //   }
+        // }
+        // this.stripe.createPaymentMethod({
+        //   type: 'card',
+        //   card: this.card,
+        //   billing_details: {
+        //     name: this.firstName + ' ' + this.lastName
+        //   }
+        // })
+        //   .then(result => {
+
+        //   })
+
+        // console.log('create payment method result', result)
+        paymentService.attachMethod(this.selectedMethod.id).then(rs => {
+          // paymentMethod = rs.id
+          console.log('attach pm result', rs)
+          this.selectedMethod = rs
+
+          if (this.subcribe == '') {
+            this.confirmPayment(this.selectedMethod.id)
+          } else {
+            this.$emit('subscribed', this.selectedMethod)
+            this.clearSection()
+          }
+        })
+      } else {
+        // paymentMethod = this.selectedMethod.id
         if (this.subcribe == '') {
-          this.confirmPayment(paymentMethod)
+          this.confirmPayment(this.selectedMethod.id)
         } else {
-          this.$emit('subscribed', this.selectedMethod[0])
+          this.$emit('subscribed', this.selectedMethod)
           this.clearSection()
         }
       }
@@ -317,9 +348,9 @@ export default {
       } else {
         this.newMethod = false
         this.checkoutDisable = false
-        this.selectedMethod = this.currentMethods.filter(m => m.id == e)
-        this.lastName = this.selectedMethod[0].billing_details.name
-        this.credit = '**** **** **** ' + this.selectedMethod[0].card.last4
+        this.selectedMethod = this.currentMethods.find(m => m.id == e)
+        this.lastName = this.selectedMethod.billing_details.name
+        this.credit = '**** **** **** ' + this.selectedMethod.card.last4
       }
     }
   }

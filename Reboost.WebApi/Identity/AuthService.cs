@@ -15,6 +15,7 @@ using Reboost.WebApi.Email;
 using Microsoft.AspNetCore.Authentication;
 using Reboost.DataAccess.Entities;
 using Reboost.Service.Services;
+using Stripe;
 
 namespace Reboost.WebApi.Identity
 {
@@ -39,12 +40,19 @@ namespace Reboost.WebApi.Identity
         private IConfiguration _configuration;
         private IMailService _mailService;
         private IUserService _userService;
-        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IMailService mailService, IUserService userService)
+        private IStripeService _stripeService;
+        public AuthService(
+            UserManager<ApplicationUser> userManager, 
+            IConfiguration configuration, 
+            IMailService mailService, 
+            IUserService userService,
+            IStripeService stripeService)
         {
             _userManger = userManager;
             _configuration = configuration;
             _mailService = mailService;
             _userService = userService;
+            _stripeService = stripeService;
         }
 
         public async Task<UserManagerResponse> RegisterUserAsync(RegisterViewModel model)
@@ -328,6 +336,7 @@ namespace Reboost.WebApi.Identity
             }
 
             User _user = await _userService.GetByEmailAsync(user.Email);
+            //var account = await _stripeService.GetAccount(_user.Id);
 
             UserLoginModel userModel = new UserLoginModel
             {
@@ -339,6 +348,10 @@ namespace Reboost.WebApi.Identity
                 ExpireDate = token.ValidTo,
                 StripeCustomerId = _user.StripeCustomerID
             };
+
+            StripeList<Subscription> listSubs = await _stripeService.GetSubscriptionAsync(userModel.StripeCustomerId);
+            userModel.IsSubcribed = listSubs.Data.Count > 0;
+            
 
             return new UserManagerResponse
             {

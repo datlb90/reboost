@@ -83,5 +83,11 @@ namespace Reboost.WebApi.Controllers
         {
             return await _docService.GetByStatus(status);
         }
+
+        [HttpGet]
+        [Route("search/user/{userId}/question/{questionId}")]
+        public async Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId) {
+            return await _docService.SearchByUser(userId, questionId);
+        }
     }
 }
