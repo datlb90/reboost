@@ -27,7 +27,8 @@ namespace Reboost.Service.Services
         Task<object> GetLoginLinkAsync(string accountId);
         Task<StripeList<Subscription>> GetSubscriptionAsync(string customerId);
         Task<bool> UserCompletedOnboarding(string userId);
-
+        Task<PaymentMethod> GetDefaultPaymentMethodAsync(string customerId);
+        Task<bool> UpdateDefaultPaymentMethod(string customerId, string defaultPaymentMethodId);
     }
     public class StripeService : BaseService, IStripeService
     {
@@ -220,6 +221,39 @@ namespace Reboost.Service.Services
             var accountDetail = await service.GetAsync(account.Id);
 
             return accountDetail.DetailsSubmitted;
+        }
+        public async Task<PaymentMethod> GetDefaultPaymentMethodAsync(string customerId)
+        {
+            var service = new CustomerService();
+            var customer = await service.GetAsync(customerId);
+            if (customer == null || customer.InvoiceSettings.DefaultPaymentMethodId == null)
+            {
+                return null;
+            }
+            var service1 = new PaymentMethodService();
+            var defaultPaymentMethod = await service1.GetAsync(customer.InvoiceSettings.DefaultPaymentMethodId);
+            return defaultPaymentMethod;
+        }
+        public async Task<bool> UpdateDefaultPaymentMethod(string customerId, string defaultPaymentMethodId)
+        {
+            var service = new CustomerService();
+            var customer = await service.GetAsync(customerId);
+            if(customer == null)
+            {
+                return false;
+            }
+
+            await AttachMethodAsync(customerId, defaultPaymentMethodId);
+
+            var options = new CustomerUpdateOptions
+            {
+                InvoiceSettings = new CustomerInvoiceSettingsOptions()
+                {
+                    DefaultPaymentMethod = defaultPaymentMethodId
+                }
+            };
+            await service.UpdateAsync(customerId, options);
+            return true;
         }
     }
 

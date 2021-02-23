@@ -78,7 +78,7 @@
                 <pre style="font-size: 14px; margin: 0;">{{ comment.content }}</pre>
               </div>
               <div class="comments-other__tools">
-                <div class="comments-other__tools__updown">
+                <div :class="{ 'disabled' : comment.userId == currentUser.id }" class="comments-other__tools__updown">
                   <i :class="{ colorIcon: comment.clickedUpVoteComment }" style="color: #afafafd6;" class="el-icon-caret-top" @click="onUpOtherComment(comment)" />
                   <div class="valueCurrent">
                     <span>{{ comment.votes }}</span>
@@ -137,7 +137,7 @@
                 <pre style="font-size: 14px; margin: 0;">{{ commentChild.content }}</pre>
               </div>
               <div class="comments-other__tools">
-                <div class="comments-other__tools__updown">
+                <div :class="{ 'disabled' : commentChild.userId == currentUser.id }" class="comments-other__tools__updown">
                   <i :class="{ colorIcon: commentChild.clickedUpVoteComment }" class="el-icon-caret-top" style="color: #afafafd6;" @click="onUpOtherComment(commentChild)" />
                   <div class="valueCurrent">
                     <span>{{ commentChild.votes }}</span>
@@ -819,5 +819,8 @@ pre{
 .comment-tool-text{
   margin-left: 5px;
   font-size: 9pt;
+}
+.disabled i {
+  cursor: not-allowed !important;
 }
 </style>

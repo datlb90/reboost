@@ -157,4 +157,13 @@ export default class StoreAdapter {
       })
     }
   }
+
+  /**
+   * Clear annotations
+   */
+  clearAnnotations(docId) { abstractFunction('clearAnnotations') }
+  /**
+   * Load annotations
+   */
+  loadAnnotations({ annotations, comments }) { abstractFunction('loadAnnotations') }
 }

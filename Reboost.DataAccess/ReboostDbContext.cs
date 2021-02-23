@@ -39,6 +39,7 @@ namespace Reboost.DataAccess
         public virtual DbSet<DiscussionVote> DiscussionVote { get; set; }
         public virtual DbSet<Tags> Tags { get; set; }
         public virtual DbSet<Payments> Payments { get; set; }
+        public virtual DbSet<Annotations> Annotations { get; set; }
         public virtual DbSet<UserStripeAccounts> UserStripeAccounts { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
@@ -49,6 +50,9 @@ namespace Reboost.DataAccess
         {
             base.OnModelCreating(builder);
             new UserConfiguration(builder.Entity<User>());
+
+            //Annotation <-> InTextComment
+            //builder.Entity<Annotations>().HasMany(a => a.InTextComments).WithOne(c => c.Annotation).OnDelete(DeleteBehavior.ClientCascade);
 
             //builder.Entity<Raters>()
             //        .HasMany(c => c.Photos)

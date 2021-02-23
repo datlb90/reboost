@@ -36,7 +36,8 @@ namespace Reboost.WebApi.Controllers
                 UserId = model.UserId,
                 QuestionId = model.QuestionId,
                 SubmittedDate = DateTime.Now,
-                Type = "Submission"
+                Type = "Submission",
+                TimeSpentInSeconds = model.TimeSpentInSeconds
             });
 
             return newDoc;

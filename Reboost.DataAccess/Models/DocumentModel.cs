@@ -8,5 +8,6 @@ namespace Reboost.DataAccess.Models
     {
         public string UserId { get; set; }
         public int QuestionId { get; set; }
+        public int TimeSpentInSeconds { get; set; }
     }
 }

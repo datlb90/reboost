@@ -81,7 +81,7 @@ export default class LocalStoreAdapter extends StoreAdapter {
             topPosition: topPos
           }
 
-          console.log(comment)
+          // console.log(comment)
 
           const annotations = getAnnotations(documentId)
           annotations.push(comment)
@@ -122,6 +122,13 @@ export default class LocalStoreAdapter extends StoreAdapter {
           }
 
           resolve(true)
+        })
+      },
+      clearAnnotations(docId) { localStorage.removeItem(`${docId}/annotations`) },
+      loadAnnotations(docId, { annotations, comments }) {
+        localStorage.setItem(`${docId}/annotations`, JSON.stringify(annotations))
+        comments.forEach(cmt => {
+          this.addComment(cmt.documentId, cmt.annotation, cmt.content, cmt.text, cmt.topPosition)
         })
       }
     })

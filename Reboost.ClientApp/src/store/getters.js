@@ -18,7 +18,8 @@ const getters = {
   apiWaitingCount: state => state.apiWaitingCount,
   rubric: state => state.rubric,
   discussions: state => state.discussions,
-  payments: state => state.payments
+  payments: state => state.payments,
+  review: state => state.review
 }
 
 export default getters

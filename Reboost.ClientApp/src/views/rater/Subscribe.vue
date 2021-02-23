@@ -83,9 +83,7 @@ export default {
     }
   },
   watch: {
-    visible: function(newVal, oldVal) { // watch it
-      this.dlVisible = newVal
-    }
+
   },
   async mounted() {
     this.$store.dispatch('payment/loadProducts')
@@ -114,8 +112,18 @@ export default {
     subcribe(e) {
       console.log('subcribe:', e)
       paymentService.subscribe({ methodId: e.id, priceId: this.priceId }).then(s => {
-        console.log('Subscription: ', s)
         this.priceId = ''
+        if (s.error) {
+          console.error('Subscription errors: ', s)
+          this.$notify({
+            title: 'Error',
+            message: s.error.message,
+            type: 'error',
+            duration: 5000
+          })
+        } else {
+          console.log('Subscription: ', s)
+        }
       })
     }
   }

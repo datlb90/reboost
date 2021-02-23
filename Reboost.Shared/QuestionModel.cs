@@ -48,4 +48,12 @@ namespace Reboost.Shared
         public DateTime LastActivityDate { get; set; }
         public string Title { get; set; }
     }
+    public class SubmissionsModel
+    {
+        public DateTime TimeSubmitted { get; set; }
+        public string Question { get; set; }
+        public string Status { get; set; }
+        public int TimeTaken { get; set; }
+        public string Review { get; set; }
+    }
 }

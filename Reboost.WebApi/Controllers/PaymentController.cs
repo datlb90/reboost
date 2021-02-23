@@ -214,5 +214,15 @@ namespace Reboost.WebApi.Controllers
         {
             return await _stripeService.UserCompletedOnboarding(userId);
         }
+        [HttpGet("defaultPaymentMethod/{customerId}")]
+        public async Task<PaymentMethod> GetDefaultPaymentMethodAsync(string customerId)
+        {
+            return await _stripeService.GetDefaultPaymentMethodAsync(customerId);
+        }
+        [HttpGet("updateDefaultPaymentMethod/{customerId}/{defaultPaymentMethodId}")]
+        public async Task<bool> UpdateDefaultPaymentMethod(string customerId, string defaultPaymentMethodId)
+        {
+            return await _stripeService.UpdateDefaultPaymentMethod(customerId, defaultPaymentMethodId);
+        }
     }
 }

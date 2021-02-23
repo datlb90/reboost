@@ -67,6 +67,9 @@ import Subscribe from '../views/rater/Subscribe.vue'
 import StartRating from '../views/rater/StartRating.vue'
 import Payout from '../views/rater/Payout.vue'
 
+import PaymentInfo from '../views/rater/PaymentInfo.vue'
+import Submissions from '../views/learner/Submissions.vue'
+
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -225,6 +228,18 @@ const router = new VueRouter({
       path: '/rater/payout',
       component: Payout,
       name: 'Payout'
+    },
+
+    {
+
+      path: '/paymentInfo',
+      component: PaymentInfo,
+      name: 'paymentInfo'
+    },
+    {
+      path: '/submissions',
+      component: Submissions,
+      name: 'Submissions'
     },
 
     { path: '/it-startup', component: ITStartup },
