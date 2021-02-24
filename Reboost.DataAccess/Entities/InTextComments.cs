@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace Reboost.DataAccess.Entities
@@ -8,8 +9,14 @@ namespace Reboost.DataAccess.Entities
     {
         public int AnnotationId { get; set; }
         public string Text { get; set; }
-        public string Comment { get; set; }
+        [Column("Comment")]
+        public string Content { get; set; }
+        [Column("TopPosition")]
         public int TopPosition { get; set; }
-        public virtual Annotations Annotations { get; set; }
+        public string Data { get; set; }
+        [NotMapped]
+        public string Uuid { get; set; }
+
+        public virtual Annotations Annotation { get; set; }
     }
 }

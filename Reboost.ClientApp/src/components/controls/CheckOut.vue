@@ -281,13 +281,13 @@ export default {
             this.confirmPayment(this.selectedMethod.id)
           } else {
             this.$emit('subscribed', this.selectedMethod)
-            this.clearSection()
           }
         })
       } else {
         // paymentMethod = this.selectedMethod.id
         if (this.subcribe == '') {
           this.confirmPayment(this.selectedMethod.id)
+          this.clearSection()
         } else {
           this.$emit('subscribed', this.selectedMethod)
           this.clearSection()
@@ -322,7 +322,6 @@ export default {
         })
     },
     clearSection() {
-      this.dlVisible = false
       this.firstName = ''
       this.lastName = ''
       this.credit = '**** **** **** 1234'

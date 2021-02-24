@@ -337,6 +337,7 @@ import {
 import { addEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
 import http from '@/utils/axios'
+import reviewService from '@/services/review.service.js'
 
 export default {
   name: 'Document',
@@ -346,9 +347,10 @@ export default {
       viewer: null,
       PAGE_HEIGHT: 1,
       NUM_PAGES: 0,
-      documentId: './static/Meeting.pdf',
+      documentId: 12,
+      reviewId: 1,
       RENDER_OPTIONS: {
-        documentId: './static/Meeting.pdf',
+        documentId: null,
         pdfDocument: null,
         scale: 1.3, // parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
         rotate: parseInt(localStorage.getItem(`${this.documentId}/rotate`), 10) || 0
@@ -368,9 +370,35 @@ export default {
       editClicked: false
     }
   },
+  computed: {
+    loadedAnnotation() {
+      const data = this.$store.getters['review/getAnnotation']
+      if (!data) {
+        return null
+      }
+
+      return {
+        annotations: data.annotations.map(a => JSON.parse(a.data)),
+        comments: data.comments.map(c => ({ ...JSON.parse(c.data), documentId: this.documentId }))
+      }
+    }
+  },
   mounted() {
+    window['PDFJSAnnotate'] = PDFJSAnnotate
+    window['APP'] = this
+    PDFJSAnnotate.getStoreAdapter().clearAnnotations(this.documentId)
+
     // Render stuff
-    // #57 fix
+    this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId }).then(() => {
+      PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
+
+      this.render()
+      this.TextStuff()
+      this.ToolbarButtons()
+      this.ClearToolbarButton()
+      // this.ScaleAndRotate();
+      // this.ClearToolbarButton();
+    })
 
     const renderedPages = {}
     const self = this
@@ -396,13 +424,6 @@ export default {
           }
         }
       })
-
-    this.render()
-    this.TextStuff()
-    this.ToolbarButtons()
-    this.ClearToolbarButton()
-    // this.ScaleAndRotate();
-    // this.ClearToolbarButton();
   },
   beforeCreate: function() {
     document.body.style = 'overflow: hidden'
@@ -420,10 +441,11 @@ export default {
     },
     async render() {
       const self = this
-      const response = await http.get('http://localhost:6990/api/document/12')
+      const response = await http.get(`http://localhost:6990/api/document/${this.documentId}`)
       const arrayBuffer = self.base64ToArrayBuffer(response.data.data)
 
       const pdf = await PDFJS.getDocument(arrayBuffer).promise
+      self.RENDER_OPTIONS.documentId = this.documentId
       self.RENDER_OPTIONS.pdfDocument = pdf
       self.viewer = document.getElementById('viewer')
       self.viewer.innerHTML = ''
@@ -809,6 +831,7 @@ export default {
         this.newComment,
         this.selectedText,
         topPos)
+      // console.log('ADD NEW COMMENT', newComment)
       await this.comments.push(newComment)
       await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
       document.getElementById('add-new-comment').style.display = 'none'
@@ -1217,6 +1240,25 @@ export default {
         if (element.classList.contains(className)) { return true } else { element = element.parentNode }
       }
       return false
+    },
+    submit() {
+      // localStorage.clear()
+      Promise.all([
+        PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, 1),
+        PDFJSAnnotate.getStoreAdapter().getComments(this.documentId, 1)
+      ]).then(([{ annotations }, comments]) => {
+        reviewService.saveAnnotations(1, 1, {
+          annotations: annotations.map(a => ({ ...a, data: JSON.stringify(a) })),
+          comments: comments.map(c => ({ ...c, data: JSON.stringify(c) }))
+        }).then(rs => {
+          this.$notify({
+            title: 'Success',
+            message: 'Submit success',
+            type: 'success',
+            duration: 1000
+          })
+        })
+      })
     }
     // End migration
   }

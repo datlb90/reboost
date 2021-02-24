@@ -15,8 +15,8 @@
               </div>
               <div class="con-user-available block">
                 <p>Your balance</p>
-                <h1>${{ parseFloat(balance.available[0].amount/100).toFixed(2) }}</h1>
-                <h2> ${{ parseFloat(balance.available[0].amount/100).toFixed(2) }} available</h2>
+                <h1>${{ parseFloat(balance.available[0].amount/10).toFixed(2) }}</h1>
+                <h2> ${{ parseFloat(balance.available[0].amount/10).toFixed(2) }} available</h2>
               </div>
               <div class="con-user-payout block">
                 <button class="btn-payout" @click="payout">Pay out now</button>
@@ -61,6 +61,7 @@
 </template>
 <script>
 import paymentService from '../../services/payment.service'
+import accountService from '../../services/account.service'
 import moment from 'moment'
 export default {
   name: 'StartRating',
@@ -90,7 +91,7 @@ export default {
     }
   },
   mounted() {
-    console.log('Test', this.currentUser)
+    // console.log('Test', this.currentUser)
     this.onLoad()
     this.$store.dispatch('payment/loadPaymentHistories')
   },
@@ -105,7 +106,18 @@ export default {
         })
       }
       paymentService.getStripeAccount(this.currentUser.id).then(rs => {
-        console.log('account:', rs)
+        if (!rs) {
+          console.log('KHONG TON TAI ACCOUNT')
+          this.$router.push({ path: '/rater/startRating' })
+          return
+        }
+        accountService.isCompleteOnboard(this.currentUser.id).then(result => {
+          console.log('IS USER COMLETED ONBOARD...', result)
+          if (!result) {
+            this.$router.push({ path: '/rater/startRating' })
+            return
+          }
+        })
         this.accountId = rs.id
         this.$store.dispatch('payment/loadBalance', this.accountId)
         this.$store.dispatch('payment/loadPaymentHistories', this.currentUser.id)
@@ -130,14 +142,14 @@ export default {
         paymentDate: new Date(),
         itemId: ''
       }).then(rs => {
-        console.log('transfer', rs)
+        // console.log('transfer', rs)
         this.$store.dispatch('payment/loadPaymentHistories', this.currentUser.id)
         this.$store.dispatch('payment/loadBalance', this.accountId)
       })
     },
     payout() {
       paymentService.payout({ amount: this.balance.available[0].amount, destination: this.accountId }).then(rs => {
-        console.log('payout', rs)
+        // console.log('payout', rs)
         this.$store.dispatch('payment/loadBalance', this.accountId)
       })
     }

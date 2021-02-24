@@ -126,7 +126,7 @@ namespace Reboost.WebApi
             services.AddScoped<IDiscussionService, DiscussionService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IStripeService, StripeService>();
-
+            services.AddScoped<IReviewService, Reboost.Service.Services.ReviewService>();
 
             services.AddControllers().AddNewtonsoftJson(option => option.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
             services.AddRazorPages();

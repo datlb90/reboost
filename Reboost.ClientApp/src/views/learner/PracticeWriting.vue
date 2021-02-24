@@ -135,7 +135,7 @@
         <div style="height: 100%; display: flex; flex-direction: column;">
           <div class="header-passage" style="display:flex; justify-content: space-between; border: 1px solid #e2e2e2; padding: 5px;">
             <div v-if="getQuestion != '' && !writtingSubmitted">
-              <el-button size="mini" @click="ToggleShowCount()">Hide Word Count</el-button>
+              <el-button size="mini" @click="toggleShowCount()">Hide Word Count</el-button>
               <span v-if="isShowCountWord && countWord != 0" style="margin-left: 15px;">Words: {{ countWord }}</span>
             </div>
             <div v-if="writtingSubmitted">
@@ -214,7 +214,11 @@ export default {
       tabDisCussionShowed: false,
       writtingSubmitted: false,
       checkoutVisible: false,
-      hasSubmitionForThisQuestion: false
+      hasSubmitionForThisQuestion: false,
+      timeSpent: 0,
+      timeSpentInterval: null,
+      idLocalStorage: '',
+      timeout: null
     }
   },
   computed: {
@@ -294,7 +298,7 @@ export default {
     this.setIntervalForScroll = setInterval(() => {
       this.calculateStylePaddingScroll()
     }, 80)
-
+    this.idLocalStorage = this.currentUser.username + '_QuestionId' + this.questionId
     this.loadData()
   },
   destroyed() {
@@ -309,6 +313,11 @@ export default {
           this.writingContent = latestSubmition.text
           this.hasSubmitionForThisQuestion = true
           this.countWords()
+        } else {
+          if (localStorage.getItem(this.idLocalStorage) && localStorage.getItem(this.idLocalStorage) != '') {
+            this.writingContent = localStorage.getItem(this.idLocalStorage)
+            this.countWords()
+          }
         }
       })
     },
@@ -328,6 +337,7 @@ export default {
       }
     },
     submit() {
+      localStorage.removeItem(this.idLocalStorage)
       if (!this.writingContent) {
         this.$notify({
           title: 'Error',
@@ -337,12 +347,16 @@ export default {
         })
         return
       }
+
+      clearInterval(this.timeSpentInterval)
       var data = {
         filename: new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() + new Date().getDate().toString() + new Date().getHours().toString() + new Date().getMinutes().toString() + new Date().getSeconds().toString() + '.pdf',
         text: this.writingContent,
         userId: this.currentUser.id,
-        questionId: +this.questionId
+        questionId: +this.questionId,
+        timeSpentInSeconds: this.timeSpent
       }
+      // console.log('SUBMIT DATA', data)
       documentService.submitDocument(data).then(rs => {
         this.$notify({
           title: 'Success',
@@ -352,21 +366,28 @@ export default {
         })
         this.writtingSubmitted = true
         this.hasSubmitionForThisQuestion = true
+        this.timeSpent = 0
       })
     },
     toggleBtnShowTab() {
       this.isShowTimer = true
       this.isShowReading = false
+      this.timeSpent = 0
+      clearInterval(this.timeSpentInterval)
       if (this.isTest) {
         this.isShowReading = true
-        var abc = setInterval(() => {
+        this.timeSpentInterval = setInterval(() => {
+          this.timeSpent++
+          // console.log('TICK')
+        }, 1000)
+        var hld = setInterval(() => {
           this.second--
           if (this.second < 0) {
             this.second = 59
             this.minute--
             if (this.minute < 0) {
               this.isShowReading = false
-              clearInterval(abc)
+              clearInterval(hld)
               if (this.getListening != '') {
                 this.isShowListeningTab = true
               }
@@ -403,13 +424,21 @@ export default {
     toggleBtnShowScript() {
       this.isShowScript = !this.isShowScript
     },
-    ToggleShowCount() {
+    toggleShowCount() {
       this.isShowCountWord = !this.isShowCountWord
     },
     countWords() {
       this.countWord = this.writingContent.trim().split(/\b\S+\b/).length - 1
+      if (!this.hasSubmitionForThisQuestion) {
+        clearTimeout(this.timeout)
+        this.timeout = setTimeout(() => {
+          localStorage.setItem(this.idLocalStorage, this.writingContent)
+        }, 500)
+      }
     },
     changedOption() {
+      this.timeSpent = 0
+      clearInterval(this.timeSpentInterval)
       if (!this.isTest) {
         this.isShowReading = true
         this.minute = 0

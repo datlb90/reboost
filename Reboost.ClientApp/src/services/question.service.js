@@ -24,6 +24,9 @@ const questionService = {
   },
   getSampleByQuestion(questionId) {
     return http.get(`/questions/sampleForQuestion/${questionId}`).then(rs => { return rs ? rs.data : [] })
+  },
+  getSubmissionsByUserId(userId) {
+    return http.get(`/questions/submission/${userId}`).then(rs => { return rs ? rs.data : [] })
   }
 }
 

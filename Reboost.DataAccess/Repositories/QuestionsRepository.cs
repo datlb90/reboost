@@ -22,6 +22,7 @@ namespace Reboost.DataAccess.Repositories
         Task<List<int>> GetQuestionCompletedIdByUser(string UserId);
         Task<List<SampleForQuestion>> GetSamplesForQuestion(int questionId);
         Task<List<QuestionModel>> GetAllByUserAsync(string userId);
+        Task<List<SubmissionsModel>> GetAllSubmissionByUserIdAsync(string userId);
 
     }
     public class QuestionsRepository : BaseRepository<Questions>, IQuestionsRepository
@@ -246,6 +247,20 @@ namespace Reboost.DataAccess.Repositories
                           where q.Id == questionId 
                           select new SampleForQuestion {  Id = s.Id, QuestionId = s.QuestionId, SampleText = s.SampleText, BandScore = s.BandScore, Comment = s.Comment, LastActivityDate = s.LastActivityDate, Title = q.Title }).ToListAsync();
             
+        }
+        public async Task<List<SubmissionsModel>> GetAllSubmissionByUserIdAsync(string userId)
+        {
+            return await (from q in ReboostDbContext.Questions
+                          join s in ReboostDbContext.Submissions on q.Id equals s.QuestionId
+                          where s.UserId == userId
+                          select new SubmissionsModel
+                          {
+                              Question = q.Title,
+                              Status = "Submitted",
+                              Review = "Request now",
+                              TimeTaken = s.TimeSpentInSeconds,
+                              TimeSubmitted = s.SubmittedDate
+                          }).ToListAsync();
         }
     }
 }

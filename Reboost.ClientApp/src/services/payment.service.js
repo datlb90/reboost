@@ -46,11 +46,16 @@ const paymentService = {
     return http.get('/payment/balance/' + customerId).then(rs => rs.data)
   },
   loginLink(customerId) {
-    console.log('VAO SERVICE')
     return http.get('/payment/loginLink/' + customerId)
   },
   getCustomerSubscriptions(customerId) {
     return http.get('/payment/subscribe/' + customerId).then(rs => rs.data)
+  },
+  getDefaultPaymentMethod(customerId) {
+    return http.get('/payment/defaultPaymentMethod/' + customerId).then(rs => rs.data)
+  },
+  updateDefaultPaymentMethod(customerId, defaultPaymentMethodId) {
+    return http.get('/payment/updateDefaultPaymentMethod/' + customerId + '/' + defaultPaymentMethodId)
   }
 }
 export default paymentService

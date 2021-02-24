@@ -24,6 +24,7 @@ namespace Reboost.Service.Services
         Task<List<string>> GetTestForCurrentUsers(string UserId);
         Task<List<int>> GetQuestionCompletedIdByUser(string UserId);
         Task<List<SampleForQuestion>> GetSamplesForQuestion(int questionId);
+        Task<List<SubmissionsModel>> GetAllSubmissionByUserId(string userId);
 
     }
     public class QuestionsService : BaseService, IQuestionsService
@@ -100,6 +101,10 @@ namespace Reboost.Service.Services
         public async Task<List<SampleForQuestion>> GetSamplesForQuestion(int questionId)
         {
             return await _unitOfWork.Questions.GetSamplesForQuestion(questionId);
+        }
+        public async Task<List<SubmissionsModel>> GetAllSubmissionByUserId(string userId)
+        {
+            return await _unitOfWork.Questions.GetAllSubmissionByUserIdAsync(userId);
         }
     }
 }
