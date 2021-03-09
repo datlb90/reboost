@@ -19,4 +19,9 @@ namespace Reboost.DataAccess.Entities
 
         public virtual Annotations Annotation { get; set; }
     }
+    public class InsertCommentModel
+    {
+        public Annotations Annotation { get; set; }
+        public InTextComments Comment { get; set; }
+    }
 }

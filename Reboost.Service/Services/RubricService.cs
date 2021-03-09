@@ -19,7 +19,7 @@ namespace Reboost.Service.Services
         Task<Rubrics> CreateAsync(Rubrics rubric);
         Task<Rubrics> UpdateAsync(Rubrics rubric);
         Task<Rubrics> DeleteAsync(int id);
-        Task<List<RubricsModel>> getByQuestionId(int id);
+        Task<List<RubricsModel>> GetByQuestionId(int id);
     }
     public class RubricService : BaseService, IRubricService
     {
@@ -49,9 +49,9 @@ namespace Reboost.Service.Services
             return await _unitOfWork.Rubrics.Delete(id);
         }
 
-        public async Task<List<RubricsModel>> getByQuestionId(int id)
+        public async Task<List<RubricsModel>> GetByQuestionId(int id)
         {
-            return await _unitOfWork.Rubrics.getByQuestionId(id);
+            return await _unitOfWork.Rubrics.GetByQuestionId(id);
         }
     }
 }

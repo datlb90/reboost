@@ -1,5 +1,5 @@
 <template>
-  <div style="border-top: 1px solid rgb(223 224 238); padding: 5px; background: rgb(248, 249, 250);">
+  <div id="reviewContainer" style="border-top: 1px solid rgb(223 224 238); padding: 5px; background: rgb(248, 249, 250);">
 
     <!-- <el-card class="box-card" style="margin-bottom: 5px;">
       <div>
@@ -42,40 +42,133 @@
         </p>
       </el-tag> -->
 
-      <div id="left-panel" style="float: left; width: 30%; position: sticky; top: 0px; min-width: 320px; height: 100%;">
+      <div id="left-panel" :class="{'hideQuestion': !showQuestion}" style="float: left; width: 30%; position: sticky; top: 0px; min-width: 320px; height: 100%;">
+        <el-button :disabled="readOnly" type="primary" size="mini" style="position: absolute; right: 8px;top: 6px;z-index: 1;" @click="submitReview()">Submit Review</el-button>
         <el-tabs type="border-card">
           <el-tab-pane label="Question">
+            <div style="height: 100%;display: flex; flex-direction: column">
+              <div id="parent-scroll" style="flex-grow: 1;position: relative;">
+                <div id="child-scroll" class="par-content default">
+                  <div v-if="showDirection" class="tip" transition="fade" style="margin-bottom: 10px;">
+                    <p style="width: 98%;">
+                      <b>Direction:</b> Read the question description and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review.
+                    </p>
+                    <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
+                    <el-button size="mini" @click="notShowDirection">Never show this again</el-button>
+                  </div>
 
-            <div v-if="showDirection" class="tip" transition="fade" style="margin-bottom: 10px;">
-              <p style="width: 98%;">
-                <b>Direction:</b> Read the question description and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review.
-              </p>
-              <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
-              <el-button size="mini" @click="showDirection = !showDirection">Never show this again</el-button>
-            </div>
-
-            <div style="padding: 20px; border: #dcddde solid 1px; border-radius: 5px;">
-              <p>
-                <b><a href="#">TOEFL Independent Writing - Topic #1</a></b>
-              </p>
-              <p>Do you agree or disagree with the following statement?</p>
-              <p>"Always telling the truth is the most important consideration in any relationship."</p>
-              <p>Use specific reasons and examples to support your answer.</p>
+                  <div class="content-con">
+                    <p>
+                      <b><a href="#">{{ getQuestionSection }}</a></b>
+                    </p>
+                    <p>{{ getQuestion.content }}</p></div>
+                  <div v-if="getReading != ''" class="content-con">
+                    <p>
+                      <b>Reading</b>
+                    </p>
+                    <div style="margin: 0;">
+                      <pre> {{ getReading.content }}</pre>
+                    </div>
+                  </div>
+                  <div v-if="getListening != ''" class="content-con">
+                    <p>
+                      <b>Listening</b>
+                    </p>
+                    <audio controls style="width: 100%; height: 35px; margin-bottom: 3px;">
+                      <!-- <source :src="'/assets/' + getListening.content" type="audio/mpeg"> -->
+                    </audio>
+                    <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
+                      <div style="flex-grow: 1;">
+                        <i class="el-icon-document-copy" />
+                        Audio Script
+                      </div>
+                      <div :class="{'rotate-icon' : isShowScript}">
+                        <i class="fas fa-caret-down" />
+                      </div>
+                    </div>
+                    <div v-if="isShowScript" class="body-transcript" style="margin: 0;">
+                      <pre> {{ getTranscript.content }}</pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Rubric">Rubric</el-tab-pane>
+          <el-tab-pane label="Rubric">
+            <div style="height: 100%;display: flex; flex-direction: column">
+              <div id="parent-scroll" style="flex-grow: 1;position: relative;">
+                <div id="child-scroll" class="par-content default">
+                  <div id="rubric">
+                    <div style="height: 100%; overflow: auto;">
+                      <el-card v-for="(criteria, criteriaIndex) in rubricCriteria" :key="criteria.id" style="margin-bottom: 5px; margin-left: 3px;">
+                        <div slot="header" class="clearfix">
+                          <span style="font-size: 16px; font-weight: bold;">
+                            {{ criteria.name }}
+                          </span>
+                          <div style="font-size: 14px; margin-top: 10px;">
+                            {{ criteria.description }}
+                          </div>
+                        </div>
+                        <div>
+                          <div>
+                            <el-radio-group
+                              :id="criteria.id"
+                              v-model="criteria.mark"
+                              size="mini"
+                              style="margin-bottom: 10px; min-width: 240px;"
+                              :disabled="readOnly"
+                              @input="rubricMileStoneClick(criteria.id, $event)"
+                            >
+                              <el-tooltip
+                                v-for="milestone in criteria.bandScoreDescriptions.slice()"
+                                :key="milestone.id"
+                                class="item"
+                                effect="light"
+                                placement="top"
+                              >
+                                <div slot="content" style="max-width: 500px;">
+                                  {{ milestone.description }}
+                                </div>
+                                <el-radio-button
+                                  :key="milestone.id"
+                                  :label="milestone.bandScore"
+                                />
+                              </el-tooltip>
+                            </el-radio-group>
+                          </div>
+                          <div>
+                            <el-input
+                              v-model="criteria.comment"
+                              :criteria-index="criteriaIndex"
+                              type="textarea"
+                              placeholder="Enter text here"
+                              :rows="3"
+                              :maxlength="8000"
+                              class="criteria-comment"
+                              :readonly="readOnly"
+                              @input="reviewCommentChange(criteria.comment, criteria.id)"
+                            />
+                          </div>
+                        </div>
+                      </el-card>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </el-tab-pane>
           <el-tab-pane label="Help">Questions and Answers</el-tab-pane>
         </el-tabs>
       </div>
 
-      <div id="right-panel" style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);">
+      <div id="right-panel" :class="{'hideQuestion':!showQuestion}" style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);">
         <div id="tool-bar" class="toolbar">
           <div class="tool-group-buttons-container" style="">
             <div data-element="highlightToolGroupButton" class="tool-group-button">
               <div class="toolbar-btn-wrapper">
                 <el-tooltip class="item" effect="dark" content="Hide Question & Rubric (H)" placement="bottom">
-                  <button class="toolbar-btn">
-                    <div class="icon">
+                  <button class="toolbar-btn" @click="hideQuestion">
+                    <div :class="{'hideQuestion':!showQuestion}" class="icon">
                       <i class="toolbar-icon fas fa-angle-double-left" />
                     </div>
                   </button>
@@ -85,7 +178,7 @@
 
               <div class="toolbar-btn-wrapper">
                 <el-tooltip class="item" effect="dark" content="Note (N)" placement="bottom">
-                  <button class="toolbar-btn">
+                  <button class="toolbar-btn" data-tooltype="note" type="button" @click="toolBarButtonClick('note')">
                     <div class="icon">
                       <i class="toolbar-icon far fa-sticky-note" />
                     </div>
@@ -95,7 +188,7 @@
               </div>
               <div class="toolbar-btn-wrapper">
                 <el-tooltip class="item" effect="dark" content="Free Text (T)" placement="bottom">
-                  <button class="toolbar-btn">
+                  <button class="toolbar-btn" data-tooltype="text" type="button" @click="toolBarButtonClick('text')">
                     <div class="icon">
                       <i class="toolbar-icon fas fa-pen-alt" />
                     </div>
@@ -105,7 +198,7 @@
 
               <div class="toolbar-btn-wrapper">
                 <el-tooltip class="item" effect="dark" content="Rectangle (R)" placement="bottom">
-                  <button class="toolbar-btn">
+                  <button class="toolbar-btn" data-tooltype="rectangle" type="button" @click="toolBarButtonClick('rectangle')">
                     <div class="icon">
                       <i class="far fa-square" />
                     </div>
@@ -115,34 +208,33 @@
               </div>
             </div>
 
-            <el-dropdown size="mini" split-button style="margin-left: 10px;">
-              100%
+            <el-dropdown size="mini" split-button style="margin-left: 10px;" @command="handleScale">
+              {{ scaleText }}
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item icon="fas fa-expand-arrows-alt"> Fit to width</el-dropdown-item>
-                <el-dropdown-item icon="fas fa-expand-alt"> Fit to page</el-dropdown-item>
-                <el-dropdown-item divided> 50% </el-dropdown-item>
-                <el-dropdown-item>100%</el-dropdown-item>
-                <el-dropdown-item>125%</el-dropdown-item>
-                <el-dropdown-item>150%</el-dropdown-item>
-                <el-dropdown-item>200%</el-dropdown-item>
+                <el-dropdown-item command="fitWidth" icon="fas fa-expand-arrows-alt"> Fit to width</el-dropdown-item>
+                <el-dropdown-item command="fitPage" icon="fas fa-expand-alt"> Fit to page</el-dropdown-item>
+                <el-dropdown-item command="0.5" divided> 50% </el-dropdown-item>
+                <el-dropdown-item command="1">100%</el-dropdown-item>
+                <el-dropdown-item command="1.25">125%</el-dropdown-item>
+                <el-dropdown-item command="1.5">150%</el-dropdown-item>
+                <el-dropdown-item command="2">200%</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
 
             <div data-element="highlightToolGroupButton" class="tool-group-button">
-              <button class="toolbar-btn" style="margin-left: 5px;">
+              <button class="toolbar-btn" style="margin-left: 5px;" @click="increaseScale">
                 <div class="icon">
                   <i class="toolbar-icon fas fa-plus" />
                 </div>
               </button>
 
-              <button class="toolbar-btn">
+              <button class="toolbar-btn" @click="decreaseScale">
                 <div class="icon">
                   <i class="toolbar-icon fas fa-minus" />
                 </div>
               </button>
             </div>
 
-            <el-button type="primary" size="mini" style="position: absolute; right: 0px;" @click="submit()">Submit Review</el-button>
           </div>
 
           <!-- <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
@@ -338,11 +430,14 @@ import { addEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
 import http from '@/utils/axios'
 import reviewService from '@/services/review.service.js'
+import rubricService from '@/services/rubric.service.js'
 
 export default {
   name: 'Document',
   data() {
     return {
+      rubricCriteria: [],
+      criteriaFeedback: {},
       showDirection: true,
       viewer: null,
       PAGE_HEIGHT: 1,
@@ -352,7 +447,7 @@ export default {
       RENDER_OPTIONS: {
         documentId: null,
         pdfDocument: null,
-        scale: 1.3, // parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
+        scale: 1, // parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
         rotate: parseInt(localStorage.getItem(`${this.documentId}/rotate`), 10) || 0
       },
       newComment: '',
@@ -367,10 +462,20 @@ export default {
       inputHeight: null,
       order: null,
       hasSpace: true,
-      editClicked: false
+      editClicked: false,
+      isShowScript: false,
+      questionId: 1,
+      loadCompleted: false,
+      readOnly: false,
+      showQuestion: true,
+      scaleRatio: 1,
+      defaultScale: 1,
+      scaleText: '100%',
+      currentTooltype: null
     }
   },
   computed: {
+
     loadedAnnotation() {
       const data = this.$store.getters['review/getAnnotation']
       if (!data) {
@@ -381,13 +486,57 @@ export default {
         annotations: data.annotations.map(a => JSON.parse(a.data)),
         comments: data.comments.map(c => ({ ...JSON.parse(c.data), documentId: this.documentId }))
       }
+    },
+    getDataQuestionParts() {
+      return this.$store.getters['question/getSelected']['questionsPart']
+    },
+    getTranscript() {
+      if (typeof (this.getDataQuestionParts) != 'undefined') {
+        if (this.getDataQuestionParts.find(u => u.name == 'Transcript')) {
+          return this.getDataQuestionParts.find(u => u.name == 'Transcript')
+        }
+      }
+      return ''
+    },
+    getQuestionSection() {
+      if (this.$store.getters['question/getSelected']) {
+        console.log('this.$store.getters', this.$store.getters['question/getSelected'])
+        return this.$store.getters['question/getSelected']['test'] + ' ' + this.$store.getters['question/getSelected']['section'] + ' - ' + this.$store.getters['question/getSelected']['title']
+      }
+      return ''
+    },
+    getQuestion() {
+      if (typeof (this.getDataQuestionParts) != 'undefined') {
+        if (this.getDataQuestionParts.find(u => u.name == 'Question')) {
+          return this.getDataQuestionParts.find(u => u.name == 'Question')
+        }
+      }
+      return ''
+    },
+    getReading() {
+      if (typeof (this.getDataQuestionParts) != 'undefined') {
+        if (this.getDataQuestionParts.find(u => u.name == 'Reading')) {
+          return this.getDataQuestionParts.find(u => u.name == 'Reading')
+        }
+      }
+      return ''
+    },
+    getListening() {
+      if (typeof (this.getDataQuestionParts) != 'undefined') {
+        if (this.getDataQuestionParts.find(u => u.name == 'Listening')) {
+          return this.getDataQuestionParts.find(u => u.name == 'Listening')
+        }
+      }
+      return ''
     }
   },
-  mounted() {
+  async mounted() {
     window['PDFJSAnnotate'] = PDFJSAnnotate
     window['APP'] = this
     PDFJSAnnotate.getStoreAdapter().clearAnnotations(this.documentId)
-
+    if (localStorage.getItem('showQuestionDirection')) {
+      this.showDirection = false
+    }
     // Render stuff
     this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId }).then(() => {
       PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
@@ -398,6 +547,10 @@ export default {
       this.ClearToolbarButton()
       // this.ScaleAndRotate();
       // this.ClearToolbarButton();
+    })
+    this.$store.dispatch('question/loadQuestion', +this.questionId).then(rs => {
+      this.calculateContainerHeight()
+      this.getDataQuestionParts()
     })
 
     const renderedPages = {}
@@ -424,11 +577,68 @@ export default {
           }
         }
       })
+    window.addEventListener('resize', this.calculateContainerHeight.bind(this))
+    this.setIntervalForScroll = setInterval(() => {
+      this.calculateStylePaddingScroll()
+    }, 80)
+
+    this.loadRubric()
   },
   beforeCreate: function() {
     document.body.style = 'overflow: hidden'
   },
+  created() {
+    window.addEventListener('resize', this.resizeEventHandle)
+  },
+  destroyed() {
+    clearInterval(this.setIntervalForScroll)
+    window.removeEventListener('resize', this.resizeEventHandle)
+  },
   methods: {
+    loadRubric() {
+      rubricService.getByQuestionId(this.questionId).then(rs => {
+        // this.criteriaFeedback['id']
+        this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, comment: '' }))
+        reviewService.loadReviewFeedback(this.reviewId).then(rs => { // Hardcode ReviewId
+          console.log('loadReviewFeedback', rs)
+          if (rs.length > 0) {
+            rs.forEach(rc => {
+              this.rubricCriteria.map(criteria => {
+                if (criteria.id == rc.criteriaId) {
+                  criteria.comment = rc.comment
+                  criteria.mark = rc.score
+                }
+              }
+              )
+            })
+            this.readOnly = true
+          } else {
+            this.getLocaleStorageData()
+          }
+        })
+      })
+    },
+    rubricMileStoneClick(id, mileStone) {
+      var retrievedObject = localStorage.getItem('reviewScore')
+      if (!retrievedObject) {
+        var t = []
+        localStorage.setItem('reviewScore', JSON.stringify(t))
+      }
+
+      retrievedObject = JSON.parse(retrievedObject)
+      var temp = retrievedObject.filter(r => r.id == id)
+      if (temp.length > 0) {
+        retrievedObject.map(r => {
+          if (r.id == id) {
+            r.content = mileStone
+          }
+        })
+      } else {
+        var cmt = { id: id, content: mileStone }
+        retrievedObject.push(cmt)
+      }
+      localStorage.setItem('reviewScore', JSON.stringify(retrievedObject))
+    },
     base64ToArrayBuffer(base64) {
       const binaryString = window.atob(base64)
       const binaryLen = binaryString.length
@@ -451,9 +661,13 @@ export default {
       self.viewer.innerHTML = ''
       self.NUM_PAGES = pdf.numPages
 
+      var docWidth = document.getElementById('right-panel').offsetWidth - document.getElementById('comment-wrapper').offsetWidth - 15
+
       for (let i = 0; i < self.NUM_PAGES; i++) {
         const page = UI.createPage(i + 1)
         self.viewer.appendChild(page)
+
+        page.setAttribute('style', `overflow:hidden;width:${docWidth}px;`)
       }
 
       // eslint-disable-next-line no-unused-vars
@@ -467,14 +681,14 @@ export default {
       self.PAGE_HEIGHT = viewport.height
 
       const pageWidth = document.getElementById('page1').offsetWidth
-      document.getElementById('tool-bar').style.width = pageWidth + 'px'
+      document.getElementById('tool-bar').style.width = 100 + '%'
 
       this.viewerWidth = pageWidth + 250
-      this.commentleftPos = pageWidth
+      this.commentleftPos = docWidth
 
       const viewer = document.getElementById('viewer')
       const commentWrapper = document.getElementById('comment-wrapper')
-      commentWrapper.style.left = pageWidth + 'px'
+      commentWrapper.style.left = this.commentleftPos + 'px'
       viewer.appendChild(commentWrapper)
 
       this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
@@ -482,7 +696,9 @@ export default {
         element.isSelected = false
       })
       await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
+      this.handleCommentPositionsRestore()
       this.TextSelection()
+      this.documentWidthCal()
     },
     async TextStuff() {
       const self = this
@@ -567,22 +783,23 @@ export default {
     },
     async ToolbarButtons() {
       const self = this
-      let tooltype =
+      const tooltype =
         localStorage.getItem(`${self.RENDER_OPTIONS.documentId}/tooltype`) ||
         'cursor'
       if (tooltype) {
         setActiveToolbarItem(
           tooltype,
-          document.querySelector(`.toolbar button[data-tooltype=${tooltype}]`)
+          document.querySelector(`.toolbar button[data-tooltype=${tooltype}]`),
+          this.currentTooltype
         )
+        this.currentTooltype = tooltype
       }
 
-      function setActiveToolbarItem(type, button) {
+      function setActiveToolbarItem(type, button, currentType) {
         const active = document.querySelector('.toolbar button.active')
         if (active) {
           active.classList.remove('active')
-
-          switch (tooltype) {
+          switch (currentType) {
             case 'text':
               UI.disableText()
               break
@@ -591,50 +808,128 @@ export default {
               break
             case 'area':
             case 'highlight':
+            case 'rectangle':
+              UI.disableRect()
+              break
             case 'strikeout':
               UI.disableRect()
               break
           }
-        }
-
-        if (button) {
+          if (type === currentType) {
+            switch (tooltype) {
+              case 'text':
+                UI.disableText()
+                break
+              case 'point':
+                UI.disablePoint()
+                break
+              case 'area':
+              case 'highlight':
+              case 'rectangle':
+                UI.disableRect()
+                break
+              case 'strikeout':
+                UI.disableRect()
+                break
+            }
+          } else {
+            button.classList.add('active')
+            switch (tooltype) {
+              case 'text':
+                UI.enableText()
+                break
+              case 'point':
+                UI.enablePoint()
+                break
+              case 'area':
+              case 'highlight':
+              case 'rectangle':
+                UI.enableRect()
+                break
+              case 'strikeout':
+                UI.enableRect()
+                break
+            }
+          }
+        } else {
           button.classList.add('active')
+          switch (tooltype) {
+            case 'text':
+              UI.enableText()
+              break
+            case 'point':
+              UI.enablePoint()
+              break
+            case 'area':
+            case 'highlight':
+            case 'rectangle':
+              UI.enableRect()
+              break
+            case 'strikeout':
+              UI.enableRect()
+              break
+          }
         }
-        if (tooltype !== type) {
-          localStorage.setItem(
-            `${self.RENDER_OPTIONS.documentId}/tooltype`,
-            type
-          )
-        }
-        tooltype = type
 
-        switch (type) {
-          case 'text':
-            UI.enableText()
-            break
-          case 'point':
-            UI.enablePoint()
-            break
-          case 'area':
-          case 'highlight':
-          case 'strikeout':
-            UI.enableRect(type)
-            break
-        }
+        // const active = document.querySelector('.toolbar button.active')
+
+        // if (active && tooltype === type) {
+        //   active.classList.remove('active')
+        //   switch (tooltype) {
+        //     case 'text':
+        //       UI.disableText()
+        //       break
+        //     case 'point':
+        //       UI.disablePoint()
+        //       break
+        //     case 'area':
+        //     case 'highlight':
+        //     case 'strikeout':
+        //       UI.disableRect()
+        //       break
+        //   }
+        // } else {
+        //   if (!active) {
+        //     if (button) {
+        //       button.classList.add('active')
+        //     }
+
+        //     if (tooltype !== type) {
+        //       localStorage.setItem(
+        //         `${self.RENDER_OPTIONS.documentId}/tooltype`,
+        //         type
+        //       )
+        //       tooltype = type
+        //       switch (type) {
+        //         case 'text':
+        //           UI.enableText()
+        //           break
+        //         case 'point':
+        //           UI.enablePoint()
+        //           break
+        //         case 'area':
+        //         case 'highlight':
+        //         case 'strikeout':
+        //           UI.enableRect(type)
+        //           break
+        //       }
+        //     }
+        //   }
+        // }
       }
 
-      function handleToolbarClick(e) {
-        if (e.target.nodeName === 'BUTTON') {
-          setActiveToolbarItem(
-            e.target.getAttribute('data-tooltype'),
-            e.target
-          )
-        }
-      }
+      // function handleToolbarClick(e) {
+      //   if (e.target.nodeName === 'BUTTON') {
+      //     setActiveToolbarItem(
+      //       e.target.getAttribute('data-tooltype'),
+      //       e.target
+      //     )
+      //   }
+      // }
 
-      document
-        .querySelector('.toolbar')
-        .addEventListener('click', handleToolbarClick)
+      // document
+      //   .querySelector('.toolbar')
+      //   .addEventListener('click', handleToolbarClick)
     },
     // Clear toolbar button
     ClearToolbarButton() {
@@ -745,7 +1040,7 @@ export default {
             return item.dataset.pdfAnnotateId == target.getAttribute('data-pdf-annotate-id')
           })
 
-          let gTop = parseInt(target.getAttribute('top')) - 35
+          let gTop = parseInt(target.getAttribute('top')) - 34
           const svgHeight = parseInt(target.getAttribute('page-height'))
           const svgPageNum = parseInt(target.getAttribute('page-num'))
           if (svgPageNum > 1) { gTop += ((svgPageNum - 1) * svgHeight) }
@@ -794,7 +1089,10 @@ export default {
       const highlightArr = Array.prototype.slice.call(highlights)
       // Sort the highlights
       highlightArr.sort(this.compareTopAttributes)
+      this.handleCommentAnnotationClick(highlightArr[highlightArr.length - 1])
       this.handleCommentAnnotationClick(highlightArr[0])
+      const selected = document.getElementsByClassName('comment-card-selected')
+      if (selected.length >= 0) { selected[0].classList.remove('comment-card-selected') }
       const comments = await this.updateCommentAnnotations(documentId)
       await PDFJSAnnotate.getStoreAdapter().updateComments(documentId, comments)
     },
@@ -831,12 +1129,31 @@ export default {
         this.newComment,
         this.selectedText,
         topPos)
-      // console.log('ADD NEW COMMENT', newComment)
       await this.comments.push(newComment)
       await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
       document.getElementById('add-new-comment').style.display = 'none'
-
+      newComment.annotation.documentId = this.documentId
+      var anno = {
+        DocumentId: this.documentId,
+        ReviewId: this.reviewId,
+        Type: 'comment-highlight',
+        PageNum: this.annotation.pageNum,
+        Top: this.annotation.top,
+        Color: this.annotation.color,
+        Uuid: this.annotation.uuid,
+        Data: JSON.stringify(this.annotation)
+      }
+      var newCmt = {
+        Text: newComment.text,
+        Content: newComment.content,
+        TopPosition: newComment.topPosition,
+        Uuid: newComment.uuid,
+        Data: JSON.stringify(newComment)
+      }
+      reviewService.addInTextComment(this.documentId, 1, newCmt, anno).then(rs => {
+      })
       await this.updatePositionsAfterCommentAdded()
+
       this.newComment = ''
     },
     // Begin migrating code from select.js to document.vue
@@ -890,10 +1207,26 @@ export default {
       annotation.pageHeight = this.svg.getAttribute('height')
       this.annotation = annotation
       // Add the annotation
+
       await PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
         .then((annotation) => {
           appendChild(this.svg, annotation)
           this.hideTextToolBar()
+          annotation.documentId = this.documentId
+          if (type != 'comment-highlight') {
+            var obj = {
+              DocumentId: this.documentId,
+              ReviewId: this.reviewId,
+              Type: type,
+              PageNum: annotation.pageNum,
+              Top: annotation.top,
+              Color: annotation.color,
+              Uuid: annotation.uuid,
+              Data: JSON.stringify(annotation)
+            }
+            this.$store.dispatch('review/addReviewAnnotation', obj).then(rs => {
+            })
+          }
         })
     },
     updateCommentPositions() {
@@ -1241,25 +1574,214 @@ export default {
       }
       return false
     },
-    submit() {
-      // localStorage.clear()
-      Promise.all([
-        PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, 1),
-        PDFJSAnnotate.getStoreAdapter().getComments(this.documentId, 1)
-      ]).then(([{ annotations }, comments]) => {
-        reviewService.saveAnnotations(1, 1, {
-          annotations: annotations.map(a => ({ ...a, data: JSON.stringify(a) })),
-          comments: comments.map(c => ({ ...c, data: JSON.stringify(c) }))
-        }).then(rs => {
-          this.$notify({
-            title: 'Success',
-            message: 'Submit success',
-            type: 'success',
-            duration: 1000
-          })
+    async submitReview() {
+      // Promise.all([
+      //   PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, this.reviewId),
+      //   PDFJSAnnotate.getStoreAdapter().getComments(this.documentId, this.reviewId)
+      // ]).then(([{ annotations }, comments]) => {
+      //   reviewService.saveAnnotations(1, 1, {
+      //     annotations: annotations.map(a => ({ ...a, data: JSON.stringify(a) })),
+      //     comments: comments.map(c => ({ ...c, data: JSON.stringify(c) }))
+      //   }).then(rs => {
+      //     this.$notify({
+      //       title: 'Success',
+      //       message: 'Submit success',
+      //       type: 'success',
+      //       duration: 1000
+      //     })
+      //   })
+      // })
+
+      const annots = await PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, this.reviewId)
+      console.log(annots)
+
+      // var reviewData = []
+      // this.rubricCriteria.forEach(r => {
+      //   if (r.mark) {
+      //     reviewData.push({
+      //       Comment: r.comment,
+      //       CriteriaId: r.id,
+      //       Score: r.mark,
+      //       ReviewId: 2 // Hardcode
+      //     })
+      //   }
+      // })
+      // reviewService.loadReviewFeedback(2).then(rs => {
+      //   console.log('review data: ', rs)
+      //   localStorage.removeItem('reviewComment')
+      // })
+      // reviewService.saveReviewFeedback(reviewData).then(rs => {
+      //   console.log('review data: ', rs)
+      // })
+    },
+    toggleBtnShowScript() {
+      this.isShowScript = !this.isShowScript
+    },
+    calculateContainerHeight() {
+      const headerHeight = document.getElementById('header').clientHeight
+      const containerHeight = window.innerHeight - headerHeight
+      const elContainer = document.getElementById('reviewContainer')
+      elContainer.style.height = containerHeight + 'px'
+    },
+    calculateStylePaddingScroll() {
+      const parentHeight = document.getElementById('parent-scroll').offsetHeight
+      const childHeight = document.getElementById('child-scroll').scrollHeight
+      if (parentHeight >= childHeight) {
+        document.getElementById('child-scroll').style.paddingRight = '0'
+      } else {
+        document.getElementById('child-scroll').style.paddingRight = '10px'
+      }
+    },
+    notShowDirection() {
+      localStorage.setItem('showQuestionDirection', true)
+      this.showDirection = false
+    },
+    reviewCommentChange(e, criteriaId) {
+      var retrievedObject = localStorage.getItem('reviewComment')
+      if (!retrievedObject) {
+        var t = []
+        localStorage.setItem('reviewComment', JSON.stringify(t))
+      }
+
+      retrievedObject = JSON.parse(retrievedObject)
+      var temp = retrievedObject.filter(r => r.id == criteriaId)
+      if (temp.length > 0) {
+        retrievedObject.map(r => {
+          if (r.id == criteriaId) {
+            r.content = e
+          }
         })
+      } else {
+        var cmt = { id: criteriaId, content: e }
+        retrievedObject.push(cmt)
+      }
+      localStorage.setItem('reviewComment', JSON.stringify(retrievedObject))
+    },
+    getLocaleStorageData() {
+      console.log('this.rubricCriteria', this.rubricCriteria)
+      var retrievedComment = localStorage.getItem('reviewComment')
+      var retrievedScore = localStorage.getItem('reviewScore')
+
+      retrievedComment = JSON.parse(retrievedComment)
+      retrievedScore = JSON.parse(retrievedScore)
+
+      retrievedComment.forEach(rc => {
+        this.rubricCriteria.map(criteria => {
+          if (criteria.id == rc.id) {
+            criteria.comment = rc.content
+          }
+        }
+        )
       })
+      retrievedScore.forEach(rc => {
+        this.rubricCriteria.map(criteria => {
+          if (criteria.id == rc.id) {
+            criteria.mark = rc.content
+          }
+        }
+        )
+      })
+      console.log('this.rubricCriteria', this.rubricCriteria)
+    },
+    async hideQuestion() {
+      this.showQuestion = !this.showQuestion
+      document.getElementById('right-panel').style.width = 69.2 + '%'
+      this.defaultScale = 1
+
+      if (!this.showQuestion) {
+        document.getElementById('right-panel').style.width = 100 + '%'
+      }
+
+      if (this.scaleText != 'Fit to width' && this.scaleText != 'Fit to page') {
+        this.RENDER_OPTIONS.scale = this.defaultScale
+        this.RENDER_OPTIONS.scale *= this.scaleRatio
+      } else {
+        (this.scaleText == 'Fit to width') ? this.handleScale('fitWidth') : this.handleScale('fitPage')
+      }
+      await UI.renderPage(1, this.RENDER_OPTIONS)
+      this.documentWidthCal()
+    },
+    documentWidthCal() {
+      var docWidth = document.getElementById('right-panel').offsetWidth - document.getElementById('comment-wrapper').offsetWidth - 15
+
+      if (document.getElementsByClassName('canvasWrapper')[0].offsetWidth < docWidth) {
+        docWidth = document.getElementsByClassName('canvasWrapper')[0].offsetWidth
+      }
+
+      const commentWrapper = document.getElementById('comment-wrapper')
+      commentWrapper.style.left = docWidth + 'px'
+      // document.getElementById('tool-bar').style.width = docWidth + 'px'
+
+      for (let i = 0; i < this.NUM_PAGES; i++) {
+        const page = document.getElementById(`pageContainer${i + 1}`)
+        page.setAttribute('style', `overflow:hidden;width:${docWidth}px;`)
+      }
+    },
+    async handleScale(e) {
+      this.RENDER_OPTIONS.scale = this.defaultScale
+
+      if (e != 'fitWidth' && e != 'fitPage') {
+        this.RENDER_OPTIONS.scale *= (+e)
+        this.scaleRatio = +e
+        this.scaleText = this.scaleRatio * 100 + '%'
+        await UI.renderPage(1, this.RENDER_OPTIONS)
+      } else {
+        var docWidth = document.getElementById('viewer').offsetWidth - document.getElementById('comment-wrapper').offsetWidth - 15
+        var docHeight = document.getElementById('viewer').offsetHeight - document.getElementById('comment-wrapper').offsetWidth - 15
+
+        // Default Layer width & height at 1: 595, 842
+
+        if (e == 'fitWidth') {
+          this.RENDER_OPTIONS.scale = (docWidth / 595)
+          this.scaleText = 'Fit to width'
+        } else {
+          if ((docWidth / 595) < (docHeight / 842)) {
+            this.RENDER_OPTIONS.scale = (docWidth / 595)
+          } else {
+            this.RENDER_OPTIONS.scale = (docHeight / 842)
+          }
+          this.scaleText = 'Fit to page'
+        }
+        console.log(e, 'this.RENDER_OPTIONS.scale', this.RENDER_OPTIONS.scale)
+        await UI.renderPage(1, this.RENDER_OPTIONS)
+      }
+      this.documentWidthCal()
+    },
+    async increaseScale() {
+      if (this.scaleRatio < 2) {
+        this.scaleRatio += 0.1
+        this.RENDER_OPTIONS.scale = this.defaultScale
+        this.RENDER_OPTIONS.scale *= this.scaleRatio
+        this.scaleText = parseInt(this.scaleRatio * 100) + '%'
+        await UI.renderPage(1, this.RENDER_OPTIONS)
+        this.documentWidthCal()
+      }
+    },
+    async decreaseScale() {
+      if (this.scaleRatio > 0.6) {
+        this.scaleRatio -= 0.1
+        this.RENDER_OPTIONS.scale = this.defaultScale
+        this.RENDER_OPTIONS.scale *= this.scaleRatio
+        this.scaleText = parseInt(this.scaleRatio * 100) + '%'
+        await UI.renderPage(1, this.RENDER_OPTIONS)
+        this.documentWidthCal()
+      }
+    },
+    async resizeEventHandle() {
+      document.getElementById('right-panel').offsetWidth
+      this.documentWidthCal()
+      if (this.scaleText != 'Fit to width' && this.scaleText != 'Fit to page') {
+        this.RENDER_OPTIONS.scale = this.defaultScale
+        this.RENDER_OPTIONS.scale *= this.scaleRatio
+      } else {
+        (this.scaleText == 'Fit to width') ? this.handleScale('fitWidth') : this.handleScale('fitPage')
+      }
+    },
+    toolBarButtonClick(e) {
+      localStorage.setItem(`${this.RENDER_OPTIONS.documentId}/tooltype`, e)
+      this.ToolbarButtons()
     }
+
     // End migration
   }
 }
@@ -1276,5 +1798,76 @@ export default {
   border-radius: 4px;
   border-left: 5px solid #50bfff;
 }
+pre {
+  font-size: 14px;
+  text-align: justify;
+  white-space: break-spaces;
+  font-family: inherit !important;
+  margin-bottom: 0 !important;
+}
+.rotate-icon {
+  transform: rotateZ(180deg);
+}
 
+.par-content {
+  position: absolute;
+  padding-right: 10px;
+  top: 0;
+  left: 0;
+  overflow-y: scroll;
+  height: 100%;
+  width: 100%;
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+}
+
+.par-content::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* Handle */
+.par-content::-webkit-scrollbar-thumb {
+  background: #999;
+  border-radius: 4px;
+}
+
+/* Handle on hover */
+.par-content::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+.default{
+  padding: 0;
+  margin: 0;
+}
+.content-con{
+  margin: 10px 0 10px 0;
+  padding: 10px;
+  border: #dcddde solid 1px;
+  border-radius: 5px;
+}
+.body-transcript {
+  margin-top: 0;
+  padding: 10px;
+  border: 1px solid #e2e2e2;
+}
+.hideQuestion{
+  visibility: hidden;
+}
+.pdfViewer .page{
+  overflow: scroll !important;
+  border: 1px solid #b8b8b8 !important;
+}
+#right-panel.hideQuestion{
+  visibility: visible;
+  margin-left: 0 !important;
+}
+.hideQuestion .fa-angle-double-left{
+visibility: visible;
+transform: rotate(180deg);
+}
+#viewer{
+  border: 1px solid #d7dae1;
+  padding: 10px 0 0 0;
+}
 </style>

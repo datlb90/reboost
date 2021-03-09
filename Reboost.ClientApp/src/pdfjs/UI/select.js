@@ -720,7 +720,7 @@ export async function commentText() {
  */
 export function enableSelect(type) {
   _type = type
-
+  console.log('123', type)
   if (_enabled) { return }
 
   _enabled = true
@@ -792,7 +792,7 @@ function handleCommentAnnotationClick(target) {
         return item.dataset.pdfAnnotateId == target.getAttribute('data-pdf-annotate-id')
       })
 
-      let gTop = parseInt(target.getAttribute('top')) - 35
+      let gTop = parseInt(target.getAttribute('top')) - 34
       const svgHeight = parseInt(target.getAttribute('page-height'))
       const svgPageNum = parseInt(target.getAttribute('page-num'))
       if (svgPageNum > 1) { gTop += ((svgPageNum - 1) * svgHeight) }

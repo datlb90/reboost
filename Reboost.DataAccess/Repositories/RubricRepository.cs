@@ -14,7 +14,7 @@ namespace Reboost.DataAccess.Repositories
     {
         Task<Rubrics> GetByIdAsync(int id);
         Task<Rubrics> UpdateWithCriteraAsync(Rubrics rubrics);
-        Task<List<RubricsModel>> getByQuestionId(int id);
+        Task<List<RubricsModel>> GetByQuestionId(int id);
     }
     public class RubricRepository : BaseRepository<Rubrics>, IRubricRepository
     {
@@ -37,7 +37,7 @@ namespace Reboost.DataAccess.Repositories
             return await Update(rubrics);
         }
 
-        public async Task<List<RubricsModel>> getByQuestionId(int id)
+        public async Task<List<RubricsModel>> GetByQuestionId(int id)
         {
             var query = await (from q in ReboostDbContext.Questions
                                join r in ReboostDbContext.Rubrics on q.TaskId  equals r.TaskId
@@ -48,7 +48,9 @@ namespace Reboost.DataAccess.Repositories
                                where q.Id == id
                                select new RubricsQuery
                                {
-                                   Id = q.Id,
+                                   Id = rm.Id,
+                                   CriteriaId = rc.Id,
+                                   CriteriaDescription = rc.Description,
                                    Name = rc.Name,
                                    BandScore = rm.BandScore,
                                    Description = rm.Description
@@ -57,8 +59,11 @@ namespace Reboost.DataAccess.Repositories
             var group = query.GroupBy(q => q.Name).Select(g => new RubricsModel
             {
                 Name = g.Key,
+                Id = g.FirstOrDefault()?.CriteriaId,
+                Description = g.FirstOrDefault()?.Description,
                 BandScoreDescriptions = g.Select(d => new BandScoreDescription
                 {
+                    Id = d.Id,
                     BandScore = d.BandScore,
                     Description = d.Description
                 }).ToList()
