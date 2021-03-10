@@ -1,76 +1,211 @@
 <template>
-  <div>
-    <div class="toolbar">
-      <a href="javascript://" class="clear" title="Clear">×</a>
-      <button class="text" type="button" title="Text Tool" data-tooltype="text" />
+  <div style="border-top: 1px solid rgb(223 224 238); padding: 5px; background: rgb(248, 249, 250);">
 
-      <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
-        ➚
-      </button>
+    <!-- <el-card class="box-card" style="margin-bottom: 5px;">
+      <div>
+        <p style="width: 98%;">
+          <b>TOEFL Independent Writing Topic 1</b> - Do you agree or disagree with the following statement?
+          Always telling the truth is the most important consideration in any relationship. Use specific reasons and examples to support your answer.
+        </p>
 
-      <div class="spacer" />
+        <p style="width: 98%;">
+          <b>Reading:</b> "A child’s education has never been about learning information and basic skills only. It has always included teaching the next generation how to be good members of society. Therefore, this cannot be the responsibility of the parents alone.
 
-      <button class="rectangle" type="button" title="Rectangle" data-tooltype="area">
-&nbsp;
-      </button>
-      <button class="highlight" type="button" title="Highlight" data-tooltype="highlight">
-&nbsp;
-      </button>
-      <button class="strikeout" type="button" title="Strikeout" data-tooltype="strikeout">
-&nbsp;
-      </button>
+          In order to be a good member of any society the individual must respect and obey the rules of their community and share their values. Educating children to understand the need to obey rules and respect others always begins in the home and is widely thought to be the responsibility of parents. They will certainly be the first to help children learn what is important in life, how they are expected to behave and what role they will play in their world.
 
-      <div class="spacer" />
+          However, learning to understand and share the value system of a whole society cannot be achieved just in the home. Once a child goes to school, they are entering a wider community where teachers and peers will have just as much influence as their parents do at home. At school, children will experience working and living with people from a whole variety of backgrounds from the wider society. This experience should teach them how to co-operate with each other and how to contribute to the life of their community.
 
-      <button class="text" type="button" title="Text Tool" data-tooltype="text" />
-      <select class="text-size" />
-      <div class="text-color" />
+          But to be a valuable member of any community is not like learning a simple skill. It is something that an individual goes on learning throughout life and it is the responsibility of every member of a society to take responsibility for helping the younger generation to become active and able members of that society."
 
-      <div class="spacer" />
+        </p>
 
-      <div class="spacer" />
+      </div>
+    </el-card> -->
 
-      <button class="comment" type="button" title="Comment" data-tooltype="point">
-        🗨
-      </button>
+    <div id="content-wrapper" style="background: rgb(248, 249, 250); height: 92.5vh; width: 100%;position: absolute; overflow: auto;">
+      <!-- <div class="tip">
+        <p>
+          <b>TOEFL Independent Writing Topic #1</b> - Do you agree or disagree with the following statement? Always telling the truth is the most important consideration in any relationship. Use specific reasons and examples to support your answer.
+        </p>
+      </div> -->
 
-      <div class="spacer" />
+      <!-- <el-tag
+        v-if="showDirection"
+        key="direction"
+        closable
+        type=""
+        :disable-transitions="false"
 
-      <select class="scale">
-        <option value=".5">
-          50%
-        </option>
-        <option value="1">
-          100%
-        </option>
-        <option value="1.33">
-          133%
-        </option>
-        <option value="1.5">
-          150%
-        </option>
-        <option value="2">
-          200%
-        </option>
-      </select>
+      >
+        <p>
+          <b>Direction:</b> Read the question description of the left and provide feedback to the response on the write. Both in-text comments and rubric feedback are required.
+        </p>
+      </el-tag> -->
 
-      <a href="javascript://" class="rotate-ccw" title="Rotate Counter Clockwise">⟲</a>
-      <a href="javascript://" class="rotate-cw" title="Rotate Clockwise">⟳</a>
+      <div id="left-panel" style="float: left; width: 30%; position: sticky; top: 0px; min-width: 320px; height: 100%;">
+        <el-tabs type="border-card">
+          <el-tab-pane label="Question">
 
-      <div class="spacer" />
+            <div v-if="showDirection" class="tip" transition="fade" style="margin-bottom: 10px;">
+              <p style="width: 98%;">
+                <b>Direction:</b> Read the question description and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review.
+              </p>
+              <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
+              <el-button size="mini" @click="showDirection = !showDirection">Never show this again</el-button>
+            </div>
 
-      <a href="javascript://" class="clear" title="Clear">×</a>
-      <button id="restore" title="Restore">
-        Restore
-      </button>
-    </div>
+            <div style="padding: 20px; border: #dcddde solid 1px; border-radius: 5px;">
+              <p>
+                <b><a href="#">TOEFL Independent Writing - Topic #1</a></b>
+              </p>
+              <p>Do you agree or disagree with the following statement?</p>
+              <p>"Always telling the truth is the most important consideration in any relationship."</p>
+              <p>Use specific reasons and examples to support your answer.</p>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Rubric">Rubric</el-tab-pane>
+          <el-tab-pane label="Help">Questions and Answers</el-tab-pane>
+        </el-tabs>
+      </div>
 
-    <div id="rubric-wrapper">
-      <h4>Rubrics</h4>
-    </div>
+      <div id="right-panel" style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);">
+        <div id="tool-bar" class="toolbar">
+          <div class="tool-group-buttons-container" style="">
+            <div data-element="highlightToolGroupButton" class="tool-group-button">
+              <div class="toolbar-btn-wrapper">
+                <el-tooltip class="item" effect="dark" content="Hide Question & Rubric (H)" placement="bottom">
+                  <button class="toolbar-btn">
+                    <div class="icon">
+                      <i class="toolbar-icon fas fa-angle-double-left" />
+                    </div>
+                  </button>
+                </el-tooltip>
 
-    <div id="content-wrapper">
-      <div id="viewer" class="pdfViewer" :style="{ width: viewerWidth + 'px' }" :document-id="documentId" />
+              </div>
+
+              <div class="toolbar-btn-wrapper">
+                <el-tooltip class="item" effect="dark" content="Note (N)" placement="bottom">
+                  <button class="toolbar-btn">
+                    <div class="icon">
+                      <i class="toolbar-icon far fa-sticky-note" />
+                    </div>
+                  </button>
+                </el-tooltip>
+
+              </div>
+              <div class="toolbar-btn-wrapper">
+                <el-tooltip class="item" effect="dark" content="Free Text (T)" placement="bottom">
+                  <button class="toolbar-btn">
+                    <div class="icon">
+                      <i class="toolbar-icon fas fa-pen-alt" />
+                    </div>
+                  </button>
+                </el-tooltip>
+              </div>
+
+              <div class="toolbar-btn-wrapper">
+                <el-tooltip class="item" effect="dark" content="Rectangle (R)" placement="bottom">
+                  <button class="toolbar-btn">
+                    <div class="icon">
+                      <i class="far fa-square" />
+                    </div>
+                  </button>
+                </el-tooltip>
+
+              </div>
+            </div>
+
+            <el-dropdown size="mini" split-button style="margin-left: 10px;">
+              100%
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item icon="fas fa-expand-arrows-alt"> Fit to width</el-dropdown-item>
+                <el-dropdown-item icon="fas fa-expand-alt"> Fit to page</el-dropdown-item>
+                <el-dropdown-item divided> 50% </el-dropdown-item>
+                <el-dropdown-item>100%</el-dropdown-item>
+                <el-dropdown-item>125%</el-dropdown-item>
+                <el-dropdown-item>150%</el-dropdown-item>
+                <el-dropdown-item>200%</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+
+            <div data-element="highlightToolGroupButton" class="tool-group-button">
+              <button class="toolbar-btn" style="margin-left: 5px;">
+                <div class="icon">
+                  <i class="toolbar-icon fas fa-plus" />
+                </div>
+              </button>
+
+              <button class="toolbar-btn">
+                <div class="icon">
+                  <i class="toolbar-icon fas fa-minus" />
+                </div>
+              </button>
+            </div>
+
+            <el-button type="primary" size="mini" style="position: absolute; right: 0px;" @click="submit()">Submit Review</el-button>
+          </div>
+
+          <!-- <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
+            ➚
+          </button>
+
+          <div class="spacer" />
+
+          <button class="rectangle" type="button" title="Rectangle" data-tooltype="area" />
+          <button class="highlight" type="button" title="Highlight" data-tooltype="highlight" />
+          <button class="strikeout" type="button" title="Strikeout" data-tooltype="strikeout" />
+
+          <div class="spacer" />
+          <button class="text" type="button" title="Text Tool" data-tooltype="text" />
+          <select class="text-size" />
+          <div class="text-color" />
+
+          <div class="spacer" />
+
+          <div class="spacer" />
+
+          <button class="comment" type="button" title="Comment" data-tooltype="point">
+            🗨
+          </button>
+
+          <div class="spacer" />
+
+          <select class="scale">
+            <option value=".5">
+              50%
+            </option>
+            <option value="1">
+              100%
+            </option>
+            <option value="1.33">
+              133%
+            </option>
+            <option value="1.5">
+              150%
+            </option>
+            <option value="2">
+              200%
+            </option>
+          </select>
+
+          <a href="javascript://" class="rotate-ccw" title="Rotate Counter Clockwise">⟲</a>
+          <a href="javascript://" class="rotate-cw" title="Rotate Clockwise">⟳</a>
+
+          <div class="spacer" />
+
+          <a href="javascript://" class="clear" title="Clear">×</a>
+          <button id="restore" title="Restore">
+            Restore
+          </button> -->
+
+        </div>
+        <div
+          id="viewer"
+          class="pdfViewer"
+          :document-id="documentId"
+        />
+      </div>
+
     </div>
 
     <div id="comment-wrapper">
@@ -201,20 +336,23 @@ import {
 } from '@/pdfjs/UI/utils'
 import { addEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
+import http from '@/utils/axios'
+import reviewService from '@/services/review.service.js'
 
 export default {
   name: 'Document',
   data() {
     return {
+      showDirection: true,
       viewer: null,
       PAGE_HEIGHT: 1,
       NUM_PAGES: 0,
-      documentId: './static/Meeting.pdf',
+      documentId: 12,
+      reviewId: 1,
       RENDER_OPTIONS: {
-        documentId: './static/Meeting.pdf',
+        documentId: null,
         pdfDocument: null,
-        scale:
-          parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
+        scale: 1.3, // parseFloat(localStorage.getItem(`${this.documentId}/scale`), 10) || 1.3,
         rotate: parseInt(localStorage.getItem(`${this.documentId}/rotate`), 10) || 0
       },
       newComment: '',
@@ -232,14 +370,43 @@ export default {
       editClicked: false
     }
   },
+  computed: {
+    loadedAnnotation() {
+      const data = this.$store.getters['review/getAnnotation']
+      if (!data) {
+        return null
+      }
+
+      return {
+        annotations: data.annotations.map(a => JSON.parse(a.data)),
+        comments: data.comments.map(c => ({ ...JSON.parse(c.data), documentId: this.documentId }))
+      }
+    }
+  },
   mounted() {
+    window['PDFJSAnnotate'] = PDFJSAnnotate
+    window['APP'] = this
+    PDFJSAnnotate.getStoreAdapter().clearAnnotations(this.documentId)
+
     // Render stuff
-    // #57 fix
+    this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId }).then(() => {
+      PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
+
+      this.render()
+      this.TextStuff()
+      this.ToolbarButtons()
+      this.ClearToolbarButton()
+      // this.ScaleAndRotate();
+      // this.ClearToolbarButton();
+    })
+
     const renderedPages = {}
     const self = this
     document
       .getElementById('content-wrapper')
       .addEventListener('scroll', function(e) {
+        // document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
+        // eslint-disable-next-line no-console
         const textTool = document.getElementById('textTool')
         textTool.style.visibility = 'hidden'
         const visiblePageNum =
@@ -257,19 +424,28 @@ export default {
           }
         }
       })
-
-    this.render()
-    this.TextStuff()
-    this.ToolbarButtons()
-    this.ClearToolbarButton()
-    // this.ScaleAndRotate();
-    // this.ClearToolbarButton();
+  },
+  beforeCreate: function() {
+    document.body.style = 'overflow: hidden'
   },
   methods: {
+    base64ToArrayBuffer(base64) {
+      const binaryString = window.atob(base64)
+      const binaryLen = binaryString.length
+      const bytes = new Uint8Array(binaryLen)
+      for (let i = 0; i < binaryLen; i++) {
+        const ascii = binaryString.charCodeAt(i)
+        bytes[i] = ascii
+      }
+      return bytes
+    },
     async render() {
       const self = this
-      const pdf = await PDFJS.getDocument(this.RENDER_OPTIONS.documentId)
-        .promise
+      const response = await http.get(`http://localhost:6990/api/document/${this.documentId}`)
+      const arrayBuffer = self.base64ToArrayBuffer(response.data.data)
+
+      const pdf = await PDFJS.getDocument(arrayBuffer).promise
+      self.RENDER_OPTIONS.documentId = this.documentId
       self.RENDER_OPTIONS.pdfDocument = pdf
       self.viewer = document.getElementById('viewer')
       self.viewer.innerHTML = ''
@@ -282,20 +458,23 @@ export default {
 
       // eslint-disable-next-line no-unused-vars
       const renderer = await UI.renderPage(1, self.RENDER_OPTIONS)
+
       const obj = {
         scale: self.RENDER_OPTIONS.scale,
-        rotation: self.RENDER_OPTIONS.rotate
+        rotation: self.RENDER_OPTIONS.rotatex
       }
       const viewport = renderer[0].getViewport(obj)
       self.PAGE_HEIGHT = viewport.height
 
-      const pageWidth = document.getElementById('pageContainer1').offsetWidth
+      const pageWidth = document.getElementById('page1').offsetWidth
+      document.getElementById('tool-bar').style.width = pageWidth + 'px'
+
       this.viewerWidth = pageWidth + 250
-      this.commentleftPos = pageWidth + 15
+      this.commentleftPos = pageWidth
 
       const viewer = document.getElementById('viewer')
       const commentWrapper = document.getElementById('comment-wrapper')
-      commentWrapper.style.left = pageWidth + 15 + 'px'
+      commentWrapper.style.left = pageWidth + 'px'
       viewer.appendChild(commentWrapper)
 
       this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
@@ -303,6 +482,9 @@ export default {
         element.isSelected = false
       })
       await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
+
+      this.handleCommentPositionsRestore()
+
       this.TextSelection()
     },
     async TextStuff() {
@@ -566,7 +748,7 @@ export default {
             return item.dataset.pdfAnnotateId == target.getAttribute('data-pdf-annotate-id')
           })
 
-          let gTop = parseInt(target.getAttribute('top')) - 35
+          let gTop = parseInt(target.getAttribute('top')) - 34
           const svgHeight = parseInt(target.getAttribute('page-height'))
           const svgPageNum = parseInt(target.getAttribute('page-num'))
           if (svgPageNum > 1) { gTop += ((svgPageNum - 1) * svgHeight) }
@@ -616,6 +798,10 @@ export default {
       // Sort the highlights
       highlightArr.sort(this.compareTopAttributes)
       this.handleCommentAnnotationClick(highlightArr[0])
+
+      const selected = document.getElementsByClassName('comment-card-selected')
+      if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
+
       const comments = await this.updateCommentAnnotations(documentId)
       await PDFJSAnnotate.getStoreAdapter().updateComments(documentId, comments)
     },
@@ -652,6 +838,7 @@ export default {
         this.newComment,
         this.selectedText,
         topPos)
+      // console.log('ADD NEW COMMENT', newComment)
       await this.comments.push(newComment)
       await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
       document.getElementById('add-new-comment').style.display = 'none'
@@ -804,7 +991,7 @@ export default {
       let svgTop = 0
       if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * svgHeight) }
       const topPos = svgTop + rectTop - 35
-      newCommentWrapper.style = 'width: 100%; position: absolute; left: 5px; top: ' + topPos + 'px;'
+      newCommentWrapper.style = 'width: 100%; position: absolute; left: -20px; top: ' + topPos + 'px;'
       this.hideTextToolBar()
       const textArea = document.getElementById('comment-text-area')
       textArea.focus()
@@ -1060,6 +1247,24 @@ export default {
         if (element.classList.contains(className)) { return true } else { element = element.parentNode }
       }
       return false
+    },
+    submit() {
+      Promise.all([
+        PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, 1),
+        PDFJSAnnotate.getStoreAdapter().getComments(this.documentId, 1)
+      ]).then(([{ annotations }, comments]) => {
+        reviewService.saveAnnotations(1, 1, {
+          annotations: annotations.map(a => ({ ...a, data: JSON.stringify(a) })),
+          comments: comments.map(c => ({ ...c, data: JSON.stringify(c) }))
+        }).then(rs => {
+          this.$notify({
+            title: 'Success',
+            message: 'Submit success',
+            type: 'success',
+            duration: 1000
+          })
+        })
+      })
     }
     // End migration
   }
@@ -1067,7 +1272,15 @@ export default {
 </script>
 
 <style scoped>
-@import '../pdfjs/shared/document.css';
-@import '../pdfjs/shared/toolbar.css';
-@import '../pdfjs/shared/pdf_viewer.css';
+@import '../../pdfjs/shared/document.css';
+@import '../../pdfjs/shared/toolbar.css';
+@import '../../pdfjs/shared/pdf_viewer.css';
+
+.tip {
+  padding: 8px 14px;
+  background-color: #ecf8ff;
+  border-radius: 4px;
+  border-left: 5px solid #50bfff;
+}
+
 </style>
