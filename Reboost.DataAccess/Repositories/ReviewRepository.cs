@@ -14,7 +14,11 @@ namespace Reboost.DataAccess.Repositories
     {
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
+        Task<Annotations> AddAnnotationAsync( Annotations annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<InTextComments> comments);
+        Task SaveFeedback(List<ReviewData> data);
+        Task<List<ReviewData>> LoadFeedBack(int reviewId);
+        Task<InTextComments> AddInTextCommentAsync(InTextComments cmt);
     }
 
     public class ReviewRepository : IReviewRepository
@@ -59,6 +63,29 @@ namespace Reboost.DataAccess.Repositories
             await db.SaveChangesAsync();
 
             return await Task.FromResult(comments);
+        }
+        public async Task SaveFeedback(List<ReviewData> data)
+        {
+
+            db.ReviewData.AddRange(data);
+            await db.SaveChangesAsync();
+        }
+        public async Task<List<ReviewData>> LoadFeedBack(int reviewId)
+        {
+            return await db.ReviewData.Where(rds => rds.ReviewId == reviewId).ToListAsync();
+        }
+        public async Task<Annotations> AddAnnotationAsync(Annotations annotation)
+        {
+            await db.Annotations.AddAsync(annotation);
+            await db.SaveChangesAsync();
+
+            return await Task.FromResult(annotation);
+        }
+        public async Task<InTextComments> AddInTextCommentAsync(InTextComments cmt)
+        {
+            await db.InTextComments.AddAsync(cmt);
+            await db.SaveChangesAsync();
+            return await Task.FromResult(cmt);
         }
 
     }

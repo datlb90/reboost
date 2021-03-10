@@ -1,4 +1,6 @@
-﻿using Reboost.DataAccess;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using System;
@@ -14,6 +16,10 @@ namespace Reboost.Service.Services
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<Annotations> annotations, IEnumerable<InTextComments> comments);
+        Task SaveFeedback(List<ReviewData> data);
+        Task<List<ReviewData>> LoadFeedback(int reviewId);
+        Task<Annotations> AddAnnotationAsync(Annotations annotation);
+        Task<InTextComments> AddInTextCommentAsync(int docId, int reviewId, InTextComments cmt, Annotations anno);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -49,6 +55,25 @@ namespace Reboost.Service.Services
                 }
             }
             return await _unitOfWork.Review.SaveCommentsAsync(_comments);
+        }
+        public async Task SaveFeedback(List<ReviewData> data)
+        {
+            await _unitOfWork.Review.SaveFeedback(data);
+        }
+        public async Task<List<ReviewData>> LoadFeedback(int reviewId)
+        {
+            return await _unitOfWork.Review.LoadFeedBack(reviewId);
+        }
+        public async Task<Annotations> AddAnnotationAsync(Annotations annotation)
+        {
+            return await _unitOfWork.Review.AddAnnotationAsync(annotation);
+        }
+        public async Task<InTextComments> AddInTextCommentAsync(int docId, int reviewId, InTextComments cmt, Annotations anno)
+        {
+            await _unitOfWork.Review.AddAnnotationAsync(anno);
+            cmt.AnnotationId = anno.Id;
+
+            return await _unitOfWork.Review.AddInTextCommentAsync(cmt);
         }
     }
 }

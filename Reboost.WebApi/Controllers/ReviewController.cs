@@ -35,8 +35,30 @@ namespace Reboost.WebApi.Controllers
 
             return Ok(new { annotations = savedAnnots, comments = savedComments });
         }
+
+        [HttpPost("feedback")]
+        public async Task<IActionResult> ReviewFeedback([FromBody] List<ReviewData> data)
+        {
+            await _service.SaveFeedback(data);
+            return Ok();
+        }
+        [HttpGet("feedback/{reviewId}")]
+        public async Task<IActionResult> GetFeedBack([FromRoute] int reviewId)
+        {
+            var rs = await _service.LoadFeedback(reviewId);
+            return Ok(rs);
+        }
+        [HttpPost("annotation")]
+        public async Task<IActionResult> AddAnnotationAsync([FromBody] Annotations data)
+        {
+            var rs = await _service.AddAnnotationAsync(data);
+            return Ok(rs);
+        }
+        [HttpPost("inTextComment/{docId}/{reviewId}")]
+        public async Task<IActionResult> AddInTextCommentAsync([FromRoute] int docId, [FromRoute] int reviewId, [FromBody] InsertCommentModel data)
+        {
+            var rs = await _service.AddInTextCommentAsync( docId,  reviewId, data.Comment, data.Annotation);
+            return Ok(rs);
+        }
     }
-
-    
-
 }

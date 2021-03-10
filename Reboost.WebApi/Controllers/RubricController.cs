@@ -62,9 +62,9 @@ namespace Reboost.WebApi.Controllers
         }
         [HttpGet]
         [Route("getByQuestionId/{id}")]
-        public async Task<List<RubricsModel>> getByQuestionId([FromRoute] int id)
+        public async Task<List<RubricsModel>> GetByQuestionId([FromRoute] int id)
         {
-            return await _service.getByQuestionId(id);
+            return await _service.GetByQuestionId(id);
         }
     }
 }
