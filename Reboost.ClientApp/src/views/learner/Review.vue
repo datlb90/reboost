@@ -1039,7 +1039,7 @@ export default {
           this.order = highlightArr.findIndex(item => {
             return item.dataset.pdfAnnotateId == target.getAttribute('data-pdf-annotate-id')
           })
-
+          
           let gTop = parseInt(target.getAttribute('top')) - 34
           const svgHeight = parseInt(target.getAttribute('page-height'))
           const svgPageNum = parseInt(target.getAttribute('page-num'))
@@ -1091,8 +1091,10 @@ export default {
       highlightArr.sort(this.compareTopAttributes)
       this.handleCommentAnnotationClick(highlightArr[highlightArr.length - 1])
       this.handleCommentAnnotationClick(highlightArr[0])
+      
       const selected = document.getElementsByClassName('comment-card-selected')
-      if (selected.length >= 0) { selected[0].classList.remove('comment-card-selected') }
+      if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
+      
       const comments = await this.updateCommentAnnotations(documentId)
       await PDFJSAnnotate.getStoreAdapter().updateComments(documentId, comments)
     },
