@@ -14,7 +14,7 @@ namespace Reboost.DataAccess.Entities
         [Column("PageNumber")]
         public int PageNum { get; set; }
         [Column("TopPosition")]
-        public int Top { get; set; }
+        public double Top { get; set; }
         public string Color { get; set; }
         public string Data { get; set; }
         [NotMapped]

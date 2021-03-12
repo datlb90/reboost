@@ -10,7 +10,7 @@ import {
 let _enabled = false
 let input
 let _textSize = 12
-let _textColor = '000000'
+let _textColor = 'ff0000'
 
 /**
  * Handle document.mouseup event

@@ -1,9 +1,6 @@
 <template>
   <div>
     <div class="toolbar">
-      <a href="javascript://" class="clear" title="Clear">×</a>
-      <button class="text" type="button" title="Text Tool" data-tooltype="text" />
-
       <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
         ➚
       </button>
