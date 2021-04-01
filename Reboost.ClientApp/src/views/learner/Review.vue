@@ -163,6 +163,7 @@
 
       <div id="right-panel" :class="{'hideQuestion':!showQuestion}" style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);">
         <div id="tool-bar" class="toolbar">
+          <div style="position: absolute; right: 15px; top: 10px; font-size: 9pt">{{ statusText }}</div>
           <div class="tool-group-buttons-container" style="">
             <div data-element="highlightToolGroupButton" class="tool-group-button">
               <div class="toolbar-btn-wrapper">
@@ -471,7 +472,8 @@ export default {
       scaleRatio: 1,
       defaultScale: 1,
       scaleText: '100%',
-      currentTooltype: null
+      currentTooltype: null,
+      statusText: ''
     }
   },
   computed: {
@@ -582,6 +584,8 @@ export default {
       this.calculateStylePaddingScroll()
     }, 80)
 
+    addEventListener('annotation:add', this.annotationAdded)
+
     this.loadRubric()
   },
   beforeCreate: function() {
@@ -595,6 +599,30 @@ export default {
     window.removeEventListener('resize', this.resizeEventHandle)
   },
   methods: {
+    annotationAdded(documentId, pageNumber, annotation) {
+      console.log('ANNOTATION ADDED', documentId, pageNumber, annotation)
+
+      if (annotation.type == 'textbox' || annotation.type == 'area') {
+        annotation.documentId = this.documentId
+        var obj = {
+          DocumentId: this.documentId,
+          ReviewId: this.reviewId,
+          Type: annotation.type,
+          PageNum: annotation.page,
+          Top: annotation.x,
+          Color: annotation.color,
+          Uuid: annotation.uuid,
+          Data: JSON.stringify(annotation)
+        }
+        this.$store.dispatch('review/addReviewAnnotation', obj).then(rs => {
+          console.log('save annotation success')
+          this.statusText = 'Annotation saved'
+          setTimeout(() => {
+            this.statusText = ''
+          }, 2000)
+        })
+      }
+    },
     loadRubric() {
       rubricService.getByQuestionId(this.questionId).then(rs => {
         // this.criteriaFeedback['id']
@@ -796,7 +824,7 @@ export default {
       }
 
       function setActiveToolbarItem(type, button, currentType) {
-        const active = document.querySelector('.toolbar button.active')
+        const active = document.querySelector('.toolbar-btn.active')
         if (active) {
           active.classList.remove('active')
           switch (currentType) {
@@ -816,7 +844,7 @@ export default {
               break
           }
           if (type === currentType) {
-            switch (tooltype) {
+            switch (type) {
               case 'text':
                 UI.disableText()
                 break
@@ -834,7 +862,7 @@ export default {
             }
           } else {
             button.classList.add('active')
-            switch (tooltype) {
+            switch (type) {
               case 'text':
                 UI.enableText()
                 break
@@ -844,7 +872,7 @@ export default {
               case 'area':
               case 'highlight':
               case 'rectangle':
-                UI.enableRect()
+                UI.enableRect('area')
                 break
               case 'strikeout':
                 UI.enableRect()
@@ -863,7 +891,7 @@ export default {
             case 'area':
             case 'highlight':
             case 'rectangle':
-              UI.enableRect()
+              UI.enableRect('area')
               break
             case 'strikeout':
               UI.enableRect()
@@ -1091,10 +1119,8 @@ export default {
       highlightArr.sort(this.compareTopAttributes)
       this.handleCommentAnnotationClick(highlightArr[highlightArr.length - 1])
       this.handleCommentAnnotationClick(highlightArr[0])
-
       const selected = document.getElementsByClassName('comment-card-selected')
       if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
-
       const comments = await this.updateCommentAnnotations(documentId)
       await PDFJSAnnotate.getStoreAdapter().updateComments(documentId, comments)
     },
@@ -1871,5 +1897,8 @@ transform: rotate(180deg);
 #viewer{
   border: 1px solid #d7dae1;
   padding: 10px 0 0 0;
+}
+.toolbar-btn.active {
+  background-color: #d5dde4;
 }
 </style>

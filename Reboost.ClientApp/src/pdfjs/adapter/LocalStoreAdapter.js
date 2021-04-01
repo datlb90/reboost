@@ -34,7 +34,6 @@ export default class LocalStoreAdapter extends StoreAdapter {
           const annotations = getAnnotations(documentId)
           annotations.push(annotation)
           updateAnnotations(documentId, annotations)
-          console.log(annotations)
           resolve(annotation)
         })
       },
