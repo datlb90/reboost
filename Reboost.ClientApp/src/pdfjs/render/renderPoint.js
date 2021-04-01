@@ -20,7 +20,10 @@ export default function renderPoint(a) {
     width: SIZE,
     height: SIZE,
     x: a.x,
-    y: a.y
+    y: a.y,
+    top: a.top,
+    'page-num': a.pageNum,
+    'page-height': a.pageHeight
   })
 
   setAttributes(innerSVG, {

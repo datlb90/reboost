@@ -20,6 +20,9 @@ namespace Reboost.Service.Services
         Task<List<ReviewData>> LoadFeedback(int reviewId);
         Task<Annotations> AddAnnotationAsync(Annotations annotation);
         Task<InTextComments> AddInTextCommentAsync(int docId, int reviewId, InTextComments cmt, Annotations anno);
+        Task<InTextComments> DeleteInTextCommentAsync(int id);
+        Task<int> DeleteAnnotationAsync(int id);
+        Task<Annotations> EditAnnotationAsync(Annotations anno);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -74,6 +77,18 @@ namespace Reboost.Service.Services
             cmt.AnnotationId = anno.Id;
 
             return await _unitOfWork.Review.AddInTextCommentAsync(cmt);
+        }
+        public async Task<InTextComments> DeleteInTextCommentAsync(int id)
+        {
+            return await _unitOfWork.Review.DeleteInTextCommentAsync(id);
+        }
+        public async Task<Annotations> EditAnnotationAsync(Annotations anno)
+        {
+            return await _unitOfWork.Review.EditAnnotationAsync(anno);
+        }
+        public async Task<int> DeleteAnnotationAsync(int id)
+        {
+            return await _unitOfWork.Review.DeleteAnnotationAsync(id);
         }
     }
 }

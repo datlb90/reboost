@@ -137,7 +137,6 @@ export default function appendChild(svg, annotation, viewport) {
   // If no type was provided for an annotation it will result in node being null.
   // Skip appending/transforming if node doesn't exist.
   if (child) {
-    console.log('after create text element', child)
     // Set attributes
     child.setAttribute('data-pdf-annotate-id', annotation.uuid)
     child.setAttribute('data-pdf-annotate-type', annotation.type)

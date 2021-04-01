@@ -8,10 +8,9 @@ const reviewService = {
     return http.post(`/review/saveAnnotation/${docId}/${reviewId}`, annotation)
   },
   addAnnotation(annotation) {
-    return http.post(`/review/annotation`, annotation)
+    return http.post(`/review/annotation`, annotation).then(rs => rs.data)
   },
   addInTextComment(docId, reviewId, comment, annotation) {
-    console.log(docId, reviewId, comment)
     return http.post(`/review/inTextComment/${docId}/${reviewId}`, { comment, annotation })
   },
   saveReviewFeedback(data) {
@@ -19,6 +18,15 @@ const reviewService = {
   },
   loadReviewFeedback(reviewId) {
     return http.get(`/review/feedback/${reviewId}`).then(rs => rs.data)
+  },
+  deleteInTextComment(id) {
+    return http.post(`/review/comment/delete`, { id }).then(rs => rs.data)
+  },
+  deleteAnnotation(id) {
+    return http.post(`/review/annotation/delete`, { id }).then(rs => rs.data)
+  },
+  editAnnotation(anno) {
+    return http.post(`/review/edit`, anno).then(rs => rs.data)
   }
 }
 

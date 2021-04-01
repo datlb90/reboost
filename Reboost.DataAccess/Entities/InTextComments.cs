@@ -24,4 +24,8 @@ namespace Reboost.DataAccess.Entities
         public Annotations Annotation { get; set; }
         public InTextComments Comment { get; set; }
     }
+    public class DeleteCommentModel
+    {
+        public int id { get; set; }
+    }
 }

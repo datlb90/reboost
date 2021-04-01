@@ -62,9 +62,13 @@ export default class StoreAdapter {
   __addAnnotation(documentId, pageNumber, annotation) { abstractFunction('addAnnotation') }
   get addAnnotation() { return this.__addAnnotation }
   set addAnnotation(fn) {
-    this.__addAnnotation = function addAnnotation(documentId, pageNumber, annotation) {
+    this.__addAnnotation = function addAnnotation(documentId, pageNumber, annotation, undo) {
       return fn(...arguments).then((annotation) => {
-        fireEvent('annotation:add', documentId, pageNumber, annotation)
+        if (typeof (undo) != 'undefined') {
+          fireEvent('annotationUndo:add', documentId, pageNumber, annotation)
+        } else {
+          fireEvent('annotation:add', documentId, pageNumber, annotation)
+        }
         return annotation
       })
     }
@@ -99,10 +103,14 @@ export default class StoreAdapter {
   __deleteAnnotation(documentId, annotationId) { abstractFunction('deleteAnnotation') }
   get deleteAnnotation() { return this.__deleteAnnotation }
   set deleteAnnotation(fn) {
-    this.__deleteAnnotation = function deleteAnnotation(documentId, annotationId) {
+    this.__deleteAnnotation = function deleteAnnotation(documentId, annotationId, undo) {
       return fn(...arguments).then((success) => {
         if (success) {
-          fireEvent('annotation:delete', documentId, annotationId)
+          if (typeof (undo) != 'undefined') {
+            fireEvent('annotationUndo:delete', success)
+          } else {
+            fireEvent('annotation:delete', success)
+          }
         }
         return success
       })
@@ -150,8 +158,8 @@ export default class StoreAdapter {
   set deleteComment(fn) {
     this.__deleteComment = function deleteComment(documentId, commentId) {
       return fn(...arguments).then((success) => {
-        if (success) {
-          fireEvent('comment:delete', documentId, commentId)
+        if (success.length > 0) {
+          fireEvent('comment:delete', documentId, success[0])
         }
         return success
       })

@@ -194,5 +194,33 @@
         {"id":"yi","name":"Yiddish","nativeName":"ייִדיש"},
         {"id":"yo","name":"Yoruba","nativeName":"Yorùbá"},
         {"id":"za","name":"Zhuang, Chuang","nativeName":"Saɯ cueŋƅ, Saw cuengh"}
+      ],
+      "listColor": [
+        { "name": "#ffff00" },
+        { "name": "#ff0000" },
+        { "name": "#000000" },
+        { "name": "#00ff00" },
+        { "name": "#80e5b1" },
+        { "name": "#92e8e8" },
+        { "name": "#a6a1e6" },
+        { "name": "#e2a1e6" },
+        { "name": "#e44234" },
+        { "name": "#ff8d00" },
+        { "name": "#ffcd45" },
+        { "name": "#00cc63" },
+        { "name": "#25d2d1" },
+        { "name": "#4e7de9" },
+        { "name": "#c544ce" },
+        { "name": "#88271f" },
+        { "name": "#b54800" },
+        { "name": "#007a3b" },
+        { "name": "#167e7d" },
+        { "name": "#2e4b8b" },
+        { "name": "#76287b" },
+        { "name": "#ffffff" },
+        { "name": "#cdcdcd" },
+        { "name": "#9c9c9c" },
+        { "name": "#696969" },
+        { "name": "#272727" }
       ]
 }

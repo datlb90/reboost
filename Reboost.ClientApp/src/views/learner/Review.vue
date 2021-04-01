@@ -1,302 +1,42 @@
 <template>
   <div id="reviewContainer" style="border-top: 1px solid rgb(223 224 238); padding: 5px; background: rgb(248, 249, 250);">
 
-    <!-- <el-card class="box-card" style="margin-bottom: 5px;">
-      <div>
-        <p style="width: 98%;">
-          <b>TOEFL Independent Writing Topic 1</b> - Do you agree or disagree with the following statement?
-          Always telling the truth is the most important consideration in any relationship. Use specific reasons and examples to support your answer.
-        </p>
-
-        <p style="width: 98%;">
-          <b>Reading:</b> "A child’s education has never been about learning information and basic skills only. It has always included teaching the next generation how to be good members of society. Therefore, this cannot be the responsibility of the parents alone.
-
-          In order to be a good member of any society the individual must respect and obey the rules of their community and share their values. Educating children to understand the need to obey rules and respect others always begins in the home and is widely thought to be the responsibility of parents. They will certainly be the first to help children learn what is important in life, how they are expected to behave and what role they will play in their world.
-
-          However, learning to understand and share the value system of a whole society cannot be achieved just in the home. Once a child goes to school, they are entering a wider community where teachers and peers will have just as much influence as their parents do at home. At school, children will experience working and living with people from a whole variety of backgrounds from the wider society. This experience should teach them how to co-operate with each other and how to contribute to the life of their community.
-
-          But to be a valuable member of any community is not like learning a simple skill. It is something that an individual goes on learning throughout life and it is the responsibility of every member of a society to take responsibility for helping the younger generation to become active and able members of that society."
-
-        </p>
-
-      </div>
-    </el-card> -->
-
-    <div id="content-wrapper" style="background: rgb(248, 249, 250); height: 92.5vh; width: 100%;position: absolute; overflow: auto;">
-      <!-- <div class="tip">
-        <p>
-          <b>TOEFL Independent Writing Topic #1</b> - Do you agree or disagree with the following statement? Always telling the truth is the most important consideration in any relationship. Use specific reasons and examples to support your answer.
-        </p>
-      </div> -->
-
-      <!-- <el-tag
-        v-if="showDirection"
-        key="direction"
-        closable
-        type=""
-        :disable-transitions="false"
-
-      >
-        <p>
-          <b>Direction:</b> Read the question description of the left and provide feedback to the response on the write. Both in-text comments and rubric feedback are required.
-        </p>
-      </el-tag> -->
-
+    <div id="content-wrapper" style="background: rgb(248, 249, 250); height: 92.5vh; width: 100%;position: absolute; overflow: unset;">
       <div id="left-panel" :class="{'hideQuestion': !showQuestion}" style="float: left; width: 30%; position: sticky; top: 0px; min-width: 320px; height: 100%;">
-        <el-button :disabled="readOnly" type="primary" size="mini" style="position: absolute; right: 8px;top: 6px;z-index: 1;" @click="submitReview()">Submit Review</el-button>
         <el-tabs type="border-card">
           <el-tab-pane label="Question">
-            <div style="height: 100%;display: flex; flex-direction: column">
-              <div id="parent-scroll" style="flex-grow: 1;position: relative;">
-                <div id="child-scroll" class="par-content default">
-                  <div v-if="showDirection" class="tip" transition="fade" style="margin-bottom: 10px;">
-                    <p style="width: 98%;">
-                      <b>Direction:</b> Read the question description and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review.
-                    </p>
-                    <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
-                    <el-button size="mini" @click="notShowDirection">Never show this again</el-button>
-                  </div>
-
-                  <div class="content-con">
-                    <p>
-                      <b><a href="#">{{ getQuestionSection }}</a></b>
-                    </p>
-                    <p>{{ getQuestion.content }}</p></div>
-                  <div v-if="getReading != ''" class="content-con">
-                    <p>
-                      <b>Reading</b>
-                    </p>
-                    <div style="margin: 0;">
-                      <pre> {{ getReading.content }}</pre>
-                    </div>
-                  </div>
-                  <div v-if="getListening != ''" class="content-con">
-                    <p>
-                      <b>Listening</b>
-                    </p>
-                    <audio controls style="width: 100%; height: 35px; margin-bottom: 3px;">
-                      <!-- <source :src="'/assets/' + getListening.content" type="audio/mpeg"> -->
-                    </audio>
-                    <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
-                      <div style="flex-grow: 1;">
-                        <i class="el-icon-document-copy" />
-                        Audio Script
-                      </div>
-                      <div :class="{'rotate-icon' : isShowScript}">
-                        <i class="fas fa-caret-down" />
-                      </div>
-                    </div>
-                    <div v-if="isShowScript" class="body-transcript" style="margin: 0;">
-                      <pre> {{ getTranscript.content }}</pre>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <tabQuestion ref="tabQuestionCom" :questionid="questionId" :reviewid="reviewId" />
           </el-tab-pane>
           <el-tab-pane label="Rubric">
-            <div style="height: 100%;display: flex; flex-direction: column">
-              <div id="parent-scroll" style="flex-grow: 1;position: relative;">
-                <div id="child-scroll" class="par-content default">
-                  <div id="rubric">
-                    <div style="height: 100%; overflow: auto;">
-                      <el-card v-for="(criteria, criteriaIndex) in rubricCriteria" :key="criteria.id" style="margin-bottom: 5px; margin-left: 3px;">
-                        <div slot="header" class="clearfix">
-                          <span style="font-size: 16px; font-weight: bold;">
-                            {{ criteria.name }}
-                          </span>
-                          <div style="font-size: 14px; margin-top: 10px;">
-                            {{ criteria.description }}
-                          </div>
-                        </div>
-                        <div>
-                          <div>
-                            <el-radio-group
-                              :id="criteria.id"
-                              v-model="criteria.mark"
-                              size="mini"
-                              style="margin-bottom: 10px; min-width: 240px;"
-                              :disabled="readOnly"
-                              @input="rubricMileStoneClick(criteria.id, $event)"
-                            >
-                              <el-tooltip
-                                v-for="milestone in criteria.bandScoreDescriptions.slice()"
-                                :key="milestone.id"
-                                class="item"
-                                effect="light"
-                                placement="top"
-                              >
-                                <div slot="content" style="max-width: 500px;">
-                                  {{ milestone.description }}
-                                </div>
-                                <el-radio-button
-                                  :key="milestone.id"
-                                  :label="milestone.bandScore"
-                                />
-                              </el-tooltip>
-                            </el-radio-group>
-                          </div>
-                          <div>
-                            <el-input
-                              v-model="criteria.comment"
-                              :criteria-index="criteriaIndex"
-                              type="textarea"
-                              placeholder="Enter text here"
-                              :rows="3"
-                              :maxlength="8000"
-                              class="criteria-comment"
-                              :readonly="readOnly"
-                              @input="reviewCommentChange(criteria.comment, criteria.id)"
-                            />
-                          </div>
-                        </div>
-                      </el-card>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <tabRubric ref="tabRubricCom" :questionid="questionId" :reviewid="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
           <el-tab-pane label="Help">Questions and Answers</el-tab-pane>
         </el-tabs>
       </div>
 
       <div id="right-panel" :class="{'hideQuestion':!showQuestion}" style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 69.2%; background: rgb(248, 249, 250);">
-        <div id="tool-bar" class="toolbar">
-          <div style="position: absolute; right: 15px; top: 10px; font-size: 9pt">{{ statusText }}</div>
-          <div class="tool-group-buttons-container" style="">
-            <div data-element="highlightToolGroupButton" class="tool-group-button">
-              <div class="toolbar-btn-wrapper">
-                <el-tooltip class="item" effect="dark" content="Hide Question & Rubric (H)" placement="bottom">
-                  <button class="toolbar-btn" @click="hideQuestion">
-                    <div :class="{'hideQuestion':!showQuestion}" class="icon">
-                      <i class="toolbar-icon fas fa-angle-double-left" />
-                    </div>
-                  </button>
-                </el-tooltip>
+        <toolbar
+          ref="toolBar"
+          :review-page="this"
+          :expandcolorpicker.sync="expandColorPicker"
+          :documentid="documentId"
+          :reviewid="reviewId"
+          :renderoptions="RENDER_OPTIONS"
+          @expandColorPickerToggle="expandColorPicker=$event"
+          @hideQuestion="hideQuestion($event)"
 
-              </div>
-
-              <div class="toolbar-btn-wrapper">
-                <el-tooltip class="item" effect="dark" content="Note (N)" placement="bottom">
-                  <button class="toolbar-btn" data-tooltype="note" type="button" @click="toolBarButtonClick('note')">
-                    <div class="icon">
-                      <i class="toolbar-icon far fa-sticky-note" />
-                    </div>
-                  </button>
-                </el-tooltip>
-
-              </div>
-              <div class="toolbar-btn-wrapper">
-                <el-tooltip class="item" effect="dark" content="Free Text (T)" placement="bottom">
-                  <button class="toolbar-btn" data-tooltype="text" type="button" @click="toolBarButtonClick('text')">
-                    <div class="icon">
-                      <i class="toolbar-icon fas fa-pen-alt" />
-                    </div>
-                  </button>
-                </el-tooltip>
-              </div>
-
-              <div class="toolbar-btn-wrapper">
-                <el-tooltip class="item" effect="dark" content="Rectangle (R)" placement="bottom">
-                  <button class="toolbar-btn" data-tooltype="rectangle" type="button" @click="toolBarButtonClick('rectangle')">
-                    <div class="icon">
-                      <i class="far fa-square" />
-                    </div>
-                  </button>
-                </el-tooltip>
-
-              </div>
-            </div>
-
-            <el-dropdown size="mini" split-button style="margin-left: 10px;" @command="handleScale">
-              {{ scaleText }}
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="fitWidth" icon="fas fa-expand-arrows-alt"> Fit to width</el-dropdown-item>
-                <el-dropdown-item command="fitPage" icon="fas fa-expand-alt"> Fit to page</el-dropdown-item>
-                <el-dropdown-item command="0.5" divided> 50% </el-dropdown-item>
-                <el-dropdown-item command="1">100%</el-dropdown-item>
-                <el-dropdown-item command="1.25">125%</el-dropdown-item>
-                <el-dropdown-item command="1.5">150%</el-dropdown-item>
-                <el-dropdown-item command="2">200%</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-
-            <div data-element="highlightToolGroupButton" class="tool-group-button">
-              <button class="toolbar-btn" style="margin-left: 5px;" @click="increaseScale">
-                <div class="icon">
-                  <i class="toolbar-icon fas fa-plus" />
-                </div>
-              </button>
-
-              <button class="toolbar-btn" @click="decreaseScale">
-                <div class="icon">
-                  <i class="toolbar-icon fas fa-minus" />
-                </div>
-              </button>
-            </div>
-
-          </div>
-
-          <!-- <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
-            ➚
-          </button>
-
-          <div class="spacer" />
-
-          <button class="rectangle" type="button" title="Rectangle" data-tooltype="area" />
-          <button class="highlight" type="button" title="Highlight" data-tooltype="highlight" />
-          <button class="strikeout" type="button" title="Strikeout" data-tooltype="strikeout" />
-
-          <div class="spacer" />
-          <button class="text" type="button" title="Text Tool" data-tooltype="text" />
-          <select class="text-size" />
-          <div class="text-color" />
-
-          <div class="spacer" />
-
-          <div class="spacer" />
-
-          <button class="comment" type="button" title="Comment" data-tooltype="point">
-            🗨
-          </button>
-
-          <div class="spacer" />
-
-          <select class="scale">
-            <option value=".5">
-              50%
-            </option>
-            <option value="1">
-              100%
-            </option>
-            <option value="1.33">
-              133%
-            </option>
-            <option value="1.5">
-              150%
-            </option>
-            <option value="2">
-              200%
-            </option>
-          </select>
-
-          <a href="javascript://" class="rotate-ccw" title="Rotate Counter Clockwise">⟲</a>
-          <a href="javascript://" class="rotate-cw" title="Rotate Clockwise">⟳</a>
-
-          <div class="spacer" />
-
-          <a href="javascript://" class="clear" title="Clear">×</a>
-          <button id="restore" title="Restore">
-            Restore
-          </button> -->
-
-        </div>
-        <div
-          id="viewer"
-          class="pdfViewer"
-          :document-id="documentId"
+          @redoAnnotation="redo($event)"
+          @undoAnnotation="undoAnnotation"
+          @scaleChange="handleScale($event)"
+          @highLightText="highlightEvent($event)"
         />
+        <div id="viewerContainer">
+          <div
+            id="viewer"
+            class="pdfViewer"
+            :document-id="documentId"
+          />
+        </div>
       </div>
 
     </div>
@@ -346,10 +86,10 @@
               3:16 PM Jul 7
             </div>
           </div>
-          <el-button style="right: -10px;" class="action-card-btn"	title="Delete Comment"	@click="deleteCommentCard(comment)">
+          <el-button style="right: -10px;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="deleteButtonClicked(comment)">
             <i class="far fa-trash-alt" />
           </el-button>
-          <el-button style="right: 10px;" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
+          <el-button style="right: 10px;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
             <i class="far fa-edit" />
           </el-button>
         </div>
@@ -381,17 +121,34 @@
       </el-card>
     </div>
 
-    <el-button-group id="textTool" style="display: none;">
+    <!-- Inline text tools -->
+    <el-button-group id="textToolGroup" style="display: none;">
       <el-button class="textToolBtn" @click="HighlightText()">
         <i class="fas fa-highlighter" />
       </el-button>
       <el-button class="textToolBtn" @click="StrikethroughText()">
         <i class="fas fa-strikethrough" />
       </el-button>
-      <el-button id="comment-text" class="textToolBtn" @click="CommentText()">
+      <el-button class="textToolBtn" @click="CommentText()">
         <i class="fas fa-comment-alt" />
       </el-button>
     </el-button-group>
+    <!-- /Inline text tools -->
+    <!-- Inline color picker -->
+    <el-button-group id="rectTool" style="display: none;">
+      <el-button class="textToolBtn" @click="showColorPickerTool('area')">
+        <i class="fas fa-palette" />
+      </el-button>
+    </el-button-group>
+    <div id="colorPickerTool" class="colorPicker">
+      <span>
+        Stroke
+      </span>
+      <ul class="group-color">
+        <li v-for="item in listColor" :key="item.name" @click="changeColor(item.name)"><button :style="{'background-color': item.name, height:18+'px',width:18+'px', margin:'5px 5px 5px 5px', 'border-radius':'50%','outline': 'none'}" /></li>
+      </ul>
+    </div>
+    <!-- /Inline color picker -->
   </div>
 </template>
 
@@ -410,17 +167,15 @@
 // } from "pdfjs-dist/web/pdf_viewer.js";
 
 import PDFJS from 'pdf-dist/webpack.js'
-
+import ToolBar from '../../components/controls/Viewer_ToolBar'
+import TabQuestion from './Review_TabQuestion'
+import TabRubric from './Review_TabRubric'
 // PDFJSAnnotate
 import PDFJSAnnotate from '@/pdfjs/PDFJSAnnotate'
 const { UI } = PDFJSAnnotate
 PDFJSAnnotate.setStoreAdapter(new PDFJSAnnotate.LocalStoreAdapter())
 
-// initColorPicker
-import initColorPicker from '@/pdfjs/shared/initColorPicker'
 import {
-
-  findSVGAtPoint,
   getMetadata,
   // getOffset,
   scaleDown
@@ -431,10 +186,18 @@ import { addEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
 import http from '@/utils/axios'
 import reviewService from '@/services/review.service.js'
-import rubricService from '@/services/rubric.service.js'
+import { enableEdit } from '@/pdfjs/UI/edit'
+import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
+import initColorPicker from '../../pdfjs/shared/initColorPicker'
+// import { highlightText } from '../../pdfjs/UI/highlight-text.js'
 
 export default {
   name: 'Document',
+  components: {
+    'toolbar': ToolBar,
+    'tabQuestion': TabQuestion,
+    'tabRubric': TabRubric
+  },
   data() {
     return {
       rubricCriteria: [],
@@ -443,8 +206,9 @@ export default {
       viewer: null,
       PAGE_HEIGHT: 1,
       NUM_PAGES: 0,
-      documentId: 12,
-      reviewId: 1,
+      questionId: 1,
+      documentId: 67,
+      reviewId: 2,
       RENDER_OPTIONS: {
         documentId: null,
         pdfDocument: null,
@@ -464,20 +228,30 @@ export default {
       order: null,
       hasSpace: true,
       editClicked: false,
-      isShowScript: false,
-      questionId: 1,
       loadCompleted: false,
-      readOnly: false,
       showQuestion: true,
       scaleRatio: 1,
       defaultScale: 1,
       scaleText: '100%',
       currentTooltype: null,
-      statusText: ''
+      annotationClicked: null,
+      previousToolType: true,
+      statusText: '',
+      listColor: require('../../assets/data.json').listColor,
+      colorChosen: null,
+      expandColorPicker: false,
+      activeButton: null,
+      rubicCommentDelay: null,
+      undoAnnotationList: [],
+      boundingRect: null,
+      zoomDelayHandle: null,
+      fitDocumentWidth: false,
+      note: null,
+      undoHistory: [],
+      redoHistory: []
     }
   },
   computed: {
-
     loadedAnnotation() {
       const data = this.$store.getters['review/getAnnotation']
       if (!data) {
@@ -485,123 +259,42 @@ export default {
       }
 
       return {
-        annotations: data.annotations.map(a => JSON.parse(a.data)),
-        comments: data.comments.map(c => ({ ...JSON.parse(c.data), documentId: this.documentId }))
+        annotations: data.annotations.map(a => ({ ...JSON.parse(a.data), id: a.id, top: a.top, pageNum: a.pageNum, color: a.color })),
+        comments: data.comments.map(c => ({ ...JSON.parse(c.data), documentId: this.documentId, id: c.id }))
       }
-    },
-    getDataQuestionParts() {
-      return this.$store.getters['question/getSelected']['questionsPart']
-    },
-    getTranscript() {
-      if (typeof (this.getDataQuestionParts) != 'undefined') {
-        if (this.getDataQuestionParts.find(u => u.name == 'Transcript')) {
-          return this.getDataQuestionParts.find(u => u.name == 'Transcript')
-        }
-      }
-      return ''
-    },
-    getQuestionSection() {
-      if (this.$store.getters['question/getSelected']) {
-        console.log('this.$store.getters', this.$store.getters['question/getSelected'])
-        return this.$store.getters['question/getSelected']['test'] + ' ' + this.$store.getters['question/getSelected']['section'] + ' - ' + this.$store.getters['question/getSelected']['title']
-      }
-      return ''
-    },
-    getQuestion() {
-      if (typeof (this.getDataQuestionParts) != 'undefined') {
-        if (this.getDataQuestionParts.find(u => u.name == 'Question')) {
-          return this.getDataQuestionParts.find(u => u.name == 'Question')
-        }
-      }
-      return ''
-    },
-    getReading() {
-      if (typeof (this.getDataQuestionParts) != 'undefined') {
-        if (this.getDataQuestionParts.find(u => u.name == 'Reading')) {
-          return this.getDataQuestionParts.find(u => u.name == 'Reading')
-        }
-      }
-      return ''
-    },
-    getListening() {
-      if (typeof (this.getDataQuestionParts) != 'undefined') {
-        if (this.getDataQuestionParts.find(u => u.name == 'Listening')) {
-          return this.getDataQuestionParts.find(u => u.name == 'Listening')
-        }
-      }
-      return ''
     }
   },
   async mounted() {
     window['PDFJSAnnotate'] = PDFJSAnnotate
     window['APP'] = this
+    localStorage.setItem(`${this.RENDER_OPTIONS.documentId}/tooltype`, 'cursor')
+    localStorage.removeItem('colorChosen')
     PDFJSAnnotate.getStoreAdapter().clearAnnotations(this.documentId)
-    if (localStorage.getItem('showQuestionDirection')) {
-      this.showDirection = false
-    }
+
     // Render stuff
     this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId }).then(() => {
       PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
 
       this.render()
-      this.TextStuff()
-      this.ToolbarButtons()
-      this.ClearToolbarButton()
+      // this.ToolbarButtons()
       // this.ScaleAndRotate();
-      // this.ClearToolbarButton();
-    })
-    this.$store.dispatch('question/loadQuestion', +this.questionId).then(rs => {
-      this.calculateContainerHeight()
-      this.getDataQuestionParts()
     })
 
-    const renderedPages = {}
-    const self = this
-    document
-      .getElementById('content-wrapper')
-      .addEventListener('scroll', function(e) {
-        // document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
-        // eslint-disable-next-line no-console
-        const textTool = document.getElementById('textTool')
-        textTool.style.visibility = 'hidden'
-        const visiblePageNum =
-          Math.round(e.target.scrollTop / self.PAGE_HEIGHT) + 1
-        const visiblePage = document.querySelector(
-          `.page[data-page-number="${visiblePageNum}"][data-loaded="false"]`
-        )
-        if (visiblePage) {
-          // Prevent invoking UI.renderPage on the same page more than once.
-          if (!renderedPages[visiblePageNum]) {
-            renderedPages[visiblePageNum] = true
-            setTimeout(function() {
-              UI.renderPage(visiblePageNum, self.RENDER_OPTIONS)
-            })
-          }
-        }
-      })
-    window.addEventListener('resize', this.calculateContainerHeight.bind(this))
-    this.setIntervalForScroll = setInterval(() => {
-      this.calculateStylePaddingScroll()
-    }, 80)
-
-    addEventListener('annotation:add', this.annotationAdded)
-
-    this.loadRubric()
+    enableEdit()
   },
+
   beforeCreate: function() {
     document.body.style = 'overflow: hidden'
   },
   created() {
-    window.addEventListener('resize', this.resizeEventHandle)
+
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
-    window.removeEventListener('resize', this.resizeEventHandle)
+    document.removeEventListener('keyup', this.keyupHandler)
   },
   methods: {
     annotationAdded(documentId, pageNumber, annotation) {
-      console.log('ANNOTATION ADDED', documentId, pageNumber, annotation)
-
       if (annotation.type == 'textbox' || annotation.type == 'area') {
         annotation.documentId = this.documentId
         var obj = {
@@ -614,59 +307,31 @@ export default {
           Uuid: annotation.uuid,
           Data: JSON.stringify(annotation)
         }
-        this.$store.dispatch('review/addReviewAnnotation', obj).then(rs => {
-          console.log('save annotation success')
-          this.statusText = 'Annotation saved'
+        this.$store.dispatch('review/addReviewAnnotation', obj).then(async rs => {
+          this.statusText = 'Saved'
+          var temp = this.$store.getters['review/getAddedAnnotation']
+          annotation.id = temp.id
+          await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation)
+          this.undoHistory.push({ action: 'added', annotation: annotation })
+          this.updateUndoList()
+          // this.addToUndoList(annotation, 'add')
           setTimeout(() => {
             this.statusText = ''
           }, 2000)
         })
+      } else if (annotation.type == 'point') {
+        // 123
       }
     },
-    loadRubric() {
-      rubricService.getByQuestionId(this.questionId).then(rs => {
-        // this.criteriaFeedback['id']
-        this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, comment: '' }))
-        reviewService.loadReviewFeedback(this.reviewId).then(rs => { // Hardcode ReviewId
-          console.log('loadReviewFeedback', rs)
-          if (rs.length > 0) {
-            rs.forEach(rc => {
-              this.rubricCriteria.map(criteria => {
-                if (criteria.id == rc.criteriaId) {
-                  criteria.comment = rc.comment
-                  criteria.mark = rc.score
-                }
-              }
-              )
-            })
-            this.readOnly = true
-          } else {
-            this.getLocaleStorageData()
-          }
-        })
+    handleAnnotationDelete(target) {
+      reviewService.deleteAnnotation(target.id).then(rs => {
+        this.undoHistory.push({ action: 'deleted', annotation: target })
+        this.updateUndoList()
+        this.removeElementById(target.uuid)
+        // this.addToUndoList(target, 'delete')
       })
     },
-    rubricMileStoneClick(id, mileStone) {
-      var retrievedObject = localStorage.getItem('reviewScore')
-      if (!retrievedObject) {
-        var t = []
-        localStorage.setItem('reviewScore', JSON.stringify(t))
-      }
 
-      retrievedObject = JSON.parse(retrievedObject)
-      var temp = retrievedObject.filter(r => r.id == id)
-      if (temp.length > 0) {
-        retrievedObject.map(r => {
-          if (r.id == id) {
-            r.content = mileStone
-          }
-        })
-      } else {
-        var cmt = { id: id, content: mileStone }
-        retrievedObject.push(cmt)
-      }
-      localStorage.setItem('reviewScore', JSON.stringify(retrievedObject))
-    },
     base64ToArrayBuffer(base64) {
       const binaryString = window.atob(base64)
       const binaryLen = binaryString.length
@@ -694,8 +359,6 @@ export default {
       for (let i = 0; i < self.NUM_PAGES; i++) {
         const page = UI.createPage(i + 1)
         self.viewer.appendChild(page)
-
-        page.setAttribute('style', `overflow:hidden;width:${docWidth}px;`)
       }
 
       // eslint-disable-next-line no-unused-vars
@@ -714,10 +377,10 @@ export default {
       this.viewerWidth = pageWidth + 250
       this.commentleftPos = docWidth
 
-      const viewer = document.getElementById('viewer')
+      const viewerContainer = document.getElementById('viewerContainer')
       const commentWrapper = document.getElementById('comment-wrapper')
-      commentWrapper.style.left = this.commentleftPos + 'px'
-      viewer.appendChild(commentWrapper)
+      // commentWrapper.style.left = this.commentleftPos + 'px'
+      viewerContainer.appendChild(commentWrapper)
 
       this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
       await this.comments.forEach(function(element) {
@@ -725,8 +388,73 @@ export default {
       })
       await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
       this.handleCommentPositionsRestore()
-      this.TextSelection()
-      this.documentWidthCal()
+
+      this.registerEvents()
+      enableTextSelection(this)
+      await this.reRenderPages()
+    },
+    registerEvents() {
+      const that = this
+      const renderedPages = {}
+
+      const commentCards = document.querySelectorAll('.comment-card')
+      commentCards.forEach(item => {
+        item.addEventListener('click', commentCardClick)
+      })
+
+      window.addEventListener('beforeunload', restoreCommentPositions)
+      window.addEventListener('resize', this.calculateContainerHeight.bind(this))
+      document.addEventListener('keyup', this.keyupHandler)
+      document.getElementById('viewerContainer').addEventListener('scroll', handlePageScroll)
+
+      addEventListener('annotation:click', annotationClick)
+      addEventListener('annotation:delete', annotationDelete)
+      addEventListener('comment:delete', deleteComment)
+      addEventListener('annotation:add', this.annotationAdded)
+      addEventListener('annotation:insertNoteComment', this.insertNoteComment)
+
+      function handlePageScroll(e) {
+        // document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
+        // eslint-disable-next-line no-console
+        const rectTool = document.getElementById('rectTool')
+        rectTool.style.visibility = 'hidden'
+        const colorPickerTool = document.getElementById('colorPickerTool')
+        colorPickerTool.style.visibility = 'hidden'
+        const textToolGroup = document.getElementById('textToolGroup')
+        textToolGroup.style.visibility = 'hidden'
+        const visiblePageNum = Math.round(e.target.scrollTop / that.PAGE_HEIGHT) + 1
+
+        const visiblePage = document.querySelector(
+          `.page[data-page-number="${visiblePageNum}"][data-loaded="false"]`
+        )
+        if (visiblePage) {
+          // Prevent invoking UI.renderPage on the same page more than once.
+          if (!renderedPages[visiblePageNum]) {
+            renderedPages[visiblePageNum] = true
+            setTimeout(function() {
+              UI.renderPage(visiblePageNum, that.RENDER_OPTIONS)
+            })
+          }
+        }
+      }
+      function annotationClick(target) {
+        that.handleCommentAnnotationClick(target)
+      }
+      function annotationDelete(target) {
+        console.log('delete annotation', target)
+        that.handleAnnotationDelete(target)
+      }
+      function deleteComment(docId, comment) {
+        that.handleCommentDelete(comment)
+      }
+      function commentCardClick(e) {
+        if (e.target.getAttribute('button-id') != 'delete') {
+          that.handleCommentCardClick(this)
+        }
+      }
+      async function restoreCommentPositions() {
+        await that.handleCommentPositionsRestore()
+      }
     },
     async TextStuff() {
       const self = this
@@ -809,158 +537,31 @@ export default {
 
       initText()
     },
-    async ToolbarButtons() {
-      const self = this
-      const tooltype =
-        localStorage.getItem(`${self.RENDER_OPTIONS.documentId}/tooltype`) ||
-        'cursor'
-      if (tooltype) {
-        setActiveToolbarItem(
-          tooltype,
-          document.querySelector(`.toolbar button[data-tooltype=${tooltype}]`),
-          this.currentTooltype
-        )
-        this.currentTooltype = tooltype
+    async toolBarButtonClick(e) {
+      UI.disableText()
+      UI.disablePoint()
+      UI.disableRect()
+      this.activeButton = e
+      switch (this.activeButton) {
+        case 'text':
+          UI.enableText()
+          break
+        case 'point':
+          UI.enablePoint()
+          break
+        case 'area':
+        case 'highlight':
+        case 'rectangle':
+          UI.enableRect('area')
+          break
+        case 'strikeout':
+          UI.enableRect()
+          break
       }
-
-      function setActiveToolbarItem(type, button, currentType) {
-        const active = document.querySelector('.toolbar-btn.active')
-        if (active) {
-          active.classList.remove('active')
-          switch (currentType) {
-            case 'text':
-              UI.disableText()
-              break
-            case 'point':
-              UI.disablePoint()
-              break
-            case 'area':
-            case 'highlight':
-            case 'rectangle':
-              UI.disableRect()
-              break
-            case 'strikeout':
-              UI.disableRect()
-              break
-          }
-          if (type === currentType) {
-            switch (type) {
-              case 'text':
-                UI.disableText()
-                break
-              case 'point':
-                UI.disablePoint()
-                break
-              case 'area':
-              case 'highlight':
-              case 'rectangle':
-                UI.disableRect()
-                break
-              case 'strikeout':
-                UI.disableRect()
-                break
-            }
-          } else {
-            button.classList.add('active')
-            switch (type) {
-              case 'text':
-                UI.enableText()
-                break
-              case 'point':
-                UI.enablePoint()
-                break
-              case 'area':
-              case 'highlight':
-              case 'rectangle':
-                UI.enableRect('area')
-                break
-              case 'strikeout':
-                UI.enableRect()
-                break
-            }
-          }
-        } else {
-          button.classList.add('active')
-          switch (tooltype) {
-            case 'text':
-              UI.enableText()
-              break
-            case 'point':
-              UI.enablePoint()
-              break
-            case 'area':
-            case 'highlight':
-            case 'rectangle':
-              UI.enableRect('area')
-              break
-            case 'strikeout':
-              UI.enableRect()
-              break
-          }
-        }
-
-        // const active = document.querySelector('.toolbar button.active')
-
-        // if (active && tooltype === type) {
-        //   active.classList.remove('active')
-        //   switch (tooltype) {
-        //     case 'text':
-        //       UI.disableText()
-        //       break
-        //     case 'point':
-        //       UI.disablePoint()
-        //       break
-        //     case 'area':
-        //     case 'highlight':
-        //     case 'strikeout':
-        //       UI.disableRect()
-        //       break
-        //   }
-        // } else {
-        //   if (!active) {
-        //     if (button) {
-        //       button.classList.add('active')
-        //     }
-
-        //     if (tooltype !== type) {
-        //       localStorage.setItem(
-        //         `${self.RENDER_OPTIONS.documentId}/tooltype`,
-        //         type
-        //       )
-        //       tooltype = type
-        //       switch (type) {
-        //         case 'text':
-        //           UI.enableText()
-        //           break
-        //         case 'point':
-        //           UI.enablePoint()
-        //           break
-        //         case 'area':
-        //         case 'highlight':
-        //         case 'strikeout':
-        //           UI.enableRect(type)
-        //           break
-        //       }
-        //     }
-        //   }
-        // }
-      }
-
-      // function handleToolbarClick(e) {
-      //   if (e.target.nodeName === 'BUTTON') {
-      //     setActiveToolbarItem(
-      //       e.target.getAttribute('data-tooltype'),
-      //       e.target
-      //     )
-      //   }
-      // }
-
-      // document
-      //   .querySelector('.toolbar')
-      //   .addEventListener('click', handleToolbarClick)
+      console.log('Activate Button', e)
     },
-    // Clear toolbar button
-    ClearToolbarButton() {
+
+    clearAllAnnotations() {
       const self = this
       function handleClearClick() {
         if (confirm('Are you sure you want to clear annotations?')) {
@@ -973,124 +574,78 @@ export default {
       }
       document.querySelector('a.clear').addEventListener('click', handleClearClick)
     },
-    TextSelection() {
-      const that = this
-      // Register necessary events
-      document.addEventListener('mouseup', handleDocumentMouseup)
-      document.addEventListener('mousedown', handleDocumentMousedown)
-      window.addEventListener('beforeunload', restoreCommentPositions)
-      addEventListener('annotation:click', annotationClick)
-      const commentCards = document.querySelectorAll('.comment-card')
-      commentCards.forEach(item => {
-        item.addEventListener('click', commentCardClick)
+    handleCommentDelete(comment) {
+      reviewService.deleteInTextComment(comment.id).then(rs => {
+
       })
-      function handleDocumentMouseup(e) {
-        if (e.target.classList.contains('textLayer') || e.target.parentElement.classList.contains('textLayer')) {
-          const rects = that.getSelectionRects()
-          if (rects) {
-            const text = window
-              .getSelection()
-              .toString()
-              .trim()
-            // Display text tool bar if text is selected.
-            if (text) {
-              if (e.target.style.top == '') {
-                window.getSelection().removeAllRanges()
-                that.hideTextToolBar()
-              } else {
-                const textTool = document.getElementById('textTool')
-                const posX = rects[rects.length - 1].left + (rects[rects.length - 1].width / 2)
-                const posY = rects[rects.length - 1].top + 20
-                textTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
-                that.rects = rects
-                that.svg = findSVGAtPoint(rects[0].left, rects[0].top)
-                that.target = e.target
-                that.selectedText = text
-              }
-            } else {
-              // Display different tool bar
-            }
-          }
-        }
-      }
-      function handleDocumentMousedown(e) {
-        const svg = findSVGAtPoint(e.clientX, e.clientY)
-        if (svg) {
-          // hide text bool buttons
-          if (!e.target.classList.contains('textToolBtn') &&
-              !e.target.classList.contains('svg-inline--fa') &&
-              !e.target.parentElement.classList.contains('svg-inline--fa')) {
-            const textTool = document.getElementById('textTool')
-            textTool.style.visibility = 'hidden'
-          }
-          // Hide add new comment form
-          const newCommentWrapper = document.getElementById('add-new-comment')
-          if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
-            const validTarget = that.hasAParentWithClass(e.target, 'add-new-comment')
-            const comment = document.getElementById('comment-text-area').value
-            if (!validTarget && comment.replace(/\s/g, '').length == 0) { that.cancelCommentText() }
-          }
-          // Unselect highlight comment
-          if (!e.target.classList.contains('comment-highlight-selected')) {
-            const validTarget = that.hasAParentWithClass(e.target, 'comment-card-selected')
-            if (!validTarget) { that.unselectHighlightComment() }
-          }
-          return
-        }
-      }
-      function annotationClick(target) {
-        that.handleCommentAnnotationClick(target)
-      }
-      function commentCardClick() {
-        that.handleCommentCardClick(this)
-      }
-      async function restoreCommentPositions() {
-        await that.handleCommentPositionsRestore()
-      }
     },
-    handleCommentAnnotationClick(target) {
+    async handleCommentAnnotationClick(target) {
       const text = window.getSelection().toString().trim()
+      const newCommentWrapper = document.getElementById('add-new-comment')
+      if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
+        return
+      }
       // Display text tool bar if text is selected.
       if (!text) {
         const type = target.getAttribute('data-pdf-annotate-type')
-        if (type == 'comment-highlight') {
+        this.annotationClicked = target
+        if (type == 'comment-highlight' || type == 'point') {
+          // clear others and highlight current annotation
           const selectedHighlight = document.getElementsByClassName('comment-highlight-selected')
           if (selectedHighlight.length > 0) { selectedHighlight[0].classList.remove('comment-highlight-selected') }
           target.classList.add('comment-highlight-selected')
 
           const commentCards = document.querySelectorAll('.comment-card')
           const commentHighlights = document.querySelectorAll("g[data-pdf-annotate-type='comment-highlight']")
+          const commentPoints = document.querySelectorAll("[data-pdf-annotate-type='point']")
           const highlightArr = Array.prototype.slice.call(commentHighlights)
-          // Sort the highlights
-          highlightArr.sort(this.compareTopAttributes)
+          var pointsArr = Array.prototype.slice.call(commentPoints)
+          // Sort the highlightsvar pointsArr = Array.prototype.slice.call(commentPoints)
+          pointsArr.forEach(r => {
+            r.setAttribute('top', parseInt(r.getAttribute('y')))
+          })
+          // highlightArr.sort(this.compareTopAttributes)
+          const combineArr = highlightArr.concat(pointsArr)
+          combineArr.sort(this.compareTopAttributes)
           // Get order of the current highlight
-          this.order = highlightArr.findIndex(item => {
+          this.order = combineArr.findIndex(item => {
             return item.dataset.pdfAnnotateId == target.getAttribute('data-pdf-annotate-id')
           })
-
           let gTop = parseInt(target.getAttribute('top')) - 34
           const svgHeight = parseInt(target.getAttribute('page-height'))
           const svgPageNum = parseInt(target.getAttribute('page-num'))
           if (svgPageNum > 1) { gTop += ((svgPageNum - 1) * svgHeight) }
-
           const cTop = this.comments[this.order].topPosition
           // parseInt(commentCards[this.order].style.top.substring(0, commentCards[this.order].style.top.length - 2));
+          // const cmtSelected = document.querySelector(`div[highlight-id='${target.getAttribute('data-pdf-annotate-id')}']`)
+          // const cTop = cmtSelected.getAttribute('top-position')
 
           // remove current selected comment card class if any
           const selected = document.getElementsByClassName('comment-card-selected')
           if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
           // Set this card as selected
+          // console.log('this.order', this.order)
           commentCards[this.order].classList.add('comment-card-selected')
+
+          // cmtSelected.classList.add('comment-card-selected')
+          // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
 
           if (cTop != gTop) {
             // Move the comment up to gTop
             this.comments[this.order].topPosition = gTop
 
+            // cmtSelected.setAttribute('top-position', gTop)
+            // cmtSelected.style.top = gTop + 'px'
+
             const selected = document.getElementsByClassName('comment-card-selected')
             if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
             commentCards[this.order].classList.add('comment-card-selected')
 
+            // cmtSelected.classList.add('comment-card-selected')
             const endPos = gTop + commentCards[this.order].offsetHeight
+
+            // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
+            // const endPos = gTop + cmtSelected.offsetHeight
             if (cTop > gTop) {
               // Move up other uppen comments
               if (this.order > 0) { this.moveUpFromTopPos(commentCards, this.order - 1, gTop) }
@@ -1103,22 +658,115 @@ export default {
               if (this.order < commentCards.length - 1) { this.moveDownFromEndPos(commentCards, this.order + 1, endPos) }
             }
           }
+        } else if (type == 'area' || type == 'text') {
+          this.colorChosen = target.getAttribute('stroke')
+          var uuid = target.getAttribute('data-pdf-annotate-id')
+          this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
+          var rect = target.getBoundingClientRect()
+          // Display rect tool bar if text is selected.
+          if (target.getAttribute('x') == '') {
+            // window.getSelection().removeAllRanges()
+            this.hideRectToolBar()
+          } else {
+            const rectTool = document.getElementById('rectTool')
+            var posX = (parseInt(target.getAttribute('x')) + parseInt(target.getAttribute('width')) / 4) * this.RENDER_OPTIONS.scale
+            if (this.showQuestion) {
+              posX += parseInt(document.getElementById('left-panel').offsetWidth)
+            }
+            const posY = parseInt(rect.top) + parseInt(target.getAttribute('height')) * this.RENDER_OPTIONS.scale + 10
+
+            rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
+          }
+        } else if (type == 'textbox') {
+          this.colorChosen = target.getAttribute('stroke')
+          uuid = target.getAttribute('data-pdf-annotate-id')
+          this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
+          rect = target.getBoundingClientRect()
+          // Display rect tool bar if text is selected.
+          if (target.getAttribute('x') == '') {
+            // window.getSelection().removeAllRanges()
+            this.hideRectToolBar()
+          } else {
+            const rectTool = document.getElementById('rectTool')
+            posX = (parseInt(target.getAttribute('x')) + parseInt(target.getAttribute('width')) / 4) * this.RENDER_OPTIONS.scale
+            if (this.showQuestion) {
+              posX += parseInt(document.getElementById('left-panel').offsetWidth)
+            }
+            const posY = parseInt(rect.top) + parseInt(target.getAttribute('height')) * this.RENDER_OPTIONS.scale + 10
+            rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
+          }
         }
       }
     },
+    changeColor(e) {
+      this.colorChosen = e
+      this.updateRectangleAnotation(e)
+      this.hideColorPickerTool()
+    },
+    showColorPickerTool(type) {
+      this.hideRectToolBar()
+      if (type == 'area') {
+        const boundingRect = this.annotationClicked.getBoundingClientRect()
+        // Display rect tool bar if text is selected.
+        const colorPicker = document.getElementById('colorPickerTool')
+        const posX = parseInt(boundingRect.left)
+        const posY = parseInt(boundingRect.top) + parseInt(boundingRect.height) + 10
+        colorPicker.style.top = posY + 'px'
+        colorPicker.style.left = posX + 'px'
+        colorPicker.style.visibility = 'unset'
+      }
+    },
+    hideColorPickerTool() {
+      const colorPicker = document.getElementById('colorPickerTool')
+      colorPicker.style.visibility = 'hidden'
+    },
+    async updateRectangleAnotation(e) {
+      var anno
+      this.annotationClicked.setAttribute('stroke', e)
+      var uuid = this.annotationClicked.getAttribute('data-pdf-annotate-id')
+      var type = this.annotationClicked.getAttribute('data-pdf-annotate-type')
+      if (type == 'textbox') {
+        this.annotationClicked.childNodes[0].style.color = e
+      }
+      this.annotation.color = e
+      await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, uuid, this.annotation)
+      anno = {
+        Id: this.annotation.id,
+        DocumentId: this.documentId,
+        ReviewId: this.reviewId,
+        Type: this.annotation.type,
+        Color: this.annotation.color,
+        Uuid: this.annotation.uuid,
+        PageNum: this.annotation.pageNum,
+        Top: this.annotation.top,
+        Data: JSON.stringify(this.annotation)
+      }
+
+      reviewService.editAnnotation(anno).then(rs => {
+      })
+    },
+    hideRectToolBar() {
+      const rectTool = document.getElementById('rectTool')
+      rectTool.style.visibility = 'hidden'
+    },
     handleCommentCardClick(el) {
       const highlightId = el.getAttribute('highlight-id')
-      const highlight = document.querySelector("g[data-pdf-annotate-id='" + highlightId + "']")
+      const highlight = document.querySelector("[data-pdf-annotate-id='" + highlightId + "']")
       this.handleCommentAnnotationClick(highlight)
     },
     async handleCommentPositionsRestore() {
       const documentId = document.getElementById('viewer').getAttribute('document-id')
       const highlights = document.querySelectorAll("g[data-pdf-annotate-type='comment-highlight']")
       const highlightArr = Array.prototype.slice.call(highlights)
+      console.log('highlightArr', highlightArr)
       // Sort the highlights
       highlightArr.sort(this.compareTopAttributes)
-      this.handleCommentAnnotationClick(highlightArr[highlightArr.length - 1])
+      highlightArr.forEach(cmt => {
+        this.handleCommentAnnotationClick(cmt)
+      })
       this.handleCommentAnnotationClick(highlightArr[0])
+      // this.handleCommentAnnotationClick(highlightArr[highlightArr.length - 1])
+      // this.handleCommentAnnotationClick(highlightArr[0])
       const selected = document.getElementsByClassName('comment-card-selected')
       if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
       const comments = await this.updateCommentAnnotations(documentId)
@@ -1132,31 +780,37 @@ export default {
       })
       return comments
     },
-    async HighlightText() {
-      await this.highlightText('highlight')
+    async HighlightText(type) {
+      // await this.highlightText('highlight')
     },
     async StrikethroughText() {
       await this.highlightText('strikeout')
-      const textTool = document.getElementById('textTool')
-      textTool.style.visibility = 'hidden'
+      this.hideTextToolBar()
+      this.hideTextToolGroup()
     },
     // Migration code starts here
     async CommentText() {
+      if (document.getElementById('comment-wrapper').offsetWidth == 0) {
+        document.getElementById('comment-wrapper').style.display = 'block'
+      }
       if (this.newComment.replace(/\s/g, '').length != 0) {
         // Save in-progress comment
         await this.addCommentText()
       }
       await this.commentText()
     },
-    async addCommentText() {
+    async addCommentText(e) {
       // let newComment = await UI.addCommentText(this.newComment, this.RENDER_OPTIONS.documentId);
       const commentWrapper = document.getElementById('add-new-comment')
       const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
-      const newComment = await PDFJSAnnotate.getStoreAdapter().addComment(this.documentId,
+      const newComment = await PDFJSAnnotate.getStoreAdapter().addComment(
+        this.documentId,
         this.annotation,
         this.newComment,
         this.selectedText,
         topPos)
+      this.undoHistory.push({ action: 'added', annotation: newComment })
+      this.updateUndoList()
       await this.comments.push(newComment)
       await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
       document.getElementById('add-new-comment').style.display = 'none'
@@ -1164,44 +818,65 @@ export default {
       var anno = {
         DocumentId: this.documentId,
         ReviewId: this.reviewId,
-        Type: 'comment-highlight',
-        PageNum: this.annotation.pageNum,
-        Top: this.annotation.top,
+        Type: this.annotation.type,
+        PageNum: typeof (this.annotation.pageNum) != 'undefined' ? this.annotation.pageNum : this.annotation.page,
+        Top: typeof (this.annotation.top) != 'undefined' ? this.annotation.top : parseInt(this.annotation.y),
         Color: this.annotation.color,
         Uuid: this.annotation.uuid,
         Data: JSON.stringify(this.annotation)
       }
       var newCmt = {
-        Text: newComment.text,
+        Text: newComment.text != null ? newComment.text : '',
         Content: newComment.content,
-        TopPosition: newComment.topPosition,
+        TopPosition: parseInt(newComment.topPosition),
         Uuid: newComment.uuid,
         Data: JSON.stringify(newComment)
       }
-      reviewService.addInTextComment(this.documentId, 1, newCmt, anno).then(rs => {
+      reviewService.addInTextComment(this.documentId, 1, newCmt, anno).then(async rs => {
+        if (rs) {
+          // this.addToUndoList(rs.data, 'add')
+          var cmts = null
+          await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId).then(r => {
+            cmts = r
+          })
+          cmts[cmts.length - 1].id = rs.data['id']
+          PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
+        }
+        this.$refs.toolBar.toolBarButtonClick('cursor')
       })
+      // this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
       await this.updatePositionsAfterCommentAdded()
 
       this.newComment = ''
     },
     // Begin migrating code from select.js to document.vue
-    async commentText() {
+    async commentText(note) {
       // Highlight the text first
-      await this.highlightText('comment-highlight')
+      if (typeof (note) == 'undefined') {
+        await this.highlightText('comment-highlight')
+      }
       // Update positions of comment boxes
-      this.updateCommentPositions()
+      this.updateCommentPositions(note)
       // Display add new form
-      this.displayAddNewCommentForm()
+      this.displayAddNewCommentForm(note)
       event.stopPropagation()
+    },
+    async highlightEvent(type) {
+      if (type == 'comment-highlight') {
+        await this.CommentText()
+      } else {
+        await this.highlightText('comment-highlight')
+      }
     },
     async highlightText(type) {
       if (!this.svg) {
         return
       }
-      const boundingRect = this.svg.getBoundingClientRect()
+      const boundingRect = this.boundingRect
 
       let color = 'FFFF00'
-      if (type == 'strikeout') { color = 'FF0000' }
+      if (type == 'strikeout') { color = localStorage.getItem('colorChosen') || 'FF0000' }
+      if (type == 'hightlight') { color = localStorage.getItem('colorChosen') || 'FFFF00' }
 
       // Initialize the annotation
       const annotation = {
@@ -1211,7 +886,7 @@ export default {
           let offset = 0
           if (type == 'strikeout') { offset = r.height / 2 }
           return scaleDown(this.svg, {
-            y: (r.top + offset) - boundingRect.top,
+            y: r.top + offset - boundingRect.top,
             x: r.left - boundingRect.left,
             width: r.width,
             height: r.height
@@ -1230,16 +905,22 @@ export default {
 
       const { documentId, pageNumber } = getMetadata(this.svg)
 
+      annotation.color = this.colorChosen
       annotation.top = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2))
       annotation.pageNum = pageNumber
       annotation.pageHeight = this.svg.getAttribute('height')
       this.annotation = annotation
       // Add the annotation
-
       await PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
         .then((annotation) => {
           appendChild(this.svg, annotation)
+          this.undoHistory.push({ action: 'added', annotation: annotation })
+          this.updateUndoList()
+          console.log('svg highlight', this.svg)
           this.hideTextToolBar()
+          this.hideTextToolGroup()
+          this.hideRectToolBar()
+          this.hideColorPickerTool()
           annotation.documentId = this.documentId
           if (type != 'comment-highlight') {
             var obj = {
@@ -1252,28 +933,50 @@ export default {
               Uuid: annotation.uuid,
               Data: JSON.stringify(annotation)
             }
-            this.$store.dispatch('review/addReviewAnnotation', obj).then(rs => {
+            this.$store.dispatch('review/addReviewAnnotation', obj).then(async rs => {
+              if (this.$store.getters['review/getAddedAnnotation']) {
+                annotation.id = this.$store.getters['review/getAddedAnnotation']['id']
+
+                await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation)
+
+                // this.addToUndoList(annotation, 'add')
+              }
             })
           }
         })
     },
-    updateCommentPositions() {
+    updateCommentPositions(note) {
       const commentCards = document.querySelectorAll('.comment-card')
       const commentHighlights = document.querySelectorAll("g[data-pdf-annotate-type='comment-highlight']")
+      const commentPoints = document.querySelectorAll("svg[data-pdf-annotate-type='point']")
       const highlightArr = Array.prototype.slice.call(commentHighlights)
+      var pointsArr = Array.prototype.slice.call(commentPoints)
+      pointsArr.forEach(r => {
+        r.setAttribute('top', parseInt(r.getAttribute('y')))
+      })
       // Sort the highlights
-      highlightArr.sort(this.compareTopAttributes)
+      // highlightArr.sort(this.compareTopAttributes)
+      // pointsArr.sort(this.compareTopAttributes)
+      const combineArr = highlightArr.concat(pointsArr)
+      combineArr.sort(this.compareTopAttributes)
       // Get order of the current highlight
-      this.order = highlightArr.findIndex(item => {
+
+      this.order = combineArr.findIndex(item => {
         return item.dataset.pdfAnnotateId == this.annotation.uuid
       })
-      this.hasSpace = this.hasEnoughSpace(commentCards)
+      this.hasSpace = this.hasEnoughSpace(commentCards, note)
       if (!this.hasSpace) {
         // Update comment positions
 
         // get add new form's top position
         const svg = this.svg
-        const rectTop = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2))
+        var rectTop = 0
+        if (typeof (note) == 'undefined') {
+          rectTop = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2))
+        } else {
+          rectTop = parseInt(note.y)
+        }
+        // const rectTop = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2))
         const svgHeight = svg.getAttribute('height')
         const svgPageNum = svg.getAttribute('data-pdf-annotate-page')
         let svgTop = 0
@@ -1284,7 +987,7 @@ export default {
         if (this.order == 0) {
           // Move down all comment cards
           this.moveDownFromEndPos(commentCards, 0, endPos)
-        } else if (this.order == highlightArr.length - 1) {
+        } else if (this.order == combineArr.length - 1) {
           // Move up all comment cards
           this.moveUpFromTopPos(commentCards, commentCards.length - 1, topPos)
         } else {
@@ -1305,7 +1008,13 @@ export default {
             }
           }
           // Move down commentCards[i] -> commentCards[commentCards.length - 1]
-          const lowerTop = parseInt(commentCards[this.order].style.top.substring(0, commentCards[this.order].style.top.length - 2))
+          var lowerTop = 0
+          if (typeof (note) == 'undefined') {
+            lowerTop = parseInt(commentCards[this.order].style.top.substring(0, commentCards[this.order].style.top.length - 2))
+          } else {
+            lowerTop = parseInt(note.y)
+          }
+          // const lowerTop = parseInt(commentCards[this.order].style.top.substring(0, commentCards[this.order].style.top.length - 2))
           if (lowerTop < (endPos + 10)) {
             this.moveDownFromEndPos(commentCards, this.order, endPos)
           } else {
@@ -1334,19 +1043,35 @@ export default {
         that.handleCommentCardClick(this)
       })
     },
-    displayAddNewCommentForm() {
+    async updateCommentCardPosition(uuid) {
+      const newComment = document.querySelector(".comment-card[highlight-id='" + uuid + "']")
+
+      if (!this.hasSpace) {
+        const commentCards = document.querySelectorAll('.comment-card')
+        const endPos = parseInt(newComment.getAttribute('top-position')) + newComment.offsetHeight
+        if (this.order < (commentCards.length - 1)) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
+      }
+    },
+    displayAddNewCommentForm(note) {
       const newCommentWrapper = document.getElementById('add-new-comment')
       newCommentWrapper.style.visibility = 'visible'
+      var rectTop = 0
+      if (note) {
+        rectTop = parseInt(note.y)
+      } else {
+        rectTop = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2))
+      }
       const svg = this.svg
-      const rectTop = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2))
       const svgHeight = svg.getAttribute('height')
       const svgPageNum = svg.getAttribute('data-pdf-annotate-page')
-
       let svgTop = 0
       if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * svgHeight) }
       const topPos = svgTop + rectTop - 35
       newCommentWrapper.style = 'width: 100%; position: absolute; left: -20px; top: ' + topPos + 'px;'
       this.hideTextToolBar()
+      this.hideTextToolGroup()
+      this.hideRectToolBar()
+      this.hideColorPickerTool()
       const textArea = document.getElementById('comment-text-area')
       textArea.focus()
       this.inputHeight = parseInt(textArea.style.height.substring(0, textArea.style.height.length - 2))
@@ -1391,11 +1116,14 @@ export default {
         }
       }
       // Remove the annotation
-      PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, this.annotation.uuid)
+      PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, this.annotation.uuid, true)
         .then((isDeleted) => {
           if (isDeleted) {
             // remove highlight in UI
-            document.querySelector("g[data-pdf-annotate-id='" + this.annotation.uuid + "']").remove()
+            document.querySelector("[data-pdf-annotate-id='" + this.annotation.uuid + "']").remove()
+            if (document.querySelector("[data-target-id='" + this.annotation.uuid + "']")) {
+              document.querySelector("[data-target-id='" + this.annotation.uuid + "']").remove()
+            }
             this.annotation = null
           }
         })
@@ -1430,71 +1158,62 @@ export default {
       const g = this.getHighlightByCommentId(this.comments[startIndex].uuid)
       let gTop = parseInt(g.getAttribute('top')) - 35
       if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * g.getAttribute('page-height')) }
-      if (this.comments[startIndex].topPosition > gTop) {
-        const desiredTop = gTop >= (endPos + 10) ? gTop : (endPos + 10)
-        // Move start index card up
-        this.comments[startIndex].topPosition = desiredTop
-        if (commentCards.length > (startIndex + 1)) {
-          for (let n = startIndex + 1; n < this.comments.length; n++) {
-            const previousTop = this.comments[n - 1].topPosition
-            const previousEnd = previousTop + commentCards[n - 1].offsetHeight
-            const thisTop = this.comments[n].topPosition
+      const desiredTop = (endPos + 10) + gTop * 0
+      // Move start index card up
+      this.comments[startIndex].topPosition = desiredTop
+      if (commentCards.length > (startIndex + 1)) {
+        for (let n = startIndex + 1; n < this.comments.length; n++) {
+          const previousTop = this.comments[n - 1].topPosition
+          const previousEnd = previousTop + commentCards[n - 1].offsetHeight
+          const thisTop = this.comments[n].topPosition
 
-            // Check if move down is necessary
-            if (thisTop > (previousEnd + 10)) {
-              const thisG = this.getHighlightByCommentId(this.comments[n].uuid)
-              let thisGTop = parseInt(thisG.getAttribute('top')) - 35
-              if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * thisG.getAttribute('page-height')) }
-              if (thisTop > thisGTop) {
-                const thisDesiredTop = thisGTop >= (previousEnd + 10) ? thisGTop : (previousEnd + 10)
-                this.comments[n].topPosition = thisDesiredTop
-              }
-            } else {
-              break
+          // Check if move down is necessary
+          if (thisTop > (previousEnd + 10)) {
+            const thisG = this.getHighlightByCommentId(this.comments[n].uuid)
+            const thisGTop = parseInt(thisG.getAttribute('top')) - 35
+            // if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * thisG.getAttribute('page-height')) }
+            if (thisTop > thisGTop) {
+              const thisDesiredTop = thisGTop >= (previousEnd + 10) ? thisGTop : (previousEnd + 10)
+              this.comments[n].topPosition = thisDesiredTop
             }
+          } else {
+            break
           }
         }
       }
     },
     moveDownToTopPos(commentCards, startIndex, topPos) {
       // Get start index card's position
-      const adjTop = this.comments[startIndex].topPosition
-      const adjEnd = adjTop + commentCards[startIndex].offsetHeight
       // Check if move down is necessary
-      const g = this.getHighlightByCommentId(this.comments[startIndex].uuid)
-      let gTop = parseInt(g.getAttribute('top')) - 35
-      if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * g.getAttribute('page-height')) }
       // Only move cards down if the upper card is higher that its highlight
-      if (adjTop < gTop) {
-        const desiredTop = gTop <= (adjTop + (topPos - adjEnd) - 10) ? gTop : (adjTop + (topPos - adjEnd) - 10)
-        // Move upper adjacent card down
-        this.comments[startIndex].topPosition = desiredTop
-        // Move other cards down
-        if (startIndex > 0) {
-          for (let n = startIndex - 1; n >= 0; n--) {
-            const previousTop = this.comments[n + 1].topPosition
-            // let previousEnd = previousTop + commentCards[n + 1].offsetHeight;
-            const thisTop = this.comments[n].topPosition
-            const thisEnd = thisTop + commentCards[n].offsetHeight
-            // Check if move down is necessary
-            if (thisEnd < (previousTop - 10)) {
-              const thisG = this.getHighlightByCommentId(this.comments[n].uuid)
-              let thisGTop = parseInt(thisG.getAttribute('top')) - 35
-              if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * thisG.getAttribute('page-height')) }
-              if (thisTop < thisGTop) {
-                const thisDesiredTop = thisGTop <= (thisTop + (previousTop - thisEnd) - 10) ? thisGTop : (thisTop + (previousTop - thisEnd) - 10)
-                this.comments[n].topPosition = thisDesiredTop
-              }
-            } else {
-              break
-            }
+      const desiredTop = topPos - 10 - commentCards[startIndex].offsetHeight
+      // Move upper adjacent card down
+      this.comments[startIndex].topPosition = desiredTop
+      // Move other cards down
+      if (startIndex > 0) {
+        for (let n = startIndex - 1; n >= 0; n--) {
+          const previousTop = this.comments[n + 1].topPosition
+          const thisTop = this.comments[n].topPosition
+          const thisEnd = thisTop + commentCards[n].offsetHeight
+          // Check if move down is necessary
+          if (thisEnd < (previousTop - 10)) {
+            const thisDesiredTop = previousTop - commentCards[n].offsetHeight - 10
+            this.comments[n].topPosition = thisDesiredTop
+            // }
+          } else {
+            break
           }
         }
       }
+      // }
     },
     moveDownFromEndPos(commentCards, startIndex, endPos) {
       // Move the start index card down first
-      this.comments[startIndex].topPosition = endPos + 10
+      if (typeof (this.comments[startIndex]) == 'undefined') {
+        this.comments[this.comments.length - 1].topPosition = endPos + 10
+      } else {
+        this.comments[startIndex].topPosition = endPos + 10
+      }
       // Move other cards down ward
       if (this.comments.length > (startIndex + 1)) {
         for (let j = startIndex + 1; j < this.comments.length; j++) {
@@ -1509,10 +1228,15 @@ export default {
         }
       }
     },
-    hasEnoughSpace(commentCards) {
+    hasEnoughSpace(commentCards, note) {
       if (this.comments.length > 0) {
         const svg = this.svg
-        const rectTop = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2))
+        var rectTop = 0
+        if (typeof (note) == 'undefined') {
+          rectTop = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2))
+        } else {
+          rectTop = parseInt(note.y)
+        }
         const svgHeight = svg.getAttribute('height')
         const svgPageNum = svg.getAttribute('data-pdf-annotate-page')
 
@@ -1574,15 +1298,24 @@ export default {
     editCommentCard() {
 
     },
-    deleteCommentCard(commentId) {
-      console.log(commentId)
+    async deleteCommentCard(uuid) {
+      await PDFJSAnnotate.getStoreAdapter().deleteComment(this.documentId, uuid)
+      this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
+      await this.comments.forEach(function(element) {
+        element.isSelected = false
+      })
+      await this.handleCommentPositionsRestore()
     },
     hideTextToolBar() {
       const textTool = document.getElementById('textTool')
+      textTool.style.display = 'none'
+    },
+    hideTextToolGroup() {
+      const textTool = document.getElementById('textToolGroup')
       textTool.style.visibility = 'hidden'
     },
     getHighlightByCommentId(commentId) {
-      return document.querySelector("g[data-pdf-annotate-id='" + commentId + "']")
+      return document.querySelector("[data-pdf-annotate-id='" + commentId + "']")
     },
     getSelectionRects() {
       const selection = window.getSelection()
@@ -1603,25 +1336,8 @@ export default {
       return false
     },
     async submitReview() {
-      // Promise.all([
-      //   PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, this.reviewId),
-      //   PDFJSAnnotate.getStoreAdapter().getComments(this.documentId, this.reviewId)
-      // ]).then(([{ annotations }, comments]) => {
-      //   reviewService.saveAnnotations(1, 1, {
-      //     annotations: annotations.map(a => ({ ...a, data: JSON.stringify(a) })),
-      //     comments: comments.map(c => ({ ...c, data: JSON.stringify(c) }))
-      //   }).then(rs => {
-      //     this.$notify({
-      //       title: 'Success',
-      //       message: 'Submit success',
-      //       type: 'success',
-      //       duration: 1000
-      //     })
-      //   })
-      // })
-
       const annots = await PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, this.reviewId)
-      console.log(annots)
+      console.log('annots', annots)
 
       // var reviewData = []
       // this.rubricCriteria.forEach(r => {
@@ -1630,7 +1346,7 @@ export default {
       //       Comment: r.comment,
       //       CriteriaId: r.id,
       //       Score: r.mark,
-      //       ReviewId: 2 // Hardcode
+      //       ReviewId: this.reviewId
       //     })
       //   }
       // })
@@ -1642,174 +1358,289 @@ export default {
       //   console.log('review data: ', rs)
       // })
     },
-    toggleBtnShowScript() {
-      this.isShowScript = !this.isShowScript
-    },
     calculateContainerHeight() {
-      const headerHeight = document.getElementById('header').clientHeight
-      const containerHeight = window.innerHeight - headerHeight
-      const elContainer = document.getElementById('reviewContainer')
-      elContainer.style.height = containerHeight + 'px'
+      this.$refs.tabQuestionCom.calculateContainerHeight()
     },
     calculateStylePaddingScroll() {
-      const parentHeight = document.getElementById('parent-scroll').offsetHeight
-      const childHeight = document.getElementById('child-scroll').scrollHeight
-      if (parentHeight >= childHeight) {
-        document.getElementById('child-scroll').style.paddingRight = '0'
-      } else {
-        document.getElementById('child-scroll').style.paddingRight = '10px'
-      }
+      this.$refs.tabQuestionCom.calculateStylePaddingScroll()
     },
-    notShowDirection() {
-      localStorage.setItem('showQuestionDirection', true)
-      this.showDirection = false
+    setStatusText() {
+      this.$refs.toolBar.setStatusText()
     },
-    reviewCommentChange(e, criteriaId) {
-      var retrievedObject = localStorage.getItem('reviewComment')
-      if (!retrievedObject) {
-        var t = []
-        localStorage.setItem('reviewComment', JSON.stringify(t))
-      }
 
-      retrievedObject = JSON.parse(retrievedObject)
-      var temp = retrievedObject.filter(r => r.id == criteriaId)
-      if (temp.length > 0) {
-        retrievedObject.map(r => {
-          if (r.id == criteriaId) {
-            r.content = e
-          }
-        })
-      } else {
-        var cmt = { id: criteriaId, content: e }
-        retrievedObject.push(cmt)
-      }
-      localStorage.setItem('reviewComment', JSON.stringify(retrievedObject))
+    async hideQuestion(e) {
+      this.showQuestion = e
+      await this.handleCommentPositionsRestore()
     },
-    getLocaleStorageData() {
-      console.log('this.rubricCriteria', this.rubricCriteria)
-      var retrievedComment = localStorage.getItem('reviewComment')
-      var retrievedScore = localStorage.getItem('reviewScore')
-
-      retrievedComment = JSON.parse(retrievedComment)
-      retrievedScore = JSON.parse(retrievedScore)
-
-      retrievedComment.forEach(rc => {
-        this.rubricCriteria.map(criteria => {
-          if (criteria.id == rc.id) {
-            criteria.comment = rc.content
-          }
-        }
-        )
-      })
-      retrievedScore.forEach(rc => {
-        this.rubricCriteria.map(criteria => {
-          if (criteria.id == rc.id) {
-            criteria.mark = rc.content
-          }
-        }
-        )
-      })
-      console.log('this.rubricCriteria', this.rubricCriteria)
-    },
-    async hideQuestion() {
-      this.showQuestion = !this.showQuestion
-      document.getElementById('right-panel').style.width = 69.2 + '%'
-      this.defaultScale = 1
-
-      if (!this.showQuestion) {
-        document.getElementById('right-panel').style.width = 100 + '%'
-      }
-
-      if (this.scaleText != 'Fit to width' && this.scaleText != 'Fit to page') {
-        this.RENDER_OPTIONS.scale = this.defaultScale
-        this.RENDER_OPTIONS.scale *= this.scaleRatio
-      } else {
-        (this.scaleText == 'Fit to width') ? this.handleScale('fitWidth') : this.handleScale('fitPage')
-      }
-      await UI.renderPage(1, this.RENDER_OPTIONS)
-      this.documentWidthCal()
-    },
-    documentWidthCal() {
-      var docWidth = document.getElementById('right-panel').offsetWidth - document.getElementById('comment-wrapper').offsetWidth - 15
-
-      if (document.getElementsByClassName('canvasWrapper')[0].offsetWidth < docWidth) {
-        docWidth = document.getElementsByClassName('canvasWrapper')[0].offsetWidth
-      }
-
-      const commentWrapper = document.getElementById('comment-wrapper')
-      commentWrapper.style.left = docWidth + 'px'
-      // document.getElementById('tool-bar').style.width = docWidth + 'px'
-
-      for (let i = 0; i < this.NUM_PAGES; i++) {
-        const page = document.getElementById(`pageContainer${i + 1}`)
-        page.setAttribute('style', `overflow:hidden;width:${docWidth}px;`)
-      }
-    },
-    async handleScale(e) {
-      this.RENDER_OPTIONS.scale = this.defaultScale
-
-      if (e != 'fitWidth' && e != 'fitPage') {
-        this.RENDER_OPTIONS.scale *= (+e)
-        this.scaleRatio = +e
-        this.scaleText = this.scaleRatio * 100 + '%'
-        await UI.renderPage(1, this.RENDER_OPTIONS)
-      } else {
-        var docWidth = document.getElementById('viewer').offsetWidth - document.getElementById('comment-wrapper').offsetWidth - 15
-        var docHeight = document.getElementById('viewer').offsetHeight - document.getElementById('comment-wrapper').offsetWidth - 15
-
-        // Default Layer width & height at 1: 595, 842
-
-        if (e == 'fitWidth') {
-          this.RENDER_OPTIONS.scale = (docWidth / 595)
-          this.scaleText = 'Fit to width'
-        } else {
-          if ((docWidth / 595) < (docHeight / 842)) {
-            this.RENDER_OPTIONS.scale = (docWidth / 595)
+    async documentWidthCal() {
+      const viewer = document.getElementById('viewerContainer')
+      viewer.style.height = window.innerHeight - 100 + 'px'
+      viewer.style.overflow = 'auto'
+      var docWidth = document.getElementById('pageContainer1').offsetWidth
+      if (this.comments.length == 0) {
+        docWidth = document.getElementById('right-panel').offsetWidth - 20
+        document.getElementById('comment-wrapper').style.display = 'none'
+        if (this.scaleText == 'Fit to width') {
+          this.RENDER_OPTIONS.scale = docWidth / 612
+          this.fitDocumentWidth = true
+        } else if (this.scaleText == 'Fit to page') {
+          var docHeight = window.innerHeight - 70
+          if ((docWidth / 612) < (docHeight / 792)) {
+            this.RENDER_OPTIONS.scale = (docWidth / 612)
           } else {
-            this.RENDER_OPTIONS.scale = (docHeight / 842)
+            this.RENDER_OPTIONS.scale = (docHeight / 792)
           }
           this.scaleText = 'Fit to page'
+          this.fitDocumentWidth = true
         }
-        console.log(e, 'this.RENDER_OPTIONS.scale', this.RENDER_OPTIONS.scale)
-        await UI.renderPage(1, this.RENDER_OPTIONS)
       }
-      this.documentWidthCal()
-    },
-    async increaseScale() {
-      if (this.scaleRatio < 2) {
-        this.scaleRatio += 0.1
-        this.RENDER_OPTIONS.scale = this.defaultScale
-        this.RENDER_OPTIONS.scale *= this.scaleRatio
-        this.scaleText = parseInt(this.scaleRatio * 100) + '%'
-        await UI.renderPage(1, this.RENDER_OPTIONS)
-        this.documentWidthCal()
-      }
-    },
-    async decreaseScale() {
-      if (this.scaleRatio > 0.6) {
-        this.scaleRatio -= 0.1
-        this.RENDER_OPTIONS.scale = this.defaultScale
-        this.RENDER_OPTIONS.scale *= this.scaleRatio
-        this.scaleText = parseInt(this.scaleRatio * 100) + '%'
-        await UI.renderPage(1, this.RENDER_OPTIONS)
-        this.documentWidthCal()
-      }
-    },
-    async resizeEventHandle() {
-      document.getElementById('right-panel').offsetWidth
-      this.documentWidthCal()
-      if (this.scaleText != 'Fit to width' && this.scaleText != 'Fit to page') {
-        this.RENDER_OPTIONS.scale = this.defaultScale
-        this.RENDER_OPTIONS.scale *= this.scaleRatio
-      } else {
-        (this.scaleText == 'Fit to width') ? this.handleScale('fitWidth') : this.handleScale('fitPage')
-      }
-    },
-    toolBarButtonClick(e) {
-      localStorage.setItem(`${this.RENDER_OPTIONS.documentId}/tooltype`, e)
-      this.ToolbarButtons()
-    }
 
+      // if (document.getElementsByClassName('canvasWrapper')[0].offsetWidth < docWidth) {
+      //   docWidth = document.getElementsByClassName('canvasWrapper')[0].offsetWidth
+      // }
+
+      // const commentWrapper = document.getElementById('comment-wrapper')
+      // commentWrapper.style.left = docWidth + 10 + 'px'
+      // for (let i = 0; i < this.NUM_PAGES; i++) {
+      //   const page = document.getElementById(`pageContainer${i + 1}`)
+      //   page.setAttribute('style', `max-width:${docWidth}px;`)
+      // }
+      // document.getElementById('tool-bar').style.width = docWidth + 'px'
+    },
+    async handleScale(e) {
+      console.log('handleScale', e)
+      this.RENDER_OPTIONS.scale = e
+      this.reRenderPages()
+    },
+
+    async reRenderPages() {
+      for (let i = 1; i <= this.NUM_PAGES; i++) {
+        await UI.renderPage(i, this.RENDER_OPTIONS)
+        if (i == this.NUM_PAGES) {
+          this.documentWidthCal()
+        }
+      }
+    },
+    expandColorPickerToggle(e) {
+      this.expandColorPicker = e
+      this.$refs.toolBar.expandColor(e)
+    },
+    // addToUndoList(annotation, actionType) {
+    //   if (this.undoAnnotationList.length > 2) {
+    //     this.undoAnnotationList = this.undoAnnotationList.slice(1)
+    //   }
+    //   annotation.action = actionType
+    //   this.undoAnnotationList.push(annotation)
+    // },
+    async undoAnnotation() {
+      var history = this.undoHistory.pop()
+      if (!history) {
+        return
+      }
+      const undoAnno = history.annotation
+      if (history.action == 'deleted') {
+        if (undoAnno.class == 'Comment') {
+          await PDFJSAnnotate.getStoreAdapter().addComment(undoAnno.annotation.documentId,
+            undoAnno.annotation,
+            undoAnno,
+            undoAnno.text,
+            undoAnno.topPosition)
+          await this.comments.push(undoAnno)
+          await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
+          document.getElementById('add-new-comment').style.display = 'none'
+          var anno = {
+            DocumentId: this.documentId,
+            ReviewId: this.reviewId,
+            Type: 'comment-highlight',
+            PageNum: undoAnno.annotation.pageNum,
+            Top: undoAnno.annotation.top,
+            Color: undoAnno.annotation.color,
+            Uuid: undoAnno.annotation.uuid,
+            Data: JSON.stringify(undoAnno.annotation)
+          }
+          var newCmt = {
+            Text: undoAnno.text,
+            Content: undoAnno.content,
+            TopPosition: undoAnno.topPosition,
+            Uuid: undoAnno.uuid,
+            Data: JSON.stringify(undoAnno)
+          }
+          reviewService.addInTextComment(this.documentId, this.reviewId, newCmt, anno).then(rs => {
+            this.updateCommentId(rs)
+          })
+          this.handleCommentPositionsRestore()
+          this.svg = document.querySelector(`svg[data-pdf-annotate-page='${undoAnno.annotation.page}']`)
+          appendChild(this.svg, undoAnno.annotation)
+          this.newComment = ''
+          this.updatePositionsAfterCommentAdded()
+        } else {
+          await PDFJSAnnotate.getStoreAdapter().addAnnotation(this.documentId, undoAnno.page, undoAnno, true)
+            .then(async(annotation) => {
+              if (undoAnno.type != 'comment-highlight') {
+                var obj = {
+                  DocumentId: this.documentId,
+                  ReviewId: this.reviewId,
+                  Type: undoAnno.type,
+                  PageNum: undoAnno.page,
+                  Top: undoAnno.top,
+                  Color: undoAnno.color,
+                  Uuid: undoAnno.uuid,
+                  Data: JSON.stringify(undoAnno)
+                }
+                this.$store.dispatch('review/addReviewAnnotation', obj).then(rs => {
+                  // if (!this.svg) {
+                  //   if (undoAnno.rectangles) {
+                  //     this.svg = findSVGAtPoint(undoAnno.rectangles[0]['x'], undoAnno.rectangles[0]['y'])
+                  //   } else {
+                  //     this.svg = findSVGAtPoint(undoAnno.x, undoAnno.y)
+                  //   }
+                  // }
+                  var temp = this.$store.getters['review/getAddedAnnotation']
+                  undoAnno.id = temp.id
+                  this.svg = document.querySelector(`svg[data-pdf-annotate-page='${undoAnno.page}']`)
+                  appendChild(this.svg, undoAnno)
+                })
+              }
+            })
+        }
+        history.action = 'added'
+      } else if (history.action == 'added') {
+        history.action = 'deleted'
+        if (undoAnno.annotation) {
+          await this.deleteButtonClicked(undoAnno)
+          this.removeElementById(undoAnno.uuid)
+        } else {
+          await PDFJSAnnotate.getStoreAdapter().deleteAnnotation(this.documentId, undoAnno.uuid, true)
+          reviewService.deleteAnnotation(undoAnno.id).then(rs => {
+            this.removeElementById(undoAnno.uuid)
+          })
+        }
+      }
+      this.redoHistory.push(history)
+      this.updateRedoList()
+      this.updateUndoList()
+    },
+    async redo() {
+      var history = this.redoHistory.pop()
+      if (history) {
+        var redoAnno = history.annotation
+        if (history.action == 'deleted') {
+          if (redoAnno.class == 'Comment') {
+            await PDFJSAnnotate.getStoreAdapter().addComment(redoAnno.annotation.documentId,
+              redoAnno.annotation,
+              redoAnno,
+              redoAnno.text,
+              redoAnno.topPosition)
+            await this.comments.push(redoAnno)
+            await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
+            document.getElementById('add-new-comment').style.display = 'none'
+            var anno = {
+              DocumentId: this.documentId,
+              ReviewId: this.reviewId,
+              Type: 'comment-highlight',
+              PageNum: redoAnno.annotation.pageNum,
+              Top: redoAnno.annotation.top,
+              Color: redoAnno.annotation.color,
+              Uuid: redoAnno.annotation.uuid,
+              Data: JSON.stringify(redoAnno.annotation)
+            }
+            var newCmt = {
+              Text: redoAnno.text,
+              Content: redoAnno.content,
+              TopPosition: redoAnno.topPosition,
+              Uuid: redoAnno.uuid,
+              Data: JSON.stringify(redoAnno)
+            }
+            reviewService.addInTextComment(this.documentId, this.reviewId, newCmt, anno).then(rs => {
+              this.updateCommentId(rs)
+            })
+            this.handleCommentPositionsRestore()
+            this.svg = document.querySelector(`svg[data-pdf-annotate-page='${redoAnno.annotation.page}']`)
+            appendChild(this.svg, redoAnno.annotation)
+            this.newComment = ''
+            this.updatePositionsAfterCommentAdded()
+          } else {
+            await PDFJSAnnotate.getStoreAdapter().addAnnotation(this.documentId, redoAnno.page, redoAnno, true)
+              .then(async(annotation) => {
+                if (redoAnno.type != 'comment-highlight') {
+                  var obj = {
+                    DocumentId: this.documentId,
+                    ReviewId: this.reviewId,
+                    Type: redoAnno.type,
+                    PageNum: redoAnno.page,
+                    Top: redoAnno.top,
+                    Color: redoAnno.color,
+                    Uuid: redoAnno.uuid,
+                    Data: JSON.stringify(redoAnno)
+                  }
+                  this.$store.dispatch('review/addReviewAnnotation', obj).then(rs => {
+                    var temp = this.$store.getters['review/getAddedAnnotation']
+                    redoAnno.id = temp.id
+                    this.svg = document.querySelector(`svg[data-pdf-annotate-page='${redoAnno.page}']`)
+                    appendChild(this.svg, redoAnno)
+                  })
+                }
+              })
+          }
+          history.action = 'added'
+        } else if (history.action == 'added') {
+          history.action = 'deleted'
+          if (redoAnno.annotation) {
+            await this.deleteButtonClicked(redoAnno)
+            this.removeElementById(redoAnno.uuid)
+          } else {
+            await PDFJSAnnotate.getStoreAdapter().deleteAnnotation(this.documentId, redoAnno.uuid, true)
+            reviewService.deleteAnnotation(redoAnno.id).then(rs => {
+              this.removeElementById(redoAnno.uuid)
+            })
+          }
+        }
+      }
+      this.undoHistory.push(history)
+      this.updateUndoList()
+      this.updateRedoList()
+    },
+    removeElementById(elementId) {
+      const el = document.querySelector(`[data-pdf-annotate-id='${elementId}']`)
+      if (el) {
+        el.parentNode.removeChild(el)
+      }
+    },
+    async deleteButtonClicked(e) {
+      this.$confirm('Are you sure you want to delete this comment ?').then(() => {
+        this.deleteCommentCard(e.uuid)
+      }).catch(() => { console.log('Cancel') })
+      this.removeElementById(e.annotation.uuid)
+    },
+    keyupHandler(event) {
+      if (event.ctrlKey && event.code === 'KeyZ' && this.undoHistory.length > 0) {
+        this.undoAnnotation()
+      } else if (event.ctrlKey && event.code === 'KeyY' && this.redoHistory.length > 0) {
+        this.redo()
+      }
+    },
+    insertNoteComment(svg, note) {
+      if (document.getElementById('comment-wrapper').offsetWidth == 0) {
+        document.getElementById('comment-wrapper').style.display = 'block'
+      }
+      this.annotation = note
+      this.svg = svg
+      this.commentText(note)
+    },
+    async updateCommentId(rs) {
+      var cmts = null
+      await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId).then(r => {
+        cmts = r
+      })
+      cmts[cmts.length - 1].id = rs.data['id']
+      PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
+    },
+    updateRedoList() {
+      this.$refs.toolBar.updateRedoList(this.redoHistory)
+    },
+    updateUndoList() {
+      this.$refs.toolBar.updateUndoList(this.undoHistory)
+    }
     // End migration
   }
 }
@@ -1819,86 +1650,16 @@ export default {
 @import '../../pdfjs/shared/document.css';
 @import '../../pdfjs/shared/toolbar.css';
 @import '../../pdfjs/shared/pdf_viewer.css';
-
-.tip {
-  padding: 8px 14px;
-  background-color: #ecf8ff;
-  border-radius: 4px;
-  border-left: 5px solid #50bfff;
+@import '../../styles/review.css';
+</style>
+<style>
+#mileStone{
+  width:100%;
 }
-pre {
-  font-size: 14px;
-  text-align: justify;
-  white-space: break-spaces;
-  font-family: inherit !important;
-  margin-bottom: 0 !important;
-}
-.rotate-icon {
-  transform: rotateZ(180deg);
-}
-
-.par-content {
-  position: absolute;
-  padding-right: 10px;
-  top: 0;
-  left: 0;
-  overflow-y: scroll;
-  height: 100%;
+#mileStone .el-radio-button__inner {
   width: 100%;
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
 }
-
-.par-content::-webkit-scrollbar {
-  width: 7px;
-}
-
-/* Handle */
-.par-content::-webkit-scrollbar-thumb {
-  background: #999;
-  border-radius: 4px;
-}
-
-/* Handle on hover */
-.par-content::-webkit-scrollbar-thumb:hover {
-  background: #777;
-}
-.default{
-  padding: 0;
-  margin: 0;
-}
-.content-con{
-  margin: 10px 0 10px 0;
-  padding: 10px;
-  border: #dcddde solid 1px;
-  border-radius: 5px;
-}
-.body-transcript {
-  margin-top: 0;
-  padding: 10px;
-  border: 1px solid #e2e2e2;
-}
-.hideQuestion{
-  visibility: hidden;
-}
-.pdfViewer .page{
-  overflow: scroll !important;
-  border: 1px solid #b8b8b8 !important;
-}
-#right-panel.hideQuestion{
-  visibility: visible;
-  margin-left: 0 !important;
-}
-.hideQuestion .fa-angle-double-left{
-visibility: visible;
-transform: rotate(180deg);
-}
-#viewer{
-  border: 1px solid #d7dae1;
-  padding: 10px 0 0 0;
-}
-.toolbar-btn.active {
-  background-color: #d5dde4;
+button:focus{
+ outline: none !important;
 }
 </style>

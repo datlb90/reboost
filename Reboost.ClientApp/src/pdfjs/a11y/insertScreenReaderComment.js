@@ -7,8 +7,7 @@ export default function insertScreenReaderComment(comment) {
   if (!comment) {
     return
   }
-
-  const list = document.querySelector(`#pdf-annotate-screenreader-${comment.annotation} ol`)
+  const list = document.querySelector(`#pdf-annotate-screenreader-${comment.annotation['uuid']} ol`)
   if (list) {
     const item = document.createElement('li')
     item.setAttribute('id', `pdf-annotate-screenreader-comment-${comment.uuid}`)
