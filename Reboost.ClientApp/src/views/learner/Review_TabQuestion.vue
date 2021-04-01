@@ -14,7 +14,7 @@
           <p>
             <b><a href="#">{{ getQuestionSection }}</a></b>
           </p>
-          <p>{{ getQuestion.content }}</p></div>
+          <p> {{ getQuestion.content }}</p></div>
         <div v-if="getReading != ''" class="content-con">
           <p>
             <b>Reading</b>
@@ -108,12 +108,12 @@ export default ({
     }
   },
   async mounted() {
+    console.log('this.getDataQuestionParts', this.getDataQuestionParts)
     if (localStorage.getItem('showQuestionDirection')) {
       this.showDirection = false
     }
     this.$store.dispatch('question/loadQuestion', this.questionid).then(rs => {
       this.calculateContainerHeight()
-      this.getDataQuestionParts()
     })
   },
   methods: {

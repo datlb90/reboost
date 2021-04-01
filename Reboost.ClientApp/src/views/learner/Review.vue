@@ -308,16 +308,13 @@ export default {
           Data: JSON.stringify(annotation)
         }
         this.$store.dispatch('review/addReviewAnnotation', obj).then(async rs => {
-          this.statusText = 'Saved'
           var temp = this.$store.getters['review/getAddedAnnotation']
           annotation.id = temp.id
           await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation)
           this.undoHistory.push({ action: 'added', annotation: annotation })
           this.updateUndoList()
           // this.addToUndoList(annotation, 'add')
-          setTimeout(() => {
-            this.statusText = ''
-          }, 2000)
+          this.setStatusText()
         })
       } else if (annotation.type == 'point') {
         // 123
@@ -329,6 +326,7 @@ export default {
         this.updateUndoList()
         this.removeElementById(target.uuid)
         // this.addToUndoList(target, 'delete')
+        this.setStatusText()
       })
     },
 
@@ -576,7 +574,7 @@ export default {
     },
     handleCommentDelete(comment) {
       reviewService.deleteInTextComment(comment.id).then(rs => {
-
+        this.setStatusText()
       })
     },
     async handleCommentAnnotationClick(target) {
@@ -590,7 +588,6 @@ export default {
         const type = target.getAttribute('data-pdf-annotate-type')
         this.annotationClicked = target
         if (type == 'comment-highlight' || type == 'point') {
-          // clear others and highlight current annotation
           const selectedHighlight = document.getElementsByClassName('comment-highlight-selected')
           if (selectedHighlight.length > 0) { selectedHighlight[0].classList.remove('comment-highlight-selected') }
           target.classList.add('comment-highlight-selected')
@@ -780,8 +777,8 @@ export default {
       })
       return comments
     },
-    async HighlightText(type) {
-      // await this.highlightText('highlight')
+    async HighlightText() {
+      await this.highlightText('highlight')
     },
     async StrikethroughText() {
       await this.highlightText('strikeout')
@@ -916,7 +913,6 @@ export default {
           appendChild(this.svg, annotation)
           this.undoHistory.push({ action: 'added', annotation: annotation })
           this.updateUndoList()
-          console.log('svg highlight', this.svg)
           this.hideTextToolBar()
           this.hideTextToolGroup()
           this.hideRectToolBar()
@@ -938,11 +934,11 @@ export default {
                 annotation.id = this.$store.getters['review/getAddedAnnotation']['id']
 
                 await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation)
-
                 // this.addToUndoList(annotation, 'add')
               }
             })
           }
+          this.setStatusText()
         })
     },
     updateCommentPositions(note) {
@@ -1336,6 +1332,23 @@ export default {
       return false
     },
     async submitReview() {
+      // Promise.all([
+      //   PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, this.reviewId),
+      //   PDFJSAnnotate.getStoreAdapter().getComments(this.documentId, this.reviewId)
+      // ]).then(([{ annotations }, comments]) => {
+      //   reviewService.saveAnnotations(1, 1, {
+      //     annotations: annotations.map(a => ({ ...a, data: JSON.stringify(a) })),
+      //     comments: comments.map(c => ({ ...c, data: JSON.stringify(c) }))
+      //   }).then(rs => {
+      //     this.$notify({
+      //       title: 'Success',
+      //       message: 'Submit success',
+      //       type: 'success',
+      //       duration: 1000
+      //     })
+      //   })
+      // })
+
       const annots = await PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, this.reviewId)
       console.log('annots', annots)
 
@@ -1408,18 +1421,20 @@ export default {
       // document.getElementById('tool-bar').style.width = docWidth + 'px'
     },
     async handleScale(e) {
-      console.log('handleScale', e)
       this.RENDER_OPTIONS.scale = e
       this.reRenderPages()
     },
 
     async reRenderPages() {
-      for (let i = 1; i <= this.NUM_PAGES; i++) {
-        await UI.renderPage(i, this.RENDER_OPTIONS)
-        if (i == this.NUM_PAGES) {
-          this.documentWidthCal()
-        }
-      }
+      await UI.renderAllPages(this.NUM_PAGES, this.RENDER_OPTIONS)
+      this.documentWidthCal()
+
+      // for (let i = 1; i <= this.NUM_PAGES; i++) {
+      //   await UI.renderAllPages(i, this.RENDER_OPTIONS)
+      //   if (i == 1) {
+      //     this.documentWidthCal()
+      //   }
+      // }
     },
     expandColorPickerToggle(e) {
       this.expandColorPicker = e

@@ -18,7 +18,14 @@ let _textColor = 'ff0000'
  * @param {Event} e The DOM event to handle
  */
 function handleDocumentMouseup(e) {
-  if (input || !findSVGAtPoint(e.clientX, e.clientY)) {
+  var isToolBar = false
+  Array.prototype.slice.call(e.path).forEach(r => {
+    if (r.tagName == 'DIV' && r.getAttribute('id') == 'tool-bar') {
+      isToolBar = true
+    }
+  })
+
+  if (input || !findSVGAtPoint(e.clientX, e.clientY) || isToolBar) {
     return
   }
 
