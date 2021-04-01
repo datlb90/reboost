@@ -720,7 +720,6 @@ export async function commentText() {
  */
 export function enableSelect(type) {
   _type = type
-  console.log('123', type)
   if (_enabled) { return }
 
   _enabled = true

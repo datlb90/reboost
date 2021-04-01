@@ -1,4 +1,5 @@
 import PDFJSAnnotate from '../PDFJSAnnotate'
+import { fireEvent } from '../UI/event'
 import appendChild from '../render/appendChild'
 import {
   BORDER_COLOR,
@@ -22,74 +23,73 @@ function handleDocumentMouseup(e) {
 
   input = document.createElement('input')
   input.setAttribute('id', 'pdf-annotate-point-input')
-  input.setAttribute('placeholder', 'Enter comment')
+  input.setAttribute('placeholder', 'Enter note')
+  input.setAttribute('top', `${e.clientY}`)
   input.style.border = `3px solid ${BORDER_COLOR}`
   input.style.borderRadius = '3px'
   input.style.position = 'absolute'
   input.style.top = `${e.clientY}px`
   input.style.left = `${e.clientX}px`
 
-  input.addEventListener('blur', handleInputBlur)
-  input.addEventListener('keyup', handleInputKeyup)
-
-  document.body.appendChild(input)
-  input.focus()
-}
-
-/**
- * Handle input.blur event
- */
-function handleInputBlur() {
   savePoint()
+
+  // input.addEventListener('blur', handleInputBlur)
+  // input.addEventListener('keyup', handleInputKeyup)
+
+  // document.body.appendChild(input)
+  // input.focus()
 }
 
-/**
- * Handle input.keyup event
- *
- * @param {Event} e The DOM event to handle
- */
-function handleInputKeyup(e) {
-  if (e.keyCode === 27) {
-    closeInput()
-  } else if (e.keyCode === 13) {
-    savePoint()
-  }
-}
+// /**
+//  * Handle input.blur event
+//  */
+// function handleInputBlur() {
+//   savePoint()
+// }
+
+// /**
+//  * Handle input.keyup event
+//  *
+//  * @param {Event} e The DOM event to handle
+//  */
+// function handleInputKeyup(e) {
+//   if (e.keyCode === 27) {
+//     closeInput()
+//   } else if (e.keyCode === 13) {
+//     savePoint()
+//   }
+// }
 
 /**
  * Save a new point annotation from input
  */
 function savePoint() {
-  if (input.value.trim().length > 0) {
-    const clientX = parseInt(input.style.left, 10)
-    const clientY = parseInt(input.style.top, 10)
-    const content = input.value.trim()
-    const svg = findSVGAtPoint(clientX, clientY)
-    if (!svg) {
-      return
-    }
-
-    const rect = svg.getBoundingClientRect()
-    const { documentId, pageNumber } = getMetadata(svg)
-    const annotation = Object.assign({
-      type: 'point'
-    }, scaleDown(svg, {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    })
-    )
-
-    PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
-      .then((annotation) => {
-        PDFJSAnnotate.getStoreAdapter().addComment(
-          documentId,
-          annotation.uuid,
-          content
-        )
-
-        appendChild(svg, annotation)
-      })
+  const clientX = parseInt(input.style.left, 10)
+  const clientY = parseInt(input.style.top, 10)
+  const svg = findSVGAtPoint(clientX, clientY)
+  if (!svg) {
+    return
   }
+
+  const rect = svg.getBoundingClientRect()
+  const { documentId, pageNumber } = getMetadata(svg)
+  const annotation = Object.assign({
+    type: 'point',
+    top: clientY,
+    pageNum: pageNumber,
+    pageHeight: svg.getAttribute('height')
+  }, scaleDown(svg, {
+    x: clientX - rect.left,
+    y: clientY - rect.top
+  })
+  )
+  // const commentWrapper = document.getElementById('add-new-comment')
+  // const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
+  PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation, true)
+    .then((annotation) => {
+      appendChild(svg, annotation)
+      fireEvent('annotation:insertNoteComment', svg, annotation)
+    })
 
   closeInput()
 }
@@ -98,9 +98,9 @@ function savePoint() {
  * Close the input element
  */
 function closeInput() {
-  input.removeEventListener('blur', handleInputBlur)
-  input.removeEventListener('keyup', handleInputKeyup)
-  document.body.removeChild(input)
+  // input.removeEventListener('blur', handleInputBlur)
+  // input.removeEventListener('keyup', handleInputKeyup)
+  // document.body.removeChild(input)
   input = null
 }
 
@@ -123,4 +123,3 @@ export function disablePoint() {
   _enabled = false
   document.removeEventListener('mouseup', handleDocumentMouseup)
 }
-

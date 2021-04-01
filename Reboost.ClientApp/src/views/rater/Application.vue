@@ -348,7 +348,7 @@ export default {
   },
   methods: {
     onLoad() {
-      const w = require('../../assets/defaultFormRaterData.json')
+      const w = require('../../assets/data.json')
       this.firstLanguage = w.Languages
       this.gender = w.Gender
 

@@ -1,7 +1,7 @@
 import PDFJSAnnotate from '../PDFJSAnnotate'
 import appendChild from '../render/appendChild'
 import {
-  BORDER_COLOR,
+  // BORDER_COLOR,
   findSVGAtPoint,
   getMetadata,
   scaleDown
@@ -22,21 +22,44 @@ function handleDocumentMouseup(e) {
     return
   }
 
-  input = document.createElement('input')
+  const page = document.getElementById('pageContainer1')
+  const rect = page.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const w = rect.width - x
+
+  const { viewport } = getMetadata(findSVGAtPoint(e.clientX, e.clientY))
+
+  input = document.createElement('span')
   input.setAttribute('id', 'pdf-annotate-text-input')
-  input.setAttribute('placeholder', 'Enter text')
-  input.style.border = `3px solid ${BORDER_COLOR}`
-  input.style.borderRadius = '3px'
+  input.style.maxWidth = `${w}px`
+  // input.setAttribute('placeholder', 'Enter text')
+  input.setAttribute('contenteditable', true)
+  input.setAttribute('display', 'block')
+  // input.style.border = `3px solid ${BORDER_COLOR}`
+  input.style.outline = 'none'
+  // input.style.borderRadius = '3px'
   input.style.position = 'absolute'
+  input.style.color = localStorage.getItem('colorChosen') || _textColor
+  // input.style.textSize = (_textSize * viewport.scale) + 'px'
+  input.style.fontSize = `${_textSize * viewport.scale}px`
+
+  // if (inWidth < 150) {
+  //   input.style.width = inWidth + 'px'
+  // } else {
+  //   input.style.width = '150px'
+  // }
   input.style.top = `${e.clientY}px`
   input.style.left = `${e.clientX}px`
-  input.style.fontSize = `${_textSize}px`
 
   input.addEventListener('blur', handleInputBlur)
   input.addEventListener('keyup', handleInputKeyup)
+  input.addEventListener('keydown', handleInputKeydown)
 
   document.body.appendChild(input)
   input.focus()
+
+  input.innerText = 'text'
+  document.execCommand('selectAll', false, null)
 }
 
 /**
@@ -59,30 +82,36 @@ function handleInputKeyup(e) {
   }
 }
 
+function handleInputKeydown(e) {
+  if (e.keyCode === 13) {
+    e.preventDefault()
+  }
+}
+
 /**
  * Save a text annotation from input
  */
 function saveText() {
-  if (input.value.trim().length > 0) {
+  if (input.innerText.trim().length > 0) {
     const clientX = parseInt(input.style.left, 10)
     const clientY = parseInt(input.style.top, 10)
     const svg = findSVGAtPoint(clientX, clientY)
     if (!svg) {
       return
     }
-
     const { documentId, pageNumber } = getMetadata(svg)
     const rect = svg.getBoundingClientRect()
+    const w = input.clientWidth
     const annotation = Object.assign({
       type: 'textbox',
       size: _textSize,
-      color: _textColor,
-      content: input.value.trim()
+      color: localStorage.getItem('colorChosen') || _textColor,
+      content: input.innerText.trim()
     }, scaleDown(svg, {
       x: clientX - rect.left,
       y: clientY - rect.top,
-      width: input.offsetWidth,
-      height: input.offsetHeight
+      width: w,
+      height: input.clientHeight
     })
     )
 

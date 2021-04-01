@@ -162,11 +162,10 @@ function saveRect(type, rects, color) {
       color = 'FF0000'
     }
   }
-
   // Initialize the annotation
   const annotation = {
     type,
-    color,
+    color: localStorage.getItem('colorChosen') || 'f00',
     rectangles: [...rects].map((r) => {
       let offset = 0
 
@@ -182,7 +181,6 @@ function saveRect(type, rects, color) {
       })
     }).filter((r) => r.width > 0 && r.height > 0 && r.x > -1 && r.y > -1)
   }
-
   // Short circuit if no rectangles exist
   if (annotation.rectangles.length === 0) {
     return

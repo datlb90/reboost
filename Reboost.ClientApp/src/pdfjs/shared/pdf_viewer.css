@@ -152,15 +152,15 @@
 }
 
 .pdfViewer .page {
+  width: fit-content;
   direction: ltr;
-  width: 816px;
-  height: 1056px;
-  margin: 1px auto -8px auto;
   position: relative;
-  overflow: visible;
+  overflow: auto;
   border: 1px solid transparent;
   background-clip: content-box;
-  /* border-image: url(images/shadow.png) 9 9 repeat; */
+  overflow:hidden;
+  margin:10px 0 5px 0  !important ;
+  box-shadow: 0 0 2px 0 rgb(0 0 0 / 10%);
   background-color: rgb(248, 249, 250);
 }
 

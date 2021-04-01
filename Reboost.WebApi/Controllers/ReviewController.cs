@@ -57,8 +57,27 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("inTextComment/{docId}/{reviewId}")]
         public async Task<IActionResult> AddInTextCommentAsync([FromRoute] int docId, [FromRoute] int reviewId, [FromBody] InsertCommentModel data)
         {
-            var rs = await _service.AddInTextCommentAsync( docId,  reviewId, data.Comment, data.Annotation);
+            var rs = await _service.AddInTextCommentAsync(docId, reviewId, data.Comment, data.Annotation);
             return Ok(rs);
         }
+        [HttpPost("comment/delete")]
+        public async Task<IActionResult> DeleteInTextCommentAsync([FromBody] DeleteCommentModel data)
+        {
+            var rs = await _service.DeleteInTextCommentAsync(data.id);
+            return Ok(rs);
+        }
+        [HttpPost("annotation/delete")]
+        public async Task<IActionResult> DeleteAnnotationAsync([FromBody] DeleteCommentModel data)
+        {
+            var rs = await _service.DeleteAnnotationAsync(data.id);
+            return Ok(rs);
+        }
+        [HttpPost("edit")]
+        public async Task<IActionResult> AddInTextCommentAsync( [FromBody] Annotations data)
+        {
+            var rs = await _service.EditAnnotationAsync(data);
+            return Ok(rs);
+        }
+
     }
 }

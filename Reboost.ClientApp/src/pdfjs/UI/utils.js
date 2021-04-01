@@ -42,7 +42,6 @@ export function findSVGContainer(node) {
  */
 export function findSVGAtPoint(x, y) {
   const elements = document.querySelectorAll('svg[data-pdf-annotate-container="true"]')
-
   for (let i = 0, l = elements.length; i < l; i++) {
     const el = elements[i]
     const rect = el.getBoundingClientRect()
@@ -66,7 +65,6 @@ export function findAnnotationAtPoint(x, y) {
   const svg = findSVGAtPoint(x, y)
   if (!svg) { return }
   const elements = svg.querySelectorAll('[data-pdf-annotate-type]')
-
   // Find a target element within SVG
   for (let i = 0, l = elements.length; i < l; i++) {
     const el = elements[i]
@@ -169,7 +167,12 @@ export function getAnnotationRect(el) {
         y -= (LINE_OFFSET / 2)
       }
       break
-
+    case 'foreignobject':
+      h = parseInt(el.getAttribute('height'), 10)
+      w = parseInt(el.getAttribute('width'), 10)
+      x = parseInt(el.getAttribute('x'), 10)
+      y = parseInt(el.getAttribute('y'), 10)
+      break
     case 'rect':
     case 'svg':
       h = parseInt(el.getAttribute('height'), 10)
@@ -307,3 +310,7 @@ export function getMetadata(svg) {
     viewport: JSON.parse(svg.getAttribute('data-pdf-annotate-viewport'))
   }
 }
+// export function changeContentColor(color) {
+//   this.CONTENT_COLOR = color
+//   console.log('content color', color)
+// }

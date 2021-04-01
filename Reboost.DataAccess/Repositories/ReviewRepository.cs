@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using System;
@@ -19,6 +20,9 @@ namespace Reboost.DataAccess.Repositories
         Task SaveFeedback(List<ReviewData> data);
         Task<List<ReviewData>> LoadFeedBack(int reviewId);
         Task<InTextComments> AddInTextCommentAsync(InTextComments cmt);
+        Task<InTextComments> DeleteInTextCommentAsync(int id);
+        Task<int> DeleteAnnotationAsync(int id);
+        Task<Annotations> EditAnnotationAsync(Annotations anno);
     }
 
     public class ReviewRepository : IReviewRepository
@@ -87,6 +91,29 @@ namespace Reboost.DataAccess.Repositories
             await db.SaveChangesAsync();
             return await Task.FromResult(cmt);
         }
-
+        public async Task<InTextComments> DeleteInTextCommentAsync(int id)
+        {
+            InTextComments rs = await db.InTextComments.FindAsync(id);
+            Annotations anno = await db.Annotations.FindAsync(rs.AnnotationId);
+            db.InTextComments.Remove(rs);
+            db.Annotations.Remove(anno);
+            await db.SaveChangesAsync();
+            return await Task.FromResult(rs);
+        }
+        public async Task<Annotations> EditAnnotationAsync(Annotations anno)
+        {
+            Annotations annotations = await db.Annotations.FindAsync(anno.Id);
+            db.Annotations.Remove(annotations);
+            await db.Annotations.AddAsync(anno);
+            await db.SaveChangesAsync();
+            return await Task.FromResult(anno);
+        }
+        public async Task<int> DeleteAnnotationAsync(int id)
+        {
+            Annotations annotations = await db.Annotations.FindAsync(id);
+            db.Annotations.Remove(annotations);
+            await db.SaveChangesAsync();
+            return await Task.FromResult(id);
+        }
     }
 }

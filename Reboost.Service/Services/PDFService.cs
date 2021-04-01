@@ -16,7 +16,7 @@ namespace Reboost.Service.Services
     {
         public byte[] WriteParagraph(string paragraph) {
             using (var ms = new MemoryStream())
-            using (Document doc = new Document(PageSize.A4, 25, 25, 30, 30))
+            using (Document doc = new Document(PageSize.LETTER, 55, 55, 55, 55))
             using (PdfWriter writer = PdfWriter.GetInstance(doc, ms))
             {
                 doc.Open();

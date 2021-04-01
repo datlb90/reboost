@@ -57,14 +57,15 @@ function createEditOverlay(target) {
   anchor.style.border = '1px solid #bbb'
   anchor.style.color = '#bbb'
   anchor.style.fontSize = '16px'
-  anchor.style.padding = '2px'
+  // anchor.style.padding = '2px'
   anchor.style.textAlign = 'center'
   anchor.style.textDecoration = 'none'
   anchor.style.position = 'absolute'
   anchor.style.top = '-13px'
   anchor.style.right = '-13px'
-  anchor.style.width = '25px'
-  anchor.style.height = '25px'
+  anchor.style.width = '20px'
+  anchor.style.height = '20px'
+  anchor.style.lineHeight = 1.3
 
   overlay.appendChild(anchor)
   parentNode.appendChild(overlay)
@@ -94,7 +95,7 @@ function createEditOverlay(target) {
  * Destroy the edit overlay if it exists.
  */
 function destroyEditOverlay() {
-  if (overlay) {
+  if (overlay && typeof (overlay) != 'undefined') {
     overlay.parentNode.removeChild(overlay)
     overlay = null
   }
@@ -173,21 +174,7 @@ function handleDocumentMousedown(e) {
   const target = document.querySelector(`[data-pdf-annotate-id="${annotationId}"]`)
   const type = target.getAttribute('data-pdf-annotate-type')
 
-  if (type === 'highlight' || type === 'strikeout') { return }
-
-  isDragging = true
-  dragOffsetX = e.clientX
-  dragOffsetY = e.clientY
-  dragStartX = overlay.offsetLeft
-  dragStartY = overlay.offsetTop
-
-  overlay.style.background = 'rgba(255, 255, 255, 0.7)'
-  overlay.style.cursor = 'move'
-  overlay.querySelector('a').style.display = 'none'
-
-  document.addEventListener('mousemove', handleDocumentMousemove)
-  document.addEventListener('mouseup', handleDocumentMouseup)
-  disableUserSelect()
+  if (type === 'highlight' || type === 'strikeout' || type === 'point') { return }
 }
 
 /**
@@ -334,6 +321,10 @@ function handleDocumentMouseup(e) {
  * @param {Element} e The annotation element that was clicked
  */
 function handleAnnotationClick(target) {
+  const newCommentWrapper = document.getElementById('add-new-comment')
+  if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
+    return
+  }
   createEditOverlay(target)
 }
 
