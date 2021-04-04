@@ -260,3 +260,11 @@ function roundToDivide(x, div) {
   const r = x % div
   return r === 0 ? x : Math.round(x - r + div)
 }
+
+export async function renderAllPages(numPages, renderOptions) {
+  var rs = []
+  for (let i = 1; i <= numPages; i++) {
+    rs += await renderPage(i, renderOptions)
+  }
+  return rs
+}
