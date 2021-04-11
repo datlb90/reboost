@@ -17,7 +17,7 @@
           <el-form-item v-if="raterId" size="mini" label="Current Status">
             <el-tag
               :type="
-                formRegister.status === 'Verified'
+                formRegister.status === 'Approved'
                   ? 'success'
                   : formRegister.status === 'Applied'
                     ? 'primary'
@@ -266,6 +266,20 @@
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="success" @click="updateStatus('Approved')">Approve</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus('Rejected')">Reject</el-button>
+            <el-dropdown v-if="completedTraining(formRegister,'IELTS')" style="margin: 0 10px" size="mini" split-button type="primary" @command="trainingDropdownClick">
+              IELTS
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'IELTSTraining',action:'approve'}">Approve</el-dropdown-item>
+                <el-dropdown-item :command="{type:'IELTSTraining',action:'reject'}">Revison</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+            <el-dropdown v-if="completedTraining(formRegister,'TOEFL')" size="mini" split-button type="primary" @command="trainingDropdownClick">
+              TOEFL
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'TOEFLTraining',action:'approve'}">Approve</el-dropdown-item>
+                <el-dropdown-item :command="{type:'TOEFLTraining',action:'reject'}">Revison</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </el-form-item>
         </el-form>
       </el-col>
@@ -282,6 +296,7 @@
 <script>
 // @ is an alias to /src
 import raterService from '../../services/rater.service'
+import reviewService from '../../services/review.service'
 import moment from 'moment'
 // import Notification from 'element-ui'
 import * as mapUtil from '@/utils/model-mapping'
@@ -341,10 +356,14 @@ export default {
     },
     applyToTOEFLChecked() {
       return this.getApplyTo('TOEFL')
+    },
+    getAllReviews() {
+      return this.$store.getters['review/getReviews']
     }
   },
   mounted() {
     this.onLoad()
+    this.$store.dispatch('review/loadReviews')
   },
   methods: {
     onLoad() {
@@ -548,12 +567,21 @@ export default {
     },
     updateStatus(status) {
       raterService.updateStatus(this.raterId, status).then(rs => {
+        console.log('status', rs)
         this.formRegister.status = status
-        this.$notify.error({
-          title: 'Error',
-          message: 'Error occured!',
-          duration: 2000
-        })
+        if (rs.status == 'Approved') {
+          this.$notify.success({
+            title: 'Approved',
+            message: 'Rater Approved!',
+            duration: 2000
+          })
+        } else if (rs.status == 'Rejected') {
+          this.$notify.error({
+            title: 'Rejected',
+            message: 'Rater Rejected!',
+            duration: 2000
+          })
+        }
       })
     },
     handleRemoveIdPhoto(file, fileList) {
@@ -586,6 +614,21 @@ export default {
       if (e.target.firstChild != null) {
         this.toggleImagePopup = !this.toggleImagePopup
       }
+    },
+    completedTraining(e, status) {
+      status += 'Training'
+      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && r.status == status)[0]
+      if (t) {
+        return true
+      }
+      return false
+    },
+    trainingDropdownClick(e) {
+      var t = this.getAllReviews.filter(r => r.reviewerId == this.formRegister.userId && r.reviewData.length > 0 && r.status == e.type)[0]
+      var newStatus = e.action == 'approve' ? e.type + 'Approved' : e.type + 'Rejected'
+      reviewService.changeReviewStatus(t.id, newStatus).then(rs => {
+        console.log(rs)
+      })
     }
   }
 }

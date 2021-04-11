@@ -134,9 +134,9 @@ export default ({
       const parentHeight = document.getElementById('parent-scroll').offsetHeight
       const childHeight = document.getElementById('child-scroll').scrollHeight
       if (parentHeight >= childHeight) {
-        document.getElementById('child-scroll').style.paddingRight = '0'
+        // document.getElementById('child-scroll').style.paddingRight = '0'
       } else {
-        document.getElementById('child-scroll').style.paddingRight = '10px'
+        // document.getElementById('child-scroll').style.paddingRight = '10px'
       }
     }
   }

@@ -30,9 +30,11 @@ const OVERLAY_BORDER_SIZE = 3
  */
 function createEditOverlay(target) {
   destroyEditOverlay()
-
+  if (!target) {
+    return
+  }
   overlay = document.createElement('div')
-  const anchor = document.createElement('a')
+  // const anchor = document.createElement('a')
   const parentNode = findSVGContainer(target).parentNode
   const id = target.getAttribute('data-pdf-annotate-id')
   const rect = getAnnotationRect(target)
@@ -50,58 +52,59 @@ function createEditOverlay(target) {
   overlay.style.border = `${OVERLAY_BORDER_SIZE}px solid ${BORDER_COLOR}`
   overlay.style.borderRadius = `${OVERLAY_BORDER_SIZE}px`
 
-  anchor.innerHTML = '×'
-  anchor.setAttribute('href', 'javascript://')
-  anchor.style.background = '#fff'
-  anchor.style.borderRadius = '20px'
-  anchor.style.border = '1px solid #bbb'
-  anchor.style.color = '#bbb'
-  anchor.style.fontSize = '16px'
-  // anchor.style.padding = '2px'
-  anchor.style.textAlign = 'center'
-  anchor.style.textDecoration = 'none'
-  anchor.style.position = 'absolute'
-  anchor.style.top = '-13px'
-  anchor.style.right = '-13px'
-  anchor.style.width = '20px'
-  anchor.style.height = '20px'
-  anchor.style.lineHeight = 1.3
+  // anchor.innerHTML = '×'
+  // anchor.setAttribute('href', 'javascript://')
+  // anchor.style.background = '#fff'
+  // anchor.style.borderRadius = '20px'
+  // anchor.style.border = '1px solid #bbb'
+  // anchor.style.color = '#bbb'
+  // anchor.style.fontSize = '16px'
+  // // anchor.style.padding = '2px'
+  // anchor.style.textAlign = 'center'
+  // anchor.style.textDecoration = 'none'
+  // anchor.style.position = 'absolute'
+  // anchor.style.top = '-13px'
+  // anchor.style.right = '-13px'
+  // anchor.style.width = '20px'
+  // anchor.style.height = '20px'
+  // anchor.style.lineHeight = 1.3
 
-  overlay.appendChild(anchor)
+  // overlay.appendChild(anchor)
   parentNode.appendChild(overlay)
   document.addEventListener('click', handleDocumentClick)
-  document.addEventListener('keyup', handleDocumentKeyup)
+  // document.addEventListener('keyup', handleDocumentKeyup)
   document.addEventListener('mousedown', handleDocumentMousedown)
-  anchor.addEventListener('click', deleteAnnotation)
-  anchor.addEventListener('mouseover', () => {
-    anchor.style.color = '#35A4DC'
-    anchor.style.borderColor = '#999'
-    anchor.style.boxShadow = '0 1px 1px #ccc'
-  })
-  anchor.addEventListener('mouseout', () => {
-    anchor.style.color = '#bbb'
-    anchor.style.borderColor = '#bbb'
-    anchor.style.boxShadow = ''
-  })
-  overlay.addEventListener('mouseover', () => {
-    if (!isDragging) { anchor.style.display = '' }
-  })
-  overlay.addEventListener('mouseout', () => {
-    anchor.style.display = 'none'
-  })
+  // anchor.addEventListener('click', deleteAnnotation)
+  // anchor.addEventListener('mouseover', () => {
+  //   anchor.style.color = '#35A4DC'
+  //   anchor.style.borderColor = '#999'
+  //   anchor.style.boxShadow = '0 1px 1px #ccc'
+  // })
+  // anchor.addEventListener('mouseout', () => {
+  //   anchor.style.color = '#bbb'
+  //   anchor.style.borderColor = '#bbb'
+  //   anchor.style.boxShadow = ''
+  // })
+  // overlay.addEventListener('mouseover', () => {
+  //   if (!isDragging) { anchor.style.display = '' }
+  // })
+  // overlay.addEventListener('mouseout', () => {
+  //   anchor.style.display = 'none'
+  // })
 }
 
 /**
  * Destroy the edit overlay if it exists.
  */
 function destroyEditOverlay() {
-  if (overlay && typeof (overlay) != 'undefined') {
-    overlay.parentNode.removeChild(overlay)
+  const overlayDoc = document.getElementById('pdf-annotate-edit-overlay')
+  if (overlayDoc && typeof (overlayDoc) != 'undefined') {
+    overlayDoc.parentNode.removeChild(overlayDoc)
     overlay = null
   }
 
   document.removeEventListener('click', handleDocumentClick)
-  document.removeEventListener('keyup', handleDocumentKeyup)
+  // document.removeEventListener('keyup', handleDocumentKeyup)
   document.removeEventListener('mousedown', handleDocumentMousedown)
   document.removeEventListener('mousemove', handleDocumentMousemove)
   document.removeEventListener('mouseup', handleDocumentMouseup)
@@ -111,12 +114,31 @@ function destroyEditOverlay() {
 /**
  * Delete currently selected annotation
  */
-function deleteAnnotation() {
-  if (!overlay) { return }
+// function deleteAnnotation() {
+//   if (!overlay) { return }
+//   console.log('delete anno')
 
-  const annotationId = overlay.getAttribute('data-target-id')
+//   const annotationId = overlay.getAttribute('data-target-id')
+//   const nodes = document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)
+//   const svg = overlay.parentNode.querySelector('svg.annotationLayer')
+//   const { documentId } = getMetadata(svg);
+
+//   [...nodes].forEach((n) => {
+//     n.parentNode.removeChild(n)
+//   })
+
+//   PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, annotationId)
+
+//   destroyEditOverlay()
+// }
+export function deleteAnnotations() {
+  const overlayDoc = document.getElementById('pdf-annotate-edit-overlay')
+  if (!overlayDoc) { return }
+  console.log('delete anno')
+
+  const annotationId = overlayDoc.getAttribute('data-target-id')
   const nodes = document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)
-  const svg = overlay.parentNode.querySelector('svg.annotationLayer')
+  const svg = overlayDoc.parentNode.querySelector('svg.annotationLayer')
   const { documentId } = getMetadata(svg);
 
   [...nodes].forEach((n) => {
@@ -127,7 +149,6 @@ function deleteAnnotation() {
 
   destroyEditOverlay()
 }
-
 /**
  * Handle document.click event
  *
@@ -142,8 +163,10 @@ function handleDocumentClick(e) {
     if (isDragging || e.target === overlay) {
       return
     }
-
-    destroyEditOverlay()
+    const rectTool = document.getElementById('rectTool')
+    if (rectTool.style.position != 'absolute' || (rectTool.style.position == 'absolute' && rectTool.style.visibility == 'hidden')) {
+      destroyEditOverlay()
+    }
   }
 }
 
@@ -152,13 +175,13 @@ function handleDocumentClick(e) {
  *
  * @param {Event} e The DOM event that needs to be handled
  */
-function handleDocumentKeyup(e) {
-  if (overlay && e.keyCode === 46 &&
-      e.target.nodeName.toLowerCase() !== 'textarea' &&
-      e.target.nodeName.toLowerCase() !== 'input') {
-    deleteAnnotation()
-  }
-}
+// function handleDocumentKeyup(e) {
+//   if (overlay && e.keyCode === 46 &&
+//       e.target.nodeName.toLowerCase() !== 'textarea' &&
+//       e.target.nodeName.toLowerCase() !== 'input') {
+//     deleteAnnotation()
+//   }
+// }
 
 /**
  * Handle document.mousedown event

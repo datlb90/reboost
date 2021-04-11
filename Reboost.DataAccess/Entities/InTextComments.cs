@@ -12,7 +12,7 @@ namespace Reboost.DataAccess.Entities
         [Column("Comment")]
         public string Content { get; set; }
         [Column("TopPosition")]
-        public int TopPosition { get; set; }
+        public double TopPosition { get; set; }
         public string Data { get; set; }
         [NotMapped]
         public string Uuid { get; set; }
@@ -27,5 +27,9 @@ namespace Reboost.DataAccess.Entities
     public class DeleteCommentModel
     {
         public int id { get; set; }
+    }
+    public class UpdateStatusModel
+    {
+        public string status { get; set; }
     }
 }

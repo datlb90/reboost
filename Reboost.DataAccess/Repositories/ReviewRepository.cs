@@ -23,6 +23,10 @@ namespace Reboost.DataAccess.Repositories
         Task<InTextComments> DeleteInTextCommentAsync(int id);
         Task<int> DeleteAnnotationAsync(int id);
         Task<Annotations> EditAnnotationAsync(Annotations anno);
+        Task<InTextComments> EditInTextComment(InTextComments cmt);
+        Task<string> CreateNewSampleReviewDocumentAsync(string type, User user);
+        Task<List<Reviews>> GetReviewsAsync();
+        Task<Reviews> ChangeStatusAsync(int id, string newStatus);
     }
 
     public class ReviewRepository : IReviewRepository
@@ -95,9 +99,12 @@ namespace Reboost.DataAccess.Repositories
         {
             InTextComments rs = await db.InTextComments.FindAsync(id);
             Annotations anno = await db.Annotations.FindAsync(rs.AnnotationId);
-            db.InTextComments.Remove(rs);
-            db.Annotations.Remove(anno);
-            await db.SaveChangesAsync();
+            if (rs != null && anno != null)
+            {
+                db.InTextComments.Remove(rs);
+                db.Annotations.Remove(anno);
+                await db.SaveChangesAsync();
+            }
             return await Task.FromResult(rs);
         }
         public async Task<Annotations> EditAnnotationAsync(Annotations anno)
@@ -111,9 +118,67 @@ namespace Reboost.DataAccess.Repositories
         public async Task<int> DeleteAnnotationAsync(int id)
         {
             Annotations annotations = await db.Annotations.FindAsync(id);
-            db.Annotations.Remove(annotations);
-            await db.SaveChangesAsync();
+            if (annotations!=null)
+            {
+                var comments = db.InTextComments.Where(c => c.AnnotationId == id);
+                db.InTextComments.RemoveRange(comments);
+                db.Annotations.Remove(annotations);
+                await db.SaveChangesAsync();
+            }
             return await Task.FromResult(id);
+        }
+        public async Task<InTextComments> EditInTextComment(InTextComments cmt)
+        {
+            InTextComments inTextComments = await db.InTextComments.FindAsync(cmt.Id);
+            db.InTextComments.Remove(inTextComments);
+            await db.InTextComments.AddAsync(cmt);
+            await db.SaveChangesAsync();
+            return await Task.FromResult(cmt);
+        }
+        public async Task<List<Reviews>> GetReviewsAsync()
+        {
+            List<Reviews> list = await db.Reviews.Include("ReviewData").ToListAsync();
+            return await Task.FromResult(list);
+        }
+        public async Task<Reviews> ChangeStatusAsync(int id, string newStatus)
+        {
+            Reviews rv = await db.Reviews.FindAsync(id);
+            rv.Status = newStatus;
+            await db.SaveChangesAsync();
+            return await Task.FromResult(rv);
+        }
+        public async Task<string> CreateNewSampleReviewDocumentAsync(string type, User user)
+        {
+            List<String> applyTo = await (from r in db.Raters
+                                          join u in db.Users on r.UserId equals u.Id
+                                          join sc in db.UserScores on u.Id equals sc.UserId
+                                          join ss in db.TestSections on sc.SectionId equals ss.Id
+                                          join t in db.Tests on ss.TestId equals t.Id
+                                          where r.UserId == user.Id
+                                          group t by t.Name into g
+                                          select g.Key).ToListAsync();
+
+            if (!applyTo.Contains(type.ToUpper()))
+            {
+                return await Task.FromResult("failed");
+            }
+
+            string status = type.ToUpper() + "Training";
+
+            Reviews existed = await db.Reviews.Where(rv => rv.ReviewerId == user.Id && rv.Status == status).FirstOrDefaultAsync();
+            if(existed!= null)
+            {
+                return await Task.FromResult(existed.Id.ToString());
+            };
+
+            DateTime currentTime = DateTime.Now;
+
+            Reviews rv = new Reviews { RequestId = 1, FinalScore = 0, ReviewerId = user.Id, RevieweeId = "1", Status = status, TimeSpentInSeconds = 0, LastActivityDate = currentTime };
+            
+            var rs = await db.Reviews.AddAsync(rv);
+            await db.SaveChangesAsync();
+      
+            return await Task.FromResult(rv.Id.ToString());
         }
     }
 }

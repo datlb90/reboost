@@ -37,18 +37,26 @@
               scope.row.status === 'Approved'
                 ? 'success'
                 : scope.row.status === 'Applied'
-
                   ? 'primary'
                   : scope.row.status === 'Training Completed'
                     ? 'warning'
                     : 'danger'"
             disable-transitions
-          >{{ scope.row.status }}</el-tag>
+          >{{ scope.row.status }}
+          </el-tag>
+          <el-tag
+            v-if="scope.row.status === 'Approved' && (completedTraining(scope.row,'IELTS')||completedTraining(scope.row,'TOEFL'))"
+            style="margin-left:10px"
+            size="mini"
+            type="info"
+          >Training</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="Operations">
         <template slot-scope="scope">
           <el-button size="mini" @click="handleView(scope.$index, scope.row)">View</el-button>
+          <el-button v-if="completedTraining(scope.row,'IELTS')" size="mini" @click="TrainingReview(scope.row,'IELTS')">IELTS</el-button>
+          <el-button v-if="completedTraining(scope.row,'TOEFL')" size="mini" @click="TrainingReview(scope.row,'TOEFL')">TOEFL</el-button>
           <el-button v-if="scope.row.status == 'Training Completed'" size="mini" type="warning">Review</el-button>
         </template>
       </el-table-column>
@@ -80,6 +88,9 @@ export default {
     },
     getAllRater() {
       return this.$store.getters['rater/getAll']
+    },
+    getAllReviews() {
+      return this.$store.getters['review/getReviews']
     }
     // ...mapGetters({
     //   getAllRater: 'rater/getAll'
@@ -87,6 +98,7 @@ export default {
   },
   mounted() {
     this.$store.dispatch('rater/loadRaters')
+    this.$store.dispatch('review/loadReviews')
   },
   methods: {
     resetDateFilter() {
@@ -132,6 +144,20 @@ export default {
           id: row.id
         }
       })
+    },
+    completedTraining(e, status) {
+      status += 'Training'
+      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && r.status == status)[0]
+      if (t) {
+        return true
+      }
+      return false
+    },
+    TrainingReview(e, type) {
+      type += 'Training'
+      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && r.status == type)[0]
+      var pushUrl = t.status != 'IELTSTraining' ? '/review/12/68/' + t.id : '/review/9/69/' + t.id
+      this.$router.push(pushUrl)
     }
   }
 }

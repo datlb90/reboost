@@ -69,7 +69,8 @@ export async function renderPage(pageNumber, renderOptions) {
     await PDFJSAnnotate.render(svg, viewport, annotations).promise
     const textContent = await pdfPage.getTextContent({ normalizeWhitespace: true })
     // Render text layer for a11y of text content
-    const textLayer = page.querySelector('.textLayer')
+    var textLayer = page.querySelector('.textLayer')
+    textLayer.innerHTML = ''
     const textLayerFactory = new DefaultTextLayerFactory()
     const textLayerBuilder = textLayerFactory.createTextLayerBuilder(textLayer, pageNumber - 1, viewport)
     textLayerBuilder.setTextContent(textContent)

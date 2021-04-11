@@ -147,7 +147,7 @@ const router = new VueRouter({
       }
     },
     {
-      path: '/review',
+      path: '/review/:questionId/:docId/:reviewId',
       name: 'Review',
       component: Review,
       meta: {

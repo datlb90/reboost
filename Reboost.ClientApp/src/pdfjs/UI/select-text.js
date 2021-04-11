@@ -1,6 +1,9 @@
 import {
   findSVGAtPoint
 } from '@/pdfjs/UI/utils'
+import {
+  isEnabling
+} from './text.js'
 
 export function enableTextSelection(parent) {
   const that = parent
@@ -26,18 +29,23 @@ export function enableTextSelection(parent) {
             that.hideRectToolBar()
             that.hideColorPickerTool()
           } else {
-            const textTool = document.getElementById('textTool')
-            textTool.style.display = 'flex'
-            const textToolGroup = document.getElementById('textToolGroup')
-            const posX = parseInt(rects[0].left)
-            const posY = parseInt(rects[0].top) + e.target.offsetHeight + 10
-            textToolGroup.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
-
-            that.rects = rects
-            that.svg = findSVGAtPoint(rects[0].left, rects[0].top)
-            that.target = e.target
-            that.selectedText = text
-            that.boundingRect = that.svg.getBoundingClientRect()
+            if (!isEnabling()) {
+              const textTool = document.getElementById('textTool')
+              textTool.style.display = 'flex'
+              const textToolGroup = document.getElementById('textToolGroup')
+              var posX = parseInt(rects[rects.length - 1].left)
+              // if (rects.length > 1) {
+              //   posX = (parseInt(rects[rects.length - 1].left) + parseInt(rects[0].left)) / 2
+              // }
+              const posY = parseInt(rects[rects.length - 1].top) + e.target.offsetHeight + 10
+              textToolGroup.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
+              that.rects = rects
+              that.svg = findSVGAtPoint(rects[0].left, rects[0].top)
+              that.target = e.target
+              that.selectedText = text
+              that.boundingRect = that.svg.getBoundingClientRect()
+              that.updateActiveButton('select-text')
+            }
           }
         } else {
           // Display different tool bar
@@ -51,7 +59,12 @@ export function enableTextSelection(parent) {
   function handleDocumentMousedown(e) {
     const svg = findSVGAtPoint(e.clientX, e.clientY)
     if (svg) {
-      // hide text bool buttons
+      if (!e.target.classList.contains('colorPicker')) {
+        if (e.target.parentElement.classList.contains('textLayer') || e.target.classList.contains('textLayer')) {
+          that.hideColorPickerTool()
+        }
+      }
+      // hide text tool buttons
       if (!e.target.classList.contains('textToolBtn') &&
             !e.target.classList.contains('svg-inline--fa') &&
             !e.target.parentElement.classList.contains('svg-inline--fa')) {
@@ -59,6 +72,8 @@ export function enableTextSelection(parent) {
         rectTool.style.visibility = 'hidden'
         const textToolGroup = document.getElementById('textToolGroup')
         textToolGroup.style.visibility = 'hidden'
+        const deleteTool = document.getElementById('deleteTool')
+        deleteTool.style.visibility = 'hidden'
       }
       // Hide add new comment form
       const newCommentWrapper = document.getElementById('add-new-comment')
@@ -72,7 +87,6 @@ export function enableTextSelection(parent) {
         const validTarget = that.hasAParentWithClass(e.target, 'comment-card-selected')
         if (!validTarget) { that.unselectHighlightComment() }
       }
-
       return
     }
   }

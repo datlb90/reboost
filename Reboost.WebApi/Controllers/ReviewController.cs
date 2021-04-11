@@ -15,9 +15,11 @@ namespace Reboost.WebApi.Controllers
     [ApiController]
     public class ReviewController : BaseController<IReviewService>
     {
-        public ReviewController(IReviewService service) : base(service)
-        {
 
+        private IUserService _userService;
+        public ReviewController(IReviewService service, IUserService userService) : base(service)
+        {
+            _userService = userService;
         }
 
         [HttpGet("getAnnotation/{docId}/{reviewId}")]
@@ -35,7 +37,16 @@ namespace Reboost.WebApi.Controllers
 
             return Ok(new { annotations = savedAnnots, comments = savedComments });
         }
+        [HttpPost("createSampleReview/{type}")]
+        public async Task<IActionResult> CreateNewSampleReviewDocumentAsync([FromRoute] string type)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
 
+            var newReview = await _service.CreateNewSampleReviewDocumentAsync(type, currentUser);
+            return Ok(newReview);
+        }
         [HttpPost("feedback")]
         public async Task<IActionResult> ReviewFeedback([FromBody] List<ReviewData> data)
         {
@@ -73,9 +84,27 @@ namespace Reboost.WebApi.Controllers
             return Ok(rs);
         }
         [HttpPost("edit")]
-        public async Task<IActionResult> AddInTextCommentAsync( [FromBody] Annotations data)
+        public async Task<IActionResult> EditAnotationAsync([FromBody] Annotations data)
         {
             var rs = await _service.EditAnnotationAsync(data);
+            return Ok(rs);
+        }
+        [HttpPost("comment/edit")]
+        public async Task<IActionResult> EditInTextCommentAsync([FromBody] InTextComments comment)
+        {
+            var rs = await _service.EditInTextComment(comment);
+            return Ok(rs);
+        }
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllReviewsAsync()
+        {
+            var rs = await _service.GetReviewsAsync();
+            return Ok(rs);
+        }
+        [HttpPost("status/change/{id}")]
+        public async Task<IActionResult> ChangeReviewStatusAsync([FromBody] UpdateStatusModel status, [FromRoute] int id)
+        {
+            var rs = await _service.ChangeStatusAsync(id, status.status);
             return Ok(rs);
         }
 

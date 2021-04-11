@@ -25,6 +25,15 @@ document.addEventListener('click', function handleDocumentClick(e) {
 
   // Emit annotation:click if target was clicked
   if (target) {
+    if (e.target.classList.contains('colorPicker')) {
+      return
+    }
+    if (e.target.classList.contains('textToolBtn')) {
+      return
+    }
+    if (e.target.parentElement.classList.contains('svg-inline--fa')) {
+      return
+    }
     emitter.emit('annotation:click', target)
   }
 
