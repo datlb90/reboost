@@ -5,15 +5,14 @@
 .tool-group-buttons-container{
   overflow: hidden;
   position: relative;
-  height: 100%;
-  display: flex;
+  display: -webkit-box;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .tool-group-button{
   display: flex;
-    overflow: auto;
+  min-width: 45px;
     scroll-behavior: smooth;
     height: 100%;
     align-items: center;

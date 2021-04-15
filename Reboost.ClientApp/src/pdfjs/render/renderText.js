@@ -32,10 +32,11 @@ export default function renderText(a) {
   // })
 
   // return text
-  var p = document.createElement('p')
+  var p = document.createElement('pre')
   p.style.fontSize = `${a.size}px`
   p.style.lineHeight = '1.5'
   p.style.color = a.color || 'f00'
+  p.style.wordWrap = 'break-word'
   var tn = document.createTextNode(a.content)
   const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject')
   // if (a.width < 150) {

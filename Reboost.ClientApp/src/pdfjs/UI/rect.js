@@ -84,11 +84,21 @@ function handleDocumentMousemove(e) {
   const rect = svg.getBoundingClientRect()
 
   if (originX + (e.clientX - originX) < rect.right) {
-    overlay.style.width = `${e.clientX - originX}px`
+    if (originX > e.clientX) {
+      overlay.style.left = `${e.clientX - rect.left}px`
+      overlay.style.width = `${originX - e.clientX}px`
+    } else {
+      overlay.style.width = `${e.clientX - originX}px`
+    }
   }
 
   if (originY + (e.clientY - originY) < rect.bottom) {
-    overlay.style.height = `${e.clientY - originY}px`
+    if (originY > e.clientY) {
+      overlay.style.top = `${e.clientY - rect.top}px`
+      overlay.style.height = `${originY - e.clientY}px`
+    } else {
+      overlay.style.height = `${e.clientY - originY}px`
+    }
   }
 }
 

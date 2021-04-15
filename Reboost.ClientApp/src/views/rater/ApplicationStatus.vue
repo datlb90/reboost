@@ -2,7 +2,7 @@
   <div style="margin-top:25px;" :style="{visibility: loadCompleted?'visible':'hidden'}">
     <el-row class="row-flex">
       <el-col :span="15" class="col-border">
-        <el-steps :active="1" align-center>
+        <el-steps :active="2" align-center>
           <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
           <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
           <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning" />
@@ -22,7 +22,7 @@
               :type="
                 status === 'Applied'
                   ? 'primary'
-                  :status === 'Verified'
+                  :status === 'Approved'
                     ? 'success'
                     :status === 'Denied'
                       ? 'danger'
@@ -34,7 +34,7 @@
           <div :class="[status === 'Applied' ? 'inReview' : 'hidden']">
             <p>Thank you for applying. Your application is curretly in review. We will notify you via email if your application is approved, denied, or if we need additional information.</p>
           </div>
-          <div :class="[status === 'Verified' ? 'verified' : 'hidden']">
+          <div :class="[status === 'Approved' ? 'verified' : 'hidden']">
             <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
             </p>
           </div>
@@ -42,8 +42,12 @@
             <p>Unfortunately, your application was denied because your credentials do not match with the requirements for becoming a rater. We look forward to receiving your application again in the near future. If you have any questions or concerns regarding this, please feel free to contact us as support@reboost.ai.
             </p>
           </div>
-          <div v-if="status==='Verified'" class="button-container">
-            <el-button size="mini">Complete Training Now</el-button>
+          <div v-if="status==='Approved'" class="button-container">
+            <el-label size="mini">
+              Complete Training Now:
+              <el-button v-if="applyToList.includes('IELTS')" style="margin: 0 10px" size="mini" type="primary" @click="redirectToTraining('IELTS')">IELTS</el-button>
+              <el-button v-if="applyToList.includes('TOEFL')" size="mini" type="primary" @click="redirectToTraining('TOEFL')">TOEFL</el-button>
+            </el-label>
           </div>
           <div v-if="note && note.length" class="note-container">
             <div class="label-container">
@@ -69,6 +73,7 @@
 // @ is an alias to /src
 import raterService from '@/services/rater.service'
 import * as mapUtil from '@/utils/model-mapping'
+import reviewService from '@/services/review.service.js'
 
 export default {
   name: 'ApplicationStatus',
@@ -81,7 +86,8 @@ export default {
       verified: true,
       denied: true,
       status: '',
-      note: undefined
+      note: undefined,
+      applyToList: []
     }
   },
   computed: {
@@ -102,8 +108,19 @@ export default {
       raterService.getById(id).then(rs => {
         this.loadCompleted = true
         console.log('result load detail', rs)
+        rs.applyTo.forEach(e => {
+          this.applyToList.push(e)
+        })
         this.status = rs.status
         this.note = rs.note
+      })
+    },
+    redirectToTraining(e) {
+      reviewService.createNewReviewSample(e.toLowerCase()).then(r => {
+        if (r != 'failed') {
+          var pushUrl = e.toLowerCase() == 'toefl' ? '/review/12/68/' + r : '/review/9/69/' + r
+          this.$router.push(pushUrl)
+        }
       })
     }
   }

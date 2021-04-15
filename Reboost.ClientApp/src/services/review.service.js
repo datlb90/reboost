@@ -27,6 +27,18 @@ const reviewService = {
   },
   editAnnotation(anno) {
     return http.post(`/review/edit`, anno).then(rs => rs.data)
+  },
+  editComment(comment) {
+    return http.post(`/review/comment/edit`, comment).then(rs => rs.data)
+  },
+  createNewReviewSample(docId) {
+    return http.post(`/review/createSampleReview/${docId}`).then(rs => rs.data)
+  },
+  getAllReviews() {
+    return http.get('/review/all').then(rs => rs.data)
+  },
+  changeReviewStatus(id, status) {
+    return http.post(`/review/status/change/${id}`, { status }).then(rs => rs.data)
   }
 }
 

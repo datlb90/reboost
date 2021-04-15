@@ -1,5 +1,6 @@
 import PDFJSAnnotate from '../PDFJSAnnotate'
 import appendChild from '../render/appendChild'
+import { fireEvent } from './event'
 import {
   // BORDER_COLOR,
   findSVGAtPoint,
@@ -11,6 +12,12 @@ let _enabled = false
 let input
 let _textSize = 12
 let _textColor = 'ff0000'
+let svg = null
+let clientClickX = 0
+let clientClickY = 0
+let isClick = false
+let annotation = null
+let content = null
 
 /**
  * Handle document.mouseup event
@@ -18,6 +25,27 @@ let _textColor = 'ff0000'
  * @param {Event} e The DOM event to handle
  */
 function handleDocumentMouseup(e) {
+  const rectTool = document.getElementById('rectTool')
+  if (rectTool.style.position == 'absolute' && rectTool.style.visibility != 'hidden') {
+    isClick = true
+    return
+  }
+  const overlay = document.getElementById('pdf-annotate-edit-overlay')
+  if (overlay) {
+    // overlay.parentNode.removeChild(overlay)
+    return
+  }
+  if (isClick) {
+    if (annotation) {
+      const annotationClicked = document.querySelector(`foreignObject[data-pdf-annotate-id='${annotation.uuid}']`)
+      isClick = !isClick
+      fireEvent('annotation:click', annotationClicked)
+      return
+    }
+  }
+  hideRectToolBar()
+  clientClickX = e.clientX
+  clientClickY = e.clientY
   var isToolBar = false
   Array.prototype.slice.call(e.path).forEach(r => {
     if (r.tagName == 'DIV' && r.getAttribute('id') == 'tool-bar') {
@@ -28,15 +56,20 @@ function handleDocumentMouseup(e) {
   if (input || !findSVGAtPoint(e.clientX, e.clientY) || isToolBar) {
     return
   }
+  svg = findSVGAtPoint(e.clientX, e.clientY)
+  if (!svg) {
+    return
+  }
+  const { pageNumber, viewport } = getMetadata(svg)
+  // const { viewport } = getMetadata(findSVGAtPoint(e.clientX, e.clientY))
 
-  const page = document.getElementById('pageContainer1')
+  const page = document.getElementById('pageContainer' + `${pageNumber}`)
   const rect = page.getBoundingClientRect()
   const x = e.clientX - rect.left
   const w = rect.width - x
+  const y = e.clientY - rect.top
 
-  const { viewport } = getMetadata(findSVGAtPoint(e.clientX, e.clientY))
-
-  input = document.createElement('span')
+  input = document.createElement('pre')
   input.setAttribute('id', 'pdf-annotate-text-input')
   input.style.maxWidth = `${w}px`
   // input.setAttribute('placeholder', 'Enter text')
@@ -55,17 +88,20 @@ function handleDocumentMouseup(e) {
   // } else {
   //   input.style.width = '150px'
   // }
-  input.style.top = `${e.clientY}px`
-  input.style.left = `${e.clientX}px`
+  input.style.top = `${y}px`
+  input.style.left = `${x}px`
 
   input.addEventListener('blur', handleInputBlur)
   input.addEventListener('keyup', handleInputKeyup)
   input.addEventListener('keydown', handleInputKeydown)
 
-  document.body.appendChild(input)
+  // document.body.appendChild(input)
+
+  document.querySelector(`div[data-page-number='${pageNumber}']`).appendChild(input)
+
   input.focus()
 
-  input.innerText = 'text'
+  input.innerText = 'Enter Text Here'
   document.execCommand('selectAll', false, null)
 }
 
@@ -73,7 +109,13 @@ function handleDocumentMouseup(e) {
  * Handle input.blur event
  */
 function handleInputBlur() {
+  isClick = !isClick
   saveText()
+}
+
+function hideRectToolBar() {
+  const rectTool = document.getElementById('rectTool')
+  rectTool.style.visibility = 'hidden'
 }
 
 /**
@@ -85,13 +127,13 @@ function handleInputKeyup(e) {
   if (e.keyCode === 27) {
     closeInput()
   } else if (e.keyCode === 13) {
-    saveText()
+    // saveText()
   }
 }
 
 function handleInputKeydown(e) {
   if (e.keyCode === 13) {
-    e.preventDefault()
+    // e.preventDefault()
   }
 }
 
@@ -100,34 +142,41 @@ function handleInputKeydown(e) {
  */
 function saveText() {
   if (input.innerText.trim().length > 0) {
-    const clientX = parseInt(input.style.left, 10)
-    const clientY = parseInt(input.style.top, 10)
-    const svg = findSVGAtPoint(clientX, clientY)
+    const clientX = clientClickX
+    const clientY = clientClickY
     if (!svg) {
       return
     }
     const { documentId, pageNumber } = getMetadata(svg)
     const rect = svg.getBoundingClientRect()
     const w = input.clientWidth
-    const annotation = Object.assign({
+    content = input.innerText.trim()
+    for (let i = 0; i < content.length - 1; i++) {
+      if (content[i] == '\n' && content[i + 1] == '\n') {
+        var tempStr = content.slice(0, i)
+        tempStr = tempStr + ' '
+        tempStr = tempStr + content.slice(i + 1, content.length)
+        content = tempStr
+        i++
+      }
+    }
+    annotation = Object.assign({
       type: 'textbox',
       size: _textSize,
       color: localStorage.getItem('colorChosen') || _textColor,
-      content: input.innerText.trim()
+      content: content
     }, scaleDown(svg, {
       x: clientX - rect.left,
       y: clientY - rect.top,
       width: w,
-      height: input.clientHeight
+      height: input.offsetHeight
     })
     )
-
     PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
       .then((annotation) => {
         appendChild(svg, annotation)
       })
   }
-
   closeInput()
 }
 
@@ -138,7 +187,9 @@ function closeInput() {
   if (input) {
     input.removeEventListener('blur', handleInputBlur)
     input.removeEventListener('keyup', handleInputKeyup)
-    document.body.removeChild(input)
+    // document.body.removeChild(input)
+    const { pageNumber } = getMetadata(svg)
+    document.querySelector(`div[data-page-number='${pageNumber}']`).removeChild(input)
     input = null
   }
 }
@@ -161,6 +212,9 @@ export function enableText() {
   if (_enabled) { return }
 
   _enabled = true
+  document.querySelectorAll(`.textLayer`).forEach(txt => {
+    txt.style.userSelect = 'none'
+  })
   document.addEventListener('mouseup', handleDocumentMouseup)
 }
 
@@ -171,6 +225,16 @@ export function disableText() {
   if (!_enabled) { return }
 
   _enabled = false
+  document.querySelectorAll(`.textLayer`).forEach(txt => {
+    txt.style.userSelect = 'auto'
+  })
   document.removeEventListener('mouseup', handleDocumentMouseup)
+}
+
+/**
+ * Check enable status
+ */
+export function isEnabling() {
+  return _enabled
 }
 

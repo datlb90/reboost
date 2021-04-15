@@ -23,6 +23,10 @@ namespace Reboost.Service.Services
         Task<InTextComments> DeleteInTextCommentAsync(int id);
         Task<int> DeleteAnnotationAsync(int id);
         Task<Annotations> EditAnnotationAsync(Annotations anno);
+        Task<InTextComments> EditInTextComment(InTextComments cmt);
+        Task<string> CreateNewSampleReviewDocumentAsync(string type, User user);
+        Task<List<Reviews>> GetReviewsAsync();
+        Task<Reviews> ChangeStatusAsync(int id, string newStatus);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -89,6 +93,22 @@ namespace Reboost.Service.Services
         public async Task<int> DeleteAnnotationAsync(int id)
         {
             return await _unitOfWork.Review.DeleteAnnotationAsync(id);
+        }
+        public async Task<InTextComments> EditInTextComment(InTextComments cmt)
+        {
+            return await _unitOfWork.Review.EditInTextComment(cmt);
+        }
+        public async Task<string> CreateNewSampleReviewDocumentAsync(string type, User user)
+        {
+            return await _unitOfWork.Review.CreateNewSampleReviewDocumentAsync(type, user);
+        }
+        public async Task<List<Reviews>> GetReviewsAsync()
+        {
+            return await _unitOfWork.Review.GetReviewsAsync();
+        }
+        public async Task<Reviews> ChangeStatusAsync(int id, string newStatus)
+        {
+            return await _unitOfWork.Review.ChangeStatusAsync(id, newStatus);
         }
     }
 }

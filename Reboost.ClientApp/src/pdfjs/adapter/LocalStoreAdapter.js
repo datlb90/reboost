@@ -51,8 +51,9 @@ export default class LocalStoreAdapter extends StoreAdapter {
         return new Promise((resolve, reject) => {
           const index = findAnnotation(documentId, annotationId)
           const rs = getAnnotations(documentId)[index]
-
-          if (index > -1) {
+          if (rs.type == 'comment-highlight' || rs.type == 'point') {
+            //
+          } else if (index > -1) {
             const annotations = getAnnotations(documentId)
             annotations.splice(index, 1)
             updateAnnotations(documentId, annotations)

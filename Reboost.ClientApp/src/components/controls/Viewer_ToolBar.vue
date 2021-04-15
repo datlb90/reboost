@@ -1,204 +1,160 @@
 <template>
   <div id="tool-bar" class="toolbar">
-    <div class="tool-group-buttons-container" style="">
-      <div data-element="highlightToolGroupButton" class="tool-group-button">
-        <!-- Colapse left panel -->
-        <div class="toolbar-btn-wrapper">
-          <el-tooltip class="item" effect="dark" content="Hide Question & Rubric (H)" placement="bottom">
-            <button class="toolbar-btn" @click="hideQuestion">
-              <div :class="{'hideQuestion':!showQuestion}" class="icon">
-                <i class="toolbar-icon fas fa-angle-double-left" />
-              </div>
-            </button>
-          </el-tooltip>
-        </div>
-
-        <!-- Note -->
-        <div class="toolbar-btn-wrapper">
-          <el-tooltip class="item" effect="dark" content="Note (N)" placement="bottom">
-            <button class="toolbar-btn" :class="[activeButton=='point'?'active':'']" data-tooltype="point" type="button" @click="toolBarButtonClick('point')">
-              <div class="icon">
-                <i class="toolbar-icon far fa-sticky-note" />
-              </div>
-            </button>
-          </el-tooltip>
-        </div>
-
-        <!-- Free text -->
-        <div class="toolbar-btn-wrapper">
-          <el-tooltip class="item" effect="dark" content="Free Text (T)" placement="bottom">
-            <button class="toolbar-btn" :class="[activeButton=='text'?'active':'']" data-tooltype="text" type="button" @click="toolBarButtonClick('text')">
-              <div class="icon">
-                <i class="toolbar-icon fas fa-pen-alt" />
-              </div>
-            </button>
-          </el-tooltip>
-        </div>
-
-        <!-- Rectangle -->
-        <div class="toolbar-btn-wrapper">
-          <el-tooltip class="item" effect="dark" content="Rectangle (R)" placement="bottom">
-            <button class="toolbar-btn" :class="[activeButton=='rectangle'?'active':'']" data-tooltype="rectangle" type="button" @click="toolBarButtonClick('rectangle')">
-              <div class="icon">
-                <i class="far fa-square" />
-              </div>
-            </button>
-          </el-tooltip>
-        </div>
-
-        <!-- Color picker control -->
-        <div v-if="activeButton">
-          <colorPicker ref="colorPickerCom" :expandcolorpicker.sync="expandColorPicker" @expandColorPickerToggle="expandColor" />
-        </div>
-
-        <!-- Text selection tools -->
-        <div id="textTool" data-element="textToolGroupButton" class="tool-group-button text-tool-group-button">
-          <div class="devider" />
-          <div class="toolbar-btn-wrapper">
-            <el-tooltip class="item" effect="dark" content="Highlight" placement="bottom">
-              <button class="toolbar-btn" @click="HighlightText()">
-                <div class="icon">
-                  <i class="fas fa-highlighter" />
-                </div>
-              </button>
-            </el-tooltip>
+    <div id="chevron-scroll" :style="{ 'visibility': showChevronScroll ? 'visible' : 'hidden' }">
+      <div id="chevron-scroll__right" class="right">
+        <button class="toolbar-btn" @click="chevronClick('right')">
+          <div class="icon">
+            <i class="toolbar-icon el-icon-arrow-right" />
           </div>
-
-          <div class="toolbar-btn-wrapper">
-            <el-tooltip class="item" effect="dark" content="Strikethrough" placement="bottom">
-              <button class="toolbar-btn" @click="StrikethroughText()">
-                <div class="icon">
-                  <i class="fas fa-strikethrough" />
-                </div>
-              </button>
-            </el-tooltip>
+        </button>
+      </div>
+      <div id="chevron-scroll__left" class="left">
+        <button class="toolbar-btn" @click="chevronClick('left')">
+          <div class="icon">
+            <i class="toolbar-icon el-icon-arrow-left" />
           </div>
+        </button>
+      </div>
+    </div>
 
-          <div class="toolbar-btn-wrapper">
-            <el-tooltip class="item" effect="dark" content="Comment" placement="bottom">
-              <button class="toolbar-btn" @click="CommentText()">
-                <div class="icon">
-                  <i class="fas fa-comment-alt" />
-                </div>
-              </button>
-            </el-tooltip>
-          </div>
-          <div class="devider" />
+    <div id="tool-bar__buttons__Con" class="tool-group-buttons-container">
+
+      <!-- Colapse left panel -->
+      <div class="toolbar-btn-wrapper">
+        <el-tooltip class="item" effect="dark" content="Hide Question & Rubric (H)" placement="bottom">
+          <button class="toolbar-btn" @click="hideQuestion">
+            <div :class="{'hideQuestion':!showQuestion}" class="icon">
+              <i class="toolbar-icon fas fa-angle-double-left" />
+            </div>
+          </button>
+        </el-tooltip>
+      </div>
+
+      <!-- Note -->
+      <div class="toolbar-btn-wrapper">
+        <el-tooltip class="item" effect="dark" content="Note (N)" placement="bottom">
+          <button class="toolbar-btn" :class="[activeButton=='point'?'active':'']" data-tooltype="point" type="button" @click="toolBarButtonClick('point')">
+            <div class="icon">
+              <i class="toolbar-icon far fa-sticky-note" />
+            </div>
+          </button>
+        </el-tooltip>
+      </div>
+
+      <!-- Free text -->
+      <div class="toolbar-btn-wrapper">
+        <el-tooltip class="item" effect="dark" content="Free Text (T)" placement="bottom">
+          <button class="toolbar-btn" :class="[activeButton=='text'?'active':'']" data-tooltype="text" type="button" @click="toolBarButtonClick('text')">
+            <div class="icon">
+              <i class="toolbar-icon fas fa-pen-alt" />
+            </div>
+          </button>
+        </el-tooltip>
+      </div>
+
+      <!-- Rectangle -->
+      <div class="toolbar-btn-wrapper">
+        <el-tooltip class="item" effect="dark" content="Rectangle (R)" placement="bottom">
+          <button class="toolbar-btn" :class="[activeButton=='rectangle'?'active':'']" data-tooltype="rectangle" type="button" @click="toolBarButtonClick('rectangle')">
+            <div class="icon">
+              <i class="far fa-square" />
+            </div>
+          </button>
+        </el-tooltip>
+      </div>
+
+      <!-- Color picker control -->
+      <div v-if="activeButton">
+        <colorPicker ref="colorPickerCom" :expandcolorpicker.sync="expandColorPicker" @expandColorPickerToggle="expandColor" />
+      </div>
+
+      <!-- Text selection tools -->
+      <div id="textTool" data-element="textToolGroupButton" class="tool-group-button text-tool-group-button">
+        <div class="devider" />
+        <div class="toolbar-btn-wrapper">
+          <el-tooltip class="item" effect="dark" content="Highlight" placement="bottom">
+            <button class="toolbar-btn" @click="HighlightText()">
+              <div class="icon">
+                <i class="fas fa-highlighter" />
+              </div>
+            </button>
+          </el-tooltip>
         </div>
 
-        <!-- Text size -->
-        <select :style="{ 'display': activeButton == 'text' ? 'block' : 'none' }" class="text-size" />
-
-        <!-- No presets -->
-        <div v-if="!activeButton" class="preset-none">
-          <div style="color: gray;">No Presets</div>
+        <div class="toolbar-btn-wrapper">
+          <el-tooltip class="item" effect="dark" content="Strikethrough" placement="bottom">
+            <button class="toolbar-btn" @click="StrikethroughText()">
+              <div class="icon">
+                <i class="fas fa-strikethrough" />
+              </div>
+            </button>
+          </el-tooltip>
         </div>
+
+        <div class="toolbar-btn-wrapper">
+          <el-tooltip class="item" effect="dark" content="Comment" placement="bottom">
+            <button class="toolbar-btn" @click="CommentText()">
+              <div class="icon">
+                <i class="fas fa-comment-alt" />
+              </div>
+            </button>
+          </el-tooltip>
+        </div>
+        <div class="devider" />
+      </div>
+
+      <!-- Text size -->
+      <select :style="{ 'display': activeButton == 'text' ? 'block' : 'none' }" class="text-size" />
+
+      <!-- No presets -->
+      <div v-if="!activeButton" class="preset-none">
+        <div style="color: gray;">No Presets</div>
       </div>
 
       <!-- Zoom controls -->
-      <div style="display:flex;align-items: center;">
-        <el-dropdown size="mini" split-button style="margin-left: 10px;" @command="handleScale">
-          {{ scaleText }}
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="fitWidth" icon="fas fa-expand-arrows-alt"> Fit to width</el-dropdown-item>
-            <el-dropdown-item command="fitPage" icon="fas fa-expand-alt"> Fit to page</el-dropdown-item>
-            <el-dropdown-item command="0.5" divided> 50% </el-dropdown-item>
-            <el-dropdown-item command="1">100%</el-dropdown-item>
-            <el-dropdown-item command="1.25">125%</el-dropdown-item>
-            <el-dropdown-item command="1.5">150%</el-dropdown-item>
-            <el-dropdown-item command="2">200%</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
+      <el-dropdown size="mini" split-button style="margin-left: 10px;min-width:95px" @command="handleScale">
+        {{ scaleText }}
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="fitWidth" icon="fas fa-expand-arrows-alt"> Fit to width</el-dropdown-item>
+          <el-dropdown-item command="fitPage" icon="fas fa-expand-alt"> Fit to page</el-dropdown-item>
+          <el-dropdown-item command="0.5" divided> 50% </el-dropdown-item>
+          <el-dropdown-item command="1">100%</el-dropdown-item>
+          <el-dropdown-item command="1.25">125%</el-dropdown-item>
+          <el-dropdown-item command="1.5">150%</el-dropdown-item>
+          <el-dropdown-item command="2">200%</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
 
-        <div data-element="highlightToolGroupButton" class="tool-group-button">
-          <button class="toolbar-btn" style="margin-left: 5px;" @click="increaseScale">
-            <div class="icon">
-              <i class="toolbar-icon fas fa-plus" />
-            </div>
-          </button>
+      <div data-element="highlightToolGroupButton" class="tool-group-button">
+        <button class="toolbar-btn" style="margin-left: 5px;" @click="increaseScale">
+          <div class="icon">
+            <i class="toolbar-icon fas fa-plus" />
+          </div>
+        </button>
 
-          <button class="toolbar-btn" @click="decreaseScale">
-            <div class="icon">
-              <i class="toolbar-icon fas fa-minus" />
-            </div>
-          </button>
+        <button class="toolbar-btn" @click="decreaseScale">
+          <div class="icon">
+            <i class="toolbar-icon fas fa-minus" />
+          </div>
+        </button>
+      </div>
+      <div class="devider" />
+      <button :disabled="undoHistory.length == 0" class="toolbar-btn" @click="undoAnnotation()">
+        <div class="icon">
+          <i class="toolbar-icon fas fa-undo" />
         </div>
-      </div>
-      <div style="display:flex;align-items: center;">
-        <div class="devider" />
-        <button :disabled="undoHistory.length == 0" class="toolbar-btn" @click="undoAnnotation()">
-          <div class="icon">
-            <i class="toolbar-icon fas fa-undo" />
-          </div>
-        </button>
-        <button :disabled="redoHistory.length == 0" class="toolbar-btn" @click="redo()">
-          <div class="icon">
-            <i class="toolbar-icon fas fa-redo" />
-          </div>
-        </button>
-      </div>
-
-      <!-- Submit button -->
-      <div class="submit-button">
-        <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
-        <el-button :disabled="readOnly" type="primary" size="mini" @click="submitReview()">Submit Review</el-button>
-      </div>
-
+      </button>
+      <button :disabled="redoHistory.length == 0" class="toolbar-btn" @click="redo()">
+        <div class="icon">
+          <i class="toolbar-icon fas fa-redo" />
+        </div>
+      </button>
     </div>
-
-    <!-- <button class="cursor" type="button" title="Cursor" data-tooltype="cursor">
-            ➚
-          </button>
-
-          <div class="spacer" />
-
-          <button class="rectangle" type="button" title="Rectangle" data-tooltype="area" />
-          <button class="highlight" type="button" title="Highlight" data-tooltype="highlight" />
-          <button class="strikeout" type="button" title="Strikeout" data-tooltype="strikeout" />
-
-          <div class="spacer" />
-          <button class="text" type="button" title="Text Tool" data-tooltype="text" />
-          <select class="text-size" />
-          <div class="text-color" />
-
-          <div class="spacer" />
-
-          <div class="spacer" />
-
-          <button class="comment" type="button" title="Comment" data-tooltype="point">
-            🗨
-          </button>
-
-          <div class="spacer" />
-
-          <select class="scale">
-            <option value=".5">
-              50%
-            </option>
-            <option value="1">
-              100%
-            </option>
-            <option value="1.33">
-              133%
-            </option>
-            <option value="1.5">
-              150%
-            </option>
-            <option value="2">
-              200%
-            </option>
-          </select>
-
-          <a href="javascript://" class="rotate-ccw" title="Rotate Counter Clockwise">⟲</a>
-          <a href="javascript://" class="rotate-cw" title="Rotate Clockwise">⟳</a>
-
-          <div class="spacer" />
-
-          <a href="javascript://" class="clear" title="Clear">×</a>
-          <button id="restore" title="Restore">
-            Restore
-          </button> -->
-
+    <!-- Submit button -->
+    <div id="submit-container" class="submit-button">
+      <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
+      <el-button :disabled="readOnly" type="primary" size="mini" @click="submitReview()">Submit</el-button>
+    </div>
   </div>
 </template>
 
@@ -219,7 +175,6 @@ export default ({
   },
   data() {
     return {
-
       colorChosen: null,
       readOnly: false,
       showQuestion: true,
@@ -230,7 +185,11 @@ export default ({
       undoHistory: [],
       redoHistory: [],
       scaleRatio: 1,
-      defaultScale: 1
+      defaultScale: 1,
+      zoomStep: 0.2,
+      minScale: 0.5,
+      maxScale: 2,
+      showChevronScroll: false
     }
   },
   computed: {
@@ -240,6 +199,7 @@ export default ({
   },
   async mounted() {
     this.initTextSizeTool()
+    this.insertExpandMenu()
   },
   beforeCreate: function() {
   },
@@ -253,7 +213,6 @@ export default ({
     async hideQuestion() {
       this.showQuestion = !this.showQuestion
       this.$emit('hideQuestion', this.showQuestion)
-      console.log('this.showQuestion', this.showQuestion)
       if (!this.showQuestion) {
         document.getElementById('right-panel').style.width = 100 + '%'
       } else {
@@ -263,6 +222,7 @@ export default ({
       if (this.activeButton != null && this.activeButton != '') {
         this.expandColor(false)
       }
+      this.insertExpandMenu()
     },
     async toolBarButtonClick(e) {
       localStorage.setItem(`${this.documentid}/tooltype`, e)
@@ -313,9 +273,8 @@ export default ({
     async handleScale(e) {
       this.renderoptions.scale = this.defaultScale
       if (e != 'fitWidth' && e != 'fitPage') {
-        this.renderoptions.scale *= (+e)
-        this.scaleRatio = +e
-        this.scaleText = parseInt(this.scaleRatio * 100) + '%'
+        this.renderoptions.scale = (+e)
+        this.scaleRatio = this.renderoptions.scale
       } else {
         var docWidth = document.getElementById('viewerContainer').offsetWidth - 45
         var docHeight = document.getElementById('viewerContainer').offsetHeight - 30
@@ -323,7 +282,6 @@ export default ({
         if (e == 'fitWidth') {
           this.renderoptions.scale = (docWidth / 612)
           this.scaleRatio = 'fitWidth'
-          this.scaleText = 'Fit to width'
         } else {
           if ((docWidth / 612) < (docHeight / 792)) {
             this.renderoptions.scale = (docWidth / 612)
@@ -331,37 +289,40 @@ export default ({
             this.renderoptions.scale = (docHeight / 792)
           }
           this.scaleRatio = 'fitPage'
-          this.scaleText = 'Fit to page'
         }
       }
+
+      this.scaleText = parseInt(this.renderoptions.scale * 100) + '%'
       this.$emit('scaleChange', this.renderoptions.scale)
     },
     increaseScale() {
-      if (typeof (this.scaleRatio) != 'number') { this.scaleRatio = this.defaultScale }
-      if (this.scaleRatio < 2) {
-        this.scaleRatio += 0.1
+      if (typeof (this.scaleRatio) != 'number') { this.scaleRatio = this.renderoptions.scale }
+      if (this.renderoptions.scale < 2) {
+        this.scaleRatio += this.zoomStep
+        if (this.scaleRatio > this.maxScale) { this.scaleRatio = this.maxScale }
         this.scaleText = parseInt(this.scaleRatio * 100) + '%'
         if (this.zoomDelayHandle) {
           clearTimeout(this.zoomDelayHandle)
         }
         this.zoomDelayHandle = setTimeout(() => {
-          this.renderoptions.scale = this.defaultScale
-          this.renderoptions.scale *= this.scaleRatio
+          // this.renderoptions.scale = this.defaultScale
+          this.renderoptions.scale = this.scaleRatio
           this.$emit('scaleChange', this.renderoptions.scale)
         }, 200)
       }
     },
     decreaseScale() {
-      if (typeof (this.scaleRatio) != 'number') { this.scaleRatio = this.defaultScale }
-      if (this.scaleRatio > 0.6) {
-        this.scaleRatio -= 0.1
+      if (typeof (this.scaleRatio) != 'number') { this.scaleRatio = this.renderoptions.scale }
+      if (this.renderoptions.scale > 0.5) {
+        this.scaleRatio -= this.zoomStep
+        if (this.scaleRatio < this.minScale) { this.scaleRatio = this.minScale }
         this.scaleText = parseInt(this.scaleRatio * 100) + '%'
         if (this.zoomDelayHandle) {
           clearTimeout(this.zoomDelayHandle)
         }
         this.zoomDelayHandle = setTimeout(() => {
-          this.renderoptions.scale = this.defaultScale
-          this.renderoptions.scale *= this.scaleRatio
+          // this.renderoptions.scale = this.defaultScale
+          this.renderoptions.scale = this.scaleRatio
           this.$emit('scaleChange', this.renderoptions.scale)
         }, 200)
       }
@@ -373,7 +334,7 @@ export default ({
       this.$emit('redoAnnotation', '123')
     },
     submitReview() {
-      console.log('submitReview')
+      this.$emit('submit')
     },
     expandColor(e) {
       this.expandColorPicker = e
@@ -392,14 +353,71 @@ export default ({
     updateUndoList(e) {
       this.undoHistory = e
     },
+    updateActiveButton(e) {
+      this.activeButton = e
+    },
     async resizeEventHandle() {
       document.getElementById('right-panel').offsetWidth
-      if (this.scaleText != 'Fit to width' && this.scaleText != 'Fit to page') {
+
+      if (this.scaleRatio != 'fitWidth' && this.scaleRatio != 'fitPage') {
         this.renderoptions.scale = this.defaultScale
         this.renderoptions.scale *= this.scaleRatio
-        this.$emit('scaleChange', this.renderoptions.scale)
+        if (this.zoomDelayHandle) {
+          clearTimeout(this.zoomDelayHandle)
+        }
+        this.zoomDelayHandle = setTimeout(() => {
+          this.$emit('scaleChange', this.renderoptions.scale)
+        }, 200)
       } else {
-        (this.scaleText == 'Fit to width') ? this.handleScale('fitWidth') : this.handleScale('fitPage')
+        (this.scaleRatio == 'fitWidth') ? this.handleScale('fitWidth') : this.handleScale('fitPage')
+      }
+
+      if (this.activeButton != null && this.activeButton != '') {
+        this.expandColor(false)
+      }
+      this.insertExpandMenu()
+    },
+    insertExpandMenu() {
+      const toolBarButtons = document.getElementById('tool-bar__buttons__Con')
+      toolBarButtons.style.width = document.getElementById('tool-bar').offsetWidth - document.getElementById('submit-container').offsetWidth - 20 + 'px'
+      if (toolBarButtons.offsetWidth < this.getInnerChildTotalLength(toolBarButtons)) {
+        this.showChevronScroll = true
+        toolBarButtons.style.left = document.getElementById('chevron-scroll__left').offsetWidth + 'px'
+        toolBarButtons.style.width = document.getElementById('tool-bar').offsetWidth - document.getElementById('chevron-scroll__right').offsetWidth - document.getElementById('submit-container').offsetWidth - 40 + 'px'
+        document.getElementById('chevron-scroll__right').style.right = document.getElementById('submit-container').offsetWidth + 10 + 'px'
+      } else {
+        this.showChevronScroll = false
+        toolBarButtons.style.left = 0 + 'px'
+      }
+    },
+    getInnerChildTotalLength(parent) {
+      var totalWidth = 0
+      parent.childNodes.forEach(r => {
+        if (typeof (r.offsetWidth) != 'undefined') {
+          const style = getComputedStyle(r)
+          totalWidth += r.offsetWidth + parseInt(style.marginLeft) + parseInt(style.marginRight)
+        }
+      })
+      return totalWidth
+    },
+    chevronClick(e) {
+      const toolBarButtons = document.getElementById('tool-bar__buttons__Con')
+      const toolBarLength = this.getInnerChildTotalLength(toolBarButtons)
+      if (e == 'left') {
+        var leftMoveDistance = (toolBarLength - toolBarButtons.offsetWidth > 100) ? 100 : toolBarLength - toolBarButtons.offsetWidth
+        toolBarButtons.style.left = toolBarButtons.offsetLeft - leftMoveDistance + 'px'
+        toolBarButtons.style.width = toolBarButtons.offsetWidth + leftMoveDistance + 'px'
+      } else if (e == 'right') {
+        var rightMoveDistance = (toolBarLength != toolBarButtons.offsetWidth) ? 32 : toolBarLength - toolBarButtons.offsetWidth
+        rightMoveDistance = Math.abs(rightMoveDistance)
+        rightMoveDistance += toolBarButtons.offsetLeft
+        if (rightMoveDistance >= 32) {
+          rightMoveDistance = 32
+          toolBarButtons.style.width = document.getElementById('tool-bar').offsetWidth - document.getElementById('chevron-scroll__right').offsetWidth - document.getElementById('submit-container').offsetWidth - 40 + 'px'
+        } else {
+          toolBarButtons.style.width = toolBarButtons.offsetWidth - rightMoveDistance + 'px'
+        }
+        toolBarButtons.style.left = rightMoveDistance + 'px'
       }
     },
     async initTextSizeTool() {
@@ -482,6 +500,9 @@ export default ({
         .addEventListener('change', handleTextSizeChange)
 
       initText()
+    },
+    disableSubmit() {
+      this.readOnly = true
     }
   }
 })

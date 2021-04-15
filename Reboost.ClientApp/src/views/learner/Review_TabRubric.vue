@@ -92,7 +92,7 @@ export default ({
       rubricService.getByQuestionId(this.questionid).then(rs => {
         // this.criteriaFeedback['id']
         this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, comment: '' }))
-        reviewService.loadReviewFeedback(this.reviewid).then(rs => { // Hardcode ReviewId
+        reviewService.loadReviewFeedback(this.reviewid).then(rs => {
           if (rs.length > 0) {
             rs.forEach(rc => {
               this.rubricCriteria.map(criteria => {
@@ -104,6 +104,7 @@ export default ({
               )
             })
             this.readOnly = true
+            this.$emit('submitted')
           } else {
             this.getLocaleStorageData()
           }
@@ -116,14 +117,16 @@ export default ({
 
       retrievedComment = JSON.parse(retrievedComment)
       retrievedScore = JSON.parse(retrievedScore)
-      retrievedComment.forEach(rc => {
-        this.rubricCriteria.map(criteria => {
-          if (criteria.id == rc.id && rc.documentId == this.documentId && rc.reviewid == this.reviewid) {
-            criteria.comment = rc.content
+      if (retrievedComment) {
+        retrievedComment.forEach(rc => {
+          this.rubricCriteria.map(criteria => {
+            if (criteria.id == rc.id && rc.documentId == this.documentId && rc.reviewid == this.reviewid) {
+              criteria.comment = rc.content
+            }
           }
-        }
-        )
-      })
+          )
+        })
+      }
       retrievedScore.forEach(rc => {
         this.rubricCriteria.map(criteria => {
           if (criteria.id == rc.id && rc.documentId == this.documentId && rc.reviewid == this.reviewid) {
@@ -196,6 +199,12 @@ export default ({
     },
     setStatusText(label) {
       this.$emit('setStatusText')
+    },
+    getRubricData() {
+      return this.rubricCriteria
+    },
+    disableRubric() {
+      this.readOnly = true
     }
   }
 })

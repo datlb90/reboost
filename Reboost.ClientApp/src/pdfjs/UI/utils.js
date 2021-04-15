@@ -21,12 +21,13 @@ userSelectStyleSheet.setAttribute('data-pdf-annotate-user-select', 'true')
  */
 export function findSVGContainer(node) {
   let parentNode = node
-
-  while ((parentNode = parentNode.parentNode) &&
+  if (parentNode) {
+    while ((parentNode = parentNode.parentNode) &&
           parentNode !== document) {
-    if (parentNode.nodeName.toUpperCase() === 'SVG' &&
+      if (parentNode.nodeName.toUpperCase() === 'SVG' &&
         parentNode.getAttribute('data-pdf-annotate-container') === 'true') {
-      return parentNode
+        return parentNode
+      }
     }
   }
 
