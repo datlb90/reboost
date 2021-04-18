@@ -31,7 +31,7 @@
       </div>
 
       <!-- Note -->
-      <div class="toolbar-btn-wrapper">
+      <div v-if="!disableAnnotation" class="toolbar-btn-wrapper">
         <el-tooltip class="item" effect="dark" content="Note (N)" placement="bottom">
           <button class="toolbar-btn" :class="[activeButton=='point'?'active':'']" data-tooltype="point" type="button" @click="toolBarButtonClick('point')">
             <div class="icon">
@@ -42,7 +42,7 @@
       </div>
 
       <!-- Free text -->
-      <div class="toolbar-btn-wrapper">
+      <div v-if="!disableAnnotation" class="toolbar-btn-wrapper">
         <el-tooltip class="item" effect="dark" content="Free Text (T)" placement="bottom">
           <button class="toolbar-btn" :class="[activeButton=='text'?'active':'']" data-tooltype="text" type="button" @click="toolBarButtonClick('text')">
             <div class="icon">
@@ -53,7 +53,7 @@
       </div>
 
       <!-- Rectangle -->
-      <div class="toolbar-btn-wrapper">
+      <div v-if="!disableAnnotation" class="toolbar-btn-wrapper">
         <el-tooltip class="item" effect="dark" content="Rectangle (R)" placement="bottom">
           <button class="toolbar-btn" :class="[activeButton=='rectangle'?'active':'']" data-tooltype="rectangle" type="button" @click="toolBarButtonClick('rectangle')">
             <div class="icon">
@@ -64,12 +64,12 @@
       </div>
 
       <!-- Color picker control -->
-      <div v-if="activeButton">
-        <colorPicker ref="colorPickerCom" :expandcolorpicker.sync="expandColorPicker" @expandColorPickerToggle="expandColor" />
+      <div :style="{display:((activeButton || clickedAnnotation) && !disableAnnotation)?'block':'none'}">
+        <colorPicker ref="colorPickerCom" :initcolor="colorChosen" :documentid="documentid" :expandcolorpicker.sync="expandColorPicker" @expandColorPickerToggle="expandColor" />
       </div>
 
       <!-- Text selection tools -->
-      <div id="textTool" data-element="textToolGroupButton" class="tool-group-button text-tool-group-button">
+      <div v-if="!disableAnnotation" id="textTool" data-element="textToolGroupButton" class="tool-group-button text-tool-group-button">
         <div class="devider" />
         <div class="toolbar-btn-wrapper">
           <el-tooltip class="item" effect="dark" content="Highlight" placement="bottom">
@@ -104,10 +104,10 @@
       </div>
 
       <!-- Text size -->
-      <select :style="{ 'display': activeButton == 'text' ? 'block' : 'none' }" class="text-size" />
+      <select v-if="!disableAnnotation" :style="{ 'display': activeButton == 'text' ? 'block' : 'none' }" class="text-size" />
 
       <!-- No presets -->
-      <div v-if="!activeButton" class="preset-none">
+      <div v-if="!(activeButton || clickedAnnotation) && !disableAnnotation" class="preset-none">
         <div style="color: gray;">No Presets</div>
       </div>
 
@@ -138,13 +138,15 @@
           </div>
         </button>
       </div>
-      <div class="devider" />
-      <button :disabled="undoHistory.length == 0" class="toolbar-btn" @click="undoAnnotation()">
+
+      <div v-if="!disableAnnotation" class="devider" />
+
+      <button v-if="!disableAnnotation" :disabled="undoHistory.length == 0" class="toolbar-btn" @click="undoAnnotation()">
         <div class="icon">
           <i class="toolbar-icon fas fa-undo" />
         </div>
       </button>
-      <button :disabled="redoHistory.length == 0" class="toolbar-btn" @click="redo()">
+      <button v-if="!disableAnnotation" :disabled="redoHistory.length == 0" class="toolbar-btn" @click="redo()">
         <div class="icon">
           <i class="toolbar-icon fas fa-redo" />
         </div>
@@ -175,7 +177,7 @@ export default ({
   },
   data() {
     return {
-      colorChosen: null,
+      colorChosen: '#ff0000',
       readOnly: false,
       showQuestion: true,
       scaleText: '100%',
@@ -189,7 +191,9 @@ export default ({
       zoomStep: 0.2,
       minScale: 0.5,
       maxScale: 2,
-      showChevronScroll: false
+      disableAnnotation: false,
+      showChevronScroll: false,
+      clickedAnnotation: null
     }
   },
   computed: {
@@ -200,6 +204,7 @@ export default ({
   async mounted() {
     this.initTextSizeTool()
     this.insertExpandMenu()
+    localStorage.removeItem(`${this.documentid}/tooltype`)
   },
   beforeCreate: function() {
   },
@@ -257,9 +262,13 @@ export default ({
               UI.enableRect()
               break
           }
+          this.colorChosen = localStorage.getItem(`${this.documentid}/color`)
         }
       }
-      // this.$emit('toolBarButtonClick', activateButton)
+      this.$emit('toolBarButtonChange', this.activeButton)
+    },
+    async disableToolBarButton(e) {
+      console.log('disableToolBarButton', e)
     },
     HighlightText() {
       this.$emit('highLightText', 'highlight')
@@ -350,10 +359,10 @@ export default ({
       this.redoHistory = e
       console.log(this.redoHistory)
     },
-    updateUndoList(e) {
+    updateToolbarUndoList(e) {
       this.undoHistory = e
     },
-    updateActiveButton(e) {
+    updateToolbarActiveButton(e) {
       this.activeButton = e
     },
     async resizeEventHandle() {
@@ -503,6 +512,25 @@ export default ({
     },
     disableSubmit() {
       this.readOnly = true
+    },
+    disableAnnotationCreate() {
+      this.disableAnnotation = true
+    },
+    disableButtons() {
+      this.activeButton = 'cursor'
+      UI.disableText()
+      UI.disablePoint()
+      UI.disableRect()
+      localStorage.setItem(`${this.documentid}/tooltype`, 'cursor')
+    },
+    handleAnntationClicked(e) {
+      if (e) {
+        this.colorChosen = e.color.includes('#') ? e.color : '#' + e.color
+        this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, e)
+        this.clickedAnnotation = e
+      } else {
+        this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, null)
+      }
     }
   }
 })

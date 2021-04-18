@@ -15,9 +15,9 @@ let _textColor = 'ff0000'
 let svg = null
 let clientClickX = 0
 let clientClickY = 0
-let isClick = false
 let annotation = null
 let content = null
+let isChangeContent = false
 
 /**
  * Handle document.mouseup event
@@ -27,21 +27,12 @@ let content = null
 function handleDocumentMouseup(e) {
   const rectTool = document.getElementById('rectTool')
   if (rectTool.style.position == 'absolute' && rectTool.style.visibility != 'hidden') {
-    isClick = true
     return
   }
   const overlay = document.getElementById('pdf-annotate-edit-overlay')
   if (overlay) {
     // overlay.parentNode.removeChild(overlay)
     return
-  }
-  if (isClick) {
-    if (annotation) {
-      const annotationClicked = document.querySelector(`foreignObject[data-pdf-annotate-id='${annotation.uuid}']`)
-      isClick = !isClick
-      fireEvent('annotation:click', annotationClicked)
-      return
-    }
   }
   hideRectToolBar()
   clientClickX = e.clientX
@@ -60,7 +51,7 @@ function handleDocumentMouseup(e) {
   if (!svg) {
     return
   }
-  const { pageNumber, viewport } = getMetadata(svg)
+  const { documentId, pageNumber, viewport } = getMetadata(svg)
   // const { viewport } = getMetadata(findSVGAtPoint(e.clientX, e.clientY))
 
   const page = document.getElementById('pageContainer' + `${pageNumber}`)
@@ -79,7 +70,7 @@ function handleDocumentMouseup(e) {
   input.style.outline = 'none'
   // input.style.borderRadius = '3px'
   input.style.position = 'absolute'
-  input.style.color = localStorage.getItem('colorChosen') || _textColor
+  input.style.color = localStorage.getItem(`${documentId}/color`) || _textColor
   // input.style.textSize = (_textSize * viewport.scale) + 'px'
   input.style.fontSize = `${_textSize * viewport.scale}px`
 
@@ -108,9 +99,9 @@ function handleDocumentMouseup(e) {
 /**
  * Handle input.blur event
  */
-function handleInputBlur() {
-  isClick = !isClick
-  saveText()
+async function handleInputBlur() {
+  await saveText()
+  fireEvent('text:disable', 'text')
 }
 
 function hideRectToolBar() {
@@ -124,14 +115,17 @@ function hideRectToolBar() {
  * @param {Event} e The DOM event to handle
  */
 function handleInputKeyup(e) {
+  isChangeContent = true
   if (e.keyCode === 27) {
     closeInput()
+    fireEvent('text:disable', 'text')
   } else if (e.keyCode === 13) {
     // saveText()
   }
 }
 
 function handleInputKeydown(e) {
+  isChangeContent = true
   if (e.keyCode === 13) {
     // e.preventDefault()
   }
@@ -140,8 +134,8 @@ function handleInputKeydown(e) {
 /**
  * Save a text annotation from input
  */
-function saveText() {
-  if (input.innerText.trim().length > 0) {
+async function saveText() {
+  if (input.innerText.trim().length > 0 && isChangeContent) {
     const clientX = clientClickX
     const clientY = clientClickY
     if (!svg) {
@@ -163,7 +157,7 @@ function saveText() {
     annotation = Object.assign({
       type: 'textbox',
       size: _textSize,
-      color: localStorage.getItem('colorChosen') || _textColor,
+      color: localStorage.getItem(`${documentId}/color`) || _textColor,
       content: content
     }, scaleDown(svg, {
       x: clientX - rect.left,
@@ -172,7 +166,7 @@ function saveText() {
       height: input.offsetHeight
     })
     )
-    PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
+    await PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
       .then((annotation) => {
         appendChild(svg, annotation)
       })
@@ -223,7 +217,6 @@ export function enableText() {
  */
 export function disableText() {
   if (!_enabled) { return }
-
   _enabled = false
   document.querySelectorAll(`.textLayer`).forEach(txt => {
     txt.style.userSelect = 'auto'

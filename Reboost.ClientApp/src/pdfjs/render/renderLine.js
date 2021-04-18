@@ -11,7 +11,7 @@ import normalizeColor from '../utils/normalizeColor'
 export default function renderLine(a) {
   const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
   setAttributes(group, {
-    stroke: normalizeColor(a.color || '#f00'),
+    stroke: normalizeColor(a.color || '#ff0000'),
     strokeWidth: 1
   })
 

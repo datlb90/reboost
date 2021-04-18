@@ -13,9 +13,11 @@ export function highlightText(type, node) {
   }
   const boundingRect = that.boundingRect
 
+  const { documentId, pageNumber } = getMetadata(that.svg)
+
   let color = 'FFFF00'
-  if (type == 'strikeout') { color = localStorage.getItem('colorChosen') || 'FF0000' }
-  if (type == 'hightlight') { color = localStorage.getItem('colorChosen') || 'FFFF00' }
+  if (type == 'strikeout') { color = localStorage.getItem(`${documentId}/color`) || 'FF0000' }
+  if (type == 'hightlight') { color = localStorage.getItem(`${documentId}/color`) || 'FFFF00' }
 
   // Initialize the annotation
   const annotation = {
@@ -41,8 +43,6 @@ export function highlightText(type, node) {
   if (annotation.rectangles.length > 2) {
     annotation.rectangles = that.removeMinHeigthRects(annotation.rectangles)
   }
-
-  const { documentId, pageNumber } = getMetadata(that.svg)
 
   annotation.color = that.colorChosen
   annotation.top = parseInt(that.target.style.top.substring(0, that.target.style.top.length - 2))

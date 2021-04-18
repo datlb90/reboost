@@ -45,8 +45,12 @@
           <div v-if="status==='Approved'" class="button-container">
             <el-label size="mini">
               Complete Training Now:
-              <el-button v-if="applyToList.includes('IELTS')" style="margin: 0 10px" size="mini" type="primary" @click="redirectToTraining('IELTS')">IELTS</el-button>
-              <el-button v-if="applyToList.includes('TOEFL')" size="mini" type="primary" @click="redirectToTraining('TOEFL')">TOEFL</el-button>
+              <el-tooltip v-if="applyToList.includes('IELTS')" :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
+                <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin: 0 10px 0" size="mini" @click="redirectToTraining('IELTS')">IELTS</el-button>
+              </el-tooltip>
+              <el-tooltip v-if="applyToList.includes('TOEFL')" :content="isApprove('TOEFL')?'You have passed this training':'Start your TOEFL Training'" placement="top">
+                <el-button :type="isApprove('TOEFL')?'success':'primary'" style="margin: 0 10px 0" size="mini" @click="redirectToTraining('TOEFL')">TOEFL</el-button>
+              </el-tooltip>
             </el-label>
           </div>
           <div v-if="note && note.length" class="note-container">
@@ -91,10 +95,13 @@ export default {
     }
   },
   computed: {
-
+    getReviews() {
+      return this.$store.getters['review/getReviewsById']
+    }
   },
   mounted() {
     this.onLoad()
+    this.$store.dispatch('review/loadReviewsById')
   },
   methods: {
     onLoad() {
@@ -122,6 +129,14 @@ export default {
           this.$router.push(pushUrl)
         }
       })
+    },
+    isApprove(type) {
+      const list = this.getReviews
+      type += 'TrainingApproved'
+      if (list.filter(r => { return r.status == type }).length > 0) {
+        return true
+      }
+      return false
     }
   }
 }

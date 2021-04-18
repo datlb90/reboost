@@ -93,10 +93,12 @@ transform: rotate(180deg);
   position: absolute;
   border-radius: 5px;
   visibility: hidden;
+  border: solid 1px #DCDFE6;
 }
 .colorPicker span{
   color: #485056;
   text-align: center;
+  border-bottom: solid 1px;
 }
 .colorPicker ul{
   list-style: none;

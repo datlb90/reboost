@@ -15,6 +15,13 @@ export default function renderPoint(a) {
   const innerSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+  let order = 1
+  const otherPoints = document.querySelectorAll("svg[top='" + a.top + "']")
+  if (otherPoints.length > 0) {
+    const groupsArr = Array.prototype.slice.call(otherPoints)
+    const max = Math.max.apply(Math, groupsArr.map(function(o) { return parseInt(o.getAttribute('order')) }))
+    order = max + 1
+  }
 
   setAttributes(outerSVG, {
     width: SIZE,
@@ -23,7 +30,8 @@ export default function renderPoint(a) {
     y: a.y,
     top: a.top,
     'page-num': a.pageNum,
-    'page-height': a.pageHeight
+    'page-height': a.pageHeight,
+    'order': order
   })
 
   setAttributes(innerSVG, {

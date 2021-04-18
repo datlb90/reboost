@@ -19,8 +19,13 @@ import {
 } from './utils'
 
 let _enabled = false
-let isDragging = false; let overlay
+let isDragging = false
+let overlay
+let input
+let svgEdit
 let dragOffsetX, dragOffsetY, dragStartX, dragStartY
+let editingAnnotation
+let isEditing = false
 const OVERLAY_BORDER_SIZE = 3
 
 /**
@@ -30,6 +35,9 @@ const OVERLAY_BORDER_SIZE = 3
  */
 function createEditOverlay(target) {
   destroyEditOverlay()
+  if (isEditing) {
+    return
+  }
   if (!target) {
     return
   }
@@ -72,7 +80,7 @@ function createEditOverlay(target) {
   // overlay.appendChild(anchor)
   parentNode.appendChild(overlay)
   document.addEventListener('click', handleDocumentClick)
-  // document.addEventListener('keyup', handleDocumentKeyup)
+  document.addEventListener('keyup', handleDocumentKeyup)
   document.addEventListener('mousedown', handleDocumentMousedown)
   // anchor.addEventListener('click', deleteAnnotation)
   // anchor.addEventListener('mouseover', () => {
@@ -104,7 +112,7 @@ function destroyEditOverlay() {
   }
 
   document.removeEventListener('click', handleDocumentClick)
-  // document.removeEventListener('keyup', handleDocumentKeyup)
+  document.removeEventListener('keyup', handleDocumentKeyup)
   document.removeEventListener('mousedown', handleDocumentMousedown)
   document.removeEventListener('mousemove', handleDocumentMousemove)
   document.removeEventListener('mouseup', handleDocumentMouseup)
@@ -114,23 +122,22 @@ function destroyEditOverlay() {
 /**
  * Delete currently selected annotation
  */
-// function deleteAnnotation() {
-//   if (!overlay) { return }
-//   console.log('delete anno')
+function deleteAnnotation() {
+  if (!overlay) { return }
 
-//   const annotationId = overlay.getAttribute('data-target-id')
-//   const nodes = document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)
-//   const svg = overlay.parentNode.querySelector('svg.annotationLayer')
-//   const { documentId } = getMetadata(svg);
+  const annotationId = overlay.getAttribute('data-target-id')
+  const nodes = document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)
+  const svg = overlay.parentNode.querySelector('svg.annotationLayer')
+  const { documentId } = getMetadata(svg);
 
-//   [...nodes].forEach((n) => {
-//     n.parentNode.removeChild(n)
-//   })
+  [...nodes].forEach((n) => {
+    n.parentNode.removeChild(n)
+  })
 
-//   PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, annotationId)
+  PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, annotationId)
 
-//   destroyEditOverlay()
-// }
+  destroyEditOverlay()
+}
 export function deleteAnnotations() {
   const overlayDoc = document.getElementById('pdf-annotate-edit-overlay')
   if (!overlayDoc) { return }
@@ -175,13 +182,13 @@ function handleDocumentClick(e) {
  *
  * @param {Event} e The DOM event that needs to be handled
  */
-// function handleDocumentKeyup(e) {
-//   if (overlay && e.keyCode === 46 &&
-//       e.target.nodeName.toLowerCase() !== 'textarea' &&
-//       e.target.nodeName.toLowerCase() !== 'input') {
-//     deleteAnnotation()
-//   }
-// }
+function handleDocumentKeyup(e) {
+  if (overlay && e.keyCode === 46 &&
+      e.target.nodeName.toLowerCase() !== 'textarea' &&
+      e.target.nodeName.toLowerCase() !== 'input') {
+    deleteAnnotation()
+  }
+}
 
 /**
  * Handle document.mousedown event
@@ -191,8 +198,6 @@ function handleDocumentClick(e) {
 function handleDocumentMousedown(e) {
   if (e.target !== overlay) { return }
 
-  // Highlight and strikeout annotations are bound to text within the document.
-  // It doesn't make sense to allow repositioning these types of annotations.
   const annotationId = overlay.getAttribute('data-target-id')
   const target = document.querySelector(`[data-pdf-annotate-id="${annotationId}"]`)
   const type = target.getAttribute('data-pdf-annotate-type')
@@ -360,6 +365,51 @@ export function enableEdit() {
   _enabled = true
   addEventListener('annotation:click', handleAnnotationClick)
 }
+/**
+ * Enable edit mode behavior.
+ */
+export function editTextBox(e, svg) {
+  const annotationId = e.getAttribute('data-pdf-annotate-id')
+  const target = document.querySelector(`[data-pdf-annotate-id="${annotationId}"]`)
+  destroyEditOverlay()
+  editingAnnotation = target
+  svgEdit = svg
+  target.style.visibility = 'hidden'
+  const { documentId, pageNumber, viewport } = getMetadata(svgEdit)
+  const page = document.getElementById('pageContainer' + `${pageNumber}`)
+  const rect = page.getBoundingClientRect()
+  const x = target.getAttribute('x') * viewport.scale
+  const w = rect.width - x
+  const y = target.getAttribute('y') * viewport.scale
+
+  const _textColor = parseInt(window.getComputedStyle(target.firstChild).color, 10)
+  const _textSize = parseInt(window.getComputedStyle(target.firstChild).fontSize, 10)
+
+  input = document.createElement('pre')
+  input.setAttribute('id', 'pdf-annotate-text-input')
+  input.style.maxWidth = `${w}px`
+  input.setAttribute('contenteditable', true)
+  input.setAttribute('id', 'pdf-annotate-text-input')
+  input.setAttribute('display', 'block')
+  input.style.outline = 'none'
+  input.style.position = 'absolute'
+  input.style.color = localStorage.getItem(`${documentId}/color`) || _textColor
+  input.style.fontSize = `${_textSize * viewport.scale}px`
+
+  input.style.top = `${y}px`
+  input.style.left = `${x}px`
+
+  input.addEventListener('blur', handleInputBlur)
+  input.addEventListener('keyup', handleInputKeyup)
+  input.addEventListener('keydown', handleInputKeydown)
+
+  document.querySelector(`div[data-page-number='${pageNumber}']`).appendChild(input)
+
+  input.focus()
+  input.innerHTML = target.firstChild.innerHTML
+
+  isEditing = true
+}
 
 /**
  * Disable edit mode behavior.
@@ -372,4 +422,72 @@ export function disableEdit() {
   _enabled = false
   removeEventListener('annotation:click', handleAnnotationClick)
 }
+async function handleInputBlur(e) {
+  if (editingAnnotation && editingAnnotation.firstChild.textContent != input.textContent) {
+    if (!svgEdit) { svgEdit = findSVGAtPoint(parseInt(input.getAttribute('left'), 10), parseInt(input.getAttribute('top'), 10)) }
 
+    const { documentId, viewport } = getMetadata(svgEdit)
+    const uuid = editingAnnotation.getAttribute('data-pdf-annotate-id')
+    await PDFJSAnnotate.getStoreAdapter().getAnnotation(documentId, uuid).then(async rs => {
+      const previousAnno = Object.assign({}, rs)
+      rs.content = e.target.innerText
+
+      for (let i = 0; i < rs.content.length - 1; i++) {
+        if (rs.content[i] == '\n' && rs.content[i + 1] == '\n') {
+          var tempStr = rs.content.slice(0, i)
+          tempStr = tempStr + ' '
+          tempStr = tempStr + rs.content.slice(i + 1, rs.content.length)
+          rs.content = tempStr
+          i++
+        }
+      }
+
+      rs.width = scaleDown(svgEdit, {
+        width: e.target.clientWidth,
+        height: e.target.clientHeight
+      }).width
+
+      rs.height = scaleDown(svgEdit, {
+        width: e.target.clientWidth,
+        height: e.target.clientHeight
+      }).height
+
+      editingAnnotation.setAttribute('width', rs.width + 5 + 'px')
+      editingAnnotation.setAttribute('height', rs.height + 'px')
+
+      await PDFJSAnnotate.getStoreAdapter().editAnnotation(documentId, uuid, rs, undefined, previousAnno).then(r => {
+        editingAnnotation.firstChild.innerText = e.target.innerText
+      })
+    })
+  }
+  closeInput()
+}
+/**
+ * Handle input.keyup event
+ *
+ * @param {Event} e The DOM event to handle
+ */
+function handleInputKeyup(e) {
+  if (e.keyCode === 27) {
+    closeInput()
+  }
+}
+
+function handleInputKeydown(e) {
+
+}
+
+function closeInput() {
+  if (input) {
+    if (!svgEdit) { svgEdit = findSVGAtPoint(parseInt(input.getAttribute('left'), 10), parseInt(input.getAttribute('top'), 10)) }
+    input.removeEventListener('blur', handleInputBlur)
+    input.removeEventListener('keyup', handleInputKeyup)
+    const { pageNumber } = getMetadata(svgEdit)
+    document.querySelector(`div[data-page-number='${pageNumber}']`).removeChild(input)
+    svgEdit = null
+    input = null
+    editingAnnotation.style.visibility = 'visible'
+    editingAnnotation = null
+    isEditing = false
+  }
+}
