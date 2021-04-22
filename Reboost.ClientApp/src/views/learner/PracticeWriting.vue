@@ -148,7 +148,7 @@
                   Get Writting Preview
                 </el-button>
                 <el-dropdown-menu slot="dropdown" size="mini">
-                  <el-dropdown-item>Free Peer Review</el-dropdown-item>
+                  <el-dropdown-item command="free">Free Peer Review</el-dropdown-item>
                   <el-dropdown-item command="checkout">Pro Rater Review</el-dropdown-item>
                   <el-dropdown-item divided>View Review Sample</el-dropdown-item>
                 </el-dropdown-menu>
@@ -173,6 +173,7 @@
 // import http from '@/utils/axios'
 import documentService from '../../services/document.service'
 import userService from '../../services/user.service'
+import reviewService from '../../services/review.service'
 import TabDisCussion from '../learner/PracticeWriting_TabDiscussion.vue'
 import TabRubric from '../learner/PracticeWriting_TabRubric.vue'
 import TabSamples from '../learner/PracticeWriting_TabSamples.vue'
@@ -218,7 +219,8 @@ export default {
       timeSpent: 0,
       timeSpentInterval: null,
       idLocalStorage: '',
-      timeout: null
+      timeout: null,
+      submissionId: null
     }
   },
   computed: {
@@ -310,6 +312,7 @@ export default {
         console.log('Current user submition for this question', rs)
         if (rs && rs.length > 0) {
           const latestSubmition = rs[0]
+          this.submissionId = rs[0]['id']
           this.writingContent = latestSubmition.text
           this.hasSubmitionForThisQuestion = true
           this.countWords()
@@ -464,10 +467,20 @@ export default {
     checkoutVisibles(e) {
       if (e == 'checkout') {
         this.checkoutVisible = true
+      } else if (e == 'free') {
+        this.createReview()
       }
     },
     logSmt(e) {
       console.log(e)
+    },
+    createReview() {
+      reviewService.createReviewRequest({
+        UserId: '123',
+        SubmissionId: this.submissionId,
+        FeedbackType: 'Free',
+        Status: 'Waiting'
+      })
     }
   }
 }

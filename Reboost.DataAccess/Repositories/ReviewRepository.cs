@@ -28,6 +28,7 @@ namespace Reboost.DataAccess.Repositories
         Task<List<Reviews>> GetReviewsAsync();
         Task<List<Reviews>> GetReviewsByIdAsync(string userId);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
+        Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
     }
 
     public class ReviewRepository : IReviewRepository
@@ -187,6 +188,13 @@ namespace Reboost.DataAccess.Repositories
         {
             List<Reviews> list = await db.Reviews.Include("ReviewData").Where(rv => rv.ReviewerId == userId).ToListAsync();
             return await Task.FromResult(list);
+        }
+
+        public async Task<ReviewRequests> CreateRequestAsync(ReviewRequests request)
+        {
+            await db.ReviewRequests.AddAsync(request);
+            await db.SaveChangesAsync();
+            return await Task.FromResult(request);
         }
     }
 }

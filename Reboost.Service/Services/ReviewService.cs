@@ -29,6 +29,7 @@ namespace Reboost.Service.Services
         Task<List<Reviews>> GetReviewsAsync();
         Task<List<Reviews>> GetReviewsByIdAsync(string userId);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
+        Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -118,6 +119,12 @@ namespace Reboost.Service.Services
         public async Task<List<Reviews>> GetReviewsByIdAsync(string userId)
         {
             return await _unitOfWork.Review.GetReviewsByIdAsync(userId);
+        }
+        public async Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests)
+        {
+            DateTime now = DateTime.Now;
+            requests.RequestedDateTime = now;
+            return await _unitOfWork.Review.CreateRequestAsync(requests);
         }
     }
 }

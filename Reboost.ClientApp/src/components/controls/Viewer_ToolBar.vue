@@ -525,7 +525,7 @@ export default ({
     },
     handleAnntationClicked(e) {
       if (e) {
-        this.colorChosen = e.color.includes('#') ? e.color : '#' + e.color
+        if (e.color) { this.colorChosen = e.color.includes('#') ? e.color : '#' + e.color }
         this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, e)
         this.clickedAnnotation = e
       } else {
