@@ -25,7 +25,7 @@
           { text: 'Applied', value: 'Applied' },
           { text: 'Approved', value: 'Approved' },
           { text: 'Training Completed', value: 'Training Completed' },
-          { text: 'Rejected', value: 'Rejected' }
+          { text: 'Revision', value: 'Revision' }
         ]"
         :filter-method="filterTag"
         filter-placement="bottom-end"
@@ -47,16 +47,16 @@
           <el-tag
             v-if="scope.row.status === 'Approved' && (completedTraining(scope.row,'IELTS')||completedTraining(scope.row,'TOEFL'))"
             style="margin-left:10px"
+            :type="(isApproved(scope.row,'IELTS')&&isApproved(scope.row,'TOEFL')) ? 'success' : 'info'"
             size="mini"
-            type="info"
-          >Training</el-tag>
+          >{{ (isApproved(scope.row,'IELTS')&&isApproved(scope.row,'TOEFL')) ? 'Completed Training' : 'Training' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="Operations">
         <template slot-scope="scope">
           <el-button size="mini" @click="handleView(scope.$index, scope.row)">View</el-button>
-          <el-button v-if="completedTraining(scope.row,'IELTS')" size="mini" @click="TrainingReview(scope.row,'IELTS')">IELTS</el-button>
-          <el-button v-if="completedTraining(scope.row,'TOEFL')" size="mini" @click="TrainingReview(scope.row,'TOEFL')">TOEFL</el-button>
+          <el-button v-if="completedTraining(scope.row,'IELTS')" :type="isApproved(scope.row,'IELTS')?'success':'info'" size="mini" @click="TrainingReview(scope.row,'IELTS')">IELTS</el-button>
+          <el-button v-if="completedTraining(scope.row,'TOEFL')" :type="isApproved(scope.row,'TOEFL')?'success':'info'" size="mini" @click="TrainingReview(scope.row,'TOEFL')">TOEFL</el-button>
           <el-button v-if="scope.row.status == 'Training Completed'" size="mini" type="warning">Review</el-button>
         </template>
       </el-table-column>
@@ -147,6 +147,14 @@ export default {
     },
     completedTraining(e, status) {
       status += 'Training'
+      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status == status || r.status == status + 'Approved'))[0]
+      if (t) {
+        return true
+      }
+      return false
+    },
+    isApproved(e, status) {
+      status += 'TrainingApproved'
       var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && r.status == status)[0]
       if (t) {
         return true
@@ -155,8 +163,8 @@ export default {
     },
     TrainingReview(e, type) {
       type += 'Training'
-      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && r.status == type)[0]
-      var pushUrl = t.status != 'IELTSTraining' ? '/review/12/68/' + t.id : '/review/9/69/' + t.id
+      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status == type || r.status == type + 'Approved'))[0]
+      var pushUrl = t.status.includes('IELTSTraining') ? '/review/9/69/' + t.id : '/review/12/68/' + t.id
       this.$router.push(pushUrl)
     }
   }

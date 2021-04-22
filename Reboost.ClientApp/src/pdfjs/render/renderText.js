@@ -35,7 +35,7 @@ export default function renderText(a) {
   var p = document.createElement('pre')
   p.style.fontSize = `${a.size}px`
   p.style.lineHeight = '1.5'
-  p.style.color = a.color || 'f00'
+  p.style.color = a.color || 'ff0000'
   p.style.wordWrap = 'break-word'
   var tn = document.createTextNode(a.content)
   const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject')
@@ -48,7 +48,7 @@ export default function renderText(a) {
   foreignObject.setAttribute('height', a.height)
   foreignObject.setAttribute('x', a.x)
   foreignObject.setAttribute('y', a.y)
-  foreignObject.setAttribute('stroke', a.color || '#f00')
+  foreignObject.setAttribute('stroke', a.color || '#ff0000')
 
   p.appendChild(tn)
 

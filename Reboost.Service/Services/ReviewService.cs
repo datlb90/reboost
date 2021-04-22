@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore.Query.Internal;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
@@ -26,6 +27,7 @@ namespace Reboost.Service.Services
         Task<InTextComments> EditInTextComment(InTextComments cmt);
         Task<string> CreateNewSampleReviewDocumentAsync(string type, User user);
         Task<List<Reviews>> GetReviewsAsync();
+        Task<List<Reviews>> GetReviewsByIdAsync(string userId);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
     }
 
@@ -77,9 +79,12 @@ namespace Reboost.Service.Services
         }
         public async Task<InTextComments> AddInTextCommentAsync(int docId, int reviewId, InTextComments cmt, Annotations anno)
         {
-            await _unitOfWork.Review.AddAnnotationAsync(anno);
-            cmt.AnnotationId = anno.Id;
+            if(anno.Type !="comment-area")
+            {
+                await _unitOfWork.Review.AddAnnotationAsync(anno);
+            }
 
+            cmt.AnnotationId = anno.Id;
             return await _unitOfWork.Review.AddInTextCommentAsync(cmt);
         }
         public async Task<InTextComments> DeleteInTextCommentAsync(int id)
@@ -109,6 +114,10 @@ namespace Reboost.Service.Services
         public async Task<Reviews> ChangeStatusAsync(int id, string newStatus)
         {
             return await _unitOfWork.Review.ChangeStatusAsync(id, newStatus);
+        }
+        public async Task<List<Reviews>> GetReviewsByIdAsync(string userId)
+        {
+            return await _unitOfWork.Review.GetReviewsByIdAsync(userId);
         }
     }
 }

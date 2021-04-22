@@ -25,24 +25,37 @@
 
 </template>
 <script>
+import PDFJSAnnotate from '@/pdfjs/PDFJSAnnotate'
 export default ({
   name: 'ColorPicker',
   props: {
+    documentid: { type: Number, default: null },
+    initcolor: { type: String, default: '#ff0000' }
   },
   data() {
     return {
       listColor: require('../../assets/data.json').listColor,
-      colorChosen: null,
-      expandColorPicker: false
+      colorChosen: '#ff0000',
+      expandColorPicker: false,
+      annotation: null
     }
   },
   watch: {
   },
+  created() {
+    this.colorChosen = this.initcolor
+  },
+  async mounted() {
+  },
   methods: {
-    changeToolbarButtonColor(e) {
+    async changeToolbarButtonColor(e) {
       this.colorChosen = e
-      localStorage.setItem('colorChosen', e)
-
+      localStorage.setItem(`${this.documentid}/color`, e)
+      if (this.annotation) {
+        this.updateRectangleAnotation(e)
+      } else {
+        console.log('no target')
+      }
       this.expandColorPicker = true
       this.expandColorPickerToggle()
     },
@@ -55,14 +68,35 @@ export default ({
       if (this.expandColorPicker) {
         const target = document.getElementsByClassName('toolbar-button-color__container')[0].getBoundingClientRect()
         var posX = 0
-        posX = target.x
+        posX = target.x + 6
         const posY = target.y
-        document.getElementById('colorPickerCollapse').style = 'width: 170px;overflow: hidden; display: grid;grid-template-columns: repeat(4,40px);z-index: 2; position:fixed;background:#ffffff;' +
+        document.getElementById('colorPickerCollapse').style = 'width: 160px;overflow: hidden; display: grid;grid-template-columns: repeat(4,40px);z-index: 2; position:fixed;background:#ffffff;' +
         'top: ' + posY + 'px;left: ' + posX + 'px;'
         // this.$emit('expandColorPickerToggle')
       } else {
         document.getElementById('colorPickerCollapse').style = 'display = none'
       }
+    },
+    changeColorByClickedAnno(e, annotation) {
+      this.colorChosen = e
+      if (typeof (annotation) != 'undefined' && annotation) { this.annotation = annotation } else {
+        this.annotation = null
+      }
+    },
+    async updateRectangleAnotation(e) {
+      const previousAnno = Object.assign({}, this.annotation)
+      var type = this.annotation.type
+      const annotationClicked = document.querySelector(`[data-pdf-annotate-id="${this.annotation.uuid}"]`)
+      if (type != 'highlight') {
+        annotationClicked.setAttribute('stroke', e)
+      }
+      if (type == 'textbox') {
+        annotationClicked.childNodes[0].style.color = e
+      } else if (type == 'highlight') {
+        annotationClicked.childNodes[0].setAttribute('fill', e)
+      }
+      this.annotation.color = e
+      await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentid, this.annotation.uuid, this.annotation, undefined, previousAnno)
     }
   }
 })

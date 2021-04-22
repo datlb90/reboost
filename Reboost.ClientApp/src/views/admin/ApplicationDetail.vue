@@ -266,18 +266,18 @@
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="success" @click="updateStatus('Approved')">Approve</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus('Rejected')">Reject</el-button>
-            <el-dropdown v-if="completedTraining(formRegister,'IELTS')" style="margin: 0 10px" size="mini" split-button type="primary" @command="trainingDropdownClick">
+            <el-dropdown v-if="completedTraining(formRegister,'IELTS')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'IELTSTraining',action:'approve'}">Approve</el-dropdown-item>
-                <el-dropdown-item :command="{type:'IELTSTraining',action:'reject'}">Revison</el-dropdown-item>
+                <el-dropdown-item :command="{type:'IELTSTraining',action:'reject'}">Revision</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
-            <el-dropdown v-if="completedTraining(formRegister,'TOEFL')" size="mini" split-button type="primary" @command="trainingDropdownClick">
+            <el-dropdown v-if="completedTraining(formRegister,'TOEFL')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
               TOEFL
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'TOEFLTraining',action:'approve'}">Approve</el-dropdown-item>
-                <el-dropdown-item :command="{type:'TOEFLTraining',action:'reject'}">Revison</el-dropdown-item>
+                <el-dropdown-item :command="{type:'TOEFLTraining',action:'reject'}">Revision</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
@@ -545,7 +545,9 @@ export default {
             })
           } else if (createOrUpdate == 'update') {
             formData.set('Id', this.formRegister.id)
+            formData.set('Status', this.formRegister.status)
             raterService.update(formData).then(rs => {
+              console.log('updated', rs)
               this.$notify({
                 title: 'Success',
                 message: 'Update success',
@@ -627,7 +629,19 @@ export default {
       var t = this.getAllReviews.filter(r => r.reviewerId == this.formRegister.userId && r.reviewData.length > 0 && r.status == e.type)[0]
       var newStatus = e.action == 'approve' ? e.type + 'Approved' : e.type + 'Rejected'
       reviewService.changeReviewStatus(t.id, newStatus).then(rs => {
-        console.log(rs)
+        if (rs.status.includes('Rejected')) {
+          this.$notify.error({
+            title: 'Rejected',
+            message: 'Submitted Training Rejected!',
+            duration: 2000
+          })
+        } else {
+          this.$notify.success({
+            title: 'Approved',
+            message: 'Submitted Training Approved!',
+            duration: 2000
+          })
+        }
       })
     }
   }

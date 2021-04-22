@@ -44,7 +44,7 @@ export function enableTextSelection(parent) {
               that.target = e.target
               that.selectedText = text
               that.boundingRect = that.svg.getBoundingClientRect()
-              that.updateActiveButton('select-text')
+              // that.updateActiveButton('select-text')
             }
           }
         } else {
@@ -53,11 +53,14 @@ export function enableTextSelection(parent) {
       } else {
         that.hideTextToolBar()
         that.hideTextToolGroup()
+        that.$refs.toolBar.handleAnntationClicked(null)
       }
     }
   }
+
   function handleDocumentMousedown(e) {
     const svg = findSVGAtPoint(e.clientX, e.clientY)
+    that.svg = svg
     if (svg) {
       if (!e.target.classList.contains('colorPicker')) {
         if (e.target.parentElement.classList.contains('textLayer') || e.target.classList.contains('textLayer')) {

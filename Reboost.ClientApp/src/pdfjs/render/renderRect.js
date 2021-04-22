@@ -37,8 +37,11 @@ export default function renderRect(a) {
   } else {
     const rect = createRect(a)
     setAttributes(rect, {
-      stroke: normalizeColor(a.color || '#f00'),
-      fill: 'none'
+      stroke: normalizeColor(a.color || '#ff0000'),
+      fill: 'none',
+      top: a.y,
+      'page-num': a.pageNum,
+      'page-height': a.pageHeight
     })
 
     return rect

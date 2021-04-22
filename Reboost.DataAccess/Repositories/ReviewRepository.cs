@@ -26,6 +26,7 @@ namespace Reboost.DataAccess.Repositories
         Task<InTextComments> EditInTextComment(InTextComments cmt);
         Task<string> CreateNewSampleReviewDocumentAsync(string type, User user);
         Task<List<Reviews>> GetReviewsAsync();
+        Task<List<Reviews>> GetReviewsByIdAsync(string userId);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
     }
 
@@ -98,11 +99,13 @@ namespace Reboost.DataAccess.Repositories
         public async Task<InTextComments> DeleteInTextCommentAsync(int id)
         {
             InTextComments rs = await db.InTextComments.FindAsync(id);
-            Annotations anno = await db.Annotations.FindAsync(rs.AnnotationId);
-            if (rs != null && anno != null)
+            if (rs != null )
             {
+
+                Annotations anno = await db.Annotations.FindAsync(rs.AnnotationId);
                 db.InTextComments.Remove(rs);
                 db.Annotations.Remove(anno);
+
                 await db.SaveChangesAsync();
             }
             return await Task.FromResult(rs);
@@ -164,8 +167,8 @@ namespace Reboost.DataAccess.Repositories
             }
 
             string status = type.ToUpper() + "Training";
-
-            Reviews existed = await db.Reviews.Where(rv => rv.ReviewerId == user.Id && rv.Status == status).FirstOrDefaultAsync();
+            string approvedstatus = status + "Approved";
+            Reviews existed = await db.Reviews.Where(rv => rv.ReviewerId == user.Id && (rv.Status == approvedstatus || rv.Status == status) ).FirstOrDefaultAsync();
             if(existed!= null)
             {
                 return await Task.FromResult(existed.Id.ToString());
@@ -179,6 +182,11 @@ namespace Reboost.DataAccess.Repositories
             await db.SaveChangesAsync();
       
             return await Task.FromResult(rv.Id.ToString());
+        }
+        public async Task<List<Reviews>> GetReviewsByIdAsync(string userId)
+        {
+            List<Reviews> list = await db.Reviews.Include("ReviewData").Where(rv => rv.ReviewerId == userId).ToListAsync();
+            return await Task.FromResult(list);
         }
     }
 }

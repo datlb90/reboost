@@ -171,7 +171,7 @@ function saveRect(type, rects, color) {
   }
 
   const boundingRect = svg.getBoundingClientRect()
-
+  const { documentId, pageNumber, viewport } = getMetadata(svg)
   if (!color) {
     if (type === 'highlight') {
       color = 'FFFF00'
@@ -182,7 +182,8 @@ function saveRect(type, rects, color) {
   // Initialize the annotation
   const annotation = {
     type,
-    color: localStorage.getItem('colorChosen') || 'f00',
+    color: localStorage.getItem(`${documentId}/color`) || 'ff0000',
+    page: pageNumber,
     rectangles: [...rects].map((r) => {
       let offset = 0
 
@@ -206,14 +207,16 @@ function saveRect(type, rects, color) {
   // Special treatment for area as it only supports a single rect
   if (type === 'area') {
     const rect = annotation.rectangles[0]
+    console.log('rect[0]', rect)
     delete annotation.rectangles
     annotation.x = rect.x
     annotation.y = rect.y
+    annotation.top = rect.y
     annotation.width = rect.width
     annotation.height = rect.height
+    annotation.pageHeight = svg.getAttribute('height') / viewport.scale
+    annotation.pageNum = pageNumber
   }
-
-  const { documentId, pageNumber } = getMetadata(svg)
 
   // Add the annotation
   PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
