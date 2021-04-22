@@ -13,6 +13,6 @@ namespace Reboost.DataAccess.Entities
         public Nullable<System.DateTime> CompletedDateTime { get; set; }
         public string Status { get; set; }
 
-        public virtual Submissions Submissions { get; set; }
+        public virtual Submissions Submission { get; set; }
     }
 }

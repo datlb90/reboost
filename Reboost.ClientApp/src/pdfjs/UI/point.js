@@ -100,6 +100,7 @@ function savePoint() {
     })
 
   closeInput()
+  disablePoint()
 }
 
 /**

@@ -203,6 +203,21 @@ function handleDocumentMousedown(e) {
   const type = target.getAttribute('data-pdf-annotate-type')
 
   if (type === 'highlight' || type === 'strikeout' || type === 'point') { return }
+  if (type == 'textbox') {
+    isDragging = true
+    dragOffsetX = e.clientX
+    dragOffsetY = e.clientY
+    dragStartX = overlay.offsetLeft
+    dragStartY = overlay.offsetTop
+
+    overlay.style.background = 'rgba(255, 255, 255, 0.7)'
+    overlay.style.cursor = 'move'
+    // overlay.querySelector('a').style.display = 'none'
+
+    document.addEventListener('mousemove', handleDocumentMousemove)
+    document.addEventListener('mouseup', handleDocumentMouseup)
+    disableUserSelect()
+  }
 }
 
 /**
@@ -242,7 +257,7 @@ function handleDocumentMouseup(e) {
   const svg = overlay.parentNode.querySelector('svg.annotationLayer')
   const { documentId } = getMetadata(svg)
 
-  overlay.querySelector('a').style.display = ''
+  // overlay.querySelector('a').style.display = ''
 
   function getDelta(propX, propY) {
     return calcDelta(parseInt(target[0].getAttribute(propX), 10), parseInt(target[0].getAttribute(propY), 10))
@@ -256,20 +271,13 @@ function handleDocumentMouseup(e) {
   }
 
   PDFJSAnnotate.getStoreAdapter().getAnnotation(documentId, annotationId).then((annotation) => {
-    if (['area', 'highlight', 'point', 'textbox'].indexOf(type) > -1) {
+    const oldAnnotation = Object.assign({}, annotation)
+    if (['textbox'].indexOf(type) > -1) {
       const { deltaX, deltaY } = getDelta('x', 'y');
       [...target].forEach((t, i) => {
         if (deltaY !== 0) {
           const modelY = parseInt(t.getAttribute('y'), 10) + deltaY
-          let viewY = modelY
-
-          if (type === 'textbox') {
-            viewY += annotation.size
-          }
-
-          if (type === 'point') {
-            viewY = scaleUp(svg, { viewY }).viewY
-          }
+          const viewY = modelY
 
           t.setAttribute('y', viewY)
           if (annotation.rectangles) {
@@ -280,11 +288,7 @@ function handleDocumentMouseup(e) {
         }
         if (deltaX !== 0) {
           const modelX = parseInt(t.getAttribute('x'), 10) + deltaX
-          let viewX = modelX
-
-          if (type === 'point') {
-            viewX = scaleUp(svg, { viewX }).viewX
-          }
+          const viewX = modelX
 
           t.setAttribute('x', viewX)
           if (annotation.rectangles) {
@@ -328,7 +332,7 @@ function handleDocumentMouseup(e) {
       appendChild(svg, annotation)
     }
 
-    PDFJSAnnotate.getStoreAdapter().editAnnotation(documentId, annotationId, annotation)
+    PDFJSAnnotate.getStoreAdapter().editAnnotation(documentId, annotationId, annotation, undefined, oldAnnotation)
   })
 
   setTimeout(() => {

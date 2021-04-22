@@ -83,6 +83,9 @@ export function enableTextSelection(parent) {
       if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
         const validTarget = that.hasAParentWithClass(e.target, 'add-new-comment')
         const comment = document.getElementById('comment-text-area').value
+        if (this.annotationClicked.getAttribute('data-pdf-annotate-type') == 'comment-area') {
+          this.annotationClicked.setAttribute('data-pdf-annotate-type', 'area')
+        }
         if (!validTarget && comment.replace(/\s/g, '').length == 0) { that.cancelCommentText() }
       }
       // Unselect highlight comment

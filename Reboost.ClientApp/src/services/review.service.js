@@ -42,6 +42,9 @@ const reviewService = {
   },
   changeReviewStatus(id, status) {
     return http.post(`/review/status/change/${id}`, { status }).then(rs => rs.data)
+  },
+  createReviewRequest(request) {
+    return http.post('/review/request', request).then(rs => rs.data)
   }
 }
 
