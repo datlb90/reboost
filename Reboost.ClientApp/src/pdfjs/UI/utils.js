@@ -67,7 +67,7 @@ export function findAnnotationAtPoint(x, y) {
   if (!svg) { return }
   const elements = svg.querySelectorAll('[data-pdf-annotate-type]')
   // Find a target element within SVG
-  for (let i = 0, l = elements.length; i < l; i++) {
+  for (let i = elements.length - 1; i >= 0; i--) {
     const el = elements[i]
     if (pointIntersectsRect(x, y, getOffsetAnnotationRect(el))) {
       return el

@@ -185,6 +185,7 @@ function closeInput() {
     const { pageNumber } = getMetadata(svg)
     document.querySelector(`div[data-page-number='${pageNumber}']`).removeChild(input)
     input = null
+    isChangeContent = false
   }
 }
 

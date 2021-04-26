@@ -13,6 +13,9 @@ const raterService = {
   update(data) {
     return http.post('/rater/update', data, { headers: { 'Content-Type': 'multipart/form-data' }}).then(rs => rs.data)
   },
+  updateCredential(data) {
+    return http.post('/rater/update/credential', data, { headers: { 'Content-Type': 'multipart/form-data' }}).then(rs => rs.data)
+  },
   updateStatus(id, status) {
     return http.get(`/rater/update/status/${id}/${status}`).then(rs => rs.data)
   }

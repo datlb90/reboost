@@ -19,6 +19,7 @@ namespace Reboost.Service.Services
         Task<Raters> CreateAsync(Raters rater, List<IFormFile> uploadFiles);
         Task<Raters> UpdateAsync(Raters rater, List<IFormFile> uploadFiles);
         Task<Raters> UpdateStatusAsync(int id, string status);
+        Task<Raters> UpdateCredentialAsync(Raters rater, List<IFormFile> uploadFiles);
         Task<Raters> DeleteAsync(int id);
         Task<List<string>> GetApplyTo(int raterId);
     }
@@ -105,6 +106,29 @@ namespace Reboost.Service.Services
             rater.User = null;
             rater.RaterCredentials = null;
             var rs = await _unitOfWork.Raters.Update(rater);
+            return rs;
+        }
+
+        public async Task<Raters> UpdateCredentialAsync(Raters rater, List<IFormFile> uploadFiles)
+        {
+            foreach (var item in rater.RaterCredentials)
+            {
+                item.RaterId = rater.Id;
+                var file = uploadFiles.FirstOrDefault(f => f.FileName == item.FileName);
+                if (file != null)
+                    item.Data = GetBytesFromFile(file);
+            }
+
+            Raters _rater = await _unitOfWork.Raters.GetByIdAsync(rater.Id);
+
+            _rater.RaterCredentials = rater.RaterCredentials;
+            _rater.Status = rater.Status;
+
+            await _unitOfWork.RaterCredential.UpdateManyByRaterAync(rater.Id, rater.RaterCredentials.ToList());
+
+            rater.User = null;
+            rater.RaterCredentials = null;
+            var rs = await _unitOfWork.Raters.Update(_rater);
             return rs;
         }
 

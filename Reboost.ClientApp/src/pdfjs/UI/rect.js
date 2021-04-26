@@ -207,7 +207,6 @@ function saveRect(type, rects, color) {
   // Special treatment for area as it only supports a single rect
   if (type === 'area') {
     const rect = annotation.rectangles[0]
-    console.log('rect[0]', rect)
     delete annotation.rectangles
     annotation.x = rect.x
     annotation.y = rect.y

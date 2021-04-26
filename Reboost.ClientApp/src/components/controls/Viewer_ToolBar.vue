@@ -65,7 +65,7 @@
 
       <!-- Color picker control -->
       <div :style="{display:((activeButton || clickedAnnotation) && !disableAnnotation)?'block':'none'}">
-        <colorPicker ref="colorPickerCom" :initcolor="colorChosen" :documentid="documentid" :expandcolorpicker.sync="expandColorPicker" @expandColorPickerToggle="expandColor" />
+        <colorPicker ref="colorPickerCom" :initcolor="colorChosen" :documentid="documentid" :expandcolorpicker.sync="expandColorPicker" @colorChange="colorPickerChange($event)" @expandColorPickerToggle="expandColor" />
       </div>
 
       <!-- Text selection tools -->
@@ -523,7 +523,7 @@ export default ({
       UI.disableRect()
       localStorage.setItem(`${this.documentid}/tooltype`, 'cursor')
     },
-    handleAnntationClicked(e) {
+    handleAnnotationClicked(e) {
       if (e) {
         if (e.color) { this.colorChosen = e.color.includes('#') ? e.color : '#' + e.color }
         this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, e)
@@ -531,6 +531,9 @@ export default ({
       } else {
         this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, null)
       }
+    },
+    colorPickerChange(e) {
+      this.colorChosen = e
     }
   }
 })

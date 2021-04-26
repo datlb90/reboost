@@ -86,7 +86,6 @@ export default class StoreAdapter {
   get editAnnotation() { return this.__editAnnotation }
   set editAnnotation(fn) {
     this.__editAnnotation = function editAnnotation(documentId, annotationId, annotation, unRedo, previousAnno) {
-      console.log('old anno', annotation)
       return fn(...arguments).then((annotation) => {
         if (typeof (unRedo) == 'undefined') { unRedo = null }
         fireEvent('annotation:edit', documentId, annotationId, annotation, unRedo, previousAnno)

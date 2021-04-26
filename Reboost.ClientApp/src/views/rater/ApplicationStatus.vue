@@ -20,30 +20,31 @@
 
             <el-tag
               :type="
-                status === 'Applied'
+                status === RATER_STATUS.APPLIED
                   ? 'primary'
-                  :status === 'Approved'
+                  :status === RATER_STATUS.APPROVED
                     ? 'success'
-                    :status === 'Denied'
+                    :status === RATER_STATUS.REJECTED
                       ? 'danger'
-                      : 'warning'
+                      : status===RATER_STATUS.DOCUMENT_REQUESTED
+                        ? 'warning' : ''
               "
             >{{ status }}</el-tag>
 
           </div>
-          <div :class="[status === 'Applied' ? 'inReview' : 'hidden']">
+          <div :class="[status === RATER_STATUS.APPLIED ? 'inReview' : 'hidden']">
             <p>Thank you for applying. Your application is curretly in review. We will notify you via email if your application is approved, denied, or if we need additional information.</p>
           </div>
-          <div :class="[status === 'Approved' ? 'verified' : 'hidden']">
+          <div :class="[status === RATER_STATUS.APPROVED ? 'verified' : 'hidden']">
             <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
             </p>
           </div>
-          <div :class="[status === 'Denied' ? 'denied' : 'hidden']">
+          <div :class="[status === RATER_STATUS.REJECTED ? 'denied' : 'hidden']">
             <p>Unfortunately, your application was denied because your credentials do not match with the requirements for becoming a rater. We look forward to receiving your application again in the near future. If you have any questions or concerns regarding this, please feel free to contact us as support@reboost.ai.
             </p>
           </div>
-          <div v-if="status==='Approved'" class="button-container">
-            <el-label size="mini">
+          <div v-if="status===RATER_STATUS.APPROVED||status===RATER_STATUS.DOCUMENT_REQUESTED" class="button-container">
+            <el-label class="label-container" size="mini">
               Complete Training Now:
               <el-tooltip v-if="applyToList.includes('IELTS')" :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
                 <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin: 0 10px 0" size="mini" @click="redirectToTraining('IELTS')">IELTS</el-button>
@@ -66,10 +67,91 @@
                 :disabled="true"
               />
             </div>
+            <el-form v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" ref="formRegister" class="file-upload-form" :model="formRegister" label-width="180px" style="width:90%;">
+              <el-form-item
+                v-if="applyToList.includes('IELTS')"
+                size="mini"
+                label="IELTS Credentials"
+                prop="iELTSCertificatePhotos"
+                :rules="[
+                  { required: true, message: 'IELTS Credentials Photos is required'}]"
+              >
+                <el-upload
+                  class="upload-demo"
+                  action=""
+                  :on-preview="previewImage"
+                  :file-list="formRegister.iELTSCertificatePhotos"
+                  :on-change="handleChangeIELTS"
+                  :on-remove="handleRemoveIELTS"
+                  :auto-upload="false"
+                  list-type="picture"
+                >
+                  <el-button type="primary">Click to upload</el-button>
+                  <div slot="tip" class="el-upload__tip">
+                    <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                  </div>
+                </el-upload>
+              </el-form-item>
+              <el-form-item
+                v-if="applyToList.includes('TOEFL')"
+                size="mini"
+                label="TOEFL Credentials"
+                prop="tOEFLCertificatePhotos"
+                :rules="[
+                  { required: true, message: 'TOEFL Credentials Photos is required'}]"
+              >
+                <el-upload
+                  class="upload-demo"
+                  action=""
+                  :on-preview="previewImage"
+                  :on-change="handleChangeTOEFL"
+                  :on-remove="handleRemoveTOEFL"
+                  :file-list="formRegister.tOEFLCertificatePhotos"
+                  :auto-upload="false"
+                  list-type="picture"
+                >
+                  <el-button type="primary">Click to upload</el-button>
+                  <div slot="tip" class="el-upload__tip">
+                    <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                  </div>
+                </el-upload>
+              </el-form-item>
+              <el-form-item
+                size="mini"
+                label="Photo ID"
+                prop="iDCardPhotos"
+                :rules="[
+                  { required: true, message: 'IDPhotos is required'}]"
+              >
+                <el-upload
+                  class="upload-demo"
+                  action=""
+                  :on-preview="previewImage"
+                  :file-list="formRegister.iDCardPhotos"
+                  :on-change="handleChangeIdPhoto"
+                  :on-remove="handleRemoveIdPhoto"
+                  :auto-upload="false"
+                  list-type="picture"
+                >
+                  <el-button type="primary">Click to upload</el-button>
+                  <div slot="tip" class="el-upload__tip">
+                    <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.</p>
+                  </div>
+                </el-upload>
+              </el-form-item>
+            </el-form>
+            <el-button v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" style="margin-top:10px" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
+
           </div>
         </div>
       </el-col>
     </el-row>
+    <div :class="{ 'isActive': toggleImagePopup }" class="image-container-preview" @click="closeImg($event)">
+      <img id="previewImg" ref="previewImg" :src="popUpImageUrl" class="image-fit" alt="">
+      <div class="close-icon" @click="toggleImagePopup=!toggleImagePopup">
+        <i class="el-icon-close" style="font-size: 1.5rem;" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -78,6 +160,8 @@
 import raterService from '@/services/rater.service'
 import * as mapUtil from '@/utils/model-mapping'
 import reviewService from '@/services/review.service.js'
+import * as stringUtil from '@/utils/string'
+import { RATER_STATUS } from '../../app.constant'
 
 export default {
   name: 'ApplicationStatus',
@@ -91,12 +175,25 @@ export default {
       denied: true,
       status: '',
       note: undefined,
-      applyToList: []
+      applyToList: [],
+      iDCardPhotos: [],
+      formRegister: {
+        id: '',
+        iDCardPhotos: [],
+        iELTSCertificatePhotos: [],
+        tOEFLCertificatePhotos: []
+      },
+      popUpImageUrl: null,
+      toggleImagePopup: false,
+      RATER_STATUS: RATER_STATUS
     }
   },
   computed: {
     getReviews() {
       return this.$store.getters['review/getReviewsById']
+    },
+    currentUser() {
+      return this.$store.getters['auth/getUser']
     }
   },
   mounted() {
@@ -113,6 +210,7 @@ export default {
     loadDetail(id) {
       console.log('load detail', mapUtil)
       raterService.getById(id).then(rs => {
+        this.formRegister = mapUtil.map(rs, this.formRegister)
         this.loadCompleted = true
         console.log('result load detail', rs)
         rs.applyTo.forEach(e => {
@@ -120,6 +218,19 @@ export default {
         })
         this.status = rs.status
         this.note = rs.note
+
+        // Files
+        if (rs.raterCredentials) {
+          for (const f of rs.raterCredentials) {
+            if (f.credentialType == 'IDPhoto') {
+              this.formRegister.iDCardPhotos.push({ name: f.fileName, url: 'data:image/png;base64,' + f.data })
+            } else if (f.credentialType == 'TOEFLPhoto') {
+              this.formRegister.tOEFLCertificatePhotos.push({ name: f.fileName, url: 'data:image/png;base64,' + f.data })
+            } else if (f.credentialType == 'IELTSPhoto') {
+              this.formRegister.iELTSCertificatePhotos.push({ name: f.fileName, url: 'data:image/png;base64,' + f.data })
+            }
+          }
+        }
       })
     },
     redirectToTraining(e) {
@@ -137,6 +248,115 @@ export default {
         return true
       }
       return false
+    },
+    handleRemoveIdPhoto(file, fileList) {
+      this.formRegister.iDCardPhotos = fileList
+    },
+    handleChangeIdPhoto(file, fileList) {
+      this.formRegister.iDCardPhotos = fileList
+    },
+    handleChangeIELTS(file, fileList) {
+      this.formRegister.iELTSCertificatePhotos = fileList
+    },
+    handleRemoveIELTS(file, fileList) {
+      this.formRegister.iELTSCertificatePhotos = fileList
+    },
+    handleChangeTOEFL(file, fileList) {
+      this.formRegister.tOEFLCertificatePhotos = fileList
+    },
+    handleRemoveTOEFL(file, fileList) {
+      this.formRegister.tOEFLCertificatePhotos = fileList
+    },
+    previewImage(e) {
+      this.popUpImageUrl = e.url
+      this.toggleImagePopup = !this.toggleImagePopup
+    },
+    closeImg(e) {
+      if (e.target.firstChild != null) {
+        this.toggleImagePopup = !this.toggleImagePopup
+      }
+    },
+    getApplyTo(testName) {
+      return this.formRegister.applyTo.find(a => a.indexOf(testName) >= 0) != undefined
+    },
+    onSubmit(formName, createOrUpdate) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          const formData = new FormData()
+          formData.set('UserId', this.currentUser.id)
+          formData.set('Id', this.formRegister.id)
+          formData.set('Status', RATER_STATUS.APPROVED)
+          let count = 0
+          for (const p of this.formRegister.iDCardPhotos) {
+            console.log('ID')
+
+            formData.set(`RaterCredentials[${count}][TestId]`, '0')
+            formData.set(`RaterCredentials[${count}][CredentialType]`, 'IDPhoto')
+            formData.set(`RaterCredentials[${count}][FileName]`, p.name)
+            formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))
+
+            if (p.raw) {
+              formData.append(`UploadedFiles`, p.raw)
+            } else {
+              formData.append(`UploadedFiles`, stringUtil.base64ToArrayBuffer(p.url, p.name))
+            }
+            count++
+          }
+
+          if (this.getApplyTo('IELTS')) {
+            console.log('IELTS')
+            for (const p of this.formRegister.iELTSCertificatePhotos) {
+              formData.set(`RaterCredentials[${count}][TestId]`, '2')
+              formData.set(`RaterCredentials[${count}][CredentialType]`, 'IELTSPhoto')
+              formData.set(`RaterCredentials[${count}][FileName]`, p.name)
+              formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))
+
+              if (p.raw) {
+                formData.append(`UploadedFiles`, p.raw)
+              } else {
+                formData.append(`UploadedFiles`, stringUtil.base64ToArrayBuffer(p.url, p.name))
+              }
+
+              count++
+            }
+          }
+
+          if (this.getApplyTo('TOEFL')) {
+            console.log('TOEFL')
+            for (const p of this.formRegister.tOEFLCertificatePhotos) {
+              formData.set(`RaterCredentials[${count}][TestId]`, '1')
+              formData.set(`RaterCredentials[${count}][CredentialType]`, 'TOEFLPhoto')
+              formData.set(`RaterCredentials[${count}][FileName]`, p.name)
+              formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))
+
+              if (p.raw) {
+                formData.append(`UploadedFiles`, p.raw)
+              } else {
+                formData.append(`UploadedFiles`, stringUtil.base64ToArrayBuffer(p.url, p.name))
+              }
+            }
+          }
+
+          raterService.updateCredential(formData).then(rs => {
+            console.log('updated', rs)
+            this.status = rs.status
+            this.$notify({
+              title: 'Success',
+              message: 'Update success',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        } else {
+          console.log('error submit!!')
+          this.$notify.error({
+            title: 'Error',
+            message: 'Error occured!',
+            duration: 2000
+          })
+          return false
+        }
+      })
     }
   }
 }
@@ -219,5 +439,38 @@ export default {
 .note-container{
   margin: 20px 0 0 0;
 }
+.file-upload-form{
+  margin-top:20px;
+}
+.image-container-preview{
+  display: none;
+  position: fixed;
+  top:0;
+  z-index: 9999;
+  background-color: rgba(0,0,0,0.5);
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
 
+.image-container-preview.isActive{
+  display: flex;
+}
+.image-fit{
+  max-height: 100%;max-width: 100%; object-fit: cover;
+}
+.close-icon {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  padding: 4px 0 0 0;
+  text-align: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  background-color: #E4E6EB;
+  border-radius: 50%;
+  cursor: pointer;
+}
 </style>

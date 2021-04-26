@@ -53,9 +53,9 @@ export default ({
       localStorage.setItem(`${this.documentid}/color`, e)
       if (this.annotation) {
         this.updateRectangleAnotation(e)
-      } else {
-        console.log('no target')
       }
+
+      this.$emit('colorChange', this.colorChosen)
       this.expandColorPicker = true
       this.expandColorPickerToggle()
     },
@@ -78,14 +78,22 @@ export default ({
       }
     },
     changeColorByClickedAnno(e, annotation) {
-      this.colorChosen = e
-      if (typeof (annotation) != 'undefined' && annotation) { this.annotation = annotation } else {
+      if (typeof (e) != 'undefined') {
+        this.colorChosen = e
+      }
+      if (typeof (annotation) != 'undefined' && annotation) {
+        this.annotation = annotation
+        localStorage.setItem(`${this.documentid}/color`, e)
+      } else {
         this.annotation = null
       }
     },
     async updateRectangleAnotation(e) {
       const previousAnno = Object.assign({}, this.annotation)
       var type = this.annotation.type
+      if (type == 'comment-highlight') {
+        return
+      }
       const annotationClicked = document.querySelector(`[data-pdf-annotate-id="${this.annotation.uuid}"]`)
       if (type != 'highlight') {
         annotationClicked.setAttribute('stroke', e)
@@ -93,7 +101,12 @@ export default ({
       if (type == 'textbox') {
         annotationClicked.childNodes[0].style.color = e
       } else if (type == 'highlight') {
-        annotationClicked.childNodes[0].setAttribute('fill', e)
+        if (annotationClicked.hasChildNodes()) {
+          const child = annotationClicked.childNodes
+          for (let i = 0; i < child.length; i++) {
+            annotationClicked.childNodes[i].setAttribute('fill', e)
+          }
+        }
       }
       this.annotation.color = e
       await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentid, this.annotation.uuid, this.annotation, undefined, previousAnno)
