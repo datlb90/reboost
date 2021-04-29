@@ -67,6 +67,8 @@
                 :disabled="true"
               />
             </div>
+          </div>
+          <div>
             <el-form v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" ref="formRegister" class="file-upload-form" :model="formRegister" label-width="180px" style="width:90%;">
               <el-form-item
                 v-if="applyToList.includes('IELTS')"

@@ -357,7 +357,6 @@ export default ({
     },
     updateRedoList(e) {
       this.redoHistory = e
-      console.log(this.redoHistory)
     },
     updateToolbarUndoList(e) {
       this.undoHistory = e

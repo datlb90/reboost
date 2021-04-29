@@ -80,7 +80,8 @@ namespace Reboost.Service.Services
         }
         public async Task<InTextComments> AddInTextCommentAsync(int docId, int reviewId, InTextComments cmt, Annotations anno)
         {
-            if(anno.Type !="comment-area")
+            
+            if(anno.Id == 0)
             {
                 await _unitOfWork.Review.AddAnnotationAsync(anno);
             }
