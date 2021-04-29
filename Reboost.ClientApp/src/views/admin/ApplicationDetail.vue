@@ -17,11 +17,11 @@
           <el-form-item v-if="raterId" size="mini" label="Current Status">
             <el-tag
               :type="
-                formRegister.status === 'Approved'
+                formRegister.status === RATER_STATUS.APPROVED
                   ? 'success'
-                  : formRegister.status === 'Applied'
+                  : formRegister.status === RATER_STATUS.APPLIED
                     ? 'primary'
-                    : formRegister.status === 'Denied'
+                    : formRegister.status === RATER_STATUS.REJECTED
                       ? 'danger'
                       : 'warning'
               "
@@ -144,7 +144,8 @@
                     <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Speaking</label>
                   </el-input>
                 </el-form-item>
-              </el-row></el-form-item>
+              </el-row>
+            </el-form-item>
             <el-form-item
               size="mini"
               label="IELTS Credentials"
@@ -152,7 +153,16 @@
               :rules="[
                 { required: true, message: 'IELTS Credentials Photos is required'}]"
             >
-              <el-upload class="upload-demo" action="" :on-preview="previewImage" :file-list="formRegister.iELTSCertificatePhotos" :on-change="handleChangeIELTS" :on-remove="handleRemoveIELTS" :auto-upload="false" list-type="picture">
+              <el-upload
+                class="upload-demo"
+                action=""
+                :on-preview="previewImage"
+                :file-list="formRegister.iELTSCertificatePhotos"
+                :on-change="handleChangeIELTS"
+                :on-remove="handleRemoveIELTS"
+                :auto-upload="false"
+                list-type="picture"
+              >
                 <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
                   <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
@@ -264,8 +274,9 @@
             <el-button v-if="!raterId" type="primary" size="mini" @click="onSubmit('formRegister', 'create')">Create</el-button>
             <el-button v-if="!raterId" size="mini">Cancel</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
-            <el-button v-if="raterId" class="button" size="mini" type="success" @click="updateStatus('Approved')">Approve</el-button>
-            <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus('Rejected')">Reject</el-button>
+            <el-button v-if="raterId" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.APPROVED)">Approve</el-button>
+            <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">Reject</el-button>
+            <el-button v-if="raterId" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
             <el-dropdown v-if="completedTraining(formRegister,'IELTS')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">
@@ -301,6 +312,7 @@ import moment from 'moment'
 // import Notification from 'element-ui'
 import * as mapUtil from '@/utils/model-mapping'
 import * as stringUtil from '@/utils/string'
+import { RATER_STATUS } from '../../app.constant'
 
 export default {
   name: 'Application',
@@ -344,7 +356,8 @@ export default {
       ieltsScoresIsNUll: true,
       toggleImagePopup: false,
       popUpImageUrl: null,
-      portraitImg: true
+      portraitImg: true,
+      RATER_STATUS: RATER_STATUS
     }
   },
   computed: {
@@ -454,7 +467,7 @@ export default {
           formData.set('Biography', this.formRegister.biography)
           formData.set('Note', this.formRegister.note)
           formData.set('firstLanguage', this.formRegister.firstLanguage)
-          formData.set('Status', 'Applied')
+          formData.set('Status', RATER_STATUS.APPLIED)
           formData.set('AppliedDate', moment().format('yyyy-MM-DD hh:mm:ss'))
           formData.set('LastActivityDate', moment().format('yyyy-MM-DD hh:mm:ss'))
           formData.set('UserId', this.currentUser.id)
@@ -571,16 +584,22 @@ export default {
       raterService.updateStatus(this.raterId, status).then(rs => {
         console.log('status', rs)
         this.formRegister.status = status
-        if (rs.status == 'Approved') {
+        if (rs.status == RATER_STATUS.APPROVED) {
           this.$notify.success({
-            title: 'Approved',
+            title: RATER_STATUS.APPROVED,
             message: 'Rater Approved!',
             duration: 2000
           })
-        } else if (rs.status == 'Rejected') {
+        } else if (rs.status == RATER_STATUS.REJECTED) {
           this.$notify.error({
-            title: 'Rejected',
+            title: RATER_STATUS.REJECTED,
             message: 'Rater Rejected!',
+            duration: 2000
+          })
+        } else if (rs.status == RATER_STATUS.DOCUMENT_REQUESTED) {
+          this.$notify.info({
+            title: RATER_STATUS.DOCUMENT_REQUESTED,
+            message: 'Rater Document Requested!',
             duration: 2000
           })
         }
@@ -627,17 +646,17 @@ export default {
     },
     trainingDropdownClick(e) {
       var t = this.getAllReviews.filter(r => r.reviewerId == this.formRegister.userId && r.reviewData.length > 0 && r.status == e.type)[0]
-      var newStatus = e.action == 'approve' ? e.type + 'Approved' : e.type + 'Rejected'
+      var newStatus = e.action == 'approve' ? e.type + RATER_STATUS.APPROVED : e.type + RATER_STATUS.REJECTED
       reviewService.changeReviewStatus(t.id, newStatus).then(rs => {
-        if (rs.status.includes('Rejected')) {
+        if (rs.status.includes(RATER_STATUS.REJECTED)) {
           this.$notify.error({
-            title: 'Rejected',
+            title: RATER_STATUS.REJECTED,
             message: 'Submitted Training Rejected!',
             duration: 2000
           })
         } else {
           this.$notify.success({
-            title: 'Approved',
+            title: RATER_STATUS.APPROVED,
             message: 'Submitted Training Approved!',
             duration: 2000
           })

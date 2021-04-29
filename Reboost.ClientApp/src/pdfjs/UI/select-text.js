@@ -53,7 +53,7 @@ export function enableTextSelection(parent) {
       } else {
         that.hideTextToolBar()
         that.hideTextToolGroup()
-        that.$refs.toolBar.handleAnntationClicked(null)
+        that.$refs.toolBar.handleAnnotationClicked(null)
       }
     }
   }
@@ -89,7 +89,7 @@ export function enableTextSelection(parent) {
         if (!validTarget && comment.replace(/\s/g, '').length == 0) { that.cancelCommentText() }
       }
       // Unselect highlight comment
-      if (!e.target.classList.contains('comment-highlight-selected')) {
+      if (!e.target.classList.contains('comment-highlight-selected') && !e.target.classList.contains('toolbar-btn')) {
         const validTarget = that.hasAParentWithClass(e.target, 'comment-card-selected')
         if (!validTarget) { that.unselectHighlightComment() }
       }

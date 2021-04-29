@@ -147,10 +147,10 @@
       <el-button class="textToolBtn" @click="showColorPickerTool('area')">
         <i class="fas fa-palette" />
       </el-button>
-      <el-button v-if="isTextbox" class="textToolBtn" @click="editFreeText()">
+      <el-button :style="{'display': isTextbox ? 'block':'none'}" class="textToolBtn" @click="editFreeText()">
         <i class="fas fa-edit" />
       </el-button>
-      <el-button v-if="isRect" class="textToolBtn" @click="addRectComment()">
+      <el-button :style="{'display': isRect ? 'block':'none'}" class="textToolBtn" @click="addRectComment()">
         <i class="fas fa-comment-alt" />
       </el-button>
       <el-button class="textToolBtn" @click="deleteAnnotation()">
@@ -283,7 +283,7 @@ export default {
   },
   computed: {
     loadedAnnotation() {
-      const data = this.$store.getters['review/getAnnotation']
+      const data = this.$store.getters['review/getAnnotations']
       if (!data) {
         return null
       }
@@ -366,7 +366,6 @@ export default {
           this.setStatusText()
         })
       } else if (annotation.type == 'point') {
-        console.log('123123')
         this.disableToolbarButtons()
       }
     },
@@ -403,13 +402,13 @@ export default {
           }
         })
       } else {
+        this.hideRectToolBar()
+        this.hideDeleteToolBar()
         reviewService.deleteAnnotation(target.id).then(rs => {
           this.undoHistory.push({ action: 'deleted', annotation: target })
           this.updateUndoList()
           this.removeElementById(target.uuid)
           this.setStatusText()
-          this.hideRectToolBar()
-          this.hideDeleteToolBar()
         })
       }
     },
@@ -531,7 +530,7 @@ export default {
         }
         await PDFJSAnnotate.getStoreAdapter().getAnnotation(that.documentId, target.getAttribute('data-pdf-annotate-id')).then(r => {
           that.annotation = r
-          that.$refs.toolBar.handleAnntationClicked(that.annotation)
+          that.$refs.toolBar.handleAnnotationClicked(that.annotation)
         })
         that.handleCommentAnnotationClick(target)
       }
@@ -673,7 +672,7 @@ export default {
         return
       }
       // Display text tool bar if text is selected.
-      this.isTextbox = false
+      this.isTextbox = null
       this.isRect = false
       if (!text && (typeof (target) != 'undefined')) {
         const type = target.getAttribute('data-pdf-annotate-type')
@@ -736,7 +735,7 @@ export default {
             return item.dataset.pdfAnnotateId == target.getAttribute('data-pdf-annotate-id')
           })
           var gTop = parseInt(parseInt(target.getAttribute('top')) * this.RENDER_OPTIONS.scale) - 34
-          const svgHeight = parseInt((parseInt(target.getAttribute('page-height')) + 10) * this.RENDER_OPTIONS.scale)
+          const svgHeight = parseInt(target.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12
           const svgPageNum = parseInt(target.getAttribute('page-num'))
           if (svgPageNum > 1) { gTop += ((svgPageNum - 1) * svgHeight) }
           const cTop = this.comments[this.order].topPosition
@@ -780,7 +779,8 @@ export default {
             if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
           }
         } else if (type == 'area') {
-          this.isRect = target
+          this.isRect = true
+          this.isTextbox = null
           this.colorChosen = target.getAttribute('stroke')
           var uuid = target.getAttribute('data-pdf-annotate-id')
           this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
@@ -801,6 +801,7 @@ export default {
           }
         } else if (type == 'textbox') {
           this.isTextbox = target
+          this.isRect = false
           this.colorChosen = target.getAttribute('stroke')
           uuid = target.getAttribute('data-pdf-annotate-id')
           this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
@@ -856,8 +857,14 @@ export default {
       if (type == 'textbox') {
         this.annotationClicked.childNodes[0].style.color = e
       } else if (type == 'highlight') {
-        this.annotationClicked.childNodes[0].setAttribute('fill', e)
+        if (this.annotationClicked.hasChildNodes()) {
+          const child = this.annotationClicked.childNodes
+          for (let i = 0; i < child.length; i++) {
+            this.annotationClicked.childNodes[i].setAttribute('fill', e)
+          }
+        }
       }
+
       this.annotation.color = e
       await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, uuid, this.annotation, undefined, previousAnno)
       anno = {
@@ -1035,7 +1042,7 @@ export default {
       if (type == 'comment-highlight') {
         await this.CommentText()
       } else {
-        await this.highlightText('comment-highlight')
+        await this.highlightText(type)
       }
     },
     async highlightText(type) {
@@ -1068,7 +1075,6 @@ export default {
           })
         }).filter((r) => r.width > 0 && r.height > 0 && r.x > -1 && r.y > -1)
       }
-
       // Short circuit if no rectangles exist
       if (annotation.rectangles.length === 0) {
         return
@@ -1081,7 +1087,7 @@ export default {
       const { documentId, pageNumber } = getMetadata(this.svg)
       // format top with scale 100%
       annotation.color = color
-      annotation.top = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2)) / this.RENDER_OPTIONS.scale
+      annotation.top = annotation.rectangles[0].y
       annotation.pageNum = pageNumber
       annotation.pageHeight = parseInt(this.svg.getAttribute('height') / this.RENDER_OPTIONS.scale)
       this.annotation = annotation
@@ -1147,13 +1153,14 @@ export default {
         // get add new form's top position
         const svg = this.svg
         var rectTop = 0
+
         if (typeof (note) == 'undefined') {
           rectTop = parseInt(this.target.getAttribute('top')) * this.RENDER_OPTIONS.scale
         } else {
           rectTop = parseInt(note.y) * this.RENDER_OPTIONS.scale
         }
         // const rectTop = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2))
-        const svgHeight = parseInt(svg.getAttribute('height')) + 10
+        const svgHeight = parseInt(svg.getAttribute('height')) + 12
         const svgPageNum = svg.getAttribute('data-pdf-annotate-page')
         var svgTop = 0
         if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * svgHeight) }
@@ -1165,7 +1172,6 @@ export default {
         } else {
           endPos += 126
         }
-
         if (this.order == 0) {
           // Move down all comment cards
           this.moveDownFromEndPos(commentCards, 0, endPos)
@@ -1207,7 +1213,7 @@ export default {
             const commentId = commentCards[this.order].getAttribute('highlight-id')
             const g = this.getHighlightByCommentId(commentId)
             let gTop = parseInt(g.getAttribute('top')) - 35
-            if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) + 10) * this.RENDER_OPTIONS.scale) }
+            if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) + 12) * this.RENDER_OPTIONS.scale) }
             if (lowerTop > gTop) {
               this.moveUpToEndPos(commentCards, this.order, endPos)
             }
@@ -1264,7 +1270,7 @@ export default {
       const svgHeight = svg.getAttribute('height')
       const svgPageNum = svg.getAttribute('data-pdf-annotate-page')
       let svgTop = 0
-      if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * (parseInt(svgHeight) + 10)) }
+      if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * (parseInt(svgHeight) + 12)) }
       var topPos = svgTop + rectTop - 35
       newCommentWrapper.style = 'width: 100%; position: absolute; left: -20px; top: ' + topPos + 'px;'
       this.hideTextToolBar()
@@ -1359,7 +1365,7 @@ export default {
       const g = this.getHighlightByCommentId(this.comments[startIndex].uuid)
       if (!g) { return }
       let gTop = parseInt(g.getAttribute('top')) * this.RENDER_OPTIONS.scale - 35
-      if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) + 10) * this.RENDER_OPTIONS.scale) }
+      if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) + 12) * this.RENDER_OPTIONS.scale) }
       // Get start index card's position
       const adjTop = this.comments[startIndex].topPosition
       const adjEnd = adjTop + commentCards[startIndex].offsetHeight
@@ -1384,7 +1390,7 @@ export default {
           const thisG = this.getHighlightByCommentId(this.comments[m].uuid)
           if (!thisG) { return }
           var thisGTop = parseInt(thisG.getAttribute('top') * this.RENDER_OPTIONS.scale) - 35
-          if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) + 10) * this.RENDER_OPTIONS.scale) }
+          if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) + 12) * this.RENDER_OPTIONS.scale) }
           if ((thisTop - (thisEnd - previousTop) - 10) > thisGTop) {
             this.comments[m].topPosition = thisGTop
           } else {
@@ -1401,7 +1407,7 @@ export default {
       const g = this.getHighlightByCommentId(this.comments[startIndex].uuid)
       if (!g) { return }
       let gTop = parseInt(g.getAttribute('top')) * this.RENDER_OPTIONS.scale - 35
-      if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 10)) }
+      if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12)) }
 
       if ((endPos + 10) < gTop) {
         if (this.comments[startIndex].topPosition < gTop) {
@@ -1425,7 +1431,7 @@ export default {
 
           // Check if move down is necessary
           if (thisTop > (previousEnd + 10)) {
-            if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 10)) }
+            if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12)) }
             if (this.comments[n].topPosition < thisGTop) { return }
             if (thisGTop > (previousEnd + 10)) {
               this.comments[n].topPosition = thisGTop
@@ -1449,7 +1455,7 @@ export default {
       const g = this.getHighlightByCommentId(this.comments[startIndex].uuid)
       if (!g) { return }
       let gTop = parseInt(g.getAttribute('top')) * this.RENDER_OPTIONS.scale - 35
-      if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 10)) }
+      if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12)) }
       if ((topPos - 10 - commentCards[startIndex].offsetHeight) > gTop) {
         if (this.comments[startIndex].topPosition > gTop) {
           return
@@ -1465,7 +1471,7 @@ export default {
           const thisG = this.getHighlightByCommentId(this.comments[n].uuid)
           if (!thisG) { return }
           let thisGTop = parseInt(thisG.getAttribute('top') * this.RENDER_OPTIONS.scale) - 35
-          if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 10)) }
+          if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12)) }
           if (this.comments[n].topPosition > thisGTop) { return }
           // const thisTop = this.comments[n].topPosition
           // const thisEnd = thisTop + commentCards[n].offsetHeight
@@ -1484,7 +1490,7 @@ export default {
       const g = this.getHighlightByCommentId(this.comments[startIndex].uuid)
       if (!g) { return }
       let gTop = parseInt(g.getAttribute('top')) * this.RENDER_OPTIONS.scale - 35
-      if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 10)) }
+      if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12)) }
       if (this.comments[startIndex].topPosition > endPos + 10) {
         return
       }
@@ -1508,7 +1514,7 @@ export default {
           var thisGTop = parseInt(thisG.getAttribute('top') * this.RENDER_OPTIONS.scale) - 35
 
           // Check if move down is necessary
-          if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 10)) }
+          if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12)) }
           if (thisGTop > (previousEnd + 10)) {
             this.comments[j].topPosition = thisGTop
           } else {
@@ -1526,18 +1532,18 @@ export default {
         const svg = this.svg
         var rectTop = 0
         if (typeof (note) == 'undefined') {
-          rectTop = parseInt(this.target.getAttribute('top'))
+          rectTop = parseInt(this.target.getAttribute('top')) * this.RENDER_OPTIONS.scale
         } else {
-          rectTop = parseInt(note.y)
+          rectTop = parseInt(note.y) * this.RENDER_OPTIONS.scale
         }
-        const svgHeight = svg.getAttribute('height')
-        const svgPageNum = svg.getAttribute('data-pdf-annotate-page')
+        // 12 = page's margin + page's border * 2
+        const svgHeight = parseInt(svg.getAttribute('height')) + 12
+        const svgPageNum = parseInt(svg.getAttribute('data-pdf-annotate-page'))
 
         let svgTop = 0
         if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * svgHeight) }
-        const topPos = svgTop + rectTop * this.RENDER_OPTIONS.scale - 35
-        const endPos = topPos + 105
-
+        const topPos = parseInt(svgTop) + rectTop - 35
+        const endPos = topPos + 126
         // Check first and last position
         const firstTopPos = this.comments[0].topPosition
         const lastEndPos = this.comments[this.comments.length - 1].topPosition + commentCards[commentCards.length - 1].offsetHeight
@@ -1560,10 +1566,10 @@ export default {
     },
     compareTopAttributes(a, b) {
       let top1 = parseInt(a.getAttribute('top')) * this.RENDER_OPTIONS.scale
-      if (a.getAttribute('page-num') > 1) { top1 += ((a.getAttribute('page-num') - 1) * (parseInt(a.getAttribute('page-height'))) * this.RENDER_OPTIONS.scale + 10) }
+      if (a.getAttribute('page-num') > 1) { top1 += ((a.getAttribute('page-num') - 1) * (parseInt(a.getAttribute('page-height'))) * this.RENDER_OPTIONS.scale + 12) }
 
       let top2 = parseInt(b.getAttribute('top')) * this.RENDER_OPTIONS.scale
-      if (b.getAttribute('page-num') > 1) { top2 += ((b.getAttribute('page-num') - 1) * (parseInt(b.getAttribute('page-height'))) * this.RENDER_OPTIONS.scale + 10) }
+      if (b.getAttribute('page-num') > 1) { top2 += ((b.getAttribute('page-num') - 1) * (parseInt(b.getAttribute('page-height'))) * this.RENDER_OPTIONS.scale + 12) }
       if (top1 > top2) return 1
       if (top2 > top1) return -1
       if (top2 == top1) {
@@ -1577,10 +1583,10 @@ export default {
     },
     compareTopAnnoAttributes(a, b) {
       let top1 = a.annotation.top * this.RENDER_OPTIONS.scale
-      if (a.annotation.page > 1) { top1 += ((a.annotation.pageNum - 1) * ((a.annotation.pageHeight) * this.RENDER_OPTIONS.scale) + 10) }
+      if (a.annotation.page > 1) { top1 += ((a.annotation.pageNum - 1) * ((a.annotation.pageHeight) * this.RENDER_OPTIONS.scale) + 12) }
 
       let top2 = b.annotation.top * this.RENDER_OPTIONS.scale
-      if (b.annotation.page > 1) { top2 += ((b.annotation.pageNum - 1) * ((a.annotation.pageHeight) * this.RENDER_OPTIONS.scale) + 10) }
+      if (b.annotation.page > 1) { top2 += ((b.annotation.pageNum - 1) * ((a.annotation.pageHeight) * this.RENDER_OPTIONS.scale) + 12) }
       if (top1 > top2) return 1
       if (top2 > top1) return -1
       if (top2 == top1) {
@@ -1593,8 +1599,8 @@ export default {
       return 0
     },
     removeMaxHeigthRects(arr) {
-      const min = Math.max(...arr.map(a => a.height))
-      return arr.filter(a => a.height != min)
+      const max = Math.max(...arr.map(a => parseInt(a.height)))
+      return arr.filter(a => a.height < max)
     },
     displayEditComment(comment) {
       this.preEditedAnno = Object.assign({}, comment)
@@ -1664,7 +1670,6 @@ export default {
           if (editCmt) {
             const cmtAnno = document.querySelector(`[data-pdf-annotate-id="${editCmt.getAttribute('highlight-id')}"]`)
             if (cmtAnno) {
-              await this.handleCommentAnnotationClick(cmtAnno)
               const commentTextContainer = document.getElementById('comment-input-' + comment.uuid)
               if (parseInt(window.getComputedStyle(commentTextContainer).height, 10) > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 4)) {
                 commentTextContainer.style.webkitLineClamp = '3'
@@ -1675,8 +1680,9 @@ export default {
                 commentTextContainer.style.webkitLineClamp = 'inherit'
                 this.showMoreList = this.showMoreList.filter(item => item.id !== editCmt.getAttribute('highlight-id'))
               }
-              this.showMoreList.map(rs => { rs.value = 0 })
+              await this.showMoreList.map(rs => { rs.value = 0 })
               this.hideDeleteToolBar()
+              await this.handleCommentAnnotationClick(cmtAnno)
             }
           }
         }
@@ -1817,6 +1823,14 @@ export default {
     async handleScale(e) {
       this.RENDER_OPTIONS.scale = e
       this.reRenderPages()
+      const overlayDoc = document.getElementById('pdf-annotate-edit-overlay')
+      if (overlayDoc && typeof (overlayDoc) != 'undefined') {
+        overlayDoc.parentNode.removeChild(overlayDoc)
+      }
+      this.hideRectToolBar()
+      this.hideDeleteToolBar()
+      this.hideTextToolBar()
+      this.hideTextToolGroup()
     },
 
     async reRenderPages() {
@@ -2093,7 +2107,9 @@ export default {
         }
       })
       const highlight = document.querySelector("[data-pdf-annotate-id='" + uuid + "']")
-      await this.handleCommentAnnotationClick(highlight)
+      setTimeout(async() => {
+        await this.handleCommentAnnotationClick(highlight)
+      }, 500)
     },
     editFreeText() {
       editTextBox(this.isTextbox, this.svg)

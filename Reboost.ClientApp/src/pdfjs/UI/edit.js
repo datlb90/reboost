@@ -141,7 +141,6 @@ function deleteAnnotation() {
 export function deleteAnnotations() {
   const overlayDoc = document.getElementById('pdf-annotate-edit-overlay')
   if (!overlayDoc) { return }
-  console.log('delete anno')
 
   const annotationId = overlayDoc.getAttribute('data-target-id')
   const nodes = document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)
@@ -202,6 +201,8 @@ function handleDocumentMousedown(e) {
   const target = document.querySelector(`[data-pdf-annotate-id="${annotationId}"]`)
   const type = target.getAttribute('data-pdf-annotate-type')
 
+  // const { viewport } = getMetadata(svgEdit)
+
   if (type === 'highlight' || type === 'strikeout' || type === 'point') { return }
   if (type == 'textbox') {
     isDragging = true
@@ -213,6 +214,12 @@ function handleDocumentMousedown(e) {
     overlay.style.background = 'rgba(255, 255, 255, 0.7)'
     overlay.style.cursor = 'move'
     // overlay.querySelector('a').style.display = 'none'
+    const svg = overlay.parentNode.querySelector('svg.annotationLayer')
+    const { viewport } = getMetadata(svg)
+    const pre = document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)[0].firstChild
+
+    pre.style.fontSize = 12 * viewport.scale + 'px'
+    overlay.appendChild(pre)
 
     document.addEventListener('mousemove', handleDocumentMousemove)
     document.addEventListener('mouseup', handleDocumentMouseup)
@@ -335,6 +342,9 @@ function handleDocumentMouseup(e) {
     PDFJSAnnotate.getStoreAdapter().editAnnotation(documentId, annotationId, annotation, undefined, oldAnnotation)
   })
 
+  overlay.firstChild.style.fontSize = '12px'
+  document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)[0].appendChild(overlay.firstChild)
+
   setTimeout(() => {
     isDragging = false
   }, 0)
@@ -395,6 +405,7 @@ export function editTextBox(e, svg) {
   input.setAttribute('contenteditable', true)
   input.setAttribute('id', 'pdf-annotate-text-input')
   input.setAttribute('display', 'block')
+  input.setAttribute('onfocus', "document.execCommand('selectAll',false,null)")
   input.style.outline = 'none'
   input.style.position = 'absolute'
   input.style.color = localStorage.getItem(`${documentId}/color`) || _textColor
@@ -410,9 +421,33 @@ export function editTextBox(e, svg) {
   document.querySelector(`div[data-page-number='${pageNumber}']`).appendChild(input)
 
   input.focus()
+  selectText('pdf-annotate-text-input')
   input.innerHTML = target.firstChild.innerHTML
 
   isEditing = true
+}
+
+function selectText(id) {
+  var sel, range
+  var el = document.getElementById(id) // get element id
+  if (window.getSelection && document.createRange) { // Browser compatibility
+	  sel = window.getSelection()
+	  if (sel.toString() == '') { // no text selection
+		 window.setTimeout(function() {
+        range = document.createRange() // range object
+        range.selectNodeContents(el) // sets Range
+        sel.removeAllRanges() // remove all ranges from selection
+        sel.addRange(range)// add Range to a Selection.
+      }, 1)
+	  }
+  } else if (document.selection) { // older ie
+    sel = document.selection.createRange()
+    if (sel.text == '') { // no text selection
+      range = document.body.createTextRange()// Creates TextRange object
+      range.moveToElementText(el)// sets Range
+      range.select() // make selection.
+    }
+  }
 }
 
 /**

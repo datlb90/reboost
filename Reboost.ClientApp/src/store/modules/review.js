@@ -1,7 +1,7 @@
 import reviewService from '@/services/review.service.js'
 
 const state = {
-  annotation: {},
+  annotations: {},
   reviews: [],
   reviewsById: [],
   anno: null
@@ -15,13 +15,12 @@ const actions = {
   },
   loadReviewsById({ commit }, obj) {
     return reviewService.getReviewsById().then(result => {
-      console.log('SET_REVIEWS_BY_ID', result)
       commit('SET_REVIEWS_BY_ID', result)
     })
   },
   loadReviewAnnotation({ commit }, obj) {
     return reviewService.getAnnotation(obj.docId, obj.reviewId).then(result => {
-      commit('SET_REVIEW_ANNOTATION', result)
+      commit('SET_REVIEW_ANNOTATIONS', result)
     })
   },
   addReviewAnnotation({ commit }, obj) {
@@ -43,16 +42,17 @@ const mutations = {
   SET_REVIEWS_BY_ID: (state, reviews) => {
     state.reviewsById = reviews
   },
-  SET_REVIEW_ANNOTATION: (state, annotation) => {
-    state.annotation = annotation
+  SET_REVIEW_ANNOTATIONS: (state, annotation) => {
+    state.annotations = annotation
   },
   ADD_REVIEW_ANNOTATION: (state, annotation) => {
     state.anno = annotation
+    state.annotations['annotations'].push(annotation)
   }
 }
 
 const getters = {
-  getAnnotation: state => state.annotation,
+  getAnnotations: state => state.annotations,
   getAddedAnnotation: state => state.anno,
   getReviews: state => state.reviews,
   getReviewsById: state => state.reviewsById

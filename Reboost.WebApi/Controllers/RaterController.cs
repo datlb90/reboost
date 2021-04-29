@@ -63,7 +63,15 @@ namespace Reboost.WebApi.Controllers
             var _rater = _mapper.Map<Raters>(model);
             return await _service.UpdateAsync(_rater, model.UploadedFiles);
         }
-        
+
+        [HttpPost]
+        [Route("update/credential")]
+        public async Task<Raters> UpdateCredentialAsync([FromForm] RaterRequestModel model)
+        {
+            var _rater = _mapper.Map<Raters>(model);
+            return await _service.UpdateCredentialAsync(_rater, model.UploadedFiles);
+        }
+
         [HttpGet("update/status/{id}/{status}")]
         public async Task<Raters> UpdateStatus(int id, string status) {
             return await _service.UpdateStatusAsync(id, status);
