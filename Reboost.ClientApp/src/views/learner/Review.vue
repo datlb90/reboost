@@ -130,17 +130,7 @@
     </div>
 
     <!-- Inline text tools -->
-    <el-button-group id="textToolGroup" style="display: none;">
-      <el-button class="textToolBtn" @click="HighlightText()">
-        <i class="fas fa-highlighter" />
-      </el-button>
-      <el-button class="textToolBtn" @click="StrikethroughText()">
-        <i class="fas fa-strikethrough" />
-      </el-button>
-      <el-button class="textToolBtn" @click="CommentText()">
-        <i class="fas fa-comment-alt" />
-      </el-button>
-    </el-button-group>
+    <textToolGroup ref="textToolGroup" @highLightText="highlightEvent($event)" />
     <!-- /Inline text tools -->
     <!-- Inline color picker -->
     <el-button-group id="rectTool" style="display: none;">
@@ -192,6 +182,7 @@ import PDFJS from 'pdf-dist/webpack.js'
 import ToolBar from '../../components/controls/Viewer_ToolBar'
 import TabQuestion from './Review_TabQuestion'
 import TabRubric from './Review_TabRubric'
+import TextToolGroup from '../../components/controls/TextToolGroup'
 // PDFJSAnnotate
 import PDFJSAnnotate from '@/pdfjs/PDFJSAnnotate'
 const { UI } = PDFJSAnnotate
@@ -219,7 +210,8 @@ export default {
   components: {
     'toolbar': ToolBar,
     'tabQuestion': TabQuestion,
-    'tabRubric': TabRubric
+    'tabRubric': TabRubric,
+    'textToolGroup': TextToolGroup
   },
   data() {
     return {
@@ -360,7 +352,7 @@ export default {
         await this.$store.dispatch('review/addReviewAnnotation', obj).then(async rs => {
           var temp = this.$store.getters['review/getAddedAnnotation']
           annotation.id = temp.id
-          await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation, 'doNotAddToUndoList')
+          await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation, 'notUndoRedo')
           this.undoHistory.push({ action: 'added', annotation: annotation })
           this.updateUndoList()
           this.setStatusText()
@@ -370,26 +362,28 @@ export default {
       }
     },
     annotationEdited(documentId, annotationId, annotation, actionType, previousAnno) {
-      const anno = {
-        Id: annotation.id,
-        DocumentId: documentId,
-        ReviewId: this.reviewId,
-        Type: annotation.type,
-        Color: annotation.color,
-        Uuid: annotation.uuid,
-        PageNum: annotation.pageNum,
-        Top: annotation.top,
-        Data: JSON.stringify(annotation)
-      }
-      reviewService.editAnnotation(anno).then(rs => {
-        this.hideRectToolBar()
-        this.hideDeleteToolBar()
-        if (rs && !actionType) {
-          this.undoHistory.push({ action: 'edited', annotation: previousAnno })
-          this.updateUndoList()
+      if (actionType) {
+        const anno = {
+          Id: annotation.id,
+          DocumentId: documentId,
+          ReviewId: this.reviewId,
+          Type: annotation.type,
+          Color: annotation.color,
+          Uuid: annotation.uuid,
+          PageNum: annotation.pageNum,
+          Top: annotation.top,
+          Data: JSON.stringify(annotation)
         }
-        this.setStatusText()
-      })
+        reviewService.editAnnotation(anno).then(rs => {
+          this.hideRectToolBar()
+          this.hideDeleteToolBar()
+          if (rs && !actionType) {
+            this.undoHistory.push({ action: 'edited', annotation: previousAnno })
+            this.updateUndoList()
+          }
+          this.setStatusText()
+        })
+      }
     },
     handleAnnotationDelete(target) {
       if (target.type == 'comment-highlight' || target.type == 'point') {
@@ -501,14 +495,10 @@ export default {
       function handlePageScroll(e) {
         // document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
         // eslint-disable-next-line no-console
-        const rectTool = document.getElementById('rectTool')
-        rectTool.style.visibility = 'hidden'
-        const colorPickerTool = document.getElementById('colorPickerTool')
-        colorPickerTool.style.visibility = 'hidden'
-        const textToolGroup = document.getElementById('textToolGroup')
-        textToolGroup.style.visibility = 'hidden'
-        const deleteGroup = document.getElementById('deleteTool')
-        deleteGroup.style.visibility = 'hidden'
+        that.hideRectToolBar()
+        that.hideColorPickerTool()
+        that.hideTextToolGroup()
+        that.hideDeleteToolBar()
         const visiblePageNum = Math.round(e.target.scrollTop / that.PAGE_HEIGHT) + 1
 
         const visiblePage = document.querySelector(
@@ -1704,8 +1694,7 @@ export default {
       textTool.style.display = 'none'
     },
     hideTextToolGroup() {
-      const textTool = document.getElementById('textToolGroup')
-      textTool.style.visibility = 'hidden'
+      this.$refs.textToolGroup.HideTextToolGroup()
     },
     getHighlightByCommentId(commentId) {
       return document.querySelector("[data-pdf-annotate-id='" + commentId + "']")
@@ -1853,6 +1842,9 @@ export default {
         if (undoAnno.class == 'Comment') {
           if (undoAnno.annotation.type == 'point') {
             undoAnno.text = ','
+          } else if (undoAnno.annotation.type == 'area') {
+            undoAnno.annotation.type = 'comment-area'
+            undoAnno.text = ','
           }
           await PDFJSAnnotate.getStoreAdapter().addComment(undoAnno.annotation.documentId,
             undoAnno.annotation,
@@ -1866,7 +1858,7 @@ export default {
           var anno = {
             DocumentId: this.documentId,
             ReviewId: this.reviewId,
-            Type: 'comment-highlight',
+            Type: undoAnno.annotation.type,
             PageNum: undoAnno.annotation.pageNum,
             Top: undoAnno.annotation.top,
             Color: undoAnno.annotation.color,
@@ -1889,11 +1881,11 @@ export default {
           this.annotation = undoAnno.annotation
           this.newComment = ''
           this.updatePositionsAfterCommentAdded()
-          this.handleCommentPositionsRestore()
+          await this.handleCommentPositionsRestore()
         } else {
           await PDFJSAnnotate.getStoreAdapter().addAnnotation(this.documentId, undoAnno.page, undoAnno, true)
             .then(async(annotation) => {
-              if (undoAnno.type != 'comment-highlight') {
+              if (undoAnno.type != 'comment-highlight' && undoAnno.type != 'comment-area' && undoAnno.type != 'point') {
                 var obj = {
                   DocumentId: this.documentId,
                   ReviewId: this.reviewId,
@@ -1947,6 +1939,9 @@ export default {
           if (redoAnno.class == 'Comment') {
             if (redoAnno.annotation.type == 'point') {
               redoAnno.text = ','
+            } else if (redoAnno.annotation.type == 'area') {
+              redoAnno.annotation.type = 'comment-area'
+              redoAnno.text = ','
             }
             await PDFJSAnnotate.getStoreAdapter().addComment(redoAnno.annotation.documentId,
               redoAnno.annotation,
@@ -1960,7 +1955,7 @@ export default {
             var anno = {
               DocumentId: this.documentId,
               ReviewId: this.reviewId,
-              Type: 'comment-highlight',
+              Type: redoAnno.annotation.type,
               PageNum: redoAnno.annotation.pageNum,
               Top: redoAnno.annotation.top,
               Color: redoAnno.annotation.color,
@@ -1982,11 +1977,11 @@ export default {
             this.annotation = redoAnno.annotation
             this.newComment = ''
             this.updatePositionsAfterCommentAdded()
-            this.handleCommentPositionsRestore()
+            await this.handleCommentPositionsRestore()
           } else {
             await PDFJSAnnotate.getStoreAdapter().addAnnotation(this.documentId, redoAnno.page, redoAnno, true)
               .then(async(annotation) => {
-                if (redoAnno.type != 'comment-highlight') {
+                if (redoAnno.type != 'comment-highlight' && redoAnno.type != 'comment-area' && redoAnno.type != 'point') {
                   var obj = {
                     DocumentId: this.documentId,
                     ReviewId: this.reviewId,
@@ -2154,7 +2149,7 @@ export default {
       //   }
       // }
 
-      await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, uuid, this.annotation, 'undefine')
+      await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, uuid, this.annotation, undefined)
 
       // reviewService.editAnnotation(anno).then(rs => {
       // })

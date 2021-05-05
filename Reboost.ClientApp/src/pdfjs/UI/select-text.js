@@ -32,13 +32,8 @@ export function enableTextSelection(parent) {
             if (!isEnabling()) {
               const textTool = document.getElementById('textTool')
               textTool.style.display = 'flex'
-              const textToolGroup = document.getElementById('textToolGroup')
-              var posX = parseInt(rects[rects.length - 1].left)
-              // if (rects.length > 1) {
-              //   posX = (parseInt(rects[rects.length - 1].left) + parseInt(rects[0].left)) / 2
-              // }
-              const posY = parseInt(rects[rects.length - 1].top) + e.target.offsetHeight + 10
-              textToolGroup.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
+              that.$refs.textToolGroup.ShowTextToolGroup(rects, e)
+
               that.rects = rects
               that.svg = findSVGAtPoint(rects[0].left, rects[0].top)
               that.target = e.target
