@@ -47,10 +47,10 @@ namespace Reboost.WebApi.Controllers
             var newReview = await _service.CreateNewSampleReviewDocumentAsync(type, currentUser);
             return Ok(newReview);
         }
-        [HttpPost("feedback")]
-        public async Task<IActionResult> ReviewFeedback([FromBody] List<ReviewData> data)
+        [HttpPost("feedback/{id}")]
+        public async Task<IActionResult> ReviewFeedback([FromRoute] int id, [FromBody] List<ReviewData> data)
         {
-            await _service.SaveFeedback(data);
+            await _service.SaveFeedback(id, data);
             return Ok();
         }
         [HttpGet("feedback/{reviewId}")]
@@ -128,6 +128,25 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.CreateRequestAsync(request);
             return Ok(rs);
         }
+        [HttpGet("request")]
+        public async Task<IActionResult> GetReviewRequestsByIdAsync()
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
 
+            var rs = await _service.GetReviewRequestsByIdAsync(currentUser.Id);
+            return Ok(rs);
+        }
+        [HttpGet("request/{id}")]
+        public async Task<IActionResult> GetOrCreateReviewByRequestId([FromRoute] int id)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.GetOrCreateReviewByReviewRequestAsync(id, currentUser.Id);
+            return Ok(rs);
+        }
     }
 }

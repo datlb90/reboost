@@ -29,6 +29,7 @@ export default function renderPoint(a) {
     x: a.x,
     y: a.y,
     top: a.top,
+    left: a.left,
     'page-num': a.pageNum,
     'page-height': a.pageHeight,
     'order': order

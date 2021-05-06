@@ -274,9 +274,9 @@
             <el-button v-if="!raterId" type="primary" size="mini" @click="onSubmit('formRegister', 'create')">Create</el-button>
             <el-button v-if="!raterId" size="mini">Cancel</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
-            <el-button v-if="raterId" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.APPROVED)">Approve</el-button>
+            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.DOCUMENT_REQUESTED" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.APPROVED)">Approve</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">Reject</el-button>
-            <el-button v-if="raterId" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
+            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
             <el-dropdown v-if="completedTraining(formRegister,'IELTS')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">
@@ -581,8 +581,15 @@ export default {
       })
     },
     updateStatus(status) {
+      if (status === RATER_STATUS.DOCUMENT_REQUESTED && this.formRegister.note.trim() === '') {
+        this.$notify.error({
+          title: RATER_STATUS.DOCUMENT_REQUESTED,
+          message: 'Please add a note for rater!',
+          duration: 2000
+        })
+        return
+      }
       raterService.updateStatus(this.raterId, status).then(rs => {
-        console.log('status', rs)
         this.formRegister.status = status
         if (rs.status == RATER_STATUS.APPROVED) {
           this.$notify.success({
@@ -600,6 +607,12 @@ export default {
           this.$notify.info({
             title: RATER_STATUS.DOCUMENT_REQUESTED,
             message: 'Rater Document Requested!',
+            duration: 2000
+          })
+        } else if (rs.status == RATER_STATUS.REVISION_REQUESTED) {
+          this.$notify.info({
+            title: RATER_STATUS.DOCUMENT_REQUESTED,
+            message: 'Rater Revision Requested!',
             duration: 2000
           })
         }
@@ -647,21 +660,25 @@ export default {
     trainingDropdownClick(e) {
       var t = this.getAllReviews.filter(r => r.reviewerId == this.formRegister.userId && r.reviewData.length > 0 && r.status == e.type)[0]
       var newStatus = e.action == 'approve' ? e.type + RATER_STATUS.APPROVED : e.type + RATER_STATUS.REJECTED
-      reviewService.changeReviewStatus(t.id, newStatus).then(rs => {
-        if (rs.status.includes(RATER_STATUS.REJECTED)) {
-          this.$notify.error({
-            title: RATER_STATUS.REJECTED,
-            message: 'Submitted Training Rejected!',
-            duration: 2000
-          })
-        } else {
-          this.$notify.success({
-            title: RATER_STATUS.APPROVED,
-            message: 'Submitted Training Approved!',
-            duration: 2000
-          })
-        }
-      })
+      if (e.action == 'approve') {
+        reviewService.changeReviewStatus(t.id, newStatus).then(rs => {
+          if (rs.status.includes(RATER_STATUS.REJECTED)) {
+            this.$notify.error({
+              title: RATER_STATUS.REJECTED,
+              message: 'Submitted Training Revision Requested!',
+              duration: 2000
+            })
+          } else {
+            this.$notify.success({
+              title: RATER_STATUS.APPROVED,
+              message: 'Submitted Training Approved!',
+              duration: 2000
+            })
+          }
+        })
+      } else {
+        this.updateStatus(RATER_STATUS.REVISION_REQUESTED)
+      }
     }
   }
 }

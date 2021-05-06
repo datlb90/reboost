@@ -16,6 +16,7 @@ namespace Reboost.Service.Services
     {
         Task<IEnumerable<Raters>> GetAllAsync();
         Task<Raters> GetByIdAsync(int id);
+        Task<Raters> GetByUserIdAsync(String id);
         Task<Raters> CreateAsync(Raters rater, List<IFormFile> uploadFiles);
         Task<Raters> UpdateAsync(Raters rater, List<IFormFile> uploadFiles);
         Task<Raters> UpdateStatusAsync(int id, string status);
@@ -74,6 +75,11 @@ namespace Reboost.Service.Services
         public async Task<Raters> GetByIdAsync(int id)
         {
             return await _unitOfWork.Raters.GetDetailByIdAsync(id);
+        }
+
+        public async Task<Raters> GetByUserIdAsync(String id)
+        {
+            return await _unitOfWork.Raters.GetByUserIdAsync(id);
         }
         public async Task<List<string>> GetApplyTo(int raterId)
         {

@@ -13,7 +13,7 @@ export default function renderRect(a) {
     const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     let order = 1
 
-    const otherGroups = document.querySelectorAll("g[top='" + a.top + "']")
+    const otherGroups = document.querySelectorAll("g[top='" + parseInt(a.top) + "']")
     if (otherGroups.length > 0) {
       const groupsArr = Array.prototype.slice.call(otherGroups)
       const max = Math.max.apply(Math, groupsArr.map(function(o) { return parseInt(o.getAttribute('order')) }))
@@ -23,7 +23,8 @@ export default function renderRect(a) {
     setAttributes(group, {
       fill: normalizeColor(a.color || '#ff0'),
       fillOpacity: 0.2,
-      top: a.top,
+      top: parseInt(a.top),
+      left: parseInt(a.left),
       pageNum: a.pageNum,
       pageHeight: a.pageHeight,
       order: order
@@ -40,6 +41,7 @@ export default function renderRect(a) {
       stroke: normalizeColor(a.color || '#ff0000'),
       fill: 'none',
       top: a.y,
+      left: a.left,
       'page-num': a.pageNum,
       'page-height': a.pageHeight
     })

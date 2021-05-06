@@ -80,12 +80,12 @@ function savePoint() {
   // format top with scale 100%
   const rect = svg.getBoundingClientRect()
   const { documentId, pageNumber, viewport } = getMetadata(svg)
-  console.log('client', viewport.scale, clientY * viewport.scale)
   const annotation = Object.assign({
     type: 'point',
     top: parseInt(clientY - rect.top) / viewport.scale,
     pageNum: pageNumber,
-    pageHeight: svg.getAttribute('height') / viewport.scale
+    pageHeight: svg.getAttribute('height') / viewport.scale,
+    left: (clientX - rect.left) / viewport.scale
   }, scaleDown(svg, {
     x: clientX - rect.left,
     y: clientY - rect.top

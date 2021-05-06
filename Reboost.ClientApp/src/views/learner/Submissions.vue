@@ -2,21 +2,15 @@
   <div style="margin-top:25px;">
     <el-row class="row-flex">
       <el-col :span="15">
-        <h3>All My Subsmissions</h3>
+        <h3>My Subsmissions</h3>
         <el-main>
           <el-table
             :data="listSubmissionsPerPage"
             stripe
+            border
             style="width: 100%"
+            size="mini"
           >
-            <el-table-column
-              label="Time Submitted"
-              align="center"
-            >
-              <template slot-scope="scope">
-                <span>{{ getTimeFromDateCreateToNow(scope.row.timeSubmitted) }}</span>
-              </template>
-            </el-table-column>
             <el-table-column
               prop="question"
               label="Question"
@@ -26,15 +20,28 @@
               prop="status"
               label="Status"
               align="center"
-            />
+            >
+              <template slot-scope="scope">
+                <el-tag type="success">{{ scope.row.status }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="Time Submitted"
+              align="center"
+            >
+              <template slot-scope="scope">
+                <span>{{ getTimeFromDateCreateToNow(scope.row.timeSubmitted) }}</span>
+              </template>
+            </el-table-column>
+
             <el-table-column width="110px" prop="timeTaken" align="center" label="Time Taken">
               <template slot-scope="scope">
                 <span>{{ getTimeTaken(scope.row.timeTaken) }}</span>
               </template>
             </el-table-column>
-            <el-table-column align="center" label="Review">
+            <el-table-column align="center" label="Actions">
               <template slot-scope="scope">
-                <span> <a href="#"> {{ scope.row.review }}</a></span>
+                <span> <el-button size="mini">{{ scope.row.review }}</el-button></span>
               </template>
             </el-table-column>
           </el-table>
@@ -64,7 +71,7 @@ export default {
       submissionsListCached: [],
       submissionsList: [],
       listSubmissionsPerPage: [],
-      pageSize: 10,
+      pageSize: 15,
       total: 0,
       page: 1
     }

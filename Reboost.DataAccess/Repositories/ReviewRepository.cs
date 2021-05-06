@@ -17,7 +17,7 @@ namespace Reboost.DataAccess.Repositories
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<Annotations> AddAnnotationAsync( Annotations annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<InTextComments> comments);
-        Task SaveFeedback(List<ReviewData> data);
+        Task SaveFeedback(int reviewId, List<ReviewData> data);
         Task<List<ReviewData>> LoadFeedBack(int reviewId);
         Task<InTextComments> AddInTextCommentAsync(InTextComments cmt);
         Task<InTextComments> DeleteInTextCommentAsync(int id);
@@ -29,6 +29,8 @@ namespace Reboost.DataAccess.Repositories
         Task<List<Reviews>> GetReviewsByIdAsync(string userId);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
         Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
+        Task<List<GetReviewsModel>> GetReviewRequestsByIdAsync(String userId);
+        Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId);
     }
 
     public class ReviewRepository : IReviewRepository
@@ -74,10 +76,15 @@ namespace Reboost.DataAccess.Repositories
 
             return await Task.FromResult(comments);
         }
-        public async Task SaveFeedback(List<ReviewData> data)
+        public async Task SaveFeedback(int reviewId,List<ReviewData> data)
         {
+            Reviews review = await db.Reviews.FindAsync(reviewId);
+            ReviewRequests requests = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId && rq.UserId == review.RevieweeId).FirstOrDefaultAsync();
+            requests.Status = "Completed";
+            requests.CompletedDateTime = DateTime.Now;
 
             db.ReviewData.AddRange(data);
+
             await db.SaveChangesAsync();
         }
         public async Task<List<ReviewData>> LoadFeedBack(int reviewId)
@@ -179,7 +186,7 @@ namespace Reboost.DataAccess.Repositories
 
             Reviews rv = new Reviews { RequestId = 1, FinalScore = 0, ReviewerId = user.Id, RevieweeId = "1", Status = status, TimeSpentInSeconds = 0, LastActivityDate = currentTime };
             
-            var rs = await db.Reviews.AddAsync(rv);
+            await db.Reviews.AddAsync(rv);
             await db.SaveChangesAsync();
       
             return await Task.FromResult(rv.Id.ToString());
@@ -195,6 +202,50 @@ namespace Reboost.DataAccess.Repositories
             await db.ReviewRequests.AddAsync(request);
             await db.SaveChangesAsync();
             return await Task.FromResult(request);
+        }
+
+        public async Task<List<GetReviewsModel>> GetReviewRequestsByIdAsync(String userId)
+        {
+            var query = await (from rr in db.ReviewRequests
+                               join q in db.Questions on rr.Submission.QuestionId equals q.Id
+                               join ts in db.TestSections on q.Task.SectionId equals ts.Id
+
+                               select new GetReviewsModel
+                               {
+                                   ReviewRequest = rr,
+                                   QuestionName = q.Title,
+                                   QuestionType = q.Type,
+                                   TestSection = ts.Name
+                               }).ToListAsync();
+
+            return await Task.FromResult(query);
+        }
+
+        public async Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId)
+        {
+            GetReviewsModel rs = new GetReviewsModel();
+
+            ReviewRequests reviewRequests = await db.ReviewRequests.Include("Submission").Where(r=>r.Id == requestId).FirstOrDefaultAsync();
+            Reviews existed = await db.Reviews.Where(r => r.RequestId == requestId && r.ReviewerId == userId && r.RevieweeId == reviewRequests.UserId).FirstOrDefaultAsync();
+
+            rs.ReviewRequest = reviewRequests;
+
+            if (existed != null)
+            {
+                rs.ReviewId = existed.Id;
+                return await Task.FromResult(rs);
+            };
+
+            DateTime currentTime = DateTime.Now;
+
+            Reviews rv = new Reviews { RequestId = requestId, FinalScore = 0, ReviewerId = userId, RevieweeId = reviewRequests.UserId, Status = "In Progress", TimeSpentInSeconds = 0, LastActivityDate = currentTime };
+
+            await db.Reviews.AddAsync(rv);
+            await db.SaveChangesAsync();
+
+            rs.ReviewId = rv.Id;
+
+            return await Task.FromResult(rs);
         }
     }
 }

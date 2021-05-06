@@ -23,7 +23,7 @@
               </li>
 
               <li class="nav-item">
-                <router-link to="/review" class="nav-link">Review</router-link>
+                <router-link to="/reviews" class="nav-link">Review</router-link>
               </li>
 
               <li class="nav-item">

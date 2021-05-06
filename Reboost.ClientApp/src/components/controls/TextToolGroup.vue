@@ -50,10 +50,24 @@ export default ({
     CommentText() {
       this.$emit('highLightText', 'comment-highlight')
     },
-    ShowTextToolGroup(rects, e) {
+    showTextToolGroup(rects, e) {
       const textToolGroup = document.getElementById('textToolGroup')
-      var posX = parseInt(rects[rects.length - 1].left)
-      const posY = parseInt(rects[rects.length - 1].top) + e.target.offsetHeight + 10
+      let posX, posY
+      if (rects.length == 1) {
+        console.log('e.target', e.target, textToolGroup.offsetWidth)
+        // 167 is the width of textToolGroup
+        posX = parseInt(rects[0].left) + parseInt(rects[0].width / 2) - 167 / 2
+        posY = parseInt(rects[0].top) + e.target.offsetHeight + 10
+      } else {
+        console.log('rects', rects)
+        const listRect = Array.prototype.slice.call(rects)
+
+        const max = Math.max(...listRect.map(a => parseInt(a.width)))
+        console.log(max)
+        posX = parseInt(rects[rects.length - 1].left) + max / 2 - 167 / 2
+        posY = parseInt(rects[rects.length - 1].top) + e.target.offsetHeight + 10
+      }
+
       textToolGroup.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
     }
   }

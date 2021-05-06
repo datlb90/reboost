@@ -27,7 +27,7 @@
                     :status === RATER_STATUS.REJECTED
                       ? 'danger'
                       : status===RATER_STATUS.DOCUMENT_REQUESTED
-                        ? 'warning' : ''
+                        ? 'warning' : 'warning'
               "
             >{{ status }}</el-tag>
 
@@ -43,7 +43,7 @@
             <p>Unfortunately, your application was denied because your credentials do not match with the requirements for becoming a rater. We look forward to receiving your application again in the near future. If you have any questions or concerns regarding this, please feel free to contact us as support@reboost.ai.
             </p>
           </div>
-          <div v-if="status===RATER_STATUS.APPROVED||status===RATER_STATUS.DOCUMENT_REQUESTED" class="button-container">
+          <div v-if="status===RATER_STATUS.APPROVED || status === RATER_STATUS.REVISION_REQUESTED" class="button-container">
             <el-label class="label-container" size="mini">
               Complete Training Now:
               <el-tooltip v-if="applyToList.includes('IELTS')" :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
@@ -54,22 +54,19 @@
               </el-tooltip>
             </el-label>
           </div>
-          <div v-if="note && note.length" class="note-container">
-            <div class="label-container">
+          <div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED)" class="note-container">
+            <div class="label-container" style="width: 155px">
               Note
             </div>
-            <div>
-              <el-input
-                v-model="note"
-                type="textarea"
-                :rows="2"
-                placeholder="Please input"
-                :disabled="true"
-              />
-            </div>
+            <el-input
+              v-model="note"
+              type="textarea"
+              :rows="2"
+              :disabled="true"
+            />
           </div>
           <div>
-            <el-form v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" ref="formRegister" class="file-upload-form" :model="formRegister" label-width="180px" style="width:90%;">
+            <el-form v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" ref="formRegister" class="file-upload-form" :model="formRegister" label-position="left" label-width="150px" style="width:100%;">
               <el-form-item
                 v-if="applyToList.includes('IELTS')"
                 size="mini"
@@ -143,7 +140,6 @@
               </el-form-item>
             </el-form>
             <el-button v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" style="margin-top:10px" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
-
           </div>
         </div>
       </el-col>
@@ -287,7 +283,7 @@ export default {
           const formData = new FormData()
           formData.set('UserId', this.currentUser.id)
           formData.set('Id', this.formRegister.id)
-          formData.set('Status', RATER_STATUS.APPROVED)
+          formData.set('Status', RATER_STATUS.DOCUMENT_SUBMITTED)
           let count = 0
           for (const p of this.formRegister.iDCardPhotos) {
             console.log('ID')
@@ -340,7 +336,6 @@ export default {
           }
 
           raterService.updateCredential(formData).then(rs => {
-            console.log('updated', rs)
             this.status = rs.status
             this.$notify({
               title: 'Success',
@@ -417,7 +412,7 @@ export default {
 }
 
 .label-container{
-  margin: 10px
+  margin: 0 10px
 }
 
 .margin-container{
@@ -439,7 +434,8 @@ export default {
 }
 
 .note-container{
-  margin: 20px 0 0 0;
+  display: flex;
+  margin: 10px 0 0 0;
 }
 .file-upload-form{
   margin-top:20px;

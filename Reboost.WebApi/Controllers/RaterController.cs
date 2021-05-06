@@ -18,10 +18,12 @@ namespace Reboost.WebApi.Controllers
     public class RaterController : BaseController<IRaterService>
     {
         private readonly IMapper _mapper;
+        private IUserService _userService;
 
-        public RaterController(IRaterService service, IMapper mapper) : base(service)
+        public RaterController(IRaterService service, IMapper mapper, IUserService userService) : base(service)
         {
             _mapper = mapper;
+            _userService = userService;
         }
 
         [HttpGet]
@@ -41,6 +43,18 @@ namespace Reboost.WebApi.Controllers
             raterModel.ApplyTo = applyTo;
 
             return raterModel;
+        }
+        [HttpGet]
+        [Route("byCurrentUser")]
+        public async Task<Raters> GetByCurrentUserAsync()
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rater = await _service.GetByUserIdAsync(currentUser.Id);
+
+            return rater;
         }
         [HttpDelete]
         [Route("delete/{id}")]

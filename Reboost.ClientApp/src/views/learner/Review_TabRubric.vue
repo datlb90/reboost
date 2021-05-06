@@ -74,7 +74,8 @@ export default ({
   },
   props: {
     questionid: { type: Number, default: null },
-    reviewid: { type: Number, default: null }
+    reviewid: { type: Number, default: null },
+    currentUser: { type: Object, default: null }
   },
   data() {
     return {
@@ -103,8 +104,9 @@ export default ({
               }
               )
             })
-            this.readOnly = true
-            this.$emit('submitted')
+            if (this.currentUser.role !== 'Admin') { this.readOnly = false } else {
+              this.readOnly = false
+            }
           } else {
             this.getLocaleStorageData()
           }
@@ -164,7 +166,7 @@ export default ({
         localStorage.setItem('reviewScore', JSON.stringify(retrievedObject))
 
         this.setStatusText('Saved')
-      }, 1000)
+      }, 200)
     },
     reviewCommentChange(e, criteriaId) {
       if (this.rubicCommentDelay) {
@@ -195,7 +197,7 @@ export default ({
         localStorage.setItem('reviewComment', JSON.stringify(retrievedObject))
 
         this.setStatusText('Saved')
-      }, 1000)
+      }, 200)
     },
     setStatusText(label) {
       this.$emit('setStatusText')

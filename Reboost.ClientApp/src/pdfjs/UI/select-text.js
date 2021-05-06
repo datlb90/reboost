@@ -30,9 +30,8 @@ export function enableTextSelection(parent) {
             that.hideColorPickerTool()
           } else {
             if (!isEnabling()) {
-              const textTool = document.getElementById('textTool')
-              textTool.style.display = 'flex'
-              that.$refs.textToolGroup.ShowTextToolGroup(rects, e)
+              that.$refs.toolBar.showTextTool()
+              that.$refs.textToolGroup.showTextToolGroup(rects, e)
 
               that.rects = rects
               that.svg = findSVGAtPoint(rects[0].left, rects[0].top)
