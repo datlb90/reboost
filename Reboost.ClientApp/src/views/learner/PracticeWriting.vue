@@ -183,6 +183,7 @@ import {
   Pane
 } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
+import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 export default {
   name: 'PracticeWriting',
   components: {
@@ -479,7 +480,7 @@ export default {
         UserId: '123',
         SubmissionId: this.submissionId,
         FeedbackType: 'Free',
-        Status: 'Waiting'
+        Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
       })
     }
   }

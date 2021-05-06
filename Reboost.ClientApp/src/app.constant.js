@@ -16,7 +16,13 @@ export const RATER_STATUS = {
   APPLIED: 'Applied',
   APPROVED: 'Approved',
   REJECTED: 'Rejected',
-  DOCUMENT_REQUESTED: 'DocumentRequested'
+  DOCUMENT_REQUESTED: 'DocumentRequested',
+  DOCUMENT_SUBMITTED: 'DocumentSubmitted',
+  REVISION_REQUESTED: 'RevisionRequested'
+}
+export const REVIEW_REQUEST_STATUS = {
+  IN_PROGRESS: 'In Progress',
+  COMPLETED: 'Completed'
 }
 export const configs = {
   stripeApiKey: 'pk_test_51I9tu1D04tWYlOu2cVzeLBsGuDK4aRvfkR4tJb18W20hxgtf4989r2JeSbuua653nGkzY6IlFU7JTPYKyqne64VP00CLSFo42c'

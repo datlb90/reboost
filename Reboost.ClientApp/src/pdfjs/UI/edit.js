@@ -2,6 +2,7 @@
 import PDFJSAnnotate from '../PDFJSAnnotate'
 
 import appendChild from '../render/appendChild'
+import { fireEvent } from '../UI/event'
 import {
   addEventListener,
   removeEventListener
@@ -20,6 +21,8 @@ import {
 
 let _enabled = false
 let isDragging = false
+let startScroll
+let parentNode
 let overlay
 let input
 let svgEdit
@@ -198,6 +201,7 @@ function handleDocumentMousedown(e) {
   if (e.target !== overlay) { return }
 
   const annotationId = overlay.getAttribute('data-target-id')
+  parentNode = overlay.parentNode
   const target = document.querySelector(`[data-pdf-annotate-id="${annotationId}"]`)
   const type = target.getAttribute('data-pdf-annotate-type')
 
@@ -216,11 +220,36 @@ function handleDocumentMousedown(e) {
     // overlay.querySelector('a').style.display = 'none'
     const svg = overlay.parentNode.querySelector('svg.annotationLayer')
     const { viewport } = getMetadata(svg)
-    const pre = document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)[0].firstChild
+    const targetAnno = document.querySelector(`[data-pdf-annotate-id="${annotationId}"]`)
+    if (targetAnno.childNodes.length > 1) {
+      targetAnno.removeChild(targetAnno.childNodes[1])
+    }
+
+    const pre = targetAnno.firstChild
 
     pre.style.fontSize = 12 * viewport.scale + 'px'
     overlay.appendChild(pre)
+    startScroll = document.getElementById('viewerContainer').scrollTop
+    document.getElementById('viewerContainer').addEventListener('scroll', handleDocumentScroll)
+    document.addEventListener('mousemove', handleDocumentMousemove)
+    document.addEventListener('mouseup', handleDocumentMouseup)
 
+    disableUserSelect()
+  } else if (type == 'area' || type == 'comment-area') {
+    isDragging = true
+    dragOffsetX = e.clientX
+    dragOffsetY = e.clientY
+    dragStartX = overlay.offsetLeft
+    dragStartY = overlay.offsetTop
+
+    overlay.style.background = 'rgba(255, 255, 255, 0.7)'
+    overlay.style.cursor = 'move'
+    // overlay.querySelector('a').style.display = 'none'
+    const svg = overlay.parentNode.querySelector('svg.annotationLayer')
+    const { viewport } = getMetadata(svg)
+
+    overlay.appendChild(target)
+    document.getElementById('viewerContainer').addEventListener('scroll', handleDocumentScroll)
     document.addEventListener('mousemove', handleDocumentMousemove)
     document.addEventListener('mouseup', handleDocumentMouseup)
     disableUserSelect()
@@ -233,22 +262,45 @@ function handleDocumentMousedown(e) {
  * @param {Event} e The DOM event that needs to be handled
  */
 function handleDocumentMousemove(e) {
-  const annotationId = overlay.getAttribute('data-target-id')
-  const parentNode = overlay.parentNode
   const rect = parentNode.getBoundingClientRect()
   const y = (dragStartY + (e.clientY - dragOffsetY))
   const x = (dragStartX + (e.clientX - dragOffsetX))
+  dragOffsetY = e.clientY
+  dragOffsetX = e.clientX
   const minY = 0
   const maxY = rect.height
   const minX = 0
   const maxX = rect.width
-
   if (y > minY && y + overlay.offsetHeight < maxY) {
     overlay.style.top = `${y}px`
+    dragStartY = y
   }
 
   if (x > minX && x + overlay.offsetWidth < maxX) {
     overlay.style.left = `${x}px`
+    dragStartX = x
+  }
+}
+function handleDocumentScroll(e) {
+  if (isDragging) {
+    const scrollDistance = document.getElementById('viewerContainer').scrollTop - startScroll
+    const rect = parentNode.getBoundingClientRect()
+    const y = dragStartY + scrollDistance
+    const x = dragStartX
+    const minY = 0
+    const maxY = rect.height
+    const minX = 0
+    const maxX = rect.width
+    if (y > minY && y + overlay.offsetHeight < maxY) {
+      overlay.style.top = `${y}px`
+      dragStartY = y
+    }
+
+    if (x > minX && x + overlay.offsetWidth < maxX) {
+      overlay.style.left = `${x}px`
+      dragStartX = x
+    }
+    startScroll = document.getElementById('viewerContainer').scrollTop
   }
 }
 
@@ -277,7 +329,7 @@ function handleDocumentMouseup(e) {
     }
   }
 
-  PDFJSAnnotate.getStoreAdapter().getAnnotation(documentId, annotationId).then((annotation) => {
+  PDFJSAnnotate.getStoreAdapter().getAnnotation(documentId, annotationId).then(async(annotation) => {
     const oldAnnotation = Object.assign({}, annotation)
     if (['textbox'].indexOf(type) > -1) {
       const { deltaX, deltaY } = getDelta('x', 'y');
@@ -319,6 +371,64 @@ function handleDocumentMouseup(e) {
       //       annotation.rectangles[i].x = parseInt(t.getAttribute('x1'), 10);
       //     }
       //   });
+    } else if (type == 'area') {
+      const { deltaX, deltaY } = getDelta('x', 'y');
+      [...target].forEach((t, i) => {
+        if (deltaY !== 0) {
+          const modelY = parseInt(t.getAttribute('y'), 10) + deltaY
+          const viewY = modelY
+
+          t.setAttribute('y', viewY)
+          t.setAttribute('top', viewY)
+          if (annotation.rectangles) {
+            annotation.rectangles[i].y = modelY
+          } else if (annotation.y) {
+            annotation.y = modelY
+            annotation.top = modelY
+          }
+        }
+        if (deltaX !== 0) {
+          const modelX = parseInt(t.getAttribute('x'), 10) + deltaX
+          const viewX = modelX
+
+          t.setAttribute('x', viewX)
+          t.setAttribute('left', viewX)
+          if (annotation.rectangles) {
+            annotation.rectangles[i].x = modelX
+          } else if (annotation.x) {
+            annotation.x = modelX
+            annotation.left = modelX
+          }
+        }
+      })
+    } else if (type == 'comment-area') {
+      const { deltaX, deltaY } = getDelta('x', 'y');
+      [...target].forEach((t, i) => {
+        if (deltaY !== 0) {
+          const modelY = parseInt(t.getAttribute('y'), 10) + deltaY
+          const viewY = modelY
+
+          t.setAttribute('y', viewY)
+          if (annotation.rectangles) {
+            annotation.rectangles[i].y = modelY
+          } else if (annotation.y) {
+            annotation.y = modelY
+            annotation.top = modelY
+          }
+        }
+        if (deltaX !== 0) {
+          const modelX = parseInt(t.getAttribute('x'), 10) + deltaX
+          const viewX = modelX
+
+          t.setAttribute('x', viewX)
+          if (annotation.rectangles) {
+            annotation.rectangles[i].x = modelX
+          } else if (annotation.x) {
+            annotation.x = modelX
+            annotation.left = modelX
+          }
+        }
+      })
     } else if (type === 'drawing') {
       const rect = scaleDown(svg, getAnnotationRect(target[0]))
       const [originX, originY] = annotation.lines[0]
@@ -339,11 +449,17 @@ function handleDocumentMouseup(e) {
       appendChild(svg, annotation)
     }
 
-    PDFJSAnnotate.getStoreAdapter().editAnnotation(documentId, annotationId, annotation, undefined, oldAnnotation)
+    await PDFJSAnnotate.getStoreAdapter().editAnnotation(documentId, annotationId, annotation, undefined, oldAnnotation)
+    if (type == 'comment-area') {
+      fireEvent('comment:updateCommentPositionAfterEditAnnotation', annotationId)
+    }
   })
-
-  overlay.firstChild.style.fontSize = '12px'
-  document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)[0].appendChild(overlay.firstChild)
+  if (type == 'textbox') {
+    overlay.firstChild.style.fontSize = '12px'
+    document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)[0].appendChild(overlay.firstChild)
+  } else if (type == 'area' || type == 'comment-area') {
+    svg.appendChild(overlay.firstChild)
+  }
 
   setTimeout(() => {
     isDragging = false
@@ -351,7 +467,7 @@ function handleDocumentMouseup(e) {
 
   overlay.style.background = ''
   overlay.style.cursor = ''
-
+  document.getElementById('viewerContainer').addEventListener('scroll', handleDocumentScroll)
   document.removeEventListener('mousemove', handleDocumentMousemove)
   document.removeEventListener('mouseup', handleDocumentMouseup)
   enableUserSelect()

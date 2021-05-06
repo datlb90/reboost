@@ -107,7 +107,7 @@
       <select v-if="!disableAnnotation" :style="{ 'display': activeButton == 'text' ? 'block' : 'none' }" class="text-size" />
 
       <!-- No presets -->
-      <div v-if="!(activeButton || clickedAnnotation) && !disableAnnotation" class="preset-none">
+      <div v-if="activeButton=='' && !disableAnnotation" class="preset-none">
         <div style="color: gray;">No Presets</div>
       </div>
 
@@ -203,7 +203,6 @@ export default ({
   },
   async mounted() {
     this.initTextSizeTool()
-    this.insertExpandMenu()
     localStorage.removeItem(`${this.documentid}/tooltype`)
   },
   beforeCreate: function() {
@@ -265,6 +264,7 @@ export default ({
           this.colorChosen = localStorage.getItem(`${this.documentid}/color`)
         }
       }
+      this.insertExpandMenu()
       this.$emit('toolBarButtonChange', this.activeButton)
     },
     async disableToolBarButton(e) {
@@ -410,22 +410,10 @@ export default ({
     },
     chevronClick(e) {
       const toolBarButtons = document.getElementById('tool-bar__buttons__Con')
-      const toolBarLength = this.getInnerChildTotalLength(toolBarButtons)
-      if (e == 'left') {
-        var leftMoveDistance = (toolBarLength - toolBarButtons.offsetWidth > 100) ? 100 : toolBarLength - toolBarButtons.offsetWidth
-        toolBarButtons.style.left = toolBarButtons.offsetLeft - leftMoveDistance + 'px'
-        toolBarButtons.style.width = toolBarButtons.offsetWidth + leftMoveDistance + 'px'
-      } else if (e == 'right') {
-        var rightMoveDistance = (toolBarLength != toolBarButtons.offsetWidth) ? 32 : toolBarLength - toolBarButtons.offsetWidth
-        rightMoveDistance = Math.abs(rightMoveDistance)
-        rightMoveDistance += toolBarButtons.offsetLeft
-        if (rightMoveDistance >= 32) {
-          rightMoveDistance = 32
-          toolBarButtons.style.width = document.getElementById('tool-bar').offsetWidth - document.getElementById('chevron-scroll__right').offsetWidth - document.getElementById('submit-container').offsetWidth - 40 + 'px'
-        } else {
-          toolBarButtons.style.width = toolBarButtons.offsetWidth - rightMoveDistance + 'px'
-        }
-        toolBarButtons.style.left = rightMoveDistance + 'px'
+      if (e === 'left') {
+        toolBarButtons.scrollLeft -= 50
+      } else if (e === 'right') {
+        toolBarButtons.scrollLeft += 50
       }
     },
     async initTextSizeTool() {
@@ -533,6 +521,10 @@ export default ({
     },
     colorPickerChange(e) {
       this.colorChosen = e
+    },
+    showTextTool() {
+      const textTool = document.getElementById('textTool')
+      textTool.style.display = 'flex'
     }
   }
 })

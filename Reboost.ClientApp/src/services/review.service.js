@@ -13,8 +13,8 @@ const reviewService = {
   addInTextComment(docId, reviewId, comment, annotation) {
     return http.post(`/review/inTextComment/${docId}/${reviewId}`, { comment, annotation })
   },
-  saveReviewFeedback(data) {
-    return http.post(`/review/feedback`, data)
+  saveReviewFeedback(reviewId, data) {
+    return http.post(`/review/feedback/${reviewId}`, data)
   },
   loadReviewFeedback(reviewId) {
     return http.get(`/review/feedback/${reviewId}`).then(rs => rs.data)
@@ -45,6 +45,12 @@ const reviewService = {
   },
   createReviewRequest(request) {
     return http.post('/review/request', request).then(rs => rs.data)
+  },
+  getReviews() {
+    return http.get('/review/request').then(rs => rs.data)
+  },
+  getOrCreateReviewByRequestId(id) {
+    return http.get(`/review/request/${id}`).then(rs => rs.data)
   }
 }
 

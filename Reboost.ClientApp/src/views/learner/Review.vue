@@ -1,19 +1,19 @@
 <template>
-  <div id="reviewContainer" :style="{cursor: activeButton== 'text'? 'crosshair':''}" style="border-top: 1px solid rgb(223 224 238); padding: 5px; background: rgb(248, 249, 250);">
+  <div id="reviewContainer" :style="{cursor: activeButton== 'text'||activeButton== 'rectangle' ? 'crosshair':''}" style="border-top: 1px solid rgb(223 224 238); padding: 5px; background: rgb(248, 249, 250);">
 
     <div id="content-wrapper" style="background: rgb(248, 249, 250); height: inherit; width: 100%;position: absolute; overflow: unset;">
-      <div id="left-panel" :class="{'hideQuestion': !showQuestion}" style="float: left; width: 30%; position: sticky; top: 0px; min-width: 320px; height: 100%;">
+      <div id="left-panel" :class="{'hideQuestion': !showQuestion}">
         <el-tabs type="border-card">
           <el-tab-pane label="Question">
             <tabQuestion ref="tabQuestion" :questionid="questionId" :reviewid="reviewId" />
           </el-tab-pane>
           <el-tab-pane label="Rubric">
-            <tabRubric ref="tabRubric" :questionid="questionId" :reviewid="reviewId" @submitted="disableToolbarSubmit" @setStatusText="setStatusText" />
+            <tabRubric ref="tabRubric" :current-user="currentUser" :questionid="questionId" :reviewid="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
         </el-tabs>
       </div>
 
-      <div id="right-panel" :class="{'hideQuestion':!showQuestion}" style="float: left; position: absolute; margin-left: max(325px, 30.5%); width: 68.5%;height:100%; background: rgb(248, 249, 250);">
+      <div id="right-panel" :class="{'hideQuestion':!showQuestion}">
         <toolbar
           ref="toolBar"
           :review-page="this"
@@ -77,6 +77,7 @@
         :highlight-id="comment.uuid"
         :top-position="comment.topPosition"
         :top="comment.annotation.top"
+        :left="comment.annotation.left"
         :page-num="comment.annotation.page"
         :page-height="comment.annotation.pageHeight"
         :style="{top: comment.topPosition + 'px', width: '100%'}"
@@ -90,10 +91,10 @@
               3:16 PM Jul 7
             </div>
           </div>
-          <el-button style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
+          <el-button v-if="currentUser.role!=='Admin'" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
             <i class="far fa-trash-alt" />
           </el-button>
-          <el-button style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
+          <el-button v-if="currentUser.role!=='Admin'" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
             <i class="far fa-edit" />
           </el-button>
         </div>
@@ -284,6 +285,9 @@ export default {
         annotations: data.annotations.map(a => ({ ...JSON.parse(a.data), id: a.id, top: a.top, pageNum: a.pageNum, color: a.color })),
         comments: data.comments.map(c => ({ ...JSON.parse(c.data), documentId: this.documentId, id: c.id }))
       }
+    },
+    currentUser() {
+      return this.$store.getters['auth/getUser']
     }
   },
   beforeMount() {
@@ -307,15 +311,14 @@ export default {
 
       await this.render()
       this.$refs.toolBar.handleScale('fitPage')
+      this.$refs.toolBar.insertExpandMenu()
       this.handleCommentPositionsRestore()
       this.hideDeleteToolBar()
       // this.ToolbarButtons()
       // this.ScaleAndRotate();
     })
 
-    const currentUser = this.$store.getters['auth/getUser']
-
-    if (currentUser.role === 'Admin') {
+    if (this.currentUser.role === 'Admin') {
       document.getElementById('viewerContainer').style.userSelect = 'none'
       this.$refs.toolBar.disableAnnotationCreate()
       this.disableToolbarSubmit()
@@ -352,7 +355,7 @@ export default {
         await this.$store.dispatch('review/addReviewAnnotation', obj).then(async rs => {
           var temp = this.$store.getters['review/getAddedAnnotation']
           annotation.id = temp.id
-          await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation, 'notUndoRedo')
+          await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation, 'added')
           this.undoHistory.push({ action: 'added', annotation: annotation })
           this.updateUndoList()
           this.setStatusText()
@@ -362,28 +365,26 @@ export default {
       }
     },
     annotationEdited(documentId, annotationId, annotation, actionType, previousAnno) {
-      if (actionType) {
-        const anno = {
-          Id: annotation.id,
-          DocumentId: documentId,
-          ReviewId: this.reviewId,
-          Type: annotation.type,
-          Color: annotation.color,
-          Uuid: annotation.uuid,
-          PageNum: annotation.pageNum,
-          Top: annotation.top,
-          Data: JSON.stringify(annotation)
-        }
-        reviewService.editAnnotation(anno).then(rs => {
-          this.hideRectToolBar()
-          this.hideDeleteToolBar()
-          if (rs && !actionType) {
-            this.undoHistory.push({ action: 'edited', annotation: previousAnno })
-            this.updateUndoList()
-          }
-          this.setStatusText()
-        })
+      const anno = {
+        Id: annotation.id,
+        DocumentId: documentId,
+        ReviewId: this.reviewId,
+        Type: annotation.type,
+        Color: annotation.color,
+        Uuid: annotation.uuid,
+        PageNum: annotation.pageNum,
+        Top: annotation.top,
+        Data: JSON.stringify(annotation)
       }
+      reviewService.editAnnotation(anno).then(rs => {
+        // this.hideRectToolBar()
+        this.hideDeleteToolBar()
+        if (rs && !actionType) {
+          this.undoHistory.push({ action: 'edited', annotation: previousAnno })
+          this.updateUndoList()
+        }
+        this.setStatusText()
+      })
     },
     handleAnnotationDelete(target) {
       if (target.type == 'comment-highlight' || target.type == 'point') {
@@ -491,6 +492,7 @@ export default {
       addEventListener('annotation:edit', this.annotationEdited)
       addEventListener('annotation:insertNoteComment', this.insertNoteComment)
       addEventListener('text:disable', this.disableToolbarButtons)
+      addEventListener('comment:updateCommentPositionAfterEditAnnotation', this.updateCommentPositionAfterEditAnnotation)
 
       function handlePageScroll(e) {
         // document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
@@ -656,6 +658,7 @@ export default {
       })
     },
     async handleCommentAnnotationClick(target) {
+      this.hideRectToolBar()
       const text = window.getSelection().toString().trim()
       const newCommentWrapper = document.getElementById('add-new-comment')
       if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
@@ -682,7 +685,7 @@ export default {
             var posYY = parseInt(rect.top) + rect.height + 10
             deleteTool.style = 'position: absolute; top: ' + posYY + 'px; left: ' + posXX + 'px;'
           }
-        } else if (type == 'highlight') {
+        } else if (type == 'highlight' && this.currentUser.role != 'Admin') {
           this.colorChosen = target.getAttribute('stroke')
           uuid = target.getAttribute('data-pdf-annotate-id')
           this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
@@ -768,7 +771,7 @@ export default {
             const endPos = gTop + commentCards[this.order].offsetHeight
             if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
           }
-        } else if (type == 'area') {
+        } else if (type == 'area' && this.currentUser.role != 'Admin') {
           this.isRect = true
           this.isTextbox = null
           this.colorChosen = target.getAttribute('stroke')
@@ -789,7 +792,7 @@ export default {
             const posY = parseInt(rect.top) + parseInt(target.getAttribute('height')) * this.RENDER_OPTIONS.scale + 10
             rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
           }
-        } else if (type == 'textbox') {
+        } else if (type == 'textbox' && this.currentUser.role != 'Admin') {
           this.isTextbox = target
           this.isRect = false
           this.colorChosen = target.getAttribute('stroke')
@@ -837,7 +840,6 @@ export default {
       colorPicker.style.visibility = 'hidden'
     },
     async updateRectangleAnotation(e) {
-      var anno
       const previousAnno = Object.assign({}, this.annotation)
       var uuid = this.annotationClicked.getAttribute('data-pdf-annotate-id')
       var type = this.annotationClicked.getAttribute('data-pdf-annotate-type')
@@ -854,23 +856,23 @@ export default {
           }
         }
       }
-
+      console.log('12312312312')
       this.annotation.color = e
       await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, uuid, this.annotation, undefined, previousAnno)
-      anno = {
-        Id: this.annotation.id,
-        DocumentId: this.documentId,
-        ReviewId: this.reviewId,
-        Type: this.annotation.type,
-        Color: this.annotation.color,
-        Uuid: this.annotation.uuid,
-        PageNum: this.annotation.pageNum,
-        Top: this.annotation.top,
-        Data: JSON.stringify(this.annotation)
-      }
+      // anno = {
+      //   Id: this.annotation.id,
+      //   DocumentId: this.documentId,
+      //   ReviewId: this.reviewId,
+      //   Type: this.annotation.type,
+      //   Color: this.annotation.color,
+      //   Uuid: this.annotation.uuid,
+      //   PageNum: this.annotation.pageNum,
+      //   Top: this.annotation.top,
+      //   Data: JSON.stringify(this.annotation)
+      // }
 
-      reviewService.editAnnotation(anno).then(rs => {
-      })
+      // reviewService.editAnnotation(anno).then(rs => {
+      // })
     },
     hideRectToolBar() {
       const rectTool = document.getElementById('rectTool')
@@ -1042,18 +1044,23 @@ export default {
       const boundingRect = this.boundingRect
 
       var color = 'FFFF00'
-      if (type == 'strikeout') { color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) ? color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) : 'FF0000' }
+      if (type == 'strikeout') {
+        // color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) ? color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) : 'FF0000'
+        color = 'FF0000'
+      }
       if (type == 'highlight') {
-        color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) ? color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) : 'FFFF00'
+        color = 'FFFF00'
       }
       if (type == 'comment-highlight') {
-        color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) ? color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) : 'FF00FF'
+        // color = 'FF00FF'
+        color = '0000FF'
       }
 
       // Initialize the annotation
       const annotation = {
         type,
         color,
+        left: (this.rects[0].left - boundingRect.left) / this.RENDER_OPTIONS.scale,
         rectangles: [...this.rects].map((r) => {
           let offset = 0
           if (type == 'strikeout') { offset = r.height / 2 }
@@ -1108,7 +1115,7 @@ export default {
               if (this.$store.getters['review/getAddedAnnotation']) {
                 annotation.id = this.$store.getters['review/getAddedAnnotation']['id']
 
-                await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation, 'notUndoRedo')
+                await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation, 'added')
               }
             })
           }
@@ -1564,10 +1571,10 @@ export default {
       if (top2 > top1) return -1
       if (top2 == top1) {
         // compare order attributes
-        const order1 = parseInt(a.getAttribute('order'))
-        const order2 = parseInt(b.getAttribute('order'))
-        if (order1 > order2) return 1
-        if (order2 > order1) return -1
+        const left1 = parseInt(a.getAttribute('left'))
+        const left2 = parseInt(b.getAttribute('left'))
+        if (left1 > left2) return 1
+        if (left2 > left1) return -1
       }
       return 0
     },
@@ -1581,10 +1588,10 @@ export default {
       if (top2 > top1) return -1
       if (top2 == top1) {
         // compare order attributes
-        const order1 = this.getHighlightByCommentId(a.uuid).getAttribute('order')
-        const order2 = this.getHighlightByCommentId(b.uuid).getAttribute('order')
-        if (order1 > order2) return 1
-        if (order2 > order1) return -1
+        const left1 = parseInt(a.annotation.left)
+        const left2 = parseInt(b.annotation.left)
+        if (left1 > left2) return 1
+        if (left2 > left1) return -1
       }
       return 0
     },
@@ -1691,7 +1698,9 @@ export default {
     },
     hideTextToolBar() {
       const textTool = document.getElementById('textTool')
-      textTool.style.display = 'none'
+      if (textTool) {
+        textTool.style.display = 'none'
+      }
     },
     hideTextToolGroup() {
       this.$refs.textToolGroup.HideTextToolGroup()
@@ -1744,7 +1753,16 @@ export default {
             })
           }
         })
-        reviewService.saveReviewFeedback(reviewData).then(rs => {
+        const annotationsCount = await this.countAnnotations()
+        if (annotationsCount < 3) {
+          this.$notify.error({
+            title: 'Annotations required',
+            message: 'At least 3 annotations required!',
+            duration: 2000
+          })
+          return
+        }
+        reviewService.saveReviewFeedback(this.reviewId, reviewData).then(rs => {
           console.log('review data: ', rs)
           this.disableToolbarSubmit()
           this.$notify.success({
@@ -1759,6 +1777,17 @@ export default {
         })
       }
     },
+    async countAnnotations() {
+      var count = 0
+      for (let i = 1; i <= this.NUM_PAGES; i += 1) {
+        await PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, i).then(rs => {
+          if (rs.annotations.length > 0) {
+            count += rs.annotations.length
+          }
+        })
+      }
+      return count
+    },
     calculateContainerHeight() {
       const headerHeight = document.getElementById('header').clientHeight
       const containerHeight = window.innerHeight - headerHeight
@@ -1770,7 +1799,7 @@ export default {
       viewerContainer.style.height = rightPanel.offsetHeight - document.getElementById('tool-bar').offsetHeight - 5 + 'px'
 
       if (this.showQuestion) {
-        rightPanel.style.width = window.innerWidth - document.getElementById('left-panel').offsetWidth - 10 + 'px'
+        rightPanel.style.width = window.innerWidth - document.getElementById('left-panel').offsetWidth - 17 + 'px'
       } else {
         rightPanel.style.width = window.innerWidth - 10 + 'px'
       }
@@ -2062,6 +2091,42 @@ export default {
       this.svg = svg
       this.commentText(note)
     },
+    async updateCommentPositionAfterEditAnnotation(annotationId) {
+      const target = this.getHighlightByCommentId(annotationId)
+      let annotation = null
+      let editComment = null
+      let cmts = null
+      await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId).then(r => {
+        cmts = r
+      })
+      await PDFJSAnnotate.getStoreAdapter().getAnnotation(this.documentId, annotationId).then(async anno => {
+        annotation = anno
+      })
+      if (!annotation) { return }
+      const type = annotation.type
+      if (type == 'comment-area') {
+        const rect = this.getHighlightByCommentId(annotationId)
+        rect.setAttribute('top', annotation.top)
+        rect.setAttribute('left', annotation.left)
+
+        const cmtRect = document.querySelector(".comment-card[highlight-id='" + annotationId + "']")
+        cmtRect.setAttribute('top', annotation.top)
+        cmtRect.setAttribute('left', annotation.left)
+
+        cmts.forEach(cmt => {
+          if (cmt.uuid == annotationId) {
+            cmt.annotation = annotation
+            editComment = cmt
+          }
+        })
+        await PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
+        this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
+        await this.comments.sort(this.compareTopAnnoAttributes)
+        this.editCommentCard(editComment, 'undo')
+        await this.handleCommentPositionsRestore()
+        this.handleCommentAnnotationClick(target)
+      }
+    },
     async updateCommentId(rs) {
       var cmts = null
 
@@ -2070,7 +2135,7 @@ export default {
       })
       await PDFJSAnnotate.getStoreAdapter().getAnnotation(this.documentId, rs.data['uuid']).then(async anno => {
         anno.id = rs.data['annotationId']
-        await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, anno.uuid, anno)
+        await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, anno.uuid, anno, 'added')
       })
       cmts.map(r => {
         if (r.uuid == rs.data['uuid']) {

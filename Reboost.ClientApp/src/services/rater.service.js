@@ -4,6 +4,9 @@ const raterService = {
   getAll() {
     return http.get('/rater').then(rs => rs.data)
   },
+  getByCurrentUser() {
+    return http.get(`/rater/byCurrentUser`).then(rs => rs.data)
+  },
   getById(id) {
     return http.get(`/rater/${id}`).then(rs => rs.data)
   },

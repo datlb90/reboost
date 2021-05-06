@@ -211,12 +211,12 @@ function saveRect(type, rects, color) {
     annotation.x = rect.x
     annotation.y = rect.y
     annotation.top = rect.y
+    annotation.left = rect.x
     annotation.width = rect.width
     annotation.height = rect.height
     annotation.pageHeight = svg.getAttribute('height') / viewport.scale
     annotation.pageNum = pageNumber
   }
-
   // Add the annotation
   PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
     .then((annotation) => {

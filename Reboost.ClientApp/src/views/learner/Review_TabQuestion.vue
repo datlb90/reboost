@@ -9,6 +9,11 @@
           <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
           <el-button size="mini" @click="notShowDirection">Never show this again</el-button>
         </div>
+        <div v-if="currentUser.status === RATER_STATUS.REVISION_REQUESTED" class="tip note" transition="fade" style="margin-bottom: 10px;">
+          <p style="width: 98%;">
+            Note: {{ currentUser.note }}
+          </p>
+        </div>
 
         <div class="content-con">
           <p>
@@ -48,7 +53,8 @@
   </div>
 </template>
 <script>
-
+import raterService from '@/services/rater.service'
+import { RATER_STATUS } from '../../app.constant'
 export default ({
   name: 'TabQuestion',
   components: {
@@ -61,7 +67,9 @@ export default ({
   data() {
     return {
       showDirection: true,
-      isShowScript: false
+      isShowScript: false,
+      currentUser: null,
+      RATER_STATUS: RATER_STATUS
     }
   },
   computed: {
@@ -108,7 +116,13 @@ export default ({
     }
   },
   async mounted() {
+    await raterService.getByCurrentUser().then(rs => {
+      this.currentUser = rs
+    })
+
     console.log('this.getDataQuestionParts', this.getDataQuestionParts)
+    console.log('current user', this.currentUser)
+
     if (localStorage.getItem('showQuestionDirection')) {
       this.showDirection = false
     }

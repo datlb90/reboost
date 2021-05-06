@@ -49,8 +49,8 @@ export default ({
   },
   methods: {
     async changeToolbarButtonColor(e) {
-      this.colorChosen = e
-      localStorage.setItem(`${this.documentid}/color`, e)
+      this.colorChosen = e.toLowerCase()
+      localStorage.setItem(`${this.documentid}/color`, e.toLowerCase())
       if (this.annotation) {
         this.updateRectangleAnotation(e)
       }
@@ -79,11 +79,11 @@ export default ({
     },
     changeColorByClickedAnno(e, annotation) {
       if (typeof (e) != 'undefined') {
-        this.colorChosen = e
+        this.colorChosen = e.toLowerCase()
       }
       if (typeof (annotation) != 'undefined' && annotation) {
         this.annotation = annotation
-        localStorage.setItem(`${this.documentid}/color`, e)
+        localStorage.setItem(`${this.documentid}/color`, e.toLowerCase())
       } else {
         this.annotation = null
       }

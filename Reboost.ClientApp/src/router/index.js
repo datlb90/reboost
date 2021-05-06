@@ -67,7 +67,7 @@ import DiscussionList from '../views/learner/PracticeWriting_TabDiscussion_List.
 import Subscribe from '../views/rater/Subscribe.vue'
 import StartRating from '../views/rater/StartRating.vue'
 import Payout from '../views/rater/Payout.vue'
-
+import Reviews from '../views/learner/Reviews.vue'
 import PaymentInfo from '../views/rater/PaymentInfo.vue'
 import Submissions from '../views/learner/Submissions.vue'
 
@@ -159,6 +159,15 @@ const router = new VueRouter({
       path: '/review/test',
       name: 'Review Test',
       component: ReviewTest,
+      meta: {
+        plainLayout: false,
+        landingPage: false
+      }
+    },
+    {
+      path: '/reviews',
+      name: 'Reviews',
+      component: Reviews,
       meta: {
         plainLayout: false,
         landingPage: false
