@@ -54,6 +54,10 @@ body {
 	fill: blue;
 	opacity: 0.5;
 }
+.rectangle-selected{
+	fill: blue;
+	opacity: 0.2;
+}
 .action-card-btn{
 	cursor: pointer;
     border: 0px none !important;

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
+using Reboost.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace Reboost.DataAccess.Repositories
         Task<InTextComments> EditInTextComment(InTextComments cmt);
         Task<string> CreateNewSampleReviewDocumentAsync(string type, User user);
         Task<List<Reviews>> GetReviewsAsync();
-        Task<List<Reviews>> GetReviewsByIdAsync(string userId);
+        Task<List<Reviews>> GetReviewsByUserIdAsync(string userId);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
         Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
         Task<List<GetReviewsModel>> GetReviewRequestsByIdAsync(String userId);
@@ -80,9 +81,11 @@ namespace Reboost.DataAccess.Repositories
         {
             Reviews review = await db.Reviews.FindAsync(reviewId);
             ReviewRequests requests = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId && rq.UserId == review.RevieweeId).FirstOrDefaultAsync();
-            requests.Status = "Completed";
-            requests.CompletedDateTime = DateTime.Now;
-
+            if(requests!= null)
+            {
+                requests.Status = "Completed";
+                requests.CompletedDateTime = DateTime.Now;
+            }
             db.ReviewData.AddRange(data);
 
             await db.SaveChangesAsync();
@@ -155,27 +158,51 @@ namespace Reboost.DataAccess.Repositories
         {
             Reviews rv = await db.Reviews.FindAsync(id);
             rv.Status = newStatus;
+            
+            List<Reviews> rvs = await db.Reviews.Where(r => r.ReviewerId == rv.ReviewerId).ToListAsync();
+            bool flag = true;
+
+            Raters rater = await db.Raters.Where(r => r.UserId == rv.ReviewerId).FirstOrDefaultAsync();
+
+            RaterRepository _raterRepository = new RaterRepository(db); 
+            List<string> trainingCount = await _raterRepository.GetApplyTo(rater.Id);
+
+            foreach (Reviews r in rvs)
+            {
+                if (!r.Status.Contains(RaterStatus.APPROVED))
+                {
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag && newStatus.Contains(RaterStatus.APPROVED) )
+            {
+                if(trainingCount.Count == rvs.Count)
+                {
+                    rater.Status = RaterStatus.APPROVED;
+                }
+                else
+                {
+                    rater.Status = RaterStatus.TRANING;
+                }
+            }
+
             await db.SaveChangesAsync();
             return await Task.FromResult(rv);
         }
         public async Task<string> CreateNewSampleReviewDocumentAsync(string type, User user)
         {
-            List<String> applyTo = await (from r in db.Raters
-                                          join u in db.Users on r.UserId equals u.Id
-                                          join sc in db.UserScores on u.Id equals sc.UserId
-                                          join ss in db.TestSections on sc.SectionId equals ss.Id
-                                          join t in db.Tests on ss.TestId equals t.Id
-                                          where r.UserId == user.Id
-                                          group t by t.Name into g
-                                          select g.Key).ToListAsync();
+            RaterRepository _raterRepository = new RaterRepository(db);
+            Raters rater = await db.Raters.Where(r => r.UserId == user.Id).FirstOrDefaultAsync();
+            List<String> applyTo = await _raterRepository.GetApplyTo(rater.Id);
 
             if (!applyTo.Contains(type.ToUpper()))
             {
                 return await Task.FromResult("failed");
             }
 
-            string status = type.ToUpper() + "Training";
-            string approvedstatus = status + "Approved";
+            string status = type.ToUpper() + RaterStatus.TRANING;
+            string approvedstatus = status + RaterStatus.APPROVED;
             Reviews existed = await db.Reviews.Where(rv => rv.ReviewerId == user.Id && (rv.Status == approvedstatus || rv.Status == status) ).FirstOrDefaultAsync();
             if(existed!= null)
             {
@@ -191,7 +218,7 @@ namespace Reboost.DataAccess.Repositories
       
             return await Task.FromResult(rv.Id.ToString());
         }
-        public async Task<List<Reviews>> GetReviewsByIdAsync(string userId)
+        public async Task<List<Reviews>> GetReviewsByUserIdAsync(string userId)
         {
             List<Reviews> list = await db.Reviews.Include("ReviewData").Where(rv => rv.ReviewerId == userId).ToListAsync();
             return await Task.FromResult(list);

@@ -207,7 +207,7 @@ function handleDocumentMousedown(e) {
 
   // const { viewport } = getMetadata(svgEdit)
 
-  if (type === 'highlight' || type === 'strikeout' || type === 'point') { return }
+  if (type === 'highlight' || type === 'strikeout') { return }
   if (type == 'textbox') {
     isDragging = true
     dragOffsetX = e.clientX
@@ -235,7 +235,7 @@ function handleDocumentMousedown(e) {
     document.addEventListener('mouseup', handleDocumentMouseup)
 
     disableUserSelect()
-  } else if (type == 'area' || type == 'comment-area') {
+  } else if (type == 'area' || type == 'comment-area' || type === 'point') {
     isDragging = true
     dragOffsetX = e.clientX
     dragOffsetY = e.clientY
@@ -247,8 +247,12 @@ function handleDocumentMousedown(e) {
     // overlay.querySelector('a').style.display = 'none'
     const svg = overlay.parentNode.querySelector('svg.annotationLayer')
     const { viewport } = getMetadata(svg)
-
+    if (type == 'point') {
+      const trans = getTranslation(viewport)
+      target.setAttribute('transform', `scale(1) rotate(${viewport.rotation}) translate(${trans.x}, ${trans.y})`)
+    }
     overlay.appendChild(target)
+    console.log('target', target)
     document.getElementById('viewerContainer').addEventListener('scroll', handleDocumentScroll)
     document.addEventListener('mousemove', handleDocumentMousemove)
     document.addEventListener('mouseup', handleDocumentMouseup)
@@ -314,7 +318,7 @@ function handleDocumentMouseup(e) {
   const target = document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)
   const type = target[0].getAttribute('data-pdf-annotate-type')
   const svg = overlay.parentNode.querySelector('svg.annotationLayer')
-  const { documentId } = getMetadata(svg)
+  const { documentId, viewport } = getMetadata(svg)
 
   // overlay.querySelector('a').style.display = ''
 
@@ -401,6 +405,36 @@ function handleDocumentMouseup(e) {
           }
         }
       })
+    } else if (type == 'point') {
+      const { deltaX, deltaY } = getDelta('x', 'y');
+      [...target].forEach((t, i) => {
+        if (deltaY !== 0) {
+          const modelY = parseInt(t.getAttribute('y'), 10) + deltaY
+          const viewY = modelY
+
+          t.setAttribute('y', viewY * viewport.scale)
+          t.setAttribute('top', viewY)
+          if (annotation.rectangles) {
+            annotation.rectangles[i].y = modelY
+          } else if (annotation.y) {
+            annotation.y = modelY
+            annotation.top = modelY
+          }
+        }
+        if (deltaX !== 0) {
+          const modelX = parseInt(t.getAttribute('x'), 10) + deltaX
+          const viewX = modelX
+
+          t.setAttribute('x', viewX * viewport.scale)
+          t.setAttribute('left', viewX)
+          if (annotation.rectangles) {
+            annotation.rectangles[i].x = modelX
+          } else if (annotation.x) {
+            annotation.x = modelX
+            annotation.left = modelX
+          }
+        }
+      })
     } else if (type == 'comment-area') {
       const { deltaX, deltaY } = getDelta('x', 'y');
       [...target].forEach((t, i) => {
@@ -450,14 +484,14 @@ function handleDocumentMouseup(e) {
     }
 
     await PDFJSAnnotate.getStoreAdapter().editAnnotation(documentId, annotationId, annotation, undefined, oldAnnotation)
-    if (type == 'comment-area') {
+    if (type == 'comment-area' || type == 'point') {
       fireEvent('comment:updateCommentPositionAfterEditAnnotation', annotationId)
     }
   })
   if (type == 'textbox') {
     overlay.firstChild.style.fontSize = '12px'
     document.querySelectorAll(`[data-pdf-annotate-id="${annotationId}"]`)[0].appendChild(overlay.firstChild)
-  } else if (type == 'area' || type == 'comment-area') {
+  } else if (type == 'area' || type == 'comment-area' || type == 'point') {
     svg.appendChild(overlay.firstChild)
   }
 
@@ -645,4 +679,30 @@ function closeInput() {
     editingAnnotation = null
     isEditing = false
   }
+}
+function getTranslation(viewport) {
+  let x
+  let y
+
+  // Modulus 360 on the rotation so that we only
+  // have to worry about four possible values.
+  switch (viewport.rotation % 360) {
+    case 0:
+      x = y = 0
+      break
+    case 90:
+      x = 0
+      y = (viewport.width / viewport.scale) * -1
+      break
+    case 180:
+      x = (viewport.width / viewport.scale) * -1
+      y = (viewport.height / viewport.scale) * -1
+      break
+    case 270:
+      x = (viewport.height / viewport.scale) * -1
+      y = 0
+      break
+  }
+
+  return { x, y }
 }

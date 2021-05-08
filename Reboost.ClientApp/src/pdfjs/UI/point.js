@@ -82,15 +82,16 @@ function savePoint() {
   const { documentId, pageNumber, viewport } = getMetadata(svg)
   const annotation = Object.assign({
     type: 'point',
-    top: parseInt(clientY - rect.top) / viewport.scale,
     pageNum: pageNumber,
-    pageHeight: svg.getAttribute('height') / viewport.scale,
-    left: (clientX - rect.left) / viewport.scale
+    pageHeight: svg.getAttribute('height') / viewport.scale
   }, scaleDown(svg, {
     x: clientX - rect.left,
     y: clientY - rect.top
   })
   )
+  annotation.top = annotation.y
+  annotation.left = annotation.x
+  console.log('annoation', annotation)
   // const commentWrapper = document.getElementById('add-new-comment')
   // const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
   PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation, true)

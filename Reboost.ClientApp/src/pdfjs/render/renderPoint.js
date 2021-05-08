@@ -22,7 +22,6 @@ export default function renderPoint(a) {
     const max = Math.max.apply(Math, groupsArr.map(function(o) { return parseInt(o.getAttribute('order')) }))
     order = max + 1
   }
-
   setAttributes(outerSVG, {
     width: SIZE,
     height: SIZE,
@@ -60,6 +59,5 @@ export default function renderPoint(a) {
   innerSVG.appendChild(path)
   outerSVG.appendChild(rect)
   outerSVG.appendChild(innerSVG)
-
   return outerSVG
 }

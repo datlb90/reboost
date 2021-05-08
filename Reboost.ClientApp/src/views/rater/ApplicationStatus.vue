@@ -22,7 +22,7 @@
               :type="
                 status === RATER_STATUS.APPLIED
                   ? 'primary'
-                  :status === RATER_STATUS.APPROVED
+                  :status === RATER_STATUS.APPROVED || status === RATER_STATUS.TRAINING
                     ? 'success'
                     :status === RATER_STATUS.REJECTED
                       ? 'danger'
@@ -35,24 +35,13 @@
           <div :class="[status === RATER_STATUS.APPLIED ? 'inReview' : 'hidden']">
             <p>Thank you for applying. Your application is curretly in review. We will notify you via email if your application is approved, denied, or if we need additional information.</p>
           </div>
-          <div :class="[status === RATER_STATUS.APPROVED ? 'verified' : 'hidden']">
+          <div :class="[status === RATER_STATUS.TRAINING || status === RATER_STATUS.APPROVED ? 'verified' : 'hidden']">
             <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
             </p>
           </div>
           <div :class="[status === RATER_STATUS.REJECTED ? 'denied' : 'hidden']">
             <p>Unfortunately, your application was denied because your credentials do not match with the requirements for becoming a rater. We look forward to receiving your application again in the near future. If you have any questions or concerns regarding this, please feel free to contact us as support@reboost.ai.
             </p>
-          </div>
-          <div v-if="status===RATER_STATUS.APPROVED || status === RATER_STATUS.REVISION_REQUESTED" class="button-container">
-            <el-label class="label-container" size="mini">
-              Complete Training Now:
-              <el-tooltip v-if="applyToList.includes('IELTS')" :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
-                <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin: 0 10px 0" size="mini" @click="redirectToTraining('IELTS')">IELTS</el-button>
-              </el-tooltip>
-              <el-tooltip v-if="applyToList.includes('TOEFL')" :content="isApprove('TOEFL')?'You have passed this training':'Start your TOEFL Training'" placement="top">
-                <el-button :type="isApprove('TOEFL')?'success':'primary'" style="margin: 0 10px 0" size="mini" @click="redirectToTraining('TOEFL')">TOEFL</el-button>
-              </el-tooltip>
-            </el-label>
           </div>
           <div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED)" class="note-container">
             <div class="label-container" style="width: 155px">
@@ -64,6 +53,14 @@
               :rows="2"
               :disabled="true"
             />
+          </div>
+          <div v-if="status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED" style="margin-left:150px" class="button-container">
+            <el-tooltip v-if="applyToList.includes('IELTS')" :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
+              <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin:0" size="mini" @click="redirectToTraining('IELTS')">Complete IELTS Training</el-button>
+            </el-tooltip>
+            <el-tooltip v-if="applyToList.includes('TOEFL')" :content="isApprove('TOEFL')?'You have passed this training':'Start your TOEFL Training'" placement="top">
+              <el-button :type="isApprove('TOEFL')?'success':'primary'" style="margin: 0 10px 0" size="mini" @click="redirectToTraining('TOEFL')">Complete TOEFL Training</el-button>
+            </el-tooltip>
           </div>
           <div>
             <el-form v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" ref="formRegister" class="file-upload-form" :model="formRegister" label-position="left" label-width="150px" style="width:100%;">

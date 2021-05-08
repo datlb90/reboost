@@ -37,14 +37,19 @@ function handleDocumentMouseup(e) {
   hideRectToolBar()
   clientClickX = e.clientX
   clientClickY = e.clientY
-  var isToolBar = false
+  let isToolBar = false
+  let isColorPicker = false
+  console.log('path', e.path)
   Array.prototype.slice.call(e.path).forEach(r => {
     if (r.tagName == 'DIV' && r.getAttribute('id') == 'tool-bar') {
       isToolBar = true
     }
+    if (r.tagName == 'DIV' && r.getAttribute('id') == 'colorPickerCollapse') {
+      isColorPicker = true
+    }
   })
 
-  if (input || !findSVGAtPoint(e.clientX, e.clientY) || isToolBar) {
+  if (input || !findSVGAtPoint(e.clientX, e.clientY) || isToolBar || isColorPicker) {
     return
   }
   svg = findSVGAtPoint(e.clientX, e.clientY)

@@ -44,12 +44,6 @@
             disable-transitions
           >{{ scope.row.status }}
           </el-tag>
-          <el-tag
-            v-if="scope.row.status === 'Approved' && (completedTraining(scope.row,'IELTS')||completedTraining(scope.row,'TOEFL'))"
-            style="margin-left:10px"
-            :type="(isApproved(scope.row,'IELTS')&&isApproved(scope.row,'TOEFL')) ? 'success' : 'info'"
-            size="mini"
-          >{{ (isApproved(scope.row,'IELTS')&&isApproved(scope.row,'TOEFL')) ? 'Completed Training' : 'Training' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="Operations">
