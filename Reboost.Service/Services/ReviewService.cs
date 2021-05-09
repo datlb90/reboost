@@ -17,7 +17,7 @@ namespace Reboost.Service.Services
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<Annotations> annotations, IEnumerable<InTextComments> comments);
-        Task SaveFeedback(int reviewId, List<ReviewData> data);
+        Task<String> SaveFeedback(int reviewId, List<ReviewData> data);
         Task<List<ReviewData>> LoadFeedback(int reviewId);
         Task<Annotations> AddAnnotationAsync(Annotations annotation);
         Task<InTextComments> AddInTextCommentAsync(int docId, int reviewId, InTextComments cmt, Annotations anno);
@@ -68,9 +68,9 @@ namespace Reboost.Service.Services
             }
             return await _unitOfWork.Review.SaveCommentsAsync(_comments);
         }
-        public async Task SaveFeedback(int reviewId, List<ReviewData> data)
-        {
-            await _unitOfWork.Review.SaveFeedback(reviewId, data);
+        public async Task<String> SaveFeedback(int reviewId, List<ReviewData> data)
+        { 
+            return await _unitOfWork.Review.SaveFeedback(reviewId, data);
         }
         public async Task<List<ReviewData>> LoadFeedback(int reviewId)
         {

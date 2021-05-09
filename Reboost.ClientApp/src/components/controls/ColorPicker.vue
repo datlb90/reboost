@@ -98,7 +98,6 @@ export default ({
         this.colorChosen = e.toLowerCase()
       }
       if (typeof (annotation) != 'undefined' && annotation) {
-        console.log('alo alo', e)
         this.annotation = annotation
         localStorage.setItem(`${this.documentid}/color`, e.toLowerCase())
       } else {

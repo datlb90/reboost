@@ -42,7 +42,9 @@ export function enableTextSelection(parent) {
             }
           }
         } else {
-          // Display different tool bar
+          that.hideTextToolBar()
+          that.hideTextToolGroup()
+          that.$refs.toolBar.handleAnnotationClicked(null)
         }
       } else {
         that.hideTextToolBar()

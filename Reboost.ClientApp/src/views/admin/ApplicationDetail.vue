@@ -276,7 +276,7 @@
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
             <el-button v-if="raterId && formRegister.status === RATER_STATUS.APPLIED" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">Reject</el-button>
-            <el-button v-if="raterId && formRegister.status === RATER_STATUS.TRAINING" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
+            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.TRAINING || formRegister.status === RATER_STATUS.APPLIED)" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
             <el-dropdown v-if="completedTraining(formRegister,'IELTS')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">
@@ -361,9 +361,6 @@ export default {
     }
   },
   computed: {
-    currentUser() {
-      return this.$store.getters['auth/getUser']
-    },
     applyToIELTSChecked() {
       return this.getApplyTo('IELTS')
     },
@@ -455,42 +452,29 @@ export default {
         this.formRegister.lastName = rs.user.lastName
       })
     },
-    onSubmit(formName, createOrUpdate, hideSaveNotify) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          const formData = new FormData()
+    async onSubmit(formName, createOrUpdate, hideSaveNotify) {
+      console.log('submit ')
+      return new Promise((resolve, reject) => {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            const formData = new FormData()
 
-          formData.set('User[firstName]', this.formRegister.firstName)
-          formData.set('User[lastName]', this.formRegister.lastName)
-          formData.set('Gender', this.formRegister.gender)
-          formData.set('Occupation', this.formRegister.occupation)
-          formData.set('Biography', this.formRegister.biography)
-          formData.set('Note', this.formRegister.note)
-          formData.set('firstLanguage', this.formRegister.firstLanguage)
-          formData.set('Status', RATER_STATUS.APPLIED)
-          formData.set('AppliedDate', moment().format('yyyy-MM-DD hh:mm:ss'))
-          formData.set('LastActivityDate', moment().format('yyyy-MM-DD hh:mm:ss'))
-          formData.set('UserId', this.currentUser.id)
+            formData.set('User[firstName]', this.formRegister.firstName)
+            formData.set('User[lastName]', this.formRegister.lastName)
+            formData.set('Gender', this.formRegister.gender)
+            formData.set('Occupation', this.formRegister.occupation)
+            formData.set('Biography', this.formRegister.biography)
+            formData.set('Note', this.formRegister.note)
+            formData.set('firstLanguage', this.formRegister.firstLanguage)
+            formData.set('Status', RATER_STATUS.APPLIED)
+            formData.set('AppliedDate', moment().format('yyyy-MM-DD hh:mm:ss'))
+            formData.set('LastActivityDate', moment().format('yyyy-MM-DD hh:mm:ss'))
+            formData.set('UserId', this.formRegister.userId)
 
-          let count = 0
-          for (const p of this.formRegister.iDCardPhotos) {
-            formData.set(`RaterCredentials[${count}][TestId]`, '0')
-            formData.set(`RaterCredentials[${count}][CredentialType]`, 'IDPhoto')
-            formData.set(`RaterCredentials[${count}][FileName]`, p.name)
-            formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))
-
-            if (p.raw) {
-              formData.append(`UploadedFiles`, p.raw)
-            } else {
-              formData.append(`UploadedFiles`, stringUtil.base64ToArrayBuffer(p.url, p.name))
-            }
-            count++
-          }
-
-          if (this.getApplyTo('IELTS')) {
-            for (const p of this.formRegister.iELTSCertificatePhotos) {
-              formData.set(`RaterCredentials[${count}][TestId]`, '2')
-              formData.set(`RaterCredentials[${count}][CredentialType]`, 'IELTSPhoto')
+            let count = 0
+            for (const p of this.formRegister.iDCardPhotos) {
+              formData.set(`RaterCredentials[${count}][TestId]`, '0')
+              formData.set(`RaterCredentials[${count}][CredentialType]`, 'IDPhoto')
               formData.set(`RaterCredentials[${count}][FileName]`, p.name)
               formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))
 
@@ -499,91 +483,112 @@ export default {
               } else {
                 formData.append(`UploadedFiles`, stringUtil.base64ToArrayBuffer(p.url, p.name))
               }
-
               count++
             }
-          }
 
-          if (this.getApplyTo('TOEFL')) {
-            for (const p of this.formRegister.tOEFLCertificatePhotos) {
-              formData.set(`RaterCredentials[${count}][TestId]`, '1')
-              formData.set(`RaterCredentials[${count}][CredentialType]`, 'TOEFLPhoto')
-              formData.set(`RaterCredentials[${count}][FileName]`, p.name)
-              formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))
+            if (this.getApplyTo('IELTS')) {
+              for (const p of this.formRegister.iELTSCertificatePhotos) {
+                formData.set(`RaterCredentials[${count}][TestId]`, '2')
+                formData.set(`RaterCredentials[${count}][CredentialType]`, 'IELTSPhoto')
+                formData.set(`RaterCredentials[${count}][FileName]`, p.name)
+                formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))
 
-              if (p.raw) {
-                formData.append(`UploadedFiles`, p.raw)
-              } else {
-                formData.append(`UploadedFiles`, stringUtil.base64ToArrayBuffer(p.url, p.name))
+                if (p.raw) {
+                  formData.append(`UploadedFiles`, p.raw)
+                } else {
+                  formData.append(`UploadedFiles`, stringUtil.base64ToArrayBuffer(p.url, p.name))
+                }
+
+                count++
               }
             }
-          }
 
-          const scores = []
+            if (this.getApplyTo('TOEFL')) {
+              for (const p of this.formRegister.tOEFLCertificatePhotos) {
+                formData.set(`RaterCredentials[${count}][TestId]`, '1')
+                formData.set(`RaterCredentials[${count}][CredentialType]`, 'TOEFLPhoto')
+                formData.set(`RaterCredentials[${count}][FileName]`, p.name)
+                formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))
 
-          if (this.getApplyTo('IELTS')) {
-            scores.push(...[
-              { sectionId: 5, score: this.formRegister.ieltsTestScore.listening, updatedDate: moment().format('yyyy-MM-DD') },
-              { sectionId: 6, score: this.formRegister.ieltsTestScore.reading, updatedDate: moment().format('yyyy-MM-DD') },
-              { sectionId: 8, score: this.formRegister.ieltsTestScore.writting, updatedDate: moment().format('yyyy-MM-DD') },
-              { sectionId: 7, score: this.formRegister.ieltsTestScore.speaking, updatedDate: moment().format('yyyy-MM-DD') }
-            ])
-          }
-          if (this.getApplyTo('TOEFL')) {
-            scores.push(...[
-              { sectionId: 1, score: this.formRegister.toeflTestScore.listening, updatedDate: moment().format('yyyy-MM-DD') },
-              { sectionId: 2, score: this.formRegister.toeflTestScore.reading, updatedDate: moment().format('yyyy-MM-DD') },
-              { sectionId: 4, score: this.formRegister.toeflTestScore.writting, updatedDate: moment().format('yyyy-MM-DD') },
-              { sectionId: 3, score: this.formRegister.toeflTestScore.speaking, updatedDate: moment().format('yyyy-MM-DD') }
-            ])
-          }
+                if (p.raw) {
+                  formData.append(`UploadedFiles`, p.raw)
+                } else {
+                  formData.append(`UploadedFiles`, stringUtil.base64ToArrayBuffer(p.url, p.name))
+                }
+              }
+            }
 
-          count = 0
+            const scores = []
 
-          for (const s of scores) {
-            formData.set(`User[UserScores][${count}][SectionId]`, s.sectionId)
-            formData.set(`User[UserScores][${count}][Score]`, s.score)
-            formData.set(`User[UserScores][${count}][UpdatedDate]`, s.updatedDate)
-            count++
-          }
-          if (createOrUpdate == 'create') {
-            raterService.insert(formData).then(rs => {
-              this.$notify({
-                title: 'Success',
-                message: 'Created success',
-                type: 'success',
-                duration: 2000
-              })
-              this.$router.push('/rater/application/status/' + rs.id)
-            })
-          } else if (createOrUpdate == 'update') {
-            formData.set('Id', this.formRegister.id)
-            formData.set('Status', this.formRegister.status)
-            raterService.update(formData).then(rs => {
-              console.log('updated', rs)
-              if (typeof (hideSaveNotify) == 'undefined') {
+            if (this.getApplyTo('IELTS')) {
+              scores.push(...[
+                { sectionId: 5, score: this.formRegister.ieltsTestScore.listening, updatedDate: moment().format('yyyy-MM-DD') },
+                { sectionId: 6, score: this.formRegister.ieltsTestScore.reading, updatedDate: moment().format('yyyy-MM-DD') },
+                { sectionId: 8, score: this.formRegister.ieltsTestScore.writting, updatedDate: moment().format('yyyy-MM-DD') },
+                { sectionId: 7, score: this.formRegister.ieltsTestScore.speaking, updatedDate: moment().format('yyyy-MM-DD') }
+              ])
+            }
+            if (this.getApplyTo('TOEFL')) {
+              scores.push(...[
+                { sectionId: 1, score: this.formRegister.toeflTestScore.listening, updatedDate: moment().format('yyyy-MM-DD') },
+                { sectionId: 2, score: this.formRegister.toeflTestScore.reading, updatedDate: moment().format('yyyy-MM-DD') },
+                { sectionId: 4, score: this.formRegister.toeflTestScore.writting, updatedDate: moment().format('yyyy-MM-DD') },
+                { sectionId: 3, score: this.formRegister.toeflTestScore.speaking, updatedDate: moment().format('yyyy-MM-DD') }
+              ])
+            }
+
+            count = 0
+
+            for (const s of scores) {
+              formData.set(`User[UserScores][${count}][SectionId]`, s.sectionId)
+              formData.set(`User[UserScores][${count}][Score]`, s.score)
+              formData.set(`User[UserScores][${count}][UpdatedDate]`, s.updatedDate)
+              count++
+            }
+            if (createOrUpdate == 'create') {
+              raterService.insert(formData).then(rs => {
                 this.$notify({
                   title: 'Success',
-                  message: 'Update success',
+                  message: 'Created success',
                   type: 'success',
                   duration: 2000
                 })
-              }
+                resolve(rs)
+                this.$router.push('/rater/application/status/' + rs.id)
+              })
+            } else if (createOrUpdate == 'update') {
+              formData.set('Id', this.formRegister.id)
+              formData.set('Status', this.formRegister.status)
+              raterService.update(formData).then(rs => {
+                console.log('updated', rs)
+                if (typeof (hideSaveNotify) == 'undefined') {
+                  this.$notify({
+                    title: 'Success',
+                    message: 'Update success',
+                    type: 'success',
+                    duration: 2000
+                  })
+                }
+                resolve(rs)
+              })
+            }
+          } else {
+            console.log('error submit!!')
+            this.$notify.error({
+              title: 'Error',
+              message: 'Error occured!',
+              duration: 2000
             })
+
+            reject()
           }
-        } else {
-          console.log('error submit!!')
-          this.$notify.error({
-            title: 'Error',
-            message: 'Error occured!',
-            duration: 2000
-          })
-          return false
-        }
+        })
       })
     },
-    updateStatus(status) {
-      this.onSubmit('formRegister', 'update', true)
+    async updateStatus(status) {
+      const rs = await this.onSubmit('formRegister', 'update', true)
+      console.log('await result', rs)
+      console.log('next statement')
       if (status === RATER_STATUS.DOCUMENT_REQUESTED && this.formRegister.note.trim() === '') {
         this.$notify.error({
           title: RATER_STATUS.DOCUMENT_REQUESTED,

@@ -9,7 +9,7 @@
           <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
           <el-button size="mini" @click="notShowDirection">Never show this again</el-button>
         </div>
-        <div v-if="currentUser.status === RATER_STATUS.REVISION_REQUESTED" class="tip note" transition="fade" style="margin-bottom: 10px;">
+        <div v-if="currentUser && currentUser.status === RATER_STATUS.REVISION_REQUESTED" class="tip note" transition="fade" style="margin-bottom: 10px;">
           <p style="width: 98%;">
             Note: {{ currentUser.note }}
           </p>
@@ -121,7 +121,6 @@ export default ({
     })
 
     console.log('this.getDataQuestionParts', this.getDataQuestionParts)
-    console.log('current user', this.currentUser)
 
     if (localStorage.getItem('showQuestionDirection')) {
       this.showDirection = false

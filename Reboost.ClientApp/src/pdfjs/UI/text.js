@@ -39,7 +39,6 @@ function handleDocumentMouseup(e) {
   clientClickY = e.clientY
   let isToolBar = false
   let isColorPicker = false
-  console.log('path', e.path)
   Array.prototype.slice.call(e.path).forEach(r => {
     if (r.tagName == 'DIV' && r.getAttribute('id') == 'tool-bar') {
       isToolBar = true

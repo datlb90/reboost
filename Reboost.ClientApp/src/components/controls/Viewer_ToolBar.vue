@@ -226,7 +226,6 @@ export default ({
       if (this.activeButton != null && this.activeButton != '') {
         this.expandColor(false)
       }
-      this.insertExpandMenu()
     },
     async toolBarButtonClick(e) {
       localStorage.setItem(`${this.documentid}/tooltype`, e)
@@ -266,9 +265,6 @@ export default ({
       }
       this.insertExpandMenu()
       this.$emit('toolBarButtonChange', this.activeButton)
-    },
-    async disableToolBarButton(e) {
-      console.log('disableToolBarButton', e)
     },
     HighlightText() {
       this.$emit('highLightText', 'highlight')
@@ -364,9 +360,7 @@ export default ({
     updateToolbarActiveButton(e) {
       this.activeButton = e
     },
-    async resizeEventHandle() {
-      document.getElementById('right-panel').offsetWidth
-
+    resizeEventHandle() {
       if (this.scaleRatio != 'fitWidth' && this.scaleRatio != 'fitPage') {
         this.renderoptions.scale = this.defaultScale
         this.renderoptions.scale *= this.scaleRatio
@@ -379,11 +373,6 @@ export default ({
       } else {
         (this.scaleRatio == 'fitWidth') ? this.handleScale('fitWidth') : this.handleScale('fitPage')
       }
-
-      // if (this.activeButton != null && this.activeButton != '') {
-      //   this.expandColor(false)
-      // }
-      this.insertExpandMenu()
     },
     insertExpandMenu() {
       const toolBarButtons = document.getElementById('tool-bar__buttons__Con')
@@ -513,7 +502,6 @@ export default ({
     handleAnnotationClicked(e) {
       if (e) {
         if (e.color) { this.colorChosen = e.color.includes('#') ? e.color : '#' + e.color }
-        console.log('gan r ne', e)
         this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, e)
         this.clickedAnnotation = e
       } else {

@@ -50,8 +50,8 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("feedback/{id}")]
         public async Task<IActionResult> ReviewFeedback([FromRoute] int id, [FromBody] List<ReviewData> data)
         {
-            await _service.SaveFeedback(id, data);
-            return Ok();
+            var rs = await _service.SaveFeedback(id, data);
+            return Ok(rs);
         }
         [HttpGet("feedback/{reviewId}")]
         public async Task<IActionResult> GetFeedBack([FromRoute] int reviewId)
