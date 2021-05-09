@@ -252,7 +252,6 @@ function handleDocumentMousedown(e) {
       target.setAttribute('transform', `scale(1) rotate(${viewport.rotation}) translate(${trans.x}, ${trans.y})`)
     }
     overlay.appendChild(target)
-    console.log('target', target)
     document.getElementById('viewerContainer').addEventListener('scroll', handleDocumentScroll)
     document.addEventListener('mousemove', handleDocumentMousemove)
     document.addEventListener('mouseup', handleDocumentMouseup)

@@ -18,7 +18,7 @@ namespace Reboost.DataAccess.Repositories
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<Annotations> AddAnnotationAsync( Annotations annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<InTextComments> comments);
-        Task SaveFeedback(int reviewId, List<ReviewData> data);
+        Task<String> SaveFeedback(int reviewId, List<ReviewData> data);
         Task<List<ReviewData>> LoadFeedBack(int reviewId);
         Task<InTextComments> AddInTextCommentAsync(InTextComments cmt);
         Task<InTextComments> DeleteInTextCommentAsync(int id);
@@ -77,18 +77,25 @@ namespace Reboost.DataAccess.Repositories
 
             return await Task.FromResult(comments);
         }
-        public async Task SaveFeedback(int reviewId,List<ReviewData> data)
+        public async Task<String> SaveFeedback(int reviewId,List<ReviewData> data)
         {
             Reviews review = await db.Reviews.FindAsync(reviewId);
-            ReviewRequests requests = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId && rq.UserId == review.RevieweeId).FirstOrDefaultAsync();
-            if(requests!= null)
+            if (review != null)
             {
-                requests.Status = "Completed";
-                requests.CompletedDateTime = DateTime.Now;
+                ReviewRequests requests = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
+                if (requests != null)
+                {
+                    requests.Status = "Completed";
+                    requests.CompletedDateTime = DateTime.Now;
+                }
+                db.ReviewData.AddRange(data);
+                await db.SaveChangesAsync();
+                return null;
             }
-            db.ReviewData.AddRange(data);
-
-            await db.SaveChangesAsync();
+            else
+            {
+                return "Current Review not existed";
+            }
         }
         public async Task<List<ReviewData>> LoadFeedBack(int reviewId)
         {

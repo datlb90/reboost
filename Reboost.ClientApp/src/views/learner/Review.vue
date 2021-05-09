@@ -271,7 +271,8 @@ export default {
       isEditing: false,
       showMoreList: [],
       isTextbox: false,
-      isRect: false
+      isRect: false,
+      isRendering: false
     }
   },
   computed: {
@@ -457,7 +458,6 @@ export default {
       const commentWrapper = document.getElementById('comment-wrapper')
       // commentWrapper.style.left = this.commentleftPos + 'px'
       viewerContainer.appendChild(commentWrapper)
-
       this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
       await this.comments.forEach(function(element) {
         element.isSelected = false
@@ -928,7 +928,62 @@ export default {
         }
       }
     },
+    async handleCommentPositionsRestoreAfterMove(target, e) {
+      this.hideDeleteToolBar()
+      const documentId = document.getElementById('viewer').getAttribute('document-id')
+      const highlights = document.querySelectorAll("g[data-pdf-annotate-type='comment-highlight']")
+      const points = document.querySelectorAll("svg[data-pdf-annotate-type='point']")
+      const commentAreas = document.querySelectorAll("rect[data-pdf-annotate-type='comment-area']")
+      const areaArr = Array.prototype.slice.call(commentAreas)
+      const highlightArr = Array.prototype.slice.call(highlights)
+      var pointsArr = Array.prototype.slice.call(points)
+
+      var combineArr = highlightArr.concat(pointsArr)
+      combineArr = combineArr.concat(areaArr)
+      combineArr.sort(this.compareTopAttributes)
+      combineArr.forEach(cmt => {
+        this.handleCommentAnnotationClick(cmt)
+      })
+
+      const order = combineArr.findIndex(item => {
+        return item.dataset.pdfAnnotateId == target.getAttribute('data-pdf-annotate-id')
+      })
+      console.log('target order', order, target.getAttribute('data-pdf-annotate-id'))
+      if (combineArr.length > 2) {
+        console.log('lenght', combineArr.length)
+        if (order == 0) {
+          this.handleCommentAnnotationClick(combineArr[order + 1])
+        } else {
+          this.handleCommentAnnotationClick(combineArr[order])
+        }
+      }
+      const comments = await this.updateCommentAnnotations(documentId, e)
+      await PDFJSAnnotate.getStoreAdapter().updateComments(documentId, comments)
+      const selected = document.getElementsByClassName('comment-card-selected')
+      if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
+
+      if (combineArr.length > 2) {
+        console.log('lenght', combineArr.length)
+        if (order == 0) {
+          this.handleCommentAnnotationClick(combineArr[order + 1])
+        } else {
+          this.handleCommentAnnotationClick(combineArr[order])
+        }
+      }
+
+      const annoSelected = document.querySelector('.comment-highlight-selected')
+      if (annoSelected) {
+        annoSelected.classList.remove('comment-highlight-selected')
+      }
+      const rectSelected = document.querySelectorAll('.rectangle-selected')
+      if (rectSelected.length > 0) {
+        for (let i = 0; i < rectSelected.length; i++) {
+          rectSelected[i].classList.remove('rectangle-selected')
+        }
+      }
+    },
     async handleCommentPositionsAfterHandleScale() {
+      this.isRendering = true
       const selected = document.getElementsByClassName('comment-card-selected')
       if (selected.length == 1) {
         const uuid = selected[0].getAttribute('highlight-id')
@@ -1027,7 +1082,7 @@ export default {
         }
       })
       await this.updatePositionsAfterCommentAdded()
-      await this.handleCommentPositionsRestore()
+      // await this.handleCommentPositionsRestore()
       const target = this.getHighlightByCommentId(this.annotation.uuid)
       this.handleCommentAnnotationClick(target)
       this.newComment = ''
@@ -1389,10 +1444,13 @@ export default {
       if (adjEnd + 10 < topPos) {
         return
       }
-
+      if (this.isRendering) {
       // Move the start index card up first
-      if ((adjTop - (adjEnd - topPos) - 10) > gTop) {
-        this.comments[startIndex].topPosition = gTop
+        if ((adjTop - (adjEnd - topPos) - 10) > gTop) {
+          this.comments[startIndex].topPosition = gTop
+        } else {
+          this.comments[startIndex].topPosition = adjTop - (adjEnd - topPos) - 10
+        }
       } else {
         this.comments[startIndex].topPosition = adjTop - (adjEnd - topPos) - 10
       }
@@ -1408,14 +1466,14 @@ export default {
           if (!thisG) { return }
           var thisGTop = parseInt(thisG.getAttribute('top') * this.RENDER_OPTIONS.scale) - 35
           if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) + 12) * this.RENDER_OPTIONS.scale) }
-          if ((thisTop - (thisEnd - previousTop) - 10) > thisGTop) {
-            this.comments[m].topPosition = thisGTop
-          } else {
-            if (thisEnd > (previousTop - 10)) {
-              this.comments[m].topPosition = thisTop - (thisEnd - previousTop) - 10
+          if (this.isRendering) {
+            if ((thisTop - (thisEnd - previousTop) - 10) > thisGTop) {
+              this.comments[m].topPosition = thisGTop
             } else {
-              break
+              this.comments[m].topPosition = thisTop - (thisEnd - previousTop) - 10
             }
+          } else {
+            this.comments[m].topPosition = thisTop - (thisEnd - previousTop) - 10
           }
         }
       }
@@ -1511,13 +1569,18 @@ export default {
       if (this.comments[startIndex].topPosition > endPos + 10) {
         return
       }
-      if ((endPos + 10) < gTop) {
-        this.comments[startIndex].topPosition = gTop
-      } else {
-        const desiredTop = (endPos + 10) + gTop * 0
+      const desiredTop = (endPos + 10) + gTop * 0
+      if (this.isRendering) {
+        if ((endPos + 10) < gTop) {
+          this.comments[startIndex].topPosition = gTop
+        } else {
         // Move start index card up
+          this.comments[startIndex].topPosition = desiredTop
+        }
+      } else {
         this.comments[startIndex].topPosition = desiredTop
       }
+
       // Move other cards down ward
       if (this.comments.length > (startIndex + 1)) {
         for (let j = startIndex + 1; j < this.comments.length; j++) {
@@ -1532,8 +1595,12 @@ export default {
 
           // Check if move down is necessary
           if (thisG.getAttribute('page-num') > 1) { thisGTop += ((thisG.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12)) }
-          if (thisGTop > (previousEnd + 10)) {
-            this.comments[j].topPosition = thisGTop
+          if (this.isRendering) {
+            if (thisGTop > (previousEnd + 10)) {
+              this.comments[j].topPosition = thisGTop
+            } else {
+              this.comments[j].topPosition = previousEnd + 10
+            }
           } else {
             this.comments[j].topPosition = previousEnd + 10
           }
@@ -1788,17 +1855,23 @@ export default {
           return
         }
         reviewService.saveReviewFeedback(this.reviewId, reviewData).then(rs => {
-          console.log('review data: ', rs)
           this.disableToolbarSubmit()
-          this.$notify.success({
-            title: 'Submit success',
-            message: 'Submitted!',
-            duration: 2000
-          })
+          if (rs.data == '') {
+            this.$notify.success({
+              title: 'Submit success',
+              message: 'Submitted!',
+              duration: 2000
+            })
+          } else {
+            this.$notify.error({
+              title: 'Submit failed',
+              message: 'Current review not exist!',
+              duration: 2000
+            })
+          }
           this.$router.push('/reviews')
         })
         reviewService.loadReviewFeedback(this.reviewId).then(rs => {
-          console.log('review data: ', rs)
           localStorage.removeItem('reviewComment')
         })
       }
@@ -1842,6 +1915,7 @@ export default {
       await this.handleCommentPositionsRestore()
       this.calculateContainerHeight()
       this.hideDeleteToolBar()
+      this.$refs.toolBar.insertExpandMenu()
     },
     async documentWidthCal() {
       var docWidth = document.getElementById('pageContainer1').offsetWidth
@@ -1866,7 +1940,7 @@ export default {
     },
     async handleScale(e) {
       this.RENDER_OPTIONS.scale = e
-      this.reRenderPages()
+      await this.reRenderPages()
       const overlayDoc = document.getElementById('pdf-annotate-edit-overlay')
       if (overlayDoc && typeof (overlayDoc) != 'undefined') {
         overlayDoc.parentNode.removeChild(overlayDoc)
@@ -1875,12 +1949,15 @@ export default {
       this.hideDeleteToolBar()
       this.hideTextToolBar()
       this.hideTextToolGroup()
+
+      this.$refs.toolBar.insertExpandMenu()
     },
 
     async reRenderPages() {
       await UI.renderAllPages(this.NUM_PAGES, this.RENDER_OPTIONS)
       this.documentWidthCal()
-      this.handleCommentPositionsAfterHandleScale()
+      await this.handleCommentPositionsAfterHandleScale()
+      this.isRendering = false
     },
     expandColorPickerToggle(e) {
       this.expandColorPicker = e
@@ -2149,7 +2226,8 @@ export default {
         this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
         await this.comments.sort(this.compareTopAnnoAttributes)
         this.editCommentCard(editComment, 'undo')
-        await this.handleCommentPositionsRestore()
+        console.log('target', target)
+        await this.handleCommentPositionsRestoreAfterMove(target)
         await this.handleCommentAnnotationClick(target)
       }
     },

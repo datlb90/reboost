@@ -22,10 +22,13 @@
         prop="status"
         label="Status"
         :filters="[
-          { text: 'Applied', value: 'Applied' },
-          { text: 'Approved', value: 'Approved' },
-          { text: 'Training Completed', value: 'Training Completed' },
-          { text: 'Revision', value: 'Revision' }
+          { text: RATER_STATUS.APPLIED, value: RATER_STATUS.APPLIED },
+          { text: RATER_STATUS.APPROVED, value: RATER_STATUS.APPROVED },
+          { text: RATER_STATUS.TRAINING, value: RATER_STATUS.TRAINING },
+          { text: RATER_STATUS.DOCUMENT_REQUESTED, value: RATER_STATUS.DOCUMENT_REQUESTED },
+          { text: RATER_STATUS.DOCUMENT_SUBMITTED, value: RATER_STATUS.DOCUMENT_SUBMITTED },
+          { text: RATER_STATUS.REVISION_REQUESTED, value: RATER_STATUS.REVISION_REQUESTED },
+          { text: RATER_STATUS.REJECTED, value: RATER_STATUS.REJECTED }
         ]"
         :filter-method="filterTag"
         filter-placement="bottom-end"
@@ -34,11 +37,11 @@
           <el-tag
             size="mini"
             :type="
-              scope.row.status === 'Approved'
+              scope.row.status === RATER_STATUS.APPROVED
                 ? 'success'
-                : scope.row.status === 'Applied'
+                : scope.row.status === RATER_STATUS.APPLIED || scope.row.status === RATER_STATUS.TRAINING
                   ? 'primary'
-                  : scope.row.status === 'Training Completed'
+                  : scope.row.status === RATER_STATUS.DOCUMENT_REQUESTED || scope.row.status === RATER_STATUS.DOCUMENT_SUBMITTED || scope.row.status === RATER_STATUS.REVISION_REQUESTED
                     ? 'warning'
                     : 'danger'"
             disable-transitions
@@ -62,6 +65,8 @@
 </template>
 
 <script>
+import { RATER_STATUS } from '../../app.constant'
+
 export default {
   name: 'ManageRaters',
   data() {
@@ -72,7 +77,8 @@ export default {
       pageSize: 10,
       total: 10,
       filterDate: [],
-      table: []
+      table: [],
+      RATER_STATUS: RATER_STATUS
     }
   },
   computed: {
@@ -141,8 +147,10 @@ export default {
     },
     completedTraining(e, status) {
       status += 'Training'
+
       var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status == status || r.status == status + 'Approved'))[0]
       if (t) {
+        console.log('----------------------', this.getAllReviews)
         return true
       }
       return false
