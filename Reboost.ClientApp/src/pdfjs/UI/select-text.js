@@ -83,9 +83,11 @@ export function enableTextSelection(parent) {
         if (!validTarget && comment.replace(/\s/g, '').length == 0) { that.cancelCommentText() }
       }
       // Unselect highlight comment
-      if (!e.target.classList.contains('comment-highlight-selected') && !e.target.classList.contains('toolbar-btn')) {
+      if (!e.target.classList.contains('comment-highlight-selected') && !e.target.classList.contains('rectangle-selected') && !e.target.classList.contains('toolbar-btn')) {
         const validTarget = that.hasAParentWithClass(e.target, 'comment-card-selected')
+        const validTargetRect = that.hasAParentWithClass(e.target, 'rectangle-selected')
         if (!validTarget) { that.unselectHighlightComment() }
+        if (!validTargetRect) { that.unselectHighlightComment() }
       }
       return
     }

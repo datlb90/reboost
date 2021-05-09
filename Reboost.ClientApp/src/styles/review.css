@@ -136,7 +136,12 @@ transform: rotate(180deg);
   border: none;
 }
 .color-picker-collapse{
-  display: none;
+  width: 160px;
+  overflow: hidden; 
+  display: grid;
+  grid-template-columns: repeat(4,40px);
+  z-index: 2; 
+  background:#ffffff;
 }
 .color-picker-collapse .item{
   flex: 1 0 25%;

@@ -14,6 +14,7 @@ export const SCORES = {
 }
 export const RATER_STATUS = {
   APPLIED: 'Applied',
+  TRAINING: 'Training',
   APPROVED: 'Approved',
   REJECTED: 'Rejected',
   DOCUMENT_REQUESTED: 'DocumentRequested',

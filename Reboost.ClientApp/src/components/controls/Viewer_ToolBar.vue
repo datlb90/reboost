@@ -64,10 +64,10 @@
       </div>
 
       <!-- Color picker control -->
-      <div :style="{display:((activeButton || clickedAnnotation) && !disableAnnotation)?'block':'none'}">
-        <colorPicker ref="colorPickerCom" :initcolor="colorChosen" :documentid="documentid" :expandcolorpicker.sync="expandColorPicker" @colorChange="colorPickerChange($event)" @expandColorPickerToggle="expandColor" />
+      <div :style="{display:(activeButton || clickedAnnotation)&&!disableAnnotation?'block':'none'}">
+        <colorPicker ref="colorPickerCom" :initcolor="colorChosen" :documentid="documentid" @colorChange="colorPickerChange($event)" />
       </div>
-
+      <!-- :expandcolorpicker.sync="expandColorPicker" -->
       <!-- Text selection tools -->
       <div v-if="!disableAnnotation" id="textTool" data-element="textToolGroupButton" class="tool-group-button text-tool-group-button">
         <div class="devider" />
@@ -107,9 +107,9 @@
       <select v-if="!disableAnnotation" :style="{ 'display': activeButton == 'text' ? 'block' : 'none' }" class="text-size" />
 
       <!-- No presets -->
-      <div v-if="activeButton=='' && !disableAnnotation" class="preset-none">
+      <!-- <div v-if="(activeButton || clickedAnnotation) && !disableAnnotation" class="preset-none">
         <div style="color: gray;">No Presets</div>
-      </div>
+      </div> -->
 
       <!-- Zoom controls -->
       <el-dropdown size="mini" split-button style="margin-left: 10px;min-width:95px" @command="handleScale">
@@ -345,12 +345,12 @@ export default ({
     submitReview() {
       this.$emit('submit')
     },
-    expandColor(e) {
-      this.expandColorPicker = e
-      if (!e) {
-        this.$refs.colorPickerCom.expandColorPickerToggle(e)
-      }
-    },
+    // expandColor(e) {
+    //   this.expandColorPicker = e
+    //   if (!e) {
+    //     this.$refs.colorPickerCom.expandColorPickerToggle(e)
+    //   }
+    // },
     setStatusText(text = 'Saved') {
       this.statusText = text
       setTimeout(() => { this.statusText = '' }, 2000)
@@ -380,9 +380,9 @@ export default ({
         (this.scaleRatio == 'fitWidth') ? this.handleScale('fitWidth') : this.handleScale('fitPage')
       }
 
-      if (this.activeButton != null && this.activeButton != '') {
-        this.expandColor(false)
-      }
+      // if (this.activeButton != null && this.activeButton != '') {
+      //   this.expandColor(false)
+      // }
       this.insertExpandMenu()
     },
     insertExpandMenu() {
@@ -508,14 +508,16 @@ export default ({
       UI.disableText()
       UI.disablePoint()
       UI.disableRect()
-      localStorage.setItem(`${this.documentid}/tooltype`, 'cursor')
+      this.toolBarButtonClick('cursor')
     },
     handleAnnotationClicked(e) {
       if (e) {
         if (e.color) { this.colorChosen = e.color.includes('#') ? e.color : '#' + e.color }
+        console.log('gan r ne', e)
         this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, e)
         this.clickedAnnotation = e
       } else {
+        this.clickedAnnotation = e
         this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, null)
       }
     },

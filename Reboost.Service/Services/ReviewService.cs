@@ -27,7 +27,7 @@ namespace Reboost.Service.Services
         Task<InTextComments> EditInTextComment(InTextComments cmt);
         Task<string> CreateNewSampleReviewDocumentAsync(string type, User user);
         Task<List<Reviews>> GetReviewsAsync();
-        Task<List<Reviews>> GetReviewsByIdAsync(string userId);
+        Task<List<Reviews>> GetReviewsByUserIdAsync(string userId);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
         Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
         Task<List<GetReviewsModel>> GetReviewRequestsByIdAsync(String userId);
@@ -119,9 +119,9 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.ChangeStatusAsync(id, newStatus);
         }
-        public async Task<List<Reviews>> GetReviewsByIdAsync(string userId)
+        public async Task<List<Reviews>> GetReviewsByUserIdAsync(string userId)
         {
-            return await _unitOfWork.Review.GetReviewsByIdAsync(userId);
+            return await _unitOfWork.Review.GetReviewsByUserIdAsync(userId);
         }
         public async Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests)
         {
