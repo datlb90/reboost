@@ -8,6 +8,9 @@ namespace Reboost.Shared
     {
         public const string APPROVED = "Approved";
         public const string COMPLETED = "Completed";
-        public const string TRANING = "Training";
+        public const string TRAINING = "Training";
+        public const string REVISIONREQUESTED = "RevisionRequested";
+        public const string REVISIONCOMPLETED = "RevisionCompleted";
+        public const string REVISION = "Revision";
     }
 }

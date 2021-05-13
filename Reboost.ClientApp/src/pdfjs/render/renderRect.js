@@ -22,7 +22,7 @@ export default function renderRect(a) {
 
     setAttributes(group, {
       fill: normalizeColor(a.color || '#ff0'),
-      fillOpacity: 0.2,
+      fillOpacity: 0.1,
       top: parseInt(a.top),
       left: parseInt(a.left),
       pageNum: a.pageNum,

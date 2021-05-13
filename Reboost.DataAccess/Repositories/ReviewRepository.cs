@@ -80,22 +80,53 @@ namespace Reboost.DataAccess.Repositories
         public async Task<String> SaveFeedback(int reviewId,List<ReviewData> data)
         {
             Reviews review = await db.Reviews.FindAsync(reviewId);
-            if (review != null)
-            {
-                ReviewRequests requests = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
-                if (requests != null)
-                {
-                    requests.Status = "Completed";
-                    requests.CompletedDateTime = DateTime.Now;
-                }
-                db.ReviewData.AddRange(data);
-                await db.SaveChangesAsync();
-                return null;
-            }
-            else
+            if (review == null)
             {
                 return "Current Review not existed";
             }
+
+            ReviewRequests requests = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
+
+            if (review.Status.Contains(RaterStatus.REVISION))
+            {
+                var index = review.Status.IndexOf(RaterStatus.REVISION);
+                review.Status = review.Status.Substring(0, index) + RaterStatus.REVISIONCOMPLETED;
+                int completedCount = 0;
+
+                Raters rater = await db.Raters.Where(r => r.UserId == review.ReviewerId).FirstOrDefaultAsync();
+
+                RaterRepository _raterRepository = new RaterRepository(db);
+                List<Reviews> listUserReview = await GetReviewsByUserIdAsync(rater.UserId);
+                var trainingCount = listUserReview.Count(rater => rater.Status.Contains(RaterStatus.REVISION));
+
+                foreach (Reviews r in listUserReview)
+                {
+                    if (r.Status.Contains(RaterStatus.REVISIONCOMPLETED))
+                    {
+                        completedCount += 1;
+                    }
+                    else
+                    {
+                        if(r.Id == reviewId)
+                        {
+                            completedCount += 1;
+                        }
+                    }
+                }
+                if(completedCount == trainingCount)
+                {
+                    rater.Status = RaterStatus.REVISIONCOMPLETED;
+                }
+            }
+
+            if (requests != null)
+            {
+                requests.Status = "Completed";
+                requests.CompletedDateTime = DateTime.Now;
+            }
+            db.ReviewData.AddRange(data);
+            await db.SaveChangesAsync();
+            return null;
         }
         public async Task<List<ReviewData>> LoadFeedBack(int reviewId)
         {
@@ -167,7 +198,8 @@ namespace Reboost.DataAccess.Repositories
             rv.Status = newStatus;
             
             List<Reviews> rvs = await db.Reviews.Where(r => r.ReviewerId == rv.ReviewerId).ToListAsync();
-            bool flag = true;
+            bool approvedFlag = true;
+            bool isRevision = false;
 
             Raters rater = await db.Raters.Where(r => r.UserId == rv.ReviewerId).FirstOrDefaultAsync();
 
@@ -178,11 +210,16 @@ namespace Reboost.DataAccess.Repositories
             {
                 if (!r.Status.Contains(RaterStatus.APPROVED))
                 {
-                    flag = false;
+                    if (r.Status.Contains(RaterStatus.REVISION)&&!r.Status.Contains(RaterStatus.REVISIONCOMPLETED))
+                    {
+                        isRevision = true;
+                    }
+                    approvedFlag = false;
                     break;
                 }
             }
-            if (flag && newStatus.Contains(RaterStatus.APPROVED) )
+
+            if (approvedFlag && newStatus.Contains(RaterStatus.APPROVED))
             {
                 if(trainingCount.Count == rvs.Count)
                 {
@@ -190,8 +227,13 @@ namespace Reboost.DataAccess.Repositories
                 }
                 else
                 {
-                    rater.Status = RaterStatus.TRANING;
+                    rater.Status = isRevision ? RaterStatus.REVISIONREQUESTED : RaterStatus.TRAINING;
                 }
+            }
+
+            if (newStatus.Contains(RaterStatus.REVISION))
+            {
+                rater.Status = RaterStatus.REVISIONREQUESTED;
             }
 
             await db.SaveChangesAsync();
@@ -208,9 +250,9 @@ namespace Reboost.DataAccess.Repositories
                 return await Task.FromResult("failed");
             }
 
-            string status = type.ToUpper() + RaterStatus.TRANING;
-            string approvedstatus = status + RaterStatus.APPROVED;
-            Reviews existed = await db.Reviews.Where(rv => rv.ReviewerId == user.Id && (rv.Status == approvedstatus || rv.Status == status) ).FirstOrDefaultAsync();
+            string status = type.ToUpper() + RaterStatus.TRAINING;
+
+            Reviews existed = await db.Reviews.Where(rv => rv.ReviewerId == user.Id && (rv.Status.Contains(status))).FirstOrDefaultAsync();
             if(existed!= null)
             {
                 return await Task.FromResult(existed.Id.ToString());

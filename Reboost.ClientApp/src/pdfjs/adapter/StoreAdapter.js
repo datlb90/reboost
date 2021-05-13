@@ -91,6 +91,7 @@ export default class StoreAdapter {
         if (action == 'added') {
           return annotation
         }
+
         fireEvent('annotation:edit', documentId, annotationId, annotation, action, previousAnno)
         return annotation
       })
@@ -160,10 +161,12 @@ export default class StoreAdapter {
   __deleteComment(documentId, commentId) { abstractFunction('deleteComment') }
   get deleteComment() { return this.__deleteComment }
   set deleteComment(fn) {
-    this.__deleteComment = function deleteComment(documentId, commentId) {
+    this.__deleteComment = function deleteComment(documentId, commentId, status) {
       return fn(...arguments).then((success) => {
         if (success.length > 0) {
-          fireEvent('comment:delete', documentId, success[0])
+          if (status) {
+            fireEvent('comment:delete', documentId, success[0])
+          }
         }
         return success
       })

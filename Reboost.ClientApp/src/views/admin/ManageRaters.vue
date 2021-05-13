@@ -148,9 +148,8 @@ export default {
     completedTraining(e, status) {
       status += 'Training'
 
-      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status == status || r.status == status + 'Approved'))[0]
+      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status.includes(status)))[0]
       if (t) {
-        console.log('----------------------', this.getAllReviews)
         return true
       }
       return false
@@ -165,7 +164,7 @@ export default {
     },
     TrainingReview(e, type) {
       type += 'Training'
-      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status == type || r.status == type + 'Approved'))[0]
+      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status.includes(status)))[0]
       var pushUrl = t.status.includes('IELTSTraining') ? '/review/9/69/' + t.id : '/review/12/68/' + t.id
       this.$router.push(pushUrl)
     }

@@ -60,7 +60,7 @@
             placeholder="Add comment"
           />
           <div style="height: 20px; margin-top: 10px;">
-            <el-button type="primary" :disabled="newComment.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="addCommentText()">
+            <el-button type="primary" :disabled="newComment.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="addCommentText(true)">
               Comment
             </el-button>
             <el-button style="float: right; padding: 5px;" @click="cancelCommentText()">
@@ -91,16 +91,16 @@
               3:16 PM Jul 7
             </div>
           </div>
-          <el-button v-if="currentUser.role!=='Admin'" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
+          <el-button v-if="currentUser.role!=='Admin' && comment.isSaved == true" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
             <i class="far fa-trash-alt" />
           </el-button>
-          <el-button v-if="currentUser.role!=='Admin'" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
+          <el-button v-if="currentUser.role!=='Admin' && comment.isSaved == true" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
             <i class="far fa-edit" />
           </el-button>
         </div>
         <div>
           <div
-            v-show="!comment.isSelected"
+            v-show="!comment.isSelected "
             :id="'comment-text-' + comment.uuid"
             :style="{'-webkit-line-clamp': isInShowMoreList(comment.uuid).value==0 ? '3':'inherit'}"
             style="text-align: left; overflow-wrap: break-word; white-space: pre-wrap; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
@@ -111,14 +111,15 @@
             {{ isInShowMoreList(comment.uuid).value==0 ? 'Show more':'Show less' }}
           </div>
           <el-input
-            v-show="comment.isSelected == true"
+            v-show="comment.isSelected == true || comment.isSaved == false"
             :id="'comment-input-' + comment.uuid"
             :ref="'comment' + comment.uuid"
             v-model="comment.content"
             type="textarea"
+            resize="none"
             autosize
           />
-          <div v-show="comment.isSelected == true" style="height: 20px; margin-top: 10px;">
+          <div v-show="comment.isSelected == true || comment.isSaved == false" style="height: 20px; margin-top: 10px;">
             <el-button type="primary" :disabled="comment.content.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="editCommentCard(comment)">
               Save
             </el-button>
@@ -196,7 +197,7 @@ import {
   // scaleUp,
   // getAnnotationRect
 } from '@/pdfjs/UI/utils'
-import { addEventListener } from '@/pdfjs/UI/event'
+import { addEventListener, removeEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
 import http from '@/utils/axios'
 import reviewService from '@/services/review.service.js'
@@ -272,7 +273,8 @@ export default {
       showMoreList: [],
       isTextbox: false,
       isRect: false,
-      isRendering: false
+      isRendering: false,
+      commentsNotSaved: []
     }
   },
   computed: {
@@ -336,6 +338,7 @@ export default {
   destroyed() {
     clearInterval(this.setIntervalForScroll)
     document.removeEventListener('keyup', this.keyupHandler)
+    this.unRegisterEvents()
   },
   methods: {
     async annotationAdded(documentId, pageNumber, annotation) {
@@ -388,7 +391,7 @@ export default {
       })
     },
     handleAnnotationDelete(target) {
-      if (target.type == 'comment-highlight' || target.type == 'point') {
+      if (target.type == 'comment-highlight' || target.type == 'point' || target.type == 'comment-area') {
         PDFJSAnnotate.getStoreAdapter().getComments(this.documentId).then(r => {
           var cmt = r.filter(t => { return t.uuid == target.uuid })[0]
           if (cmt) {
@@ -461,7 +464,9 @@ export default {
       this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
       await this.comments.forEach(function(element) {
         element.isSelected = false
+        element.isSaved = true
       })
+
       // await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
       await this.comments.sort(this.compareTopAnnoAttributes)
       this.handleCommentPositionsRestore()
@@ -470,6 +475,9 @@ export default {
       this.registerEvents()
       enableTextSelection(this)
       await this.reRenderPages()
+    },
+    deleteComment(docId, comment) {
+      this.handleCommentDelete(comment)
     },
     registerEvents() {
       const that = this
@@ -486,8 +494,8 @@ export default {
       document.getElementById('viewerContainer').addEventListener('scroll', handlePageScroll)
 
       addEventListener('annotation:click', annotationClick)
-      addEventListener('annotation:delete', annotationDelete)
-      addEventListener('comment:delete', deleteComment)
+      addEventListener('annotation:delete', this.handleAnnotationDelete)
+      addEventListener('comment:delete', this.deleteComment)
       addEventListener('annotation:add', this.annotationAdded)
       addEventListener('annotation:edit', this.annotationEdited)
       addEventListener('annotation:insertNoteComment', this.insertNoteComment)
@@ -522,16 +530,85 @@ export default {
         }
         await PDFJSAnnotate.getStoreAdapter().getAnnotation(that.documentId, target.getAttribute('data-pdf-annotate-id')).then(r => {
           that.annotation = r
-          that.$refs.toolBar.handleAnnotationClicked(that.annotation)
+          that.$refs.toolBar.handleAnnotationClicked(r)
         })
         that.handleCommentAnnotationClick(target)
       }
-      function annotationDelete(target) {
-        that.handleAnnotationDelete(target)
+      // function annotationDelete(target) {
+      //   that.handleAnnotationDelete(target)
+      // }
+
+      function commentCardClick(e) {
+        if (e.target.getAttribute('button-id') != 'delete') {
+          that.handleCommentCardClick(this)
+        }
       }
-      function deleteComment(docId, comment) {
-        that.handleCommentDelete(comment)
+      async function restoreCommentPositions() {
+        await that.handleCommentPositionsRestore()
       }
+    },
+    unRegisterEvents() {
+      console.log('un register events')
+      const that = this
+      const renderedPages = {}
+      const commentCards = document.querySelectorAll('.comment-card')
+      commentCards.forEach(item => {
+        item.addEventListener('click', commentCardClick)
+      })
+
+      window.removeEventListener('beforeunload', restoreCommentPositions)
+      window.removeEventListener('resize', this.calculateContainerHeight.bind(this))
+      document.removeEventListener('keyup', this.keyupHandler)
+
+      document.getElementById('viewerContainer')?.removeEventListener('scroll', handlePageScroll)
+
+      removeEventListener('annotation:click', annotationClick)
+      removeEventListener('annotation:delete', this.handleAnnotationDelete)
+      removeEventListener('comment:delete', this.deleteComment)
+      removeEventListener('annotation:add', this.annotationAdded)
+      removeEventListener('annotation:edit', this.annotationEdited)
+      removeEventListener('annotation:insertNoteComment', this.insertNoteComment)
+      removeEventListener('text:disable', this.disableToolbarButtons)
+      removeEventListener('comment:updateCommentPositionAfterEditAnnotation', this.updateCommentPositionAfterEditAnnotation)
+
+      function handlePageScroll(e) {
+        // document.getElementById('left-panel').style.top = e.target.scrollTop + 'px'
+        // eslint-disable-next-line no-console
+        that.hideRectToolBar()
+        that.hideColorPickerTool()
+        that.hideTextToolGroup()
+        that.hideDeleteToolBar()
+        const visiblePageNum = Math.round(e.target.scrollTop / that.PAGE_HEIGHT) + 1
+
+        const visiblePage = document.querySelector(
+          `.page[data-page-number="${visiblePageNum}"][data-loaded="false"]`
+        )
+        if (visiblePage) {
+          // Prevent invoking UI.renderPage on the same page more than once.
+          if (!renderedPages[visiblePageNum]) {
+            renderedPages[visiblePageNum] = true
+            setTimeout(function() {
+              UI.renderPage(visiblePageNum, that.RENDER_OPTIONS)
+            })
+          }
+        }
+      }
+      async function annotationClick(target) {
+        if (!target) {
+          return
+        }
+        await PDFJSAnnotate.getStoreAdapter().getAnnotation(that.documentId, target.getAttribute('data-pdf-annotate-id')).then(r => {
+          that.annotation = r
+          that.$refs.toolBar.handleAnnotationClicked(r)
+        })
+        that.handleCommentAnnotationClick(target)
+      }
+      // function annotationDelete(target) {
+      //   that.handleAnnotationDelete(target)
+      // }
+      // function deleteComment(docId, comment) {
+      //   that.handleCommentDelete(comment)
+      // }
       function commentCardClick(e) {
         if (e.target.getAttribute('button-id') != 'delete') {
           that.handleCommentCardClick(this)
@@ -665,9 +742,10 @@ export default {
         return
       }
       // Display text tool bar if text is selected.
+      this.unselectHighlightComment()
       this.isTextbox = null
       this.isRect = false
-      if (!text && (typeof (target) != 'undefined')) {
+      if (!text && (typeof (target) != 'undefined') && (target != null)) {
         const type = target.getAttribute('data-pdf-annotate-type')
         this.annotationClicked = target
         if (type == 'strikeout') {
@@ -721,12 +799,6 @@ export default {
           const areaArr = Array.prototype.slice.call(commentAreas)
           const highlightArr = Array.prototype.slice.call(commentHighlights)
           var pointsArr = Array.prototype.slice.call(commentPoints)
-
-          // Sort the highlightsvar pointsArr = Array.prototype.slice.call(commentPoints)
-          // pointsArr.forEach(r => {
-          //   r.setAttribute('top', parseInt(r.getAttribute('y')))
-          // })
-          // highlightArr.sort(this.compareTopAttributes)
           var combineArr = highlightArr.concat(pointsArr)
           combineArr = combineArr.concat(areaArr)
           combineArr.sort(this.compareTopAttributes)
@@ -794,10 +866,10 @@ export default {
             this.hideDeleteToolBar()
           } else {
             const rectTool = document.getElementById('rectTool')
-            var posX = (parseInt(target.getAttribute('x')) + parseInt(target.getAttribute('width')) / 4) * this.RENDER_OPTIONS.scale
-            if (this.showQuestion) {
-              posX += parseInt(document.getElementById('left-panel').offsetWidth)
-            }
+            var posX = parseInt(rect.left) + parseInt(target.getAttribute('width') * this.RENDER_OPTIONS.scale / 2) - 167 / 2
+            // if (this.showQuestion) {
+            // posX += parseInt(document.getElementById('left-panel').offsetWidth)
+            // }
             const posY = parseInt(rect.top) + parseInt(target.getAttribute('height')) * this.RENDER_OPTIONS.scale + 10
             rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
           }
@@ -948,9 +1020,7 @@ export default {
       const order = combineArr.findIndex(item => {
         return item.dataset.pdfAnnotateId == target.getAttribute('data-pdf-annotate-id')
       })
-      console.log('target order', order, target.getAttribute('data-pdf-annotate-id'))
       if (combineArr.length > 2) {
-        console.log('lenght', combineArr.length)
         if (order == 0) {
           this.handleCommentAnnotationClick(combineArr[order + 1])
         } else {
@@ -963,7 +1033,6 @@ export default {
       if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
 
       if (combineArr.length > 2) {
-        console.log('lenght', combineArr.length)
         if (order == 0) {
           this.handleCommentAnnotationClick(combineArr[order + 1])
         } else {
@@ -1026,13 +1095,19 @@ export default {
       }
       if (this.newComment.replace(/\s/g, '').length != 0) {
         // Save in-progress comment
-        await this.addCommentText()
+        await this.addCommentText(false)
       }
       await this.commentText()
     },
-    async addCommentText(e) {
-      // let newComment = await UI.addCommentText(this.newComment, this.RENDER_OPTIONS.documentId);
+    async addCommentText(status) {
       const commentWrapper = document.getElementById('add-new-comment')
+      const uuid = commentWrapper.getAttribute('highlight-id')
+      if (!status) {
+        await PDFJSAnnotate.getStoreAdapter().getAnnotation(this.documentId, uuid).then(r => {
+          this.annotation = r
+        })
+      }
+      // let newComment = await UI.addCommentText(this.newComment, this.RENDER_OPTIONS.documentId);
       const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
       const newComment = await PDFJSAnnotate.getStoreAdapter().addComment(
         this.documentId,
@@ -1040,10 +1115,26 @@ export default {
         this.newComment,
         this.selectedText,
         topPos)
-
       await this.undoHistory.push({ action: 'added', annotation: newComment })
       this.updateUndoList()
       await this.comments.push(newComment)
+      if (status == false) {
+        this.comments.forEach(cmt => {
+          if (cmt.uuid == uuid) {
+            cmt.isSaved = false
+            cmt.isSelected = true
+          }
+        })
+        this.commentsNotSaved.push(uuid)
+      } else {
+        this.comments.forEach(cmt => {
+          if (cmt.uuid == uuid) {
+            cmt.isSaved = true
+            cmt.isSelected = false
+          }
+        })
+      }
+      this.$forceUpdate()
       // await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
       await this.comments.sort(this.compareTopAnnoAttributes)
       // this.comments.sort(this.compareTopAnnoAttributes)
@@ -1070,21 +1161,26 @@ export default {
       if (this.annotation.type == 'area') {
         this.annotation.type = 'comment-area'
         anno.Type = 'comment-area'
-        await this.updateTypeOfRect('comment-area')
+        await this.updateTypeOfRect('comment-area', status)
       }
       if (this.annotation.type == 'point') {
         this.$refs.toolBar.handleAnnotationClicked(null)
       }
       this.disableToolbarButtons()
-      reviewService.addInTextComment(this.documentId, 1, newCmt, anno).then(async rs => {
-        if (rs.data) {
-          this.updateCommentId(rs)
-        }
-      })
+      if (status) {
+        reviewService.addInTextComment(this.documentId, 1, newCmt, anno).then(async rs => {
+          if (rs.data) {
+            this.updateCommentId(rs)
+          }
+        })
+      }
       await this.updatePositionsAfterCommentAdded()
       // await this.handleCommentPositionsRestore()
-      const target = this.getHighlightByCommentId(this.annotation.uuid)
-      this.handleCommentAnnotationClick(target)
+      if (status) {
+        const target = this.getHighlightByCommentId(this.annotation.uuid)
+        this.handleCommentAnnotationClick(target)
+      }
+
       this.newComment = ''
     },
     // Begin migrating code from select.js to document.vue
@@ -1257,14 +1353,6 @@ export default {
             this.moveUpFromTopPos(commentCards, this.order - 1, topPos)
             this.moveUpToEndPos(commentCards, this.order, endPos)
           } else {
-            // // Check if move down is necessary
-            // const commentId = commentCards[this.order - 1].getAttribute('highlight-id')
-            // const g = this.getHighlightByCommentId(commentId)
-            // let gTop = parseInt(g.getAttribute('top')) * this.RENDER_OPTIONS.scale - 35
-            // if (g.getAttribute('page-num') > 1) { gTop += (g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 10) }
-            // if (upperTop < gTop) {
-            //   this.moveDownToTopPos(commentCards, this.order - 1, topPos)
-            // }
             this.moveDownToTopPos(commentCards, this.order - 1, topPos)
             this.moveDownFromEndPos(commentCards, this.order, endPos)
           }
@@ -1330,8 +1418,10 @@ export default {
       var rectTop = 0
       if (note) {
         rectTop = parseInt(note.y) * this.RENDER_OPTIONS.scale
+        newCommentWrapper.setAttribute('highlight-id', note.uuid)
       } else {
         rectTop = parseInt(this.target.getAttribute('top')) * this.RENDER_OPTIONS.scale
+        newCommentWrapper.setAttribute('highlight-id', this.target.getAttribute('data-pdf-annotate-id'))
       }
       if (this.target.getAttribute('page-num')) {
         this.svg = document.querySelector(`svg[data-pdf-annotate-page='${this.target.getAttribute('page-num')}']`)
@@ -1370,60 +1460,127 @@ export default {
         }
       })
     },
-    cancelCommentText(e, comment) {
+    async cancelCommentText(e, comment) {
       this.isEditing = null
       if (e == 'edit') {
-        this.comments.forEach(function(element) {
-          element.isSelected = false
-        })
-        comment.content = this.preEditedAnno.content
-        this.updateCommentPositions()
-        return
-      }
-      this.newComment = ''
-      const documentId = this.documentId
-      const newCommentWrapper = document.getElementById('add-new-comment')
-      const topPos = parseInt(newCommentWrapper.style.top.substring(0, newCommentWrapper.style.top.length - 2))
-      const endPos = topPos + newCommentWrapper.offsetHeight
-      newCommentWrapper.style.display = 'none'
-      const commentCards = document.querySelectorAll('.comment-card')
-      if (commentCards.length > 0) {
-        if (this.order <= (commentCards.length - 1)) {
-          this.moveUpToEndPos(commentCards, this.order, topPos)
-          if (this.order > 0) {
-            const orderTopPos = this.comments[this.order].topPosition
-            // parseInt(commentCards[this.order].style.top.substring(0, commentCards[this.order].style.top.length - 2));
-            this.moveDownToTopPos(commentCards, this.order - 1, orderTopPos)
-          }
+        if (this.newComment.replace(/\s/g, '').length != 0) {
+        // Save in-progress comment
+          await this.addCommentText(false)
         }
-        if (this.order == commentCards.length) {
-          this.moveDownToTopPos(commentCards, this.order - 1, endPos)
-        }
-      }
-      if (this.annotation.type != 'area') {
-        PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, this.annotation.uuid, true)
-          .then((isDeleted) => {
-            if (isDeleted) {
-            // remove highlight in UI
-              document.querySelector("[data-pdf-annotate-id='" + this.annotation.uuid + "']").remove()
-              if (document.querySelector("[data-target-id='" + this.annotation.uuid + "']")) {
-                document.querySelector("[data-target-id='" + this.annotation.uuid + "']").remove()
+        if (!comment.isSaved) {
+          console.log('not saved', comment)
+
+          const documentId = this.documentId
+          if (comment.annotation.type != 'comment-area' && comment.annotation.type != 'area') {
+            await PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, comment.annotation.uuid, true)
+              .then((isDeleted) => {
+                if (isDeleted) {
+                // remove highlight in UI
+                  document.querySelector("[data-pdf-annotate-id='" + comment.annotation.uuid + "']").remove()
+                  if (document.querySelector("[data-target-id='" + comment.annotation.uuid + "']")) {
+                    document.querySelector("[data-target-id='" + comment.annotation.uuid + "']").remove()
+                  }
+                }
+              })
+          } else {
+            const draftCommentText = document.querySelector('[draft-comment-id]')
+            if (draftCommentText) {
+              const draftUuid = draftCommentText.getAttribute('draft-comment-id')
+              if (document.querySelector("[data-pdf-annotate-id='" + draftUuid + "']")) {
+                document.querySelector("[data-pdf-annotate-id='" + draftUuid + "']").remove()
               }
-              this.annotation = null
+            }
+            const target = this.getHighlightByCommentId(comment.uuid)
+            console.log('target ne', target)
+            target.setAttribute('data-pdf-annotate-type', 'area')
+          }
+          await PDFJSAnnotate.getStoreAdapter().deleteComment(this.documentId, comment.uuid, false)
+          this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
+          this.commentsNotSaved.splice(this.commentsNotSaved.indexOf(comment.uuid), 1)
+          await this.comments.forEach(function(element) {
+            element.isSelected = false
+            element.isSaved = true
+          })
+          if (this.commentsNotSaved) {
+            this.comments.forEach(cmt => {
+              this.commentsNotSaved.forEach(el => {
+                if (el == cmt.uuid) {
+                  cmt.isSaved = false
+                  cmt.isSelected = true
+                }
+              })
+            })
+          }
+          this.$forceUpdate()
+
+          await this.comments.sort(this.compareTopAnnoAttributes)
+          await this.handleCommentPositionsRestore()
+          this.disableToolbarButtons()
+        } else {
+          this.comments.forEach(cmt => {
+            if (cmt.uuid == comment.uuid) {
+              cmt.isSelected = false
             }
           })
-      } else {
-        const draftCommentText = document.querySelector('[draft-comment-id]')
-        if (draftCommentText) {
-          const draftUuid = draftCommentText.getAttribute('draft-comment-id')
-          if (document.querySelector("[data-pdf-annotate-id='" + draftUuid + "']")) {
-            document.querySelector("[data-pdf-annotate-id='" + draftUuid + "']").remove()
+          this.$forceUpdate()
+          comment.content = this.preEditedAnno.content
+          this.svg = document.querySelector(`svg[data-pdf-annotate-page='${comment.annotation.page}']`)
+          const target = this.getHighlightByCommentId(comment.uuid)
+          if (target) {
+            this.handleCommentAnnotationClick(target)
+          } else {
+            this.updateCommentPositions()
           }
         }
-        this.annotationClicked.setAttribute('data-pdf-annotate-type', 'area')
-      }
-      this.disableToolbarButtons()
+      } else {
+        this.newComment = ''
+        const documentId = this.documentId
+
+        const newCommentWrapper = document.getElementById('add-new-comment')
+        const uuid = newCommentWrapper.getAttribute('highlight-id')
+        const topPos = parseInt(newCommentWrapper.style.top.substring(0, newCommentWrapper.style.top.length - 2))
+        const endPos = topPos + newCommentWrapper.offsetHeight
+        newCommentWrapper.style.display = 'none'
+        const commentCards = document.querySelectorAll('.comment-card')
+        if (commentCards.length > 0) {
+          if (this.order <= (commentCards.length - 1)) {
+            this.moveUpToEndPos(commentCards, this.order, topPos)
+            if (this.order > 0) {
+              const orderTopPos = this.comments[this.order].topPosition
+              // parseInt(commentCards[this.order].style.top.substring(0, commentCards[this.order].style.top.length - 2));
+              this.moveDownToTopPos(commentCards, this.order - 1, orderTopPos)
+            }
+          }
+          if (this.order == commentCards.length) {
+            this.moveDownToTopPos(commentCards, this.order - 1, endPos)
+          }
+        }
+        if (this.annotation.type != 'area' && this.annotation.type != 'comment-area') {
+          PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, this.annotation.uuid, true)
+            .then((isDeleted) => {
+              if (isDeleted) {
+                // remove highlight in UI
+                document.querySelector("[data-pdf-annotate-id='" + this.annotation.uuid + "']").remove()
+                if (document.querySelector("[data-target-id='" + this.annotation.uuid + "']")) {
+                  document.querySelector("[data-target-id='" + this.annotation.uuid + "']").remove()
+                }
+                this.annotation = null
+              }
+            })
+        } else {
+          const draftCommentText = document.querySelector('[draft-comment-id]')
+          if (draftCommentText) {
+            const draftUuid = draftCommentText.getAttribute('draft-comment-id')
+            if (document.querySelector("[data-pdf-annotate-id='" + draftUuid + "']")) {
+              document.querySelector("[data-pdf-annotate-id='" + draftUuid + "']").remove()
+            }
+          }
+          const target = this.getHighlightByCommentId(uuid)
+          target.setAttribute('data-pdf-annotate-type', 'area')
+        }
+        this.disableToolbarButtons()
       // Remove the annotation
+      }
     },
     unselectHighlightComment() {
       const selectedHighlight = document.getElementsByClassName('comment-highlight-selected')
@@ -1689,21 +1846,44 @@ export default {
     displayEditComment(comment) {
       this.preEditedAnno = Object.assign({}, comment)
       this.isEditing = comment.uuid
-      this.comments.forEach(function(element) {
-        element.isSelected = false
-      })
+      // this.comments.forEach(function(element) {
+      //   element.isSelected = false
+      // })
       const highlight = document.querySelector("[data-pdf-annotate-id='" + comment.uuid + "']")
       this.svg = document.querySelector(`svg[data-pdf-annotate-page='${comment.annotation.page}']`)
-      this.handleCommentAnnotationClick(highlight)
+
       comment.isSelected = true
       this.$forceUpdate()
+
+      const textArea = document.getElementById('comment-input-' + comment.uuid)
+      textArea.focus()
+      this.inputHeight = parseInt(textArea.style.height.substring(0, textArea.style.height.length - 2))
+      const that = this
+      textArea.addEventListener('keydown', function() {
+        const commentCards = document.querySelectorAll('.comment-card')
+        if (commentCards.length > 0) {
+          setTimeout(function() {
+            const newHeight = parseInt(textArea.style.height.substring(0, textArea.style.height.length - 2))
+            const editCommentWrapper = document.querySelector(`[highlight-id='${comment.uuid}']`)
+            const topPos = parseInt(editCommentWrapper.style.top.substring(0, editCommentWrapper.style.top.length - 2))
+            const endPos = topPos + editCommentWrapper.offsetHeight
+            if (that.inputHeight < newHeight) {
+              if (that.order < commentCards.length - 1) { that.moveDownFromEndPos(commentCards, that.order + 1, endPos) }
+            } else if (that.inputHeight > newHeight) {
+              if (that.order < commentCards.length) { that.moveUpToEndPos(commentCards, that.order + 1, endPos) }
+            }
+            that.inputHeight = newHeight
+          }, 100)
+        }
+      })
+
       const refName = 'comment' + comment.uuid
       this.$refs[refName][0].$el.childNodes[0].focus()
       this.$refs[refName][0].$el.childNodes[0].addEventListener('keyup', (e) => {
         this.updateCommentPositionWhileEditing(e)
       })
       this.target = highlight
-      this.updateCommentPositions()
+      this.handleCommentAnnotationClick(highlight)
     },
     updateCommentPositionWhileEditing(e) {
       if (e.keyCode == 13) {
@@ -1714,77 +1894,155 @@ export default {
       }
     },
     async editCommentCard(comment, isUndoRedo) {
-      var editComment = {
-        Text: comment.text ? comment.text : '',
-        Content: comment.content,
-        Id: comment.id,
-        Uuid: comment.uuid,
-        TopPosition: comment.topPosition,
-        Data: JSON.stringify(comment)
-      }
+      if (comment.isSaved == false) {
+        const uuid = comment.uuid
+        // const commentWrapper = document.querySelector(".comment-card[highlight-id='" + uuid + "']")
+        // const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
 
-      await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId).then(cmts => {
-        editComment.Id = cmts.filter(r => { return r.uuid === editComment.Uuid })[0]['id']
-      })
-      await PDFJSAnnotate.getStoreAdapter().getAnnotation(this.documentId, editComment.Uuid).then(anno => {
-        editComment.AnnotationId = anno.id
-      })
-
-      // Udpate comment position
-      var cmts = null
-      await window.PDFJSAnnotate.getStoreAdapter().getComments(this.documentId).then(r => {
-        cmts = r
-        if (typeof (isUndoRedo) == 'undefined') {
-          this.undoHistory.push({ action: 'edited', annotation: this.preEditedAnno })
-        }
-      })
-      cmts.map(r => {
-        if (r.id == comment.id) {
-          r.content = comment.content
-        }
-      })
-      await PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
-
-      this.comments.forEach(function(element) {
-        element.isSelected = false
-      })
-      this.$forceUpdate()
-
-      const editCmt = document.querySelector('.comment-card-selected')
-      if (editCmt) {
-        const cmtAnno = document.querySelector(`[data-pdf-annotate-id="${editCmt.getAttribute('highlight-id')}"]`)
-        if (cmtAnno) {
-          const commentTextContainer = document.getElementById('comment-input-' + comment.uuid)
-          if (parseInt(window.getComputedStyle(commentTextContainer).height, 10) > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 4)) {
-            commentTextContainer.style.webkitLineClamp = '3'
-            if (this.showMoreList.filter(item => item.id === comment.uuid) == 0) {
-              this.showMoreList.push({ id: comment.uuid, value: 0 })
-            }
-          } else {
-            commentTextContainer.style.webkitLineClamp = 'inherit'
-            this.showMoreList = this.showMoreList.filter(item => item.id !== editCmt.getAttribute('highlight-id'))
+        this.comments.forEach(cmt => {
+          if (cmt.uuid == uuid) {
+            cmt.isSaved = true
+            cmt.isSelected = false
           }
-          await this.showMoreList.map(rs => { rs.value = 0 })
-          this.hideDeleteToolBar()
-          await this.handleCommentAnnotationClick(cmtAnno)
-        }
-      }
+        })
 
-      reviewService.editComment(editComment).then(async rs => {
-        if (rs) {
-          // this.addToUndoList(rs.data, 'edit')
-          this.$refs.toolBar.setStatusText()
+        this.commentsNotSaved.splice(this.commentsNotSaved.indexOf(uuid), 1)
+        // await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
+        await this.comments.sort(this.compareTopAnnoAttributes)
+        this.$forceUpdate()
+        // this.comments.sort(this.compareTopAnnoAttributes)
+        let newComment
+        this.comments.forEach(cmt => {
+          if (cmt.uuid == uuid) {
+            newComment = cmt
+          }
+        })
+        newComment.annotation.documentId = this.documentId
+        var anno = {
+          DocumentId: this.documentId,
+          ReviewId: this.reviewId,
+          Type: newComment.annotation.type,
+          PageNum: typeof (newComment.annotation.pageNum) != 'undefined' ? newComment.annotation.pageNum : newComment.annotation.page,
+          Top: typeof (newComment.annotation.top) != 'undefined' ? newComment.annotation.top : parseInt(newComment.annotation.y),
+          Color: newComment.annotation.color,
+          Uuid: newComment.annotation.uuid,
+          Data: JSON.stringify(newComment.annotation),
+          Id: newComment.annotation.id
         }
-      })
-      this.isEditing = null
+        var newCmt = {
+          Text: newComment.text != null ? newComment.text : '',
+          Content: newComment.content,
+          TopPosition: newComment.topPosition,
+          Uuid: newComment.uuid,
+          Data: JSON.stringify(newComment)
+        }
+        if (newComment.annotation.type == 'comment-area') {
+          await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, uuid, newComment.annotation, undefined)
+        }
+        if (this.annotation.type == 'point') {
+          this.$refs.toolBar.handleAnnotationClicked(null)
+        }
+        this.disableToolbarButtons()
+        reviewService.addInTextComment(this.documentId, 1, newCmt, anno).then(async rs => {
+          if (rs.data) {
+            this.updateCommentId(rs)
+          }
+        })
+        const target = this.getHighlightByCommentId(newComment.annotation.uuid)
+        if (this.newComment.replace(/\s/g, '').length != 0) {
+        // Save in-progress comment
+          await this.addCommentText(false)
+        }
+        this.handleCommentAnnotationClick(target)
+        this.newComment = ''
+      } else {
+        var editComment = {
+          Text: comment.text ? comment.text : '',
+          Content: comment.content,
+          Id: comment.id,
+          Uuid: comment.uuid,
+          TopPosition: comment.topPosition,
+          Data: JSON.stringify(comment)
+        }
+
+        await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId).then(cmts => {
+          editComment.Id = cmts.filter(r => { return r.uuid === editComment.Uuid })[0]['id']
+        })
+        await PDFJSAnnotate.getStoreAdapter().getAnnotation(this.documentId, editComment.Uuid).then(anno => {
+          editComment.AnnotationId = anno.id
+        })
+
+        // Udpate comment position
+        var cmts = null
+        await window.PDFJSAnnotate.getStoreAdapter().getComments(this.documentId).then(r => {
+          cmts = r
+          if (typeof (isUndoRedo) == 'undefined') {
+            this.undoHistory.push({ action: 'edited', annotation: this.preEditedAnno })
+          }
+        })
+        cmts.map(r => {
+          if (r.id == comment.id) {
+            r.content = comment.content
+          }
+        })
+        await PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
+
+        this.comments.forEach(cmt => {
+          if (cmt.uuid == comment.uuid) {
+            cmt.isSelected = false
+          }
+        })
+        this.$forceUpdate()
+
+        const editCmt = document.querySelector('.comment-card-selected')
+        if (editCmt) {
+          const cmtAnno = document.querySelector(`[data-pdf-annotate-id="${editCmt.getAttribute('highlight-id')}"]`)
+          if (cmtAnno) {
+            const commentTextContainer = document.getElementById('comment-input-' + comment.uuid)
+            if (parseInt(window.getComputedStyle(commentTextContainer).height, 10) > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 4)) {
+              commentTextContainer.style.webkitLineClamp = '3'
+              if (this.showMoreList.filter(item => item.id === comment.uuid) == 0) {
+                this.showMoreList.push({ id: comment.uuid, value: 0 })
+              }
+            } else {
+              commentTextContainer.style.webkitLineClamp = 'inherit'
+              this.showMoreList = this.showMoreList.filter(item => item.id !== editCmt.getAttribute('highlight-id'))
+            }
+            await this.showMoreList.map(rs => { rs.value = 0 })
+            this.hideDeleteToolBar()
+            await this.handleCommentAnnotationClick(cmtAnno)
+          }
+        }
+
+        reviewService.editComment(editComment).then(async rs => {
+          if (rs) {
+          // this.addToUndoList(rs.data, 'edit')
+            this.$refs.toolBar.setStatusText()
+          }
+        })
+        this.isEditing = null
+      }
     },
     async deleteCommentCard(uuid) {
-      await PDFJSAnnotate.getStoreAdapter().deleteComment(this.documentId, uuid)
+      await PDFJSAnnotate.getStoreAdapter().deleteComment(this.documentId, uuid, true)
       this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
-      await this.comments.forEach(function(element) {
+      this.comments.forEach(function(element) {
         element.isSelected = false
+        element.isSaved = true
       })
-      // await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
+
+      if (this.commentsNotSaved) {
+        this.comments.forEach(cmt => {
+          this.commentsNotSaved.forEach(el => {
+            if (el == cmt.uuid) {
+              cmt.isSaved = false
+              cmt.isSelected = true
+            }
+          })
+        })
+      }
+      this.$forceUpdate()
+
       await this.comments.sort(this.compareTopAnnoAttributes)
       this.handleCommentPositionsRestore()
     },
@@ -1862,6 +2120,7 @@ export default {
               message: 'Submitted!',
               duration: 2000
             })
+            this.$router.push('/reviews')
           } else {
             this.$notify.error({
               title: 'Submit failed',
@@ -1869,7 +2128,6 @@ export default {
               duration: 2000
             })
           }
-          this.$router.push('/reviews')
         })
         reviewService.loadReviewFeedback(this.reviewId).then(rs => {
           localStorage.removeItem('reviewComment')
@@ -2185,9 +2443,13 @@ export default {
         this.redo()
       }
     },
-    insertNoteComment(svg, note) {
+    async insertNoteComment(svg, note) {
       if (document.getElementById('comment-wrapper').offsetWidth == 0) {
         document.getElementById('comment-wrapper').style.display = 'block'
+      }
+      if (this.newComment.replace(/\s/g, '').length != 0) {
+        // Save in-progress comment
+        await this.addCommentText(false)
       }
       document.getElementById('add-new-comment').setAttribute('draft-comment-id', note.uuid)
       this.annotation = note
@@ -2206,27 +2468,57 @@ export default {
         annotation = anno
       })
       if (!annotation) { return }
-      const type = annotation.type
+      let type = annotation.type
+      if (annotation.type == 'area') {
+        type = 'comment-area'
+      }
+      const newCommentWrapper = document.getElementById('add-new-comment')
+
       if (type == 'comment-area' || type == 'point') {
         const rect = this.getHighlightByCommentId(annotationId)
         rect.setAttribute('top', annotation.top)
         rect.setAttribute('left', annotation.left)
 
         const cmtRect = document.querySelector(".comment-card[highlight-id='" + annotationId + "']")
-        cmtRect.setAttribute('top', annotation.top)
-        cmtRect.setAttribute('left', annotation.left)
+        if (cmtRect) {
+          cmtRect.setAttribute('top', annotation.top)
+          cmtRect.setAttribute('left', annotation.left)
 
-        cmts.forEach(cmt => {
-          if (cmt.uuid == annotationId) {
-            cmt.annotation = annotation
-            editComment = cmt
+          cmts.forEach(cmt => {
+            if (cmt.uuid == annotationId) {
+              cmt.annotation = annotation
+              editComment = cmt
+            }
+          })
+          await PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
+          this.comments.forEach(cmt => {
+            if (cmt.uuid == annotationId) {
+              cmt.annotation = annotation
+              editComment = cmt
+            }
+          })
+          await this.comments.sort(this.compareTopAnnoAttributes)
+          this.editCommentCard(editComment, 'undo')
+        } else if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
+          this.updateCommentPositions(annotation)
+          const rectTop = parseInt(annotation.y) * this.RENDER_OPTIONS.scale
+
+          if (annotation.pageNum) {
+            this.svg = document.querySelector(`svg[data-pdf-annotate-page='${annotation.pageNum}']`)
           }
-        })
-        await PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
-        this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
-        await this.comments.sort(this.compareTopAnnoAttributes)
-        this.editCommentCard(editComment, 'undo')
-        console.log('target', target)
+          const svg = this.svg
+          const svgHeight = svg.getAttribute('height')
+          const svgPageNum = svg.getAttribute('data-pdf-annotate-page')
+          let svgTop = 0
+          if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * (parseInt(svgHeight) + 12)) }
+          var topPos = svgTop + rectTop - 35
+
+          newCommentWrapper.style = 'width: 100%; position: absolute; left: -20px; top: ' + topPos + 'px;'
+          const textArea = document.getElementById('comment-text-area')
+          textArea.focus()
+          this.inputHeight = parseInt(textArea.style.height.substring(0, textArea.style.height.length - 2))
+        }
+
         await this.handleCommentPositionsRestoreAfterMove(target)
         await this.handleCommentAnnotationClick(target)
       }
@@ -2298,7 +2590,7 @@ export default {
       // await this.updateTypeOfRect('comment-area')
       this.commentText(rect)
     },
-    async updateTypeOfRect(typeAnno) {
+    async updateTypeOfRect(typeAnno, status) {
       // var anno = null
       var uuid = this.annotationClicked.getAttribute('data-pdf-annotate-id')
       // var type = this.annotationClicked.getAttribute('data-pdf-annotate-type')
@@ -2317,9 +2609,11 @@ export default {
       //     Data: JSON.stringify(this.annotation)
       //   }
       // }
-
-      await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, uuid, this.annotation, undefined)
-
+      if (!status) {
+        await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, uuid, this.annotation, 'added')
+      } else {
+        await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, uuid, this.annotation, undefined)
+      }
       // reviewService.editAnnotation(anno).then(rs => {
       // })
     },

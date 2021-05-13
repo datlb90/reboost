@@ -246,6 +246,7 @@ export default ({
           this.activeButton = tooltype
           switch (this.activeButton) {
             case 'text':
+              this.$refs.colorPickerCom.changeColorWhenClickToolBarButton('#000000')
               UI.enableText()
               break
             case 'point':
@@ -254,6 +255,7 @@ export default ({
             case 'area':
             case 'highlight':
             case 'rectangle':
+              this.$refs.colorPickerCom.changeColorWhenClickToolBarButton('#000000')
               UI.enableRect('area')
               break
             case 'strikeout':

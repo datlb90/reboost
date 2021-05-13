@@ -274,13 +274,13 @@
             <el-button v-if="!raterId" type="primary" size="mini" @click="onSubmit('formRegister', 'create')">Create</el-button>
             <el-button v-if="!raterId" size="mini">Cancel</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
-            <el-button v-if="raterId && formRegister.status === RATER_STATUS.APPLIED" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve</el-button>
+            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">Reject</el-button>
-            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.TRAINING || formRegister.status === RATER_STATUS.APPLIED)" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
+            <el-button v-if="raterId && formRegister.status === RATER_STATUS.APPLIED" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
             <el-dropdown v-if="completedTraining(formRegister,'IELTS')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item :command="{type:'IELTSTraining',action:'approve'}">Approve</el-dropdown-item>
+                <el-dropdown-item :command="{type:'IELTSTraining',action:'approve'}">Approve for Training</el-dropdown-item>
                 <el-dropdown-item :command="{type:'IELTSTraining',action:'reject'}">Revision</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -586,9 +586,7 @@ export default {
       })
     },
     async updateStatus(status) {
-      const rs = await this.onSubmit('formRegister', 'update', true)
-      console.log('await result', rs)
-      console.log('next statement')
+      await this.onSubmit('formRegister', 'update', true)
       if (status === RATER_STATUS.DOCUMENT_REQUESTED && this.formRegister.note.trim() === '') {
         this.$notify.error({
           title: RATER_STATUS.DOCUMENT_REQUESTED,
@@ -658,22 +656,22 @@ export default {
       }
     },
     completedTraining(e, status) {
-      status += 'Training'
-      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && r.status == status)[0]
+      status += RATER_STATUS.TRAINING
+      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && r.status.includes(status))[0]
       if (t) {
         return true
       }
       return false
     },
-    trainingDropdownClick(e) {
-      this.onSubmit('formRegister', 'update', true)
-      var t = this.getAllReviews.filter(r => r.reviewerId == this.formRegister.userId && r.reviewData.length > 0 && r.status == e.type)[0]
-      var newStatus = e.action == 'approve' ? e.type + RATER_STATUS.APPROVED : e.type
-
+    async trainingDropdownClick(e) {
+      await this.onSubmit('formRegister', 'update', true)
+      var t = this.getAllReviews.filter(r => r.reviewerId == this.formRegister.userId && r.reviewData.length > 0 && r.status.includes(e.type))[0]
+      var newStatus = e.action == 'approve' ? e.type + RATER_STATUS.APPROVED : e.type + RATER_STATUS.REVISION
+      console.log('------------', this.getAllReviews, t)
       reviewService.changeReviewStatus(t.id, newStatus).then(rs => {
-        if (rs.status.includes(RATER_STATUS.REJECTED)) {
+        if (rs.status.includes(RATER_STATUS.REVISION)) {
           this.$notify.error({
-            title: RATER_STATUS.REJECTED,
+            title: RATER_STATUS.REVISION,
             message: 'Submitted Training Revision Requested!',
             duration: 2000
           })
@@ -687,10 +685,6 @@ export default {
           }
         }
       })
-
-      if (e.action != 'approve') {
-        this.updateStatus(RATER_STATUS.REVISION_REQUESTED)
-      }
     }
   }
 }

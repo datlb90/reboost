@@ -52,7 +52,7 @@ body {
 }
 .comment-highlight-selected{
 	fill: blue;
-	opacity: 0.5;
+	fill-opacity: 0.3;
 }
 .rectangle-selected{
 	fill: blue;
