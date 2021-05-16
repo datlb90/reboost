@@ -20,7 +20,7 @@ export function enableTextSelection(parent) {
           .getSelection()
           .toString()
           .trim()
-          // Display text tool bar if text is selected.
+        // Display text tool bar if text is selected.
         if (text) {
           if (e.target.style.top == '') {
             window.getSelection().removeAllRanges()
@@ -55,7 +55,21 @@ export function enableTextSelection(parent) {
   }
 
   function handleDocumentMousedown(e) {
-    const svg = findSVGAtPoint(e.clientX, e.clientY)
+    let svg = findSVGAtPoint(e.clientX, e.clientY)
+    let rects = that.getSelectionRects()
+    if (e.target.classList.contains('texttool-btn')) {
+      rects = that.getSelectionRects()
+      if (rects) {
+        svg = findSVGAtPoint(rects[0].left, rects[0].top)
+      }
+    }
+    if (isClientOnSelectedText(rects, e)) {
+      window.getSelection().removeAllRanges()
+      that.hideTextToolBar()
+      that.hideTextToolGroup()
+      that.hideRectToolBar()
+      that.hideColorPickerTool()
+    }
     that.svg = svg
     if (svg) {
       if (!e.target.classList.contains('colorPicker')) {
@@ -86,7 +100,6 @@ export function enableTextSelection(parent) {
           that.cancelCommentText()
         } else if (!validTarget && comment.replace(/\s/g, '').length != 0) {
           // Save in-progress comment
-          console.log('add comment --------------------')
           that.addCommentText(false)
         }
       }
@@ -100,4 +113,17 @@ export function enableTextSelection(parent) {
       return
     }
   }
+}
+function isClientOnSelectedText(rects, e) {
+  if (rects) {
+    for (let i = 0; i < rects.length; i++) {
+      if (e.clientX <= rects[i].x + rects[i].width && e.clientX >= rects[i].x) {
+        if (e.clientY >= rects[i].y && e.clientY <= e.clientY + rects[i].height) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+  return false
 }

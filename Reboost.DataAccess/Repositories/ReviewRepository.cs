@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
@@ -32,6 +33,7 @@ namespace Reboost.DataAccess.Repositories
         Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
         Task<List<GetReviewsModel>> GetReviewRequestsByIdAsync(String userId);
         Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId);
+        Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
     }
 
     public class ReviewRepository : IReviewRepository
@@ -50,6 +52,28 @@ namespace Reboost.DataAccess.Repositories
                 Annotations = annotations,
                 Comments = comments
             };
+        }
+
+        public async Task<int> CheckUserReviewValidationAsync(string role, User user,int reviewId)
+        {
+            var review = await db.Reviews.FindAsync(reviewId);
+
+            if (review== null)
+            {
+                return 0;
+            }
+
+            if (role == "Admin")
+            {
+                return 1;
+            }
+
+            if (review.ReviewerId == user.Id)
+            {
+                return 1;
+            }
+
+            return -1;
         }
 
         public async Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations)

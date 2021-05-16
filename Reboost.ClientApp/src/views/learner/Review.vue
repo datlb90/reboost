@@ -548,7 +548,6 @@ export default {
       }
     },
     unRegisterEvents() {
-      console.log('un register events')
       const that = this
       const renderedPages = {}
       const commentCards = document.querySelectorAll('.comment-card')
@@ -1057,6 +1056,7 @@ export default {
       if (selected.length == 1) {
         const uuid = selected[0].getAttribute('highlight-id')
         const cmtAnno = this.getHighlightByCommentId(uuid)
+        await this.handleCommentPositionsRestore()
         this.handleCommentAnnotationClick(cmtAnno)
         this.hideDeleteToolBar()
       } else {
@@ -1468,8 +1468,6 @@ export default {
           await this.addCommentText(false)
         }
         if (!comment.isSaved) {
-          console.log('not saved', comment)
-
           const documentId = this.documentId
           if (comment.annotation.type != 'comment-area' && comment.annotation.type != 'area') {
             await PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, comment.annotation.uuid, true)
@@ -1491,7 +1489,6 @@ export default {
               }
             }
             const target = this.getHighlightByCommentId(comment.uuid)
-            console.log('target ne', target)
             target.setAttribute('data-pdf-annotate-type', 'area')
           }
           await PDFJSAnnotate.getStoreAdapter().deleteComment(this.documentId, comment.uuid, false)
@@ -2472,51 +2469,59 @@ export default {
       if (annotation.type == 'area') {
         type = 'comment-area'
       }
-      const newCommentWrapper = document.getElementById('add-new-comment')
 
       if (type == 'comment-area' || type == 'point') {
         const rect = this.getHighlightByCommentId(annotationId)
         rect.setAttribute('top', annotation.top)
         rect.setAttribute('left', annotation.left)
+        let cmt
+        this.comments.forEach(el => {
+          if (el.uuid == annotationId) {
+            cmt = el
+          }
+        })
 
         const cmtRect = document.querySelector(".comment-card[highlight-id='" + annotationId + "']")
         if (cmtRect) {
-          cmtRect.setAttribute('top', annotation.top)
-          cmtRect.setAttribute('left', annotation.left)
+          if (cmt.isSaved) {
+            cmtRect.setAttribute('top', annotation.top)
+            cmtRect.setAttribute('left', annotation.left)
 
-          cmts.forEach(cmt => {
-            if (cmt.uuid == annotationId) {
-              cmt.annotation = annotation
-              editComment = cmt
-            }
-          })
-          await PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
-          this.comments.forEach(cmt => {
-            if (cmt.uuid == annotationId) {
-              cmt.annotation = annotation
-              editComment = cmt
-            }
-          })
-          await this.comments.sort(this.compareTopAnnoAttributes)
-          this.editCommentCard(editComment, 'undo')
-        } else if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
-          this.updateCommentPositions(annotation)
-          const rectTop = parseInt(annotation.y) * this.RENDER_OPTIONS.scale
+            cmts.forEach(cmt => {
+              if (cmt.uuid == annotationId) {
+                cmt.annotation = annotation
+                editComment = cmt
+              }
+            })
+            await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotationId, annotation, undefined)
+            await PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
+            this.comments.forEach(cmt => {
+              if (cmt.uuid == annotationId) {
+                cmt.annotation = annotation
+                editComment = cmt
+              }
+            })
+            await this.comments.sort(this.compareTopAnnoAttributes)
+            this.editCommentCard(editComment, 'undo')
+          } else {
+            cmtRect.setAttribute('top', annotation.top)
+            cmtRect.setAttribute('left', annotation.left)
 
-          if (annotation.pageNum) {
-            this.svg = document.querySelector(`svg[data-pdf-annotate-page='${annotation.pageNum}']`)
+            cmts.forEach(cmt => {
+              if (cmt.uuid == annotationId) {
+                cmt.annotation = annotation
+                editComment = cmt
+              }
+            })
+            await PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
+            this.comments.forEach(cmt => {
+              if (cmt.uuid == annotationId) {
+                cmt.annotation = annotation
+                editComment = cmt
+              }
+            })
+            await this.comments.sort(this.compareTopAnnoAttributes)
           }
-          const svg = this.svg
-          const svgHeight = svg.getAttribute('height')
-          const svgPageNum = svg.getAttribute('data-pdf-annotate-page')
-          let svgTop = 0
-          if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * (parseInt(svgHeight) + 12)) }
-          var topPos = svgTop + rectTop - 35
-
-          newCommentWrapper.style = 'width: 100%; position: absolute; left: -20px; top: ' + topPos + 'px;'
-          const textArea = document.getElementById('comment-text-area')
-          textArea.focus()
-          this.inputHeight = parseInt(textArea.style.height.substring(0, textArea.style.height.length - 2))
         }
 
         await this.handleCommentPositionsRestoreAfterMove(target)

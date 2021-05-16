@@ -21,7 +21,7 @@
         </el-tooltip>
       </div>
       <!-- </template> -->
-      <div slot="reference" @click="expandColorPicker = expandColorPicker">
+      <div slot="reference" @click="expandColorPicker = !expandColorPicker">
         <i id="colorPickerExpandIcon" style="margin-right:10px" :class="[expandColorPicker ? 'el-icon-caret-bottom' :'el-icon-caret-top']" />
       </div>
     </el-popover>
@@ -138,10 +138,11 @@ export default ({
         if (popoverColorPicker) {
           const initialLeft = parseInt(popoverColorPicker.style.left.substring(0, popoverColorPicker.style.left.length - 2))
           const initialTop = parseInt(popoverColorPicker.style.top.substring(0, popoverColorPicker.style.top.length - 2))
+          // const colorPanelLeft = document.getElementsByClassName('toolbar-button-color__container')[0].offsetLeft
           const groupOffsetWidth = parseInt(document.getElementsByClassName('toolbar-button-color__container')[0].offsetWidth)
 
-          popoverColorPicker.style.left = `${initialLeft - groupOffsetWidth / 2}px`
-          popoverColorPicker.style.top = `${initialTop - 5}px`
+          popoverColorPicker.style.left = `${initialLeft - groupOffsetWidth / 2 + 12}px`
+          popoverColorPicker.style.top = `${initialTop}px`
         }
       }, 10)
     }

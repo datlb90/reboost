@@ -16,7 +16,7 @@
           <b-navbar-toggle target="navbarSupportedContent" />
 
           <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
-            <ul v-if="role == 'Learner'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+            <!-- <ul v-if="role == 'Learner'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
 
               <li class="nav-item">
                 <router-link to="/practice" class="nav-link active">Practice</router-link>
@@ -67,6 +67,57 @@
               </li>
               <li class="nav-item">
                 <router-link to="/admin/dispute" class="nav-link">Disputes</router-link>
+              </li>
+            </ul> -->
+
+            <ul class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+
+              <li class="nav-item">
+                <router-link to="/practice" class="nav-link active">Practice</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/reviews" class="nav-link">Reviews</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/revision" class="nav-link">Revision</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/admin/raters" class="nav-link active">Raters</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/admin/rubric" class="nav-link">Rubric</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/admin/topics" class="nav-link">Topics</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/admin/tips" class="nav-link">Tips & Guides</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/admin/payments" class="nav-link">Payments</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/admin/dispute" class="nav-link">Disputes</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/rater/apply" class="nav-link active">Application</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/rater/evaluate" class="nav-link" style="pointer-events: none; color: #b7b7b7;">Evaluate</router-link>
+              </li>
+
+              <li class="nav-item">
+                <router-link to="/dicuss" class="nav-link">Discuss</router-link>
               </li>
             </ul>
           </b-collapse>
@@ -122,7 +173,6 @@ export default {
     })
   },
   created() {
-    console.log(this.$store.state.auth.user.role)
     console.log(this.role)
   }
 }

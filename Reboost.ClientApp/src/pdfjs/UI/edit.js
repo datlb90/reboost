@@ -482,9 +482,11 @@ function handleDocumentMouseup(e) {
       appendChild(svg, annotation)
     }
 
-    await PDFJSAnnotate.getStoreAdapter().editAnnotation(documentId, annotationId, annotation, undefined, oldAnnotation)
     if (type == 'comment-area' || type == 'point') {
+      await PDFJSAnnotate.getStoreAdapter().editAnnotation(documentId, annotationId, annotation, 'added', oldAnnotation)
       fireEvent('comment:updateCommentPositionAfterEditAnnotation', annotationId)
+    } else {
+      await PDFJSAnnotate.getStoreAdapter().editAnnotation(documentId, annotationId, annotation, undefined, oldAnnotation)
     }
   })
   if (type == 'textbox') {
