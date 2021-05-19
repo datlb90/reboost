@@ -308,10 +308,13 @@ namespace Reboost.WebApi.Identity
                     IsSuccess = false,
                 };
 
+            var roles = await _userManger.GetRolesAsync(user);
+
             var claims = new[]
             {
                 new Claim("Email", model.Email),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim("Role", roles.FirstOrDefault())
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AuthSettings:JwtSecret"]));
@@ -325,7 +328,6 @@ namespace Reboost.WebApi.Identity
 
             string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            var roles = await _userManger.GetRolesAsync(user);
             if (roles == null)
             {
                 return new UserManagerResponse

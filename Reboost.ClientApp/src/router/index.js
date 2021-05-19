@@ -71,6 +71,9 @@ import Reviews from '../views/learner/Reviews.vue'
 import PaymentInfo from '../views/rater/PaymentInfo.vue'
 import Submissions from '../views/learner/Submissions.vue'
 
+// Guard
+import { isAdmin, UserReviewAuthentication } from './guard/UserReviewValidation'
+
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -150,6 +153,14 @@ const router = new VueRouter({
       path: '/review/:questionId/:docId/:reviewId',
       name: 'Review',
       component: Review,
+      beforeEnter: async(to, from, next) => {
+        const check = await UserReviewAuthentication(to.params.reviewId)
+        if (check) {
+          next({ name: 'Reviews' })
+        } else {
+          next()
+        }
+      },
       meta: {
         plainLayout: false,
         landingPage: false
@@ -191,6 +202,13 @@ const router = new VueRouter({
     {
       path: '/admin/raters',
       name: 'ManageRaters',
+      beforeEnter: (to, from, next) => {
+        if (!isAdmin()) {
+          next({ name: 'Reviews' })
+        } else {
+          next()
+        }
+      },
       component: ManageRaters
     },
     {

@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.Query.Internal;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
+using Reboost.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,19 +34,22 @@ namespace Reboost.Service.Services
         Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
         Task<List<GetReviewsModel>> GetReviewRequestsByIdAsync(String userId);
         Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId);
+        Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
     }
 
     public class ReviewService : BaseService, IReviewService
     {
         public ReviewService(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
-
         }
         public async Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId)
         {
             return await _unitOfWork.Review.GetAnnotationsAsync(docId, reviewId);
         }
-
+        public async Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId)
+        {
+            return await _unitOfWork.Review.CheckUserReviewValidationAsync(role, user, reviewId);
+        }
         public async Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations )
         {
             foreach (var anot in annotations)

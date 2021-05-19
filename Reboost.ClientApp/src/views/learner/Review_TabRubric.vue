@@ -4,7 +4,11 @@
       <div id="child-scroll" class="par-content default">
         <div id="rubric">
           <div style="height: 100%; overflow: auto;">
-            <el-card v-for="(criteria, criteriaIndex) in rubricCriteria" :key="criteria.id" style="margin-bottom: 5px; margin-left: 3px;">
+            <el-card
+              v-for="(criteria, criteriaIndex) in rubricCriteria"
+              :key="criteria.id"
+              style="margin-bottom: 5px; margin-left: 3px;"
+            >
               <div slot="header" class="clearfix">
                 <span style="font-size: 16px; font-weight: bold;">
                   {{ criteria.name }}
@@ -20,7 +24,7 @@
                     v-model="criteria.mark"
                     size="mini"
                     style="min-width: 240px; display:flex; justify-content: space-around;margin-bottom:10px;"
-                    :disabled="readOnly"
+                    :disabled="readOnly || currentUser.role == 'Admin'"
                     @input="rubricMileStoneClick(criteria.id, $event)"
                   >
                     <el-tooltip
@@ -51,7 +55,7 @@
                     :rows="3"
                     :maxlength="8000"
                     class="criteria-comment"
-                    :readonly="readOnly"
+                    :readonly="readOnly || currentUser.role == 'Admin'"
                     @input="reviewCommentChange(criteria.comment, criteria.id)"
                   />
                 </div>

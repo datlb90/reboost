@@ -28,6 +28,25 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.GetAnnotationsAsync(docId, reviewId);
             return Ok(rs);
         }
+        [HttpGet("{reviewId}/auth")]
+        public async Task<IActionResult> UserReviewAuthentication([FromRoute] int reviewId)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var check = await _service.CheckUserReviewValidationAsync(role.Value, currentUser, reviewId);
+            if (check == 1)
+            {
+                return Ok();
+            }
+            else if (check == 0)
+            {
+                return BadRequest(new { message = "Review not found!" });
+            }
+            return BadRequest(new { message = "You dont have permission to see this review!" });
+        }
 
         [HttpPost("saveAnnotation/{docId}/{reviewId}")]
         public async Task<IActionResult> SaveAnnotationsAsync([FromRoute] int docId, [FromRoute] int reviewId, [FromBody] AnnotationModel data)

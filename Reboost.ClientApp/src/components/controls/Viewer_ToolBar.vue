@@ -73,7 +73,7 @@
         <div class="devider" />
         <div class="toolbar-btn-wrapper">
           <el-tooltip class="item" effect="dark" content="Highlight" placement="bottom">
-            <button class="toolbar-btn" @click="HighlightText()">
+            <button class="toolbar-btn texttool-btn" @click="HighlightText()">
               <div class="icon">
                 <i class="fas fa-highlighter" />
               </div>
@@ -83,7 +83,7 @@
 
         <div class="toolbar-btn-wrapper">
           <el-tooltip class="item" effect="dark" content="Strikethrough" placement="bottom">
-            <button class="toolbar-btn" @click="StrikethroughText()">
+            <button class="toolbar-btn texttool-btn" @click="StrikethroughText()">
               <div class="icon">
                 <i class="fas fa-strikethrough" />
               </div>
@@ -93,7 +93,7 @@
 
         <div class="toolbar-btn-wrapper">
           <el-tooltip class="item" effect="dark" content="Comment" placement="bottom">
-            <button class="toolbar-btn" @click="CommentText()">
+            <button class="toolbar-btn texttool-btn" @click="CommentText()">
               <div class="icon">
                 <i class="fas fa-comment-alt" />
               </div>

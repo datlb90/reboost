@@ -10,6 +10,9 @@ const reviewService = {
   addAnnotation(annotation) {
     return http.post(`/review/annotation`, annotation).then(rs => rs.data)
   },
+  userReviewAuth(reviewId) {
+    return http.get(`/review/${reviewId}/auth`).then(rs => rs)
+  },
   addInTextComment(docId, reviewId, comment, annotation) {
     return http.post(`/review/inTextComment/${docId}/${reviewId}`, { comment, annotation })
   },
