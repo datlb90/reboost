@@ -79,10 +79,16 @@ export function enableTextSelection(parent) {
       if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
         const validTarget = that.hasAParentWithClass(e.target, 'add-new-comment')
         const comment = document.getElementById('comment-text-area').value
-        if (this.annotationClicked.getAttribute('data-pdf-annotate-type') == 'comment-area') {
-          this.annotationClicked.setAttribute('data-pdf-annotate-type', 'area')
+        // if (this.annotationClicked.getAttribute('data-pdf-annotate-type') == 'comment-area') {
+        //   this.annotationClicked.setAttribute('data-pdf-annotate-type', 'area')
+        // }
+        if (!validTarget && comment.replace(/\s/g, '').length == 0) {
+          that.cancelCommentText()
+        } else if (!validTarget && comment.replace(/\s/g, '').length != 0) {
+          // Save in-progress comment
+          console.log('add comment --------------------')
+          that.addCommentText(false)
         }
-        if (!validTarget && comment.replace(/\s/g, '').length == 0) { that.cancelCommentText() }
       }
       // Unselect highlight comment
       if (!e.target.classList.contains('comment-highlight-selected') && !e.target.classList.contains('rectangle-selected') && !e.target.classList.contains('toolbar-btn')) {

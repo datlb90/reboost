@@ -17,9 +17,11 @@ export const RATER_STATUS = {
   TRAINING: 'Training',
   APPROVED: 'Approved',
   REJECTED: 'Rejected',
+  REVISION: 'Revision',
   DOCUMENT_REQUESTED: 'DocumentRequested',
   DOCUMENT_SUBMITTED: 'DocumentSubmitted',
-  REVISION_REQUESTED: 'RevisionRequested'
+  REVISION_REQUESTED: 'RevisionRequested',
+  REVISION_COMPLETED: 'RevisionCompleted'
 }
 export const REVIEW_REQUEST_STATUS = {
   IN_PROGRESS: 'In Progress',

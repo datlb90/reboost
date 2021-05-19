@@ -34,6 +34,12 @@ document.addEventListener('click', function handleDocumentClick(e) {
     if (e.target.parentElement.classList.contains('svg-inline--fa')) {
       return
     }
+    if (target.getAttribute('data-pdf-annotate-type') == 'highlight' || target.getAttribute('data-pdf-annotate-type') == 'comment-highlight') {
+      const text = window.getSelection().toString().trim()
+      if (text) {
+        return
+      }
+    }
     emitter.emit('annotation:click', target)
   }
 

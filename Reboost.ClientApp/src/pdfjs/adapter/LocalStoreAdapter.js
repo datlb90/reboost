@@ -105,16 +105,18 @@ export default class LocalStoreAdapter extends StoreAdapter {
           resolve(true)
         })
       },
-      deleteComment(documentId, commentId) {
+      deleteComment(documentId, commentId, status) {
         return new Promise((resolve, reject) => {
           getAnnotations(documentId)
           const index = []
           const annotations = getAnnotations(documentId)
           for (let i = 0, l = annotations.length; i < l; i++) {
             if (annotations[i].uuid === commentId) {
+              if (!status && annotations[i].type == 'comment-area') { continue }
               index.push(i)
             }
           }
+
           var deleteList = []
           if (index.length > 0) {
             index.forEach(id => {
