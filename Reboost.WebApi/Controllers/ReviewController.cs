@@ -45,7 +45,7 @@ namespace Reboost.WebApi.Controllers
             {
                 return BadRequest(new { message = "Review not found!" });
             }
-            return BadRequest(new { message = "You dont have permission to see this review!" });
+            return BadRequest(new { message = "Permission denined" });
         }
 
         [HttpPost("saveAnnotation/{docId}/{reviewId}")]

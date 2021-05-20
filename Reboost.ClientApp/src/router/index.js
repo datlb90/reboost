@@ -70,6 +70,7 @@ import Payout from '../views/rater/Payout.vue'
 import Reviews from '../views/learner/Reviews.vue'
 import PaymentInfo from '../views/rater/PaymentInfo.vue'
 import Submissions from '../views/learner/Submissions.vue'
+import PageNotFound from '../views/PageNotFound.vue'
 
 // Guard
 import { isAdmin, UserReviewAuthentication } from './guard/UserReviewValidation'
@@ -156,7 +157,7 @@ const router = new VueRouter({
       beforeEnter: async(to, from, next) => {
         const check = await UserReviewAuthentication(to.params.reviewId)
         if (check) {
-          next({ name: 'Reviews' })
+          next({ path: 'notfound' })
         } else {
           next()
         }
@@ -204,7 +205,7 @@ const router = new VueRouter({
       name: 'ManageRaters',
       beforeEnter: (to, from, next) => {
         if (!isAdmin()) {
-          next({ name: 'Reviews' })
+          next({ path: '/notfound' })
         } else {
           next()
         }
@@ -278,6 +279,7 @@ const router = new VueRouter({
       component: Submissions,
       name: 'Submissions'
     },
+    { path: '/notfound', component: PageNotFound },
 
     { path: '/it-startup', component: ITStartup },
     { path: '/developer', component: Developer },
