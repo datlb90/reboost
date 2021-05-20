@@ -1,17 +1,25 @@
 <template>
-  <div class="about">
-    <form id="payment-form">
-      <div id="card-element"><!--Stripe.js injects the Card Element--></div>
-      <button id="submit">
-        <div id="spinner" class="spinner hidden" />
-        <span id="button-text">Pay</span>
-      </button>
-      <p id="card-error" role="alert" />
-      <p class="result-message hidden">
-        Payment succeeded, see the result in your
-        <a href="" target="_blank">Stripe dashboard.</a> Refresh the page to pay again.
-      </p>
-    </form>
+  <div>
+    <h1>Leanner & Rater</h1>
+    <ul>
+      <li><router-link target="_blank" to="/register">Register</router-link></li>
+      <li><router-link target="_blank" to="/login">Login</router-link></li>
+      <li><router-link target="_blank" to="/SelectYourTest">Select your test</router-link></li>
+      <li><router-link target="_blank" to="/questions">List questions</router-link></li>
+      <li><router-link target="_blank" to="/rater/apply">Rater Apply</router-link></li>
+      <li><router-link target="_blank" to="/reviews">My reviews</router-link></li>
+      <li><router-link target="_blank" to="/submissions">My Submissions</router-link></li>
+      <li><router-link target="_blank" to="/paymentInfo">Payment Info</router-link></li>
+      <li><router-link target="_blank" to="/rater/payout">Payout</router-link></li>
+      <li><router-link target="_blank" to="/rater/startRating">Start Rating</router-link></li>
+      <li><router-link target="_blank" to="/Subscribe">Subscribe</router-link></li>
+      <li><router-link target="_blank" to="/discuss">Discussion</router-link></li>
+    </ul>
+    <h1>Admin</h1>
+    <ul>
+      <li><router-link to="/admin/raters">List all raters</router-link></li>
+    </ul>
+
   </div>
 </template>
 
