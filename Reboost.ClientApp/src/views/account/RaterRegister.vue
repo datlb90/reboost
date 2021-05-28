@@ -71,6 +71,7 @@
 </template>
 <script>
 import { mapActions } from 'vuex'
+import { PageName } from '@/app.constant'
 export default {
   name: 'Login',
   data() {
@@ -104,7 +105,7 @@ export default {
         Role: 'Rater'
       })
       if (user) {
-        this.$router.push('/rater/application')
+        this.$router.push({ name: PageName.AFTER_LOGIN })
       }
     }
   }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Reboost.DataAccess.Entities;
 using Reboost.Service.Services;
 using Reboost.WebApi.Identity;
@@ -15,19 +16,20 @@ namespace Reboost.WebApi.Controllers
         {
 
         }
-
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Get() {
             var rs = await _service.GetAllAsync();
             return Ok(rs);
         }
-
+        [Authorize]
         [HttpGet("getUserScore/{userId}")]
         public async Task<IActionResult> GetUserScore([FromRoute] string userId)
         {
             var rs = await _service.GetUserScores(userId);
             return Ok(rs);
         }
+        [Authorize]
         [HttpPost("addScore/{userId}")]
         public async Task<IActionResult> AddScores([FromRoute] string userId, [FromBody] List<UserScores> userScores)
         {
@@ -38,7 +40,7 @@ namespace Reboost.WebApi.Controllers
         //{
         //    return Ok(await _service.Update(user));
         //}
-
+        [Authorize]
         [HttpGet("hasSubmissionOnTaskOf/{userId}/{questionId}")]
         public async Task<IActionResult> HasSubmissionOnTaskOf([FromRoute] string userId, [FromRoute] int questionId)
         {

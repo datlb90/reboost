@@ -43,13 +43,13 @@
               align="center"
             >
               <template slot-scope="scope">
-                <span>{{ getTimeFromDateCreateToNow(scope.row.reviewRequest.completedDateTime) }}</span>
+                <span>{{ getTimeFromDateCreateToNow(scope.row.review.lastActivityDate) }}</span>
               </template>
             </el-table-column>
             <el-table-column align="center" label="Actions">
               <template slot-scope="scope">
-                <el-button size="mini" @click="navigateToReviewRequest(scope.row.reviewRequest.id)">
-                  {{ scope.row.reviewRequest.status !== REVIEW_REQUEST_STATUS.COMPLETED ? 'Complete':'View' }}
+                <el-button size="mini" @click="navigateToReviewRequest(scope.row)">
+                  View
                 </el-button>
               </template>
             </el-table-column>
@@ -97,7 +97,7 @@ export default {
   },
   methods: {
     onLoad() {
-      reviewService.getReviews().then(rs => {
+      reviewService.getReviewsByUser().then(rs => {
         if (rs) {
           this.reviewsList = rs
           this.reviewsListCached = [...this.reviewsList]
@@ -120,13 +120,9 @@ export default {
       this.listReviewsPerPage = this.reviewsListCached.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
       this.total = this.reviewsListCached.length
     },
-    navigateToReviewRequest(id) {
-      reviewService.getOrCreateReviewByRequestId(id).then(r => {
-        if (r.reviewRequest) {
-          var pushUrl = `/review/${r.reviewRequest.submission.questionId}/${r.reviewRequest.submission.docId}/${r.reviewId}`
-          this.$router.push(pushUrl)
-        }
-      })
+    navigateToReviewRequest(object) {
+      const url = `/review/${object.submission.questionId}/${object.submission.docId}/${object.reviewId}`
+      this.$router.push(url)
     }
   }
 }

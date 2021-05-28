@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -22,14 +23,14 @@ namespace Reboost.WebApi.Controllers
         {
             _mapper = mapper;
         }
-
+        [Authorize]
         [HttpGet]
         [Route("")]
         public async Task<IEnumerable<Rubrics>> GetAllAsync()
         {
             return await _service.GetAllAsync();
         }
-
+        [Authorize]
         [HttpGet]
         [Route("{id}")]
         public async Task<Rubrics> GetByIdAsync(int id)
@@ -37,14 +38,14 @@ namespace Reboost.WebApi.Controllers
             var rater = await _service.GetByIdAsync(id);
             return rater;
         }
-
+        [Authorize]
         [HttpDelete]
         [Route("delete/{id}")]
         public async Task<Rubrics> DeleteAsync(int id)
         {
             return await _service.DeleteAsync(id);
         }
-
+        [Authorize]
         [HttpPost]
         [Route("create")]
         public async Task<Rubrics> CreateAsync([FromForm] Rubrics model)
@@ -52,7 +53,7 @@ namespace Reboost.WebApi.Controllers
             var _rubric = _mapper.Map<Rubrics>(model);
             return await _service.CreateAsync(_rubric);
         }
-
+        [Authorize]
         [HttpPost]
         [Route("update")]
         public async Task<Rubrics> UpdateAsync([FromForm] Rubrics model)
@@ -60,6 +61,7 @@ namespace Reboost.WebApi.Controllers
             var _rubric = _mapper.Map<Rubrics>(model);
             return await _service.UpdateAsync(_rubric);
         }
+        [Authorize]
         [HttpGet]
         [Route("getByQuestionId/{id}")]
         public async Task<List<RubricsModel>> GetByQuestionId([FromRoute] int id)

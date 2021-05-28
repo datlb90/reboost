@@ -6,6 +6,8 @@ import Document from '../views/Document.vue'
 import Test from '../views/Test.vue'
 import RaterApply from '../views/rater/Application.vue'
 import Login from '../views/account/Login.vue'
+import Logout from '../views/account/Logout.vue'
+
 import Register from '../views/account/Register.vue'
 import RaterRegister from '../views/account/RaterRegister.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
@@ -71,9 +73,11 @@ import Reviews from '../views/learner/Reviews.vue'
 import PaymentInfo from '../views/rater/PaymentInfo.vue'
 import Submissions from '../views/learner/Submissions.vue'
 import PageNotFound from '../views/PageNotFound.vue'
+import protect from './guard'
+import { PageName, Role } from '@/app.constant'
 
 // Guard
-import { isAdmin, UserReviewAuthentication } from './guard/UserReviewValidation'
+import { userReviewAuthentication } from './guard/UserReviewValidation'
 
 Vue.use(VueRouter)
 
@@ -104,10 +108,11 @@ const router = new VueRouter({
     },
     {
       path: '/rater/apply',
-      name: 'RaterApply',
+      name: PageName.RATER_APPLY,
       component: RaterApply,
       meta: {
-        plainLayout: false
+        plainLayout: false,
+        loginRequired: true
       }
     },
     {
@@ -125,7 +130,7 @@ const router = new VueRouter({
     },
     {
       path: '/login',
-      name: 'Login',
+      name: PageName.LOGIN,
       component: Login,
       meta: {
         plainLayout: true,
@@ -133,8 +138,17 @@ const router = new VueRouter({
       }
     },
     {
+      path: '/after-login',
+      name: PageName.AFTER_LOGIN
+    },
+    {
+      path: '/logout',
+      name: 'Logout',
+      component: Logout
+    },
+    {
       path: '/register',
-      name: 'Register',
+      name: PageName.REGISTER,
       component: Register,
       meta: {
         plainLayout: true,
@@ -143,7 +157,7 @@ const router = new VueRouter({
     },
     {
       path: '/rater/register',
-      name: 'RaterRegister',
+      name: PageName.REGISTER_RATER,
       component: RaterRegister,
       meta: {
         plainLayout: true,
@@ -152,10 +166,10 @@ const router = new VueRouter({
     },
     {
       path: '/review/:questionId/:docId/:reviewId',
-      name: 'Review',
+      name: PageName.REVIEW,
       component: Review,
       beforeEnter: async(to, from, next) => {
-        const check = await UserReviewAuthentication(to.params.reviewId)
+        const check = await userReviewAuthentication(to.params.reviewId)
         if (check) {
           next({ path: 'notfound' })
         } else {
@@ -164,7 +178,8 @@ const router = new VueRouter({
       },
       meta: {
         plainLayout: false,
-        landingPage: false
+        landingPage: false,
+        loginRequired: true
       }
     },
     {
@@ -173,7 +188,8 @@ const router = new VueRouter({
       component: ReviewTest,
       meta: {
         plainLayout: false,
-        landingPage: false
+        landingPage: false,
+        loginRequired: true
       }
     },
     {
@@ -182,8 +198,29 @@ const router = new VueRouter({
       component: Reviews,
       meta: {
         plainLayout: false,
-        landingPage: false
+        landingPage: false,
+        loginRequired: true
       }
+      // beforeEnter: async(to, from, next) => {
+      //   const check = await isApprovedRater()
+      //   console.log('check', check)
+      //   switch (check.code) {
+      //     case -1:
+      //       next({ path: 'notfound' })
+      //       break
+      //     case 0:
+      //       next({ path: 'rater/apply' })
+      //       break
+      //     case 1:
+      //       next({ path: `rater/application/status/${check.rater.id}` })
+      //       break
+      //     case 2:
+      //       next()
+      //       break
+      //     default:
+      //       next()
+      //   }
+      // }
     },
     {
       path: '/test',
@@ -198,39 +235,49 @@ const router = new VueRouter({
     {
       path: '/admin',
       name: 'AdminHome',
-      component: AdminHome
+      component: AdminHome,
+      loginRequired: true
     },
     {
       path: '/admin/raters',
-      name: 'ManageRaters',
-      beforeEnter: (to, from, next) => {
-        if (!isAdmin()) {
-          next({ path: '/notfound' })
-        } else {
-          next()
-        }
+      name: PageName.RATERS,
+      meta: {
+        loginRequired: true,
+        role: Role.ADMIN
       },
       component: ManageRaters
     },
     {
       path: '/questions',
-      name: 'Questions',
-      component: Questions
+      name: PageName.QUESTIONS,
+      component: Questions,
+      meta: {
+        loginRequired: true
+      }
     },
     {
       path: '/rater/application',
       name: 'RaterApplication',
-      component: RaterApplication
+      component: RaterApplication,
+      meta: {
+        loginRequired: true
+      }
     },
     {
       path: '/admin/raters/application/:id',
       component: ApplicationDetail,
-      name: 'ApplicationDetail'
+      name: 'ApplicationDetail',
+      meta: {
+        loginRequired: true
+      }
     },
     {
       path: '/rater/application/status/:id',
       component: ApplicationStatus,
-      name: 'ApplicationStatus'
+      name: PageName.RATER_STATUS,
+      meta: {
+        loginRequired: true
+      }
     },
     {
       path: '/PracticeWriting/:id',
@@ -245,41 +292,62 @@ const router = new VueRouter({
       	path: 'discuss',
         component: DiscussionList,
         name: 'DiscussionList'
-      }]
+      }],
+      meta: {
+        loginRequired: true
+      }
     },
     {
       path: '/SelectYourTest',
       component: SelectYourTest,
-      name: 'SelectYourTest'
+      name: PageName.SELECT_YOUR_TEST,
+      meta: {
+        loginRequired: true
+      }
     },
     {
       path: '/Subscribe',
       component: Subscribe,
-      name: 'Subscribe'
+      name: 'Subscribe',
+      meta: {
+        loginRequired: true
+      }
     },
     {
       path: '/rater/startRating',
       component: StartRating,
-      name: 'StartRating'
+      name: 'StartRating',
+      meta: {
+        loginRequired: true
+      }
     },
     {
       path: '/rater/payout',
       component: Payout,
-      name: 'Payout'
+      name: 'Payout',
+      meta: {
+        loginRequired: true
+      }
     },
 
     {
 
       path: '/paymentInfo',
       component: PaymentInfo,
-      name: 'paymentInfo'
+      name: 'paymentInfo',
+      meta: {
+        loginRequired: true
+      }
     },
     {
       path: '/submissions',
       component: Submissions,
-      name: 'Submissions'
+      name: PageName.SUBMISSIONS,
+      meta: {
+        loginRequired: true
+      }
     },
-    { path: '/notfound', component: PageNotFound },
+    { path: '/notfound', name: PageName.PageNotFound, component: PageNotFound },
 
     { path: '/it-startup', component: ITStartup },
     { path: '/developer', component: Developer },
@@ -322,6 +390,8 @@ const router = new VueRouter({
     { path: '/details', component: ItemDetails }
   ]
 })
+
+protect(router)
 
 export default router
 

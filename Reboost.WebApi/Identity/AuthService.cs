@@ -99,6 +99,7 @@ namespace Reboost.WebApi.Identity
                     {
                         new Claim("Email", model.Email),
                         new Claim(ClaimTypes.NameIdentifier, identityUser.Id),
+                        new Claim("Role", model.Role)
                     };
 
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AuthSettings:JwtSecret"]));

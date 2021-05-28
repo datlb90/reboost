@@ -32,7 +32,7 @@ namespace Reboost.Service.Services
         Task<List<Reviews>> GetReviewsByUserIdAsync(string userId);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
         Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
-        Task<List<GetReviewsModel>> GetReviewRequestsByIdAsync(String userId);
+        Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId);
         Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId);
         Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
     }
@@ -134,9 +134,9 @@ namespace Reboost.Service.Services
             requests.RequestedDateTime = now;
             return await _unitOfWork.Review.CreateRequestAsync(requests);
         }
-        public async Task<List<GetReviewsModel>> GetReviewRequestsByIdAsync(String userId)
+        public async Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId)
         {
-            return await _unitOfWork.Review.GetReviewRequestsByIdAsync(userId);
+            return await _unitOfWork.Review.GetRaterReviewsByIdAsync(userId);
         }
         public async Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId)
         {

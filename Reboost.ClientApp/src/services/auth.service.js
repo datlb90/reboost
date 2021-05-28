@@ -1,5 +1,6 @@
 
 import http from '@/utils/axios'
+import store from '@/store'
 
 const authService = {
   login(data) {
@@ -11,6 +12,9 @@ const authService = {
         console.log(error)
       })
   },
+  logout() {
+    store.dispatch('auth/logout')
+  },
   register(data) {
     return http.post('/auth/register', data)
       .then(response => {
@@ -19,6 +23,13 @@ const authService = {
       .catch(error => {
         console.log(error)
       })
+  },
+  isAuthenticated() {
+    const user = store.getters['auth/getUser']
+    return user && user.token
+  },
+  getCurrentUser() {
+    return store.getters['auth/getUser']
   }
 
 }

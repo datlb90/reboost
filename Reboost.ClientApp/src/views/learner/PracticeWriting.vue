@@ -81,7 +81,7 @@
                         <hr style="margin:0; margin-bottom: 8px; ">
                         <div>
                           <audio v-if="getListening != ''" controls style="width: 100%; height: 35px; margin-bottom: 3px;">
-                            <source :src="'/assets/' + getListening.content" type="audio/mpeg">
+                            <source :src="'/audio/'+getListening.content" type="audio/mpeg">
                           </audio>
                           <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
                             <div style="flex-grow: 1;">
@@ -255,6 +255,7 @@ export default {
         if (this.getDataQuestionParts.find(u => u.name == 'Listening')) {
           return this.getDataQuestionParts.find(u => u.name == 'Listening')
         }
+        return 'audio_sample.mp3'
       }
       return ''
     },

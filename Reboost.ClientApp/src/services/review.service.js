@@ -13,6 +13,9 @@ const reviewService = {
   userReviewAuth(reviewId) {
     return http.get(`/review/${reviewId}/auth`).then(rs => rs)
   },
+  raterApprovedCheck() {
+    return http.post(`/review/rater/auth`).then(rs => rs.data)
+  },
   addInTextComment(docId, reviewId, comment, annotation) {
     return http.post(`/review/inTextComment/${docId}/${reviewId}`, { comment, annotation })
   },
@@ -49,8 +52,8 @@ const reviewService = {
   createReviewRequest(request) {
     return http.post('/review/request', request).then(rs => rs.data)
   },
-  getReviews() {
-    return http.get('/review/request').then(rs => rs.data)
+  getReviewsByUser() {
+    return http.get('/review/byRaterId').then(rs => rs.data)
   },
   getOrCreateReviewByRequestId(id) {
     return http.get(`/review/request/${id}`).then(rs => rs.data)

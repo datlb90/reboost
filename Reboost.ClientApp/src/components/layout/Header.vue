@@ -16,44 +16,51 @@
           <b-navbar-toggle target="navbarSupportedContent" />
 
           <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
-            <!-- <ul v-if="role == 'Learner'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+            <ul v-if="role == 'Learner'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+              <li class="nav-item">
+                <router-link to="/questions" class="nav-link">Questions</router-link>
+              </li>
+              <li class="nav-item">
+                <router-link to="/submissions" class="nav-link">Submissions</router-link>
+              </li>
+              <!-- <li class="nav-item">
+                <router-link to="/practice" class="nav-link">Practice</router-link>
+              </li> -->
 
               <li class="nav-item">
-                <router-link to="/practice" class="nav-link active">Practice</router-link>
+                <router-link to="/reviews" class="nav-link">Reviews</router-link>
               </li>
 
-              <li class="nav-item">
-                <router-link to="/reviews" class="nav-link">Review</router-link>
-              </li>
-
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <router-link to="/revision" class="nav-link">Revision</router-link>
               </li>
 
               <li class="nav-item">
                 <router-link to="/dicuss" class="nav-link">Discuss</router-link>
-              </li>
+              </li> -->
             </ul>
             <ul v-if="role == 'Rater'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
 
               <li class="nav-item">
-                <router-link to="/rater/apply" class="nav-link active">Application</router-link>
+                <router-link to="/rater/apply" class="nav-link">Application</router-link>
               </li>
-
               <li class="nav-item">
+                <router-link to="/reviews" class="nav-link">Review</router-link>
+              </li>
+              <!-- <li class="nav-item">
                 <router-link to="/rater/evaluate" class="nav-link" style="pointer-events: none; color: #b7b7b7;">Evaluate</router-link>
               </li>
 
               <li class="nav-item">
                 <router-link to="/dicuss" class="nav-link">Discuss</router-link>
-              </li>
+              </li> -->
             </ul>
             <ul v-if="role == 'Admin'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
 
               <li class="nav-item">
                 <router-link to="/admin/raters" class="nav-link active">Raters</router-link>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <router-link to="/admin/rubric" class="nav-link">Rubric</router-link>
               </li>
               <li class="nav-item">
@@ -67,72 +74,26 @@
               </li>
               <li class="nav-item">
                 <router-link to="/admin/dispute" class="nav-link">Disputes</router-link>
-              </li>
-            </ul> -->
-
-            <ul class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
-
-              <li class="nav-item">
-                <router-link to="/practice" class="nav-link active">Practice</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/reviews" class="nav-link">Reviews</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/revision" class="nav-link">Revision</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/admin/raters" class="nav-link active">Raters</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/admin/rubric" class="nav-link">Rubric</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/admin/topics" class="nav-link">Topics</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/admin/tips" class="nav-link">Tips & Guides</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/admin/payments" class="nav-link">Payments</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/admin/dispute" class="nav-link">Disputes</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/rater/apply" class="nav-link active">Application</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/rater/evaluate" class="nav-link" style="pointer-events: none; color: #b7b7b7;">Evaluate</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/dicuss" class="nav-link">Discuss</router-link>
-              </li>
+              </li> -->
             </ul>
           </b-collapse>
 
           <div class="others-option">
-            <el-dropdown>
+            <el-dropdown @command="handleCommand">
               <span class="el-dropdown-link">
                 <i class="far fa-user-circle" style="font-size: 24px;" />
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>Action 1</el-dropdown-item>
+                <div style="padding:0 10px; display:inline-grid">
+                  <span style="padding:5px 0px;font-weight:700;font-size:20px;">{{ currentUser.username }}</span>
+                  <span>Email: {{ currentUser.email }}</span>
+                  <span>Role: {{ currentUser.role }}</span>
+                </div>
+                <!-- <el-dropdown-item>Action 1</el-dropdown-item>
                 <el-dropdown-item>Action 2</el-dropdown-item>
                 <el-dropdown-item>Action 3</el-dropdown-item>
-                <el-dropdown-item disabled>Action 4</el-dropdown-item>
-                <el-dropdown-item divided>Action 5</el-dropdown-item>
+                <el-dropdown-item disabled>Action 4</el-dropdown-item> -->
+                <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
             <!-- <a href="#" class="btn btn-primary">Login</a> -->
@@ -158,6 +119,9 @@ export default {
   computed: {
     shoppingCart() {
       return this.$store.state.cart
+    },
+    currentUser() {
+      return this.$store.getters['auth/getUser']
     }
   },
   mounted() {
@@ -174,6 +138,15 @@ export default {
   },
   created() {
     console.log(this.role)
+  },
+  methods: {
+    handleCommand(action) {
+      if (action === 'logout') {
+        this.$store.dispatch('auth/logout').then(rs => {
+          this.$router.push('/')
+        })
+      }
+    }
   }
 }
 </script>
