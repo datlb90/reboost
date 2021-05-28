@@ -71,6 +71,7 @@
 </template>
 <script>
 import { mapActions } from 'vuex'
+import { PageName } from '@/app.constant'
 export default {
   name: 'Login',
   data() {
@@ -103,8 +104,9 @@ export default {
         Password: this.form.password,
         Role: 'Learner'
       })
+
       if (user) {
-        this.$router.push('/topics/all')
+        this.$router.push({ name: PageName.AFTER_LOGIN })
       }
     }
   }

@@ -276,7 +276,7 @@
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
             <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">Reject</el-button>
-            <el-button v-if="raterId && formRegister.status === RATER_STATUS.APPLIED" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
+            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status===RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
             <el-dropdown v-if="completedTraining(formRegister,'IELTS')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">

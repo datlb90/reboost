@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -26,13 +27,14 @@ namespace Reboost.WebApi.Controllers
             _userService = userService;
         }
 
+        [Authorize]
         [HttpGet]
         [Route("")]
         public async Task<IEnumerable<Raters>> GetAllAsync()
         {
             return await _service.GetAllAsync();
         }
-
+        [Authorize]
         [HttpGet]
         [Route("{id}")]
         public async Task<Raters> GetByIdAsync(int id)
@@ -44,6 +46,7 @@ namespace Reboost.WebApi.Controllers
 
             return raterModel;
         }
+        [Authorize]
         [HttpGet]
         [Route("byCurrentUser")]
         public async Task<Raters> GetByCurrentUserAsync()
@@ -56,12 +59,14 @@ namespace Reboost.WebApi.Controllers
 
             return rater;
         }
+        [Authorize]
         [HttpDelete]
         [Route("delete/{id}")]
         public async Task<Raters> DeleteAsync(int id)
         {
             return await _service.DeleteAsync(id);
         }
+        [Authorize]
         [HttpPost]
         [Route("create")]
         public async Task<Raters> CreateAsync([FromForm] RaterRequestModel model)
@@ -69,7 +74,7 @@ namespace Reboost.WebApi.Controllers
             var _rater = _mapper.Map<Raters>(model);
             return await _service.CreateAsync(_rater, model.UploadedFiles);
         }
-
+        [Authorize]
         [HttpPost]
         [Route("update")]
         public async Task<Raters> UpdateAsync([FromForm] RaterRequestModel model)
@@ -77,7 +82,7 @@ namespace Reboost.WebApi.Controllers
             var _rater = _mapper.Map<Raters>(model);
             return await _service.UpdateAsync(_rater, model.UploadedFiles);
         }
-
+        [Authorize]
         [HttpPost]
         [Route("update/credential")]
         public async Task<Raters> UpdateCredentialAsync([FromForm] RaterRequestModel model)
@@ -85,7 +90,7 @@ namespace Reboost.WebApi.Controllers
             var _rater = _mapper.Map<Raters>(model);
             return await _service.UpdateCredentialAsync(_rater, model.UploadedFiles);
         }
-
+        [Authorize]
         [HttpGet("update/status/{id}/{status}")]
         public async Task<Raters> UpdateStatus(int id, string status) {
             return await _service.UpdateStatusAsync(id, status);

@@ -212,9 +212,9 @@ namespace Reboost.DataAccess.Repositories
                 newquery.Count = item.Count;
                 foreach (var _item in listQuery)
                 {
-                    if(newquery.Section == _item.Section)
+                    if(newquery.Section == _item.Section && _item.Count>0)
                     {
-                        newquery.Count = _item.Count;
+                        newquery.Count = 1;
                     }
                 }
                 listTask.Add(newquery);

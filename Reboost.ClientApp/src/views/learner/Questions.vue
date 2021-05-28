@@ -192,6 +192,8 @@ export default {
     })
     this.$store.dispatch('question/loadSummaryByUser', this.currentUser.id).then(() => {
       this.summary = this.$store.getters['question/getSummaryByUser']
+
+      console.log('summary', this.summary)
     })
   },
   methods: {

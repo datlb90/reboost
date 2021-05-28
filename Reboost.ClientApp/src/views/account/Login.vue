@@ -71,6 +71,9 @@
 </template>
 <script>
 import { mapActions } from 'vuex'
+import { PageName } from '@/app.constant'
+import authService from '@/services/auth.service'
+
 export default {
   name: 'Login',
   data() {
@@ -86,6 +89,12 @@ export default {
       googleFormAction: null,
       facebookFormAction: null
     }
+  },
+  beforeRouteEnter(to, from, next) {
+    if (authService.isAuthenticated()) {
+      return next({ name: PageName.AFTER_LOGIN })
+    }
+    next()
   },
   async created() {
     this.googleFormAction = 'api/auth/external/google/Learner/' + encodeURIComponent(this.returnUrl)
@@ -105,9 +114,7 @@ export default {
         Password: this.form.password
       })
       if (user) {
-        if (user.role == 'Admin') { this.$router.push('/admin/raters') }
-        if (user.role == 'Rater') { this.$router.push('/rater/application') }
-        if (user.role == 'Learner') { this.$router.push('/questions') }
+        this.$router.push({ name: PageName.AFTER_LOGIN })
       }
     }
   }

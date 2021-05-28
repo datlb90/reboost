@@ -31,7 +31,7 @@ namespace Reboost.DataAccess.Repositories
         Task<List<Reviews>> GetReviewsByUserIdAsync(string userId);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
         Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
-        Task<List<GetReviewsModel>> GetReviewRequestsByIdAsync(String userId);
+        Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId);
         Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId);
         Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
     }
@@ -304,15 +304,20 @@ namespace Reboost.DataAccess.Repositories
             return await Task.FromResult(request);
         }
 
-        public async Task<List<GetReviewsModel>> GetReviewRequestsByIdAsync(String userId)
+        public async Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId)
         {
             var query = await (from rr in db.ReviewRequests
+                               join rv in db.Reviews on rr.Id equals rv.RequestId
                                join q in db.Questions on rr.Submission.QuestionId equals q.Id
+                               join s in db.Submissions on rr.SubmissionId equals s.Id
                                join ts in db.TestSections on q.Task.SectionId equals ts.Id
-
+                               where rv.ReviewerId == userId
                                select new GetReviewsModel
                                {
                                    ReviewRequest = rr,
+                                   Submission = s,
+                                   Review =rv,
+                                   ReviewId = rv.Id,
                                    QuestionName = q.Title,
                                    QuestionType = q.Type,
                                    TestSection = ts.Name

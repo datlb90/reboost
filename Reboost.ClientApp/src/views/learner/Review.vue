@@ -2117,7 +2117,7 @@ export default {
               message: 'Submitted!',
               duration: 2000
             })
-            this.$router.push('/reviews')
+            this.$router.push('reviews')
           } else {
             this.$notify.error({
               title: 'Submit failed',

@@ -22,7 +22,7 @@ namespace Reboost.WebApi.Controllers
         {
             _requestQueueService = requestQueueService;
         }
-
+        [Authorize]
         [HttpGet]
         [Route("top")]
         public async Task<RequestQueue> GetTopPriorityRequest()

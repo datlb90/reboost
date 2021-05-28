@@ -286,9 +286,19 @@ import moment from 'moment'
 // import Notification from 'element-ui'
 import * as mapUtil from '@/utils/model-mapping'
 import * as stringUtil from '@/utils/string'
+import { RATER_STATUS, PageName } from '@/app.constant'
 
 export default {
   name: 'Application',
+  beforeRouteEnter(to, from, next) {
+    raterService.getByCurrentUser().then(rs => {
+      console.log('current user rater', rs)
+      if (rs && rs.status === RATER_STATUS.APPLIED) {
+        return next({ name: PageName.RATER_STATUS, params: { id: rs.id }})
+      }
+      next()
+    })
+  },
   data() {
     return {
       formRegister: {
@@ -377,7 +387,6 @@ export default {
       }
     },
     loadDetail(id) {
-      console.log('load detail', mapUtil)
       raterService.getById(id).then(rs => {
         console.log('result load detail', rs)
         this.formRegister = mapUtil.map(rs, this.formRegister)

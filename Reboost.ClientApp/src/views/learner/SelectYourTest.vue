@@ -156,8 +156,9 @@
 
 <script>
 import userService from '@/services/user.service'
+import authService from '@/services/auth.service'
 import moment from 'moment'
-import { SCORES } from '../../app.constant'
+import { PageName, SCORES } from '../../app.constant'
 export default {
   name: 'SelectYourTest',
   data() {
@@ -166,7 +167,7 @@ export default {
       textarea: '',
       initTextArea: {
         height: 500,
-        selector: 'textarea', // change this value according to your HTML
+        selector: 'textarea',
         plugins: 'wordcount',
         toolbar: '',
         menubar: false
@@ -190,6 +191,17 @@ export default {
       toeflScores: [],
       ieltsScores: []
     }
+  },
+  beforeRouteEnter(to, from, next) {
+    const user = authService.getCurrentUser()
+
+    userService.getUserScore(user.id).then(scores => {
+      if (scores.length > 0) {
+        return next({ name: PageName.QUESTIONS })
+      }
+
+      next()
+    })
   },
   computed: {
     currentUser() {

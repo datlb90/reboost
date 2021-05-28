@@ -27,12 +27,18 @@ const actions = {
       return result.user
     }
     return null
+  },
+  async logout({ state, commit }) {
+    commit('CLEAR_USER')
   }
 }
 
 const mutations = {
   SET_USER: (state, user) => {
     state.user = user
+  },
+  CLEAR_USER(state) {
+    state.user = {}
   }
 }
 
