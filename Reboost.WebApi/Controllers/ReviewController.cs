@@ -53,6 +53,24 @@ namespace Reboost.WebApi.Controllers
             return BadRequest(new { message = "Permission denined" });
         }
         [Authorize]
+        [HttpGet("reviewee/{revieweeId}/auth")]
+        public async Task<IActionResult> RevieweeReviewAuthentication([FromRoute] int revieweeId)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var check = await _service.CheckRevieweeReviewValidationAsync(currentUser, revieweeId);
+            if (check!=0)
+            {
+                return Ok(check);
+            }
+            else
+            {
+                return BadRequest(new { message = "Review not found!" });
+            }
+        }
+        [Authorize]
         [HttpPost("rater/auth")]
         public async Task<IActionResult> RaterApprovedCheck()
         {
@@ -175,6 +193,7 @@ namespace Reboost.WebApi.Controllers
 
             request.UserId = currentUser.Id;
             var rs = await _service.CreateRequestAsync(request);
+            await _service.AddRequestQueue(new RequestQueue { RequestId = rs.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
             return Ok(rs);
         }
         [Authorize]
@@ -198,6 +217,71 @@ namespace Reboost.WebApi.Controllers
 
             var rs = await _service.GetOrCreateReviewByReviewRequestAsync(id, currentUser.Id);
             return Ok(rs);
+        }
+        [Authorize]
+        [HttpGet("submission/{id}")]
+        public async Task<IActionResult> GetOrCreateReviewBySubmissionId([FromRoute] int id)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var request = await _service.GetReviewRequestBySubmissionId(id, currentUser.Id);
+            var rs = await _service.GetOrCreateReviewByReviewRequestAsync(request.Id, currentUser.Id);
+            return Ok(rs);
+        }
+        [Authorize]
+        [HttpPost("reviewRating")]
+        public async Task<IActionResult> CreateReviewRatingAsync([FromBody] ReviewRatings data)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            data.UserId = currentUser.Id;
+            var rs = await _service.CreateReviewRatingAsync(data);
+            return Ok(rs);
+        }
+        [Authorize]
+        [HttpGet("reviewRating/{reviewId}")]
+        public async Task<IActionResult> GetReviewRatingByReviewIdAsync([FromRoute] int reviewId)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.GetReviewRatingsByReviewIdAsync(reviewId, currentUser.Id);
+            return Ok(rs);
+        }
+        [Authorize]
+        [HttpGet("new-review")]
+        public async Task<IActionResult> NewReview() {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+            var review = await _service.CreateReviewFromQueue(currentUser.Id);
+            return Ok(review);
+        }
+        [Authorize]
+        [HttpGet("unrated")]
+        public async Task<IActionResult> GetUnratedReviews()
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var unrated = await _service.GetRatedReviewsAsync(currentUser.Id);
+            return Ok(unrated);
+        }
+        [Authorize]
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingReview()
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+            var pending = await _service.GetPendingReviewAsync(currentUser.Id);
+            return Ok(pending);
         }
     }
 }

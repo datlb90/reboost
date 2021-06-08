@@ -88,11 +88,13 @@
                   <span style="padding:5px 0px;font-weight:700;font-size:20px;">{{ currentUser.username }}</span>
                   <span>Email: {{ currentUser.email }}</span>
                   <span>Role: {{ currentUser.role }}</span>
+                  <span>Rating: {{ raterRating }}</span>
                 </div>
                 <!-- <el-dropdown-item>Action 1</el-dropdown-item>
                 <el-dropdown-item>Action 2</el-dropdown-item>
                 <el-dropdown-item>Action 3</el-dropdown-item>
                 <el-dropdown-item disabled>Action 4</el-dropdown-item> -->
+                <el-dropdown-item command="selectTest" divided>Select your test</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -106,13 +108,15 @@
 </template>
 
 <script>
+import raterService from '../../services/rater.service'
 export default {
   name: 'HeaderTwo',
   data() {
     return {
       role: this.$store.state.auth.user.role,
       isSticky: false,
-      appInProgress: true
+      appInProgress: true,
+      raterRating: 0
     }
   },
 
@@ -135,6 +139,9 @@ export default {
         that.isSticky = false
       }
     })
+    raterService.getRaterRating().then(rs => {
+      this.raterRating = rs
+    })
   },
   created() {
     console.log(this.role)
@@ -145,6 +152,8 @@ export default {
         this.$store.dispatch('auth/logout').then(rs => {
           this.$router.push('/')
         })
+      } else if (action === 'selectTest') {
+        this.$router.push('/SelectYourTest')
       }
     }
   }

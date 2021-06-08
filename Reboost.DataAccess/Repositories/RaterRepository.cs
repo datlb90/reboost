@@ -20,6 +20,7 @@ namespace Reboost.DataAccess.Repositories
         Task<Raters> GetByUserIdAsync(string userId);
         Task<List<string>> GetApplyTo(int raterId);
         Task<Raters> UpdateWithCredentialAsync(Raters rater);
+        Task<decimal> GetRaterRatingAsync(string UserID);
     }
     public class RaterRepository : BaseRepository<Raters>, IRaterRepository
     {
@@ -90,6 +91,25 @@ namespace Reboost.DataAccess.Repositories
             var rs = await Update(rater);
 
             return rs;
+        }
+
+        public async Task<decimal> GetRaterRatingAsync(string UserID)
+        {
+            var rs = await (from rr in ReboostDbContext.ReviewRatings
+                            join r in ReboostDbContext.Reviews on rr.ReviewId equals r.Id
+                            where r.ReviewerId == UserID
+                            select rr).ToListAsync();
+            if (rs.Count > 0)
+            {
+                decimal total = 0;
+                foreach (ReviewRatings r in rs)
+                {
+                    total += r.Rate;
+                }
+
+                return (total / (rs.Count));
+            }
+            return 0;
         }
     }
 }

@@ -4,8 +4,11 @@
       <el-col :span="15">
         <div style="display: flex; justify-content:space-between">
           <h3>My Reviews</h3>
-          <el-button style="margin-right: 25px;" size="mini">
+          <el-button v-if="!pendingReview" style="margin-right: 25px;" size="mini" @click="onNewRequestClick">
             Make New Review
+          </el-button>
+          <el-button v-if="pendingReview" style="margin-right: 25px;" size="mini" @click="onPendingClick">
+            Complete Pending Review
           </el-button>
         </div>
         <el-main>
@@ -71,7 +74,7 @@
 <script>
 import moment from 'moment'
 import reviewService from '../../services/review.service'
-import { REVIEW_REQUEST_STATUS } from '../../app.constant'
+import { PageName, REVIEW_REQUEST_STATUS } from '../../app.constant'
 export default {
   name: 'Reviews',
   components: {},
@@ -84,7 +87,8 @@ export default {
       pageSize: 15,
       total: 0,
       page: 1,
-      REVIEW_REQUEST_STATUS: REVIEW_REQUEST_STATUS
+      REVIEW_REQUEST_STATUS: REVIEW_REQUEST_STATUS,
+      pendingReview: null
     }
   },
   computed: {
@@ -105,6 +109,10 @@ export default {
           console.log('reviews', rs)
         }
       })
+      reviewService.getPendingReview().then(r => {
+        console.log('pending review', r)
+        this.pendingReview = r
+      })
     },
     getTimeFromDateCreateToNow(time) {
       if (!time) {
@@ -123,6 +131,23 @@ export default {
     navigateToReviewRequest(object) {
       const url = `/review/${object.submission.questionId}/${object.submission.docId}/${object.reviewId}`
       this.$router.push(url)
+    },
+    onNewRequestClick() {
+      reviewService.newRequest().then(rs => {
+        console.log('new review result', rs)
+        if (rs) {
+          this.$router.push({ name: PageName.REVIEW, params: { questionId: rs.reviewRequest.submission.questionId, docId: rs.reviewRequest.submission.docId, reviewId: rs.reviewId }})
+        } else {
+          this.$notify.error({
+            title: 'Not available',
+            message: 'No request available',
+            duration: 2000
+          })
+        }
+      })
+    },
+    onPendingClick() {
+      this.$router.push({ name: PageName.REVIEW, params: { questionId: this.pendingReview.reviewRequest.submission.questionId, docId: this.pendingReview.reviewRequest.submission.docId, reviewId: this.pendingReview.reviewId }})
     }
   }
 }

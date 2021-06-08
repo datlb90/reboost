@@ -46,5 +46,11 @@ namespace Reboost.WebApi.Controllers
         {
             return Ok(await _service.HasSubmissionOnTaskOf(userId, questionId));
         }
+        [Authorize]
+        [HttpGet("{userId}/rate")]
+        public async Task<IActionResult> GetUserRate([FromRoute] string userId)
+        {
+            return Ok(await _service.GetUserRate(userId));
+        }
     }
 }

@@ -18,6 +18,7 @@ namespace Reboost.DataAccess.Repositories
         Task<User> UpdateAsync(User user);
         Task<List<UserScores>> GetUserScores(string userId);
         Task<bool> HasSubmissionOnTaskOf(string userId, int questionId);
+        Task<UserRanks> GetUserRate(string userId);
     }
 
     public class UserRepository : IUserRepository
@@ -90,6 +91,10 @@ namespace Reboost.DataAccess.Repositories
                 return false;
 
             return userSubmissionTasks.Any(t => t.Id == questionTask.Id);
+        }
+
+        public async Task<UserRanks> GetUserRate(string userId) {
+            return await _context.UserRanks.Where(r => r.UserId == userId).FirstOrDefaultAsync();
         }
     }
 }

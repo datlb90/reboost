@@ -77,7 +77,7 @@ import protect from './guard'
 import { PageName, Role } from '@/app.constant'
 
 // Guard
-import { userReviewAuthentication } from './guard/UserReviewValidation'
+import { userReviewAuthentication, revieweeReviewAuthentication } from './guard/UserReviewValidation'
 
 Vue.use(VueRouter)
 
@@ -174,6 +174,36 @@ const router = new VueRouter({
           next({ path: 'notfound' })
         } else {
           next()
+        }
+      },
+      meta: {
+        plainLayout: false,
+        landingPage: false,
+        loginRequired: true
+      }
+    },
+    {
+      path: '/review/:questionId/:docId/:reviewId/:isViewOrRate',
+      name: PageName.REVIEW,
+      component: Review,
+      beforeEnter: async(to, from, next) => {
+        if (to.params.isViewOrRate === 'view' || to.params.isViewOrRate === 'rate') {
+          const check = await revieweeReviewAuthentication(to.params.reviewId)
+          if (check === 0) {
+            next({ path: 'notfound' })
+          } else {
+            if (check === 1 && to.params.isViewOrRate === 'view') {
+              next()
+            }
+            if (check === 2 && to.params.isViewOrRate === 'rate') {
+              next()
+            }
+            if (check === 2 && to.params.isViewOrRate === 'view') {
+              next({ path: 'notfound' })
+            }
+          }
+        } else {
+          next({ path: 'notfound' })
         }
       },
       meta: {

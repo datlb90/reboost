@@ -16,6 +16,7 @@ namespace Reboost.Service.Services
         Task<List<UserScores>> GetUserScores(string userId);
         Task<bool> HasSubmissionOnTaskOf(string userId, int questionId);
         Task<User> UpdateStripeIdAsync(User user, string id);
+        Task<UserRanks> GetUserRate(string userId);
     }
 
     public class UserService: BaseService, IUserService
@@ -54,6 +55,11 @@ namespace Reboost.Service.Services
         {
             user.StripeCustomerID = stripeId;
             return await _unitOfWork.Users.UpdateAsync(user);
+        }
+
+        public async Task<UserRanks> GetUserRate(string userId)
+        {
+            return await _unitOfWork.Users.GetUserRate(userId);
         }
     }
 }

@@ -1,5 +1,7 @@
 import authService from '@/services/auth.service'
 import { PageName, UserRole } from '@/app.constant'
+import userService from '@/services/user.service'
+
 export default (router) => {
   router.beforeEach((to, from, next) => {
     console.log('router before each', to, from)
@@ -32,7 +34,15 @@ export default (router) => {
         } else if (role === UserRole.RATER) {
           return next({ name: PageName.RATER_APPLY })
         } else if (role === UserRole.LEARNER) {
-          return next({ name: PageName.SELECT_YOUR_TEST })
+          const user = authService.getCurrentUser()
+
+          userService.getUserScore(user.id).then(scores => {
+            if (scores.length > 0) {
+              return next({ name: PageName.QUESTIONS })
+            }
+
+            return next({ name: PageName.SELECT_YOUR_TEST })
+          })
         }
 
         next({ name: PageName.NOT_FOUND })
