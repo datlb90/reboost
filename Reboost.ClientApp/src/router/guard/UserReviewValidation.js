@@ -47,3 +47,16 @@ export async function isApprovedRater() {
   })
 }
 
+export async function revieweeReviewAuthentication(reviewId) {
+  return new Promise((resolve, reject) => {
+    reviewService.revieweeReviewAuth(reviewId).then(r => {
+      console.log('reivewee auth', r)
+      if (typeof (r) != 'undefined' && r.status == 200) {
+        resolve(r.data)
+      } else {
+        resolve(0)
+      }
+    })
+  })
+}
+

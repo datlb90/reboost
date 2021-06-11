@@ -250,17 +250,40 @@ namespace Reboost.DataAccess.Repositories
         }
         public async Task<List<SubmissionsModel>> GetAllSubmissionByUserIdAsync(string userId)
         {
-            return await (from q in ReboostDbContext.Questions
-                          join s in ReboostDbContext.Submissions on q.Id equals s.QuestionId
-                          where s.UserId == userId
-                          select new SubmissionsModel
-                          {
-                              Question = q.Title,
-                              Status = "Submitted",
-                              Review = "Request now",
-                              TimeTaken = s.TimeSpentInSeconds,
-                              TimeSubmitted = s.SubmittedDate
-                          }).ToListAsync();
+            var listReviewRequest = await (from r in ReboostDbContext.ReviewRequests 
+                                    where r.UserId == userId
+                                    select r
+                                    ).ToListAsync();
+
+            var listsubmissions = await (from q in ReboostDbContext.Questions
+                                        join s in ReboostDbContext.Submissions on q.Id equals s.QuestionId
+                                        where s.UserId == userId
+                                        select new SubmissionsModel
+                                        {
+                                            Id = s.Id,
+                                            Question = q.Title,
+                                            Status = "Submitted",
+                                            Action = "Request now",
+                                            TimeTaken = s.TimeSpentInSeconds,
+                                            TimeSubmitted = s.SubmittedDate
+                                        }).ToListAsync();
+            foreach(ReviewRequests r in listReviewRequest)
+            {
+                int flag = listsubmissions.Any(s => s.Id == r.SubmissionId && r.Status == "Completed") ? 2 : listsubmissions.Any(s => s.Id == r.SubmissionId) ? 1 : 0;
+                if(flag == 2)
+                {
+                    int index = listsubmissions.FindIndex(s => s.Id == r.SubmissionId);
+                    listsubmissions[index].Action = "View Review";
+                    listsubmissions[index].Status = "Reviewed";
+                }
+                else if (flag == 1)
+                {
+                    int index = listsubmissions.FindIndex(s => s.Id == r.SubmissionId);
+                    listsubmissions[index].Action = "View";
+                    listsubmissions[index].Status = "Requested";
+                }
+            }
+            return listsubmissions;
         }
     }
 }

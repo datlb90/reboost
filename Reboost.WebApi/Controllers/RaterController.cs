@@ -95,5 +95,15 @@ namespace Reboost.WebApi.Controllers
         public async Task<Raters> UpdateStatus(int id, string status) {
             return await _service.UpdateStatusAsync(id, status);
         }
+        [Authorize]
+        [HttpGet("rating")]
+        public async Task<decimal> GetRatingAsync()
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            return await _service.GetRaterRatingAsync(currentUser.Id);
+        }
     }
 }

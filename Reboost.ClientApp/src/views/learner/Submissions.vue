@@ -12,6 +12,11 @@
             size="mini"
           >
             <el-table-column
+              prop="id"
+              label="Id"
+              align="center"
+            />
+            <el-table-column
               prop="question"
               label="Question"
               align="center"
@@ -41,7 +46,7 @@
             </el-table-column>
             <el-table-column align="center" label="Actions">
               <template slot-scope="scope">
-                <span> <el-button size="mini">{{ scope.row.review }}</el-button></span>
+                <span> <el-button size="mini" @click="actionClick(scope.row)">{{ scope.row.action }}</el-button></span>
               </template>
             </el-table-column>
           </el-table>
@@ -60,6 +65,8 @@
   </div>
 </template>
 <script>
+import reviewService from '../../services/review.service'
+import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 import questionService from '../../services/question.service'
 import moment from 'moment'
 export default {
@@ -73,7 +80,8 @@ export default {
       listSubmissionsPerPage: [],
       pageSize: 15,
       total: 0,
-      page: 1
+      page: 1,
+      unRatedList: null
     }
   },
   computed: {
@@ -93,6 +101,9 @@ export default {
           this.loadList()
         }
       })
+      reviewService.getUnratedReview().then(rs => {
+        this.unRatedList = rs
+      })
     },
     getTimeFromDateCreateToNow(time) {
       return moment(new Date(time)).fromNow()
@@ -108,6 +119,46 @@ export default {
       this.listSubmissionsPerPage = this.submissionsListCached.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
       this.total = this.submissionsListCached.length
       console.log(this.listSubmissionsPerPage)
+    },
+    actionClick(e) {
+      if (e.action === 'Request now') {
+        // if (this.unRatedList.length > 0) {
+        //   this.$notify.error({
+        //     title: 'You have unrated review',
+        //     message: 'Please rate them and request later',
+        //     duration: 2000
+        //   })
+        // } else
+        // {
+        reviewService.createReviewRequest({
+          UserId: this.currentUser.id,
+          SubmissionId: e.id,
+          FeedbackType: 'Free',
+          Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
+        }).then(rs => {
+          this.$notify.success({
+            title: 'Submission Requested',
+            message: 'Requested!',
+            duration: 1000
+          })
+          this.submissionsListCached.map(r => {
+            if (r.id === e.id) {
+              r.status = 'Requested'
+              r.action = 'View'
+            }
+          })
+          this.loadList()
+        })
+        // }
+      } else if (e.action === 'View') {
+        reviewService.getOrCreateReviewBySubmissionId(e.id).then(rs => {
+          this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}/view`)
+        })
+      } else {
+        reviewService.getOrCreateReviewBySubmissionId(e.id).then(rs => {
+          this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}/rate`)
+        })
+      }
     }
   }
 }

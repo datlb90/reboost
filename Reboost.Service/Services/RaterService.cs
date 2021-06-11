@@ -23,6 +23,7 @@ namespace Reboost.Service.Services
         Task<Raters> UpdateCredentialAsync(Raters rater, List<IFormFile> uploadFiles);
         Task<Raters> DeleteAsync(int id);
         Task<List<string>> GetApplyTo(int raterId);
+        Task<decimal> GetRaterRatingAsync(string UserID);
     }
 
     public class RaterService : BaseService, IRaterService
@@ -152,6 +153,10 @@ namespace Reboost.Service.Services
                 formFile.CopyTo(memoryStream);
                 return memoryStream.ToArray();
             }
+        }
+        public async Task<decimal> GetRaterRatingAsync(string UserID)
+        {
+            return await _unitOfWork.Raters.GetRaterRatingAsync(UserID);
         }
     }
 }

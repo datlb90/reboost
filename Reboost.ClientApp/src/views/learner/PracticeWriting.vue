@@ -153,7 +153,7 @@
                   <el-dropdown-item divided>View Review Sample</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
-              <el-button v-if="hasSubmitionForThisQuestion" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Save</el-button>
+              <el-button v-if="hasSubmitionForThisQuestion" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0) || (unRatedList.length > 0)" @click="submit()">Save</el-button>
             </div>
           </div>
           <div style="flex-grow: 1;">
@@ -221,7 +221,8 @@ export default {
       timeSpentInterval: null,
       idLocalStorage: '',
       timeout: null,
-      submissionId: null
+      submissionId: null,
+      unRatedList: null
     }
   },
   computed: {
@@ -325,6 +326,9 @@ export default {
           }
         }
       })
+      reviewService.getUnratedReview().then(rs => {
+        this.unRatedList = rs
+      })
     },
     calculateContainerHeight() {
       const headerHeight = document.getElementById('header').clientHeight
@@ -342,6 +346,15 @@ export default {
       }
     },
     submit() {
+      if (this.unRatedList.length > 0) {
+        this.$notify({
+          title: 'Error',
+          message: 'You have some reviews have not rated yet. Please do rating all reviews.',
+          type: 'error',
+          duration: 1000
+        })
+        return
+      }
       localStorage.removeItem(this.idLocalStorage)
       if (!this.writingContent) {
         this.$notify({
@@ -478,7 +491,7 @@ export default {
     },
     createReview() {
       reviewService.createReviewRequest({
-        UserId: '123',
+        UserId: this.currentUser.id,
         SubmissionId: this.submissionId,
         FeedbackType: 'Free',
         Status: REVIEW_REQUEST_STATUS.IN_PROGRESS

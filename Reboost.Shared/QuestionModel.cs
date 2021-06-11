@@ -50,10 +50,11 @@ namespace Reboost.Shared
     }
     public class SubmissionsModel
     {
+        public int Id { get; set; }
         public DateTime TimeSubmitted { get; set; }
         public string Question { get; set; }
         public string Status { get; set; }
         public int TimeTaken { get; set; }
-        public string Review { get; set; }
+        public string Action { get; set; }
     }
 }

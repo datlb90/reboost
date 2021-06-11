@@ -21,6 +21,9 @@ const raterService = {
   },
   updateStatus(id, status) {
     return http.get(`/rater/update/status/${id}/${status}`).then(rs => rs.data)
+  },
+  getRaterRating() {
+    return http.get('/rater/rating').then(rs => rs.data)
   }
 }
 

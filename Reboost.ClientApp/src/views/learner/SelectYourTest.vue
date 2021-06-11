@@ -156,9 +156,8 @@
 
 <script>
 import userService from '@/services/user.service'
-import authService from '@/services/auth.service'
 import moment from 'moment'
-import { PageName, SCORES } from '../../app.constant'
+import { SCORES } from '../../app.constant'
 export default {
   name: 'SelectYourTest',
   data() {
@@ -191,17 +190,6 @@ export default {
       toeflScores: [],
       ieltsScores: []
     }
-  },
-  beforeRouteEnter(to, from, next) {
-    const user = authService.getCurrentUser()
-
-    userService.getUserScore(user.id).then(scores => {
-      if (scores.length > 0) {
-        return next({ name: PageName.QUESTIONS })
-      }
-
-      next()
-    })
   },
   computed: {
     currentUser() {

@@ -33,8 +33,17 @@ namespace Reboost.Service.Services
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
         Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
         Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId);
-        Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId);
+        Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int submissionId, string userId);
         Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
+        Task<int> CheckRevieweeReviewValidationAsync(User user, int reviewId);
+        Task<ReviewRequests> GetReviewRequestBySubmissionId(int requestId, string userId);
+        Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data);
+        Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId, string userId);
+        Task<RequestQueue> AddRequestQueue(RequestQueue data, string userId);
+        Task<GetReviewsModel> CreateReviewFromQueue(string userId);
+        Task<List<Reviews>> GetRatedReviewsAsync(string userId);
+        Task<GetReviewsModel> GetPendingReviewAsync(string userId);
+
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -134,6 +143,9 @@ namespace Reboost.Service.Services
             requests.RequestedDateTime = now;
             return await _unitOfWork.Review.CreateRequestAsync(requests);
         }
+        public async Task<RequestQueue> AddRequestQueue(RequestQueue requestQueue, string userId) {
+            return await _unitOfWork.Review.AddRequestQueue(requestQueue, userId);
+        }
         public async Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId)
         {
             return await _unitOfWork.Review.GetRaterReviewsByIdAsync(userId);
@@ -141,6 +153,33 @@ namespace Reboost.Service.Services
         public async Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId)
         {
             return await _unitOfWork.Review.GetOrCreateReviewByReviewRequestAsync(requestId, userId);
+        }
+        public async Task<ReviewRequests> GetReviewRequestBySubmissionId(int submissionId, string userId)
+        {
+            return await _unitOfWork.Review.GetReviewRequestBySubmissionId(submissionId, userId);
+        }
+        public async Task<int> CheckRevieweeReviewValidationAsync(User user, int reviewId)
+        {
+            return await _unitOfWork.Review.CheckRevieweeReviewValidationAsync(user, reviewId);
+        }
+        public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data)
+        {
+            return await _unitOfWork.Review.CreateReviewRatingAsync(data);
+        }
+        public async Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId, string userId)
+        {
+            return await _unitOfWork.Review.GetReviewRatingsByReviewIdAsync(reviewId, userId);
+        }
+        public async Task<GetReviewsModel> CreateReviewFromQueue(string userId) {
+            return await _unitOfWork.Review.CreateReviewFromQueue(userId);
+        }
+        public async Task<List<Reviews>> GetRatedReviewsAsync(string userId)
+        {
+            return await _unitOfWork.Review.GetRatedReviewsAsync(userId);
+        }
+        public async Task<GetReviewsModel> GetPendingReviewAsync(string userId)
+        {
+            return await _unitOfWork.Review.GetPendingReviewAsync(userId);
         }
     }
 }

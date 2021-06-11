@@ -91,10 +91,10 @@
               3:16 PM Jul 7
             </div>
           </div>
-          <el-button v-if="currentUser.role!=='Admin' && comment.isSaved == true" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
+          <el-button v-if="(currentUser.role !== 'Admin' || isView) && comment.isSaved == true" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
             <i class="far fa-trash-alt" />
           </el-button>
-          <el-button v-if="currentUser.role!=='Admin' && comment.isSaved == true" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
+          <el-button v-if="(currentUser.role !== 'Admin' || isView) && comment.isSaved == true" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
             <i class="far fa-edit" />
           </el-button>
         </div>
@@ -274,7 +274,8 @@ export default {
       isTextbox: false,
       isRect: false,
       isRendering: false,
-      commentsNotSaved: []
+      commentsNotSaved: [],
+      isView: false
     }
   },
   computed: {
@@ -298,6 +299,7 @@ export default {
       this.questionId = +this.$route.params.questionId
       this.reviewId = +this.$route.params.reviewId
       this.documentId = +this.$route.params.docId
+      this.isView = this.$route.params.isViewOrRate === 'view' || this.$route.params.isViewOrRate === 'rate'
       this.RENDER_OPTIONS.documentId = this.documentId
     }
   },
@@ -321,7 +323,7 @@ export default {
       // this.ScaleAndRotate();
     })
 
-    if (this.currentUser.role === 'Admin') {
+    if (this.currentUser.role === 'Admin' || this.isView) {
       document.getElementById('viewerContainer').style.userSelect = 'none'
       this.$refs.toolBar.disableAnnotationCreate()
       this.disableToolbarSubmit()
@@ -762,7 +764,7 @@ export default {
             var posYY = parseInt(rect.top) + rect.height + 10
             deleteTool.style = 'position: absolute; top: ' + posYY + 'px; left: ' + posXX + 'px;'
           }
-        } else if (type == 'highlight' && this.currentUser.role != 'Admin') {
+        } else if (type == 'highlight' && (this.currentUser.role != 'Admin' && !this.isView)) {
           this.colorChosen = target.getAttribute('stroke')
           uuid = target.getAttribute('data-pdf-annotate-id')
           this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
@@ -850,7 +852,7 @@ export default {
             const endPos = gTop + commentCards[this.order].offsetHeight
             if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
           }
-        } else if (type == 'area' && this.currentUser.role != 'Admin') {
+        } else if (type == 'area' && (this.currentUser.role != 'Admin' && !this.isView)) {
           target.classList.add('rectangle-selected')
           this.isRect = true
           this.isTextbox = null
@@ -872,7 +874,7 @@ export default {
             const posY = parseInt(rect.top) + parseInt(target.getAttribute('height')) * this.RENDER_OPTIONS.scale + 10
             rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
           }
-        } else if (type == 'textbox' && this.currentUser.role != 'Admin') {
+        } else if (type == 'textbox' && (this.currentUser.role != 'Admin' && !this.isView)) {
           this.isTextbox = target
           this.isRect = false
           this.colorChosen = target.getAttribute('stroke')

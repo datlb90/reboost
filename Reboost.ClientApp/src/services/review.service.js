@@ -13,6 +13,9 @@ const reviewService = {
   userReviewAuth(reviewId) {
     return http.get(`/review/${reviewId}/auth`).then(rs => rs)
   },
+  revieweeReviewAuth(revieweeId) {
+    return http.get(`/review/reviewee/${revieweeId}/auth`).then(rs => rs)
+  },
   raterApprovedCheck() {
     return http.post(`/review/rater/auth`).then(rs => rs.data)
   },
@@ -57,6 +60,24 @@ const reviewService = {
   },
   getOrCreateReviewByRequestId(id) {
     return http.get(`/review/request/${id}`).then(rs => rs.data)
+  },
+  getOrCreateReviewBySubmissionId(id) {
+    return http.get(`/review/submission/${id}`).then(rs => rs.data)
+  },
+  createReviewRating(data) {
+    return http.post(`/review/reviewRating`, data).then(rs => rs.data)
+  },
+  getReviewRating(reviewId) {
+    return http.get(`/review/reviewRating/${reviewId}`).then(rs => rs.data)
+  },
+  newRequest() {
+    return http.get(`/review/new-review`).then(rs => rs.data)
+  },
+  getUnratedReview() {
+    return http.get('/review/unrated').then(rs => rs.data)
+  },
+  getPendingReview() {
+    return http.get('/review/pending').then(rs => rs.data)
   }
 }
 
