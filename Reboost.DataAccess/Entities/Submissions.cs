@@ -18,7 +18,9 @@ namespace Reboost.DataAccess.Entities
         public int DocId { get; set; }
         public string Type { get; set; }
         public System.DateTime SubmittedDate { get; set; }
+        public System.DateTime UpdatedDate { get; set; }
         public int TimeSpentInSeconds { get; set; }
+        public string Status { get; set; }
 
         public virtual Documents Document { get; set; }
         public virtual Questions Question { get; set; }

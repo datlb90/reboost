@@ -88,7 +88,7 @@
                   <span style="padding:5px 0px;font-weight:700;font-size:20px;">{{ currentUser.username }}</span>
                   <span>Email: {{ currentUser.email }}</span>
                   <span>Role: {{ currentUser.role }}</span>
-                  <span>Rating: {{ raterRating }}</span>
+                  <span>Rating: {{ toFix(raterRating) }} <i class="fas fa-star" /></span>
                 </div>
                 <!-- <el-dropdown-item>Action 1</el-dropdown-item>
                 <el-dropdown-item>Action 2</el-dropdown-item>
@@ -155,6 +155,9 @@ export default {
       } else if (action === 'selectTest') {
         this.$router.push('/SelectYourTest')
       }
+    },
+    toFix(number) {
+      return Number((number).toFixed(1))
     }
   }
 }

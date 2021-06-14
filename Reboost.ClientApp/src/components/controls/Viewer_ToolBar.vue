@@ -155,34 +155,8 @@
     <!-- Submit button -->
     <div id="submit-container" class="submit-button" style="align-items: center;">
       <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
-      <el-button v-if="isRate" :disabled="isRated" type="primary" size="mini" @click="dialogVisible = true">Rate</el-button>
-      <el-button v-if="!isRate" :disabled="readOnly" type="primary" size="mini" @click="submitReview()">Submit</el-button>
+      <el-button :disabled="readOnly" type="primary" size="mini" @click="submitReview()">Submit</el-button>
     </div>
-    <el-dialog
-      title="Rating review"
-      :visible.sync="dialogVisible"
-      width="30%"
-      center
-    >
-      <div style="display:flex; padding: 5px">
-        <span style="padding-right:10px">Rate: </span>
-        <el-rate v-if="isRate" v-model="rateValue" :allow-half="true" :disabled="isRated" />
-      </div>
-      <div style="padding:5px">
-        <span style="margin: 10px 0">Comment</span>
-        <el-input
-          v-model="comment"
-          type="textarea"
-          :autosize="{ minRows: 2, maxRows: 4}"
-          placeholder="Your comment here..."
-        />
-      </div>
-
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="rateReviewer()">Rate</el-button>
-      </span>
-    </el-dialog>
 
   </div>
 </template>
@@ -191,7 +165,6 @@
 import ColorPicker from './ColorPicker'
 import UI from '@/pdfjs/UI'
 import ReviewVue from '@/views/learner/Review.vue'
-import reviewService from '@/services/review.service.js'
 export default ({
   name: 'ToolBar',
   components: {
@@ -221,12 +194,7 @@ export default ({
       maxScale: 2,
       disableAnnotation: false,
       showChevronScroll: false,
-      clickedAnnotation: null,
-      rateValue: 0,
-      isRate: false,
-      isRated: false,
-      dialogVisible: false,
-      comment: ''
+      clickedAnnotation: null
     }
   },
   computed: {
@@ -237,17 +205,8 @@ export default ({
   async mounted() {
     this.initTextSizeTool()
     localStorage.removeItem(`${this.documentid}/tooltype`)
-    if (this.isRate) {
-      reviewService.getReviewRating(this.$route.params.reviewId).then(rs => {
-        if (rs) {
-          this.rateValue = rs.rate
-          this.isRated = true
-        }
-      })
-    }
   },
   beforeMount() {
-    this.isRate = this.$route.params.isViewOrRate === 'rate'
   },
   beforeCreate: function() {
   },
@@ -561,18 +520,6 @@ export default ({
     showTextTool() {
       const textTool = document.getElementById('textTool')
       textTool.style.display = 'flex'
-    },
-    rateReviewer() {
-      reviewService.createReviewRating({
-        ReviewId: +this.$route.params.reviewId,
-        Rate: parseFloat(this.rateValue),
-        Comment: this.comment
-      }).then(r => {
-        if (r) {
-          this.isRated = true
-          this.dialogVisible = false
-        }
-      })
     }
   }
 })

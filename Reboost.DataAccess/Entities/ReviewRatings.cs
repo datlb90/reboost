@@ -15,7 +15,7 @@ namespace Reboost.DataAccess.Entities
         [Required]
         public decimal Rate { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Comment is required")]
         public string Comment { get; set; }
     }
 }

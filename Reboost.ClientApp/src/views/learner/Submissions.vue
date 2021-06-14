@@ -1,5 +1,5 @@
 <template>
-  <div style="margin-top:25px;">
+  <div id="submission" style="margin-top:25px;">
     <el-row class="row-flex">
       <el-col :span="15">
         <h3>My Subsmissions</h3>
@@ -15,6 +15,7 @@
               prop="id"
               label="Id"
               align="center"
+              width="50"
             />
             <el-table-column
               prop="question"
@@ -27,7 +28,7 @@
               align="center"
             >
               <template slot-scope="scope">
-                <el-tag type="success">{{ scope.row.status }}</el-tag>
+                <el-tag :type="getStatusVariant(scope.row.status)">{{ scope.row.status }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column
@@ -46,7 +47,12 @@
             </el-table-column>
             <el-table-column align="center" label="Actions">
               <template slot-scope="scope">
-                <span> <el-button size="mini" @click="actionClick(scope.row)">{{ scope.row.action }}</el-button></span>
+                <div class="action-column-cell">
+                  <el-button size="mini" @click="actionClick(scope.row.action, scope.row)">{{ scope.row.action }}</el-button>
+                </div>
+                <div v-if="scope.row.status.trim() == 'Submitted'" class="action-column-cell">
+                  <el-button size="mini" @click="actionClick('Request Review', scope.row)">Request Review</el-button>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -93,6 +99,20 @@ export default {
     this.onLoad()
   },
   methods: {
+    getStatusVariant(status) {
+      let type = 'primary'
+      switch (status.trim()) {
+        case 'Pending': type = 'danger'; break
+        case 'Completed': type = 'info'; break
+        case 'Submitted': type = 'default'; break
+        case 'Review Requested': type = 'warning'; break
+        case 'Reviewed': type = 'success'; break
+
+        default:
+          type = 'primary'
+      }
+      return type
+    },
     onLoad() {
       questionService.getSubmissionsByUserId(this.currentUser.id).then(rs => {
         if (rs) {
@@ -118,10 +138,9 @@ export default {
     loadList() {
       this.listSubmissionsPerPage = this.submissionsListCached.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
       this.total = this.submissionsListCached.length
-      console.log(this.listSubmissionsPerPage)
     },
-    actionClick(e) {
-      if (e.action === 'Request now') {
+    actionClick(action, e) {
+      if (action.trim() === 'Request Review') {
         // if (this.unRatedList.length > 0) {
         //   this.$notify.error({
         //     title: 'You have unrated review',
@@ -141,20 +160,18 @@ export default {
             message: 'Requested!',
             duration: 1000
           })
-          this.submissionsListCached.map(r => {
+          this.submissionsListCached.forEach(r => {
             if (r.id === e.id) {
-              r.status = 'Requested'
+              r.status = 'Review Requested'
               r.action = 'View'
             }
           })
           this.loadList()
         })
         // }
-      } else if (e.action === 'View') {
-        reviewService.getOrCreateReviewBySubmissionId(e.id).then(rs => {
-          this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}/view`)
-        })
-      } else {
+      } else if (action == 'View Submission') {
+        this.$router.push(`PracticeWriting/${e.questionId}`)
+      } else if (action == 'View Review') {
         reviewService.getOrCreateReviewBySubmissionId(e.id).then(rs => {
           this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}/rate`)
         })
@@ -175,5 +192,16 @@ h3{
 .pagination{
   margin: 20px;
   justify-content: center;
+}
+.action-column-cell{
+  width: 100%;
+}
+.action-column-cell > button{
+  width: 100%;
+}
+</style>
+<style>
+#submission .el-table .cell {
+    text-overflow: clip !important;
 }
 </style>

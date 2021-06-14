@@ -13,4 +13,17 @@ namespace Reboost.Shared
         public const string REVISIONCOMPLETED = "RevisionCompleted";
         public const string REVISION = "Revision";
     }
+    public static class SubmissionStatus {
+        public const string PENDING = "Pending";
+        public const string SUBMITTED = "Submitted";
+        public const string REVIEW_REQUESTED = "Review Requested";
+        public const string REVIEWED = "Reviewed";
+        public const string COMPLETED = "Completed";
+    }
+    public static class ReviewRequestStatus
+    {
+        public const string COMPLETED = "Completed";
+        public const string REVIEW_REQUETED = "Review Requested";
+        public const string RATED = "Rated";
+    }
 }

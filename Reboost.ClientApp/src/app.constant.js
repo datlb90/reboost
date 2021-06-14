@@ -53,3 +53,10 @@ export const UserRole = {
   LEARNER: 'Learner',
   RATER: 'Rater'
 }
+export const SubmissionStatus = {
+  PENDING: 'Pending',
+  SUBMITTED: 'Submitted',
+  REVIEW_REQUESTED: 'Review Requested',
+  REVIEWED: 'Reviewed',
+  COMPLETED: 'Completed'
+}

@@ -52,6 +52,7 @@ namespace Reboost.Shared
     {
         public int Id { get; set; }
         public DateTime TimeSubmitted { get; set; }
+        public int QuestionId { get; set; }
         public string Question { get; set; }
         public string Status { get; set; }
         public int TimeTaken { get; set; }

@@ -37,7 +37,29 @@ namespace Reboost.WebApi.Controllers
                 QuestionId = model.QuestionId,
                 SubmittedDate = DateTime.Now,
                 Type = "Submission",
-                TimeSpentInSeconds = model.TimeSpentInSeconds
+                TimeSpentInSeconds = model.TimeSpentInSeconds,
+                Status = "Submitted",
+                UpdatedDate = DateTime.Now
+            });
+
+            return newDoc;
+        }
+
+        [HttpPost]
+        [Route("pending")]
+        public async Task<Documents> CreatePending(DocumentRequestModel model)
+        {
+            var newDoc = await _docService.Create(model);
+            await _submissionService.CreateAsync(new Submissions
+            {
+                DocId = newDoc.Id,
+                UserId = model.UserId,
+                QuestionId = model.QuestionId,
+                SubmittedDate = DateTime.Now,
+                Type = "Pending",
+                TimeSpentInSeconds = model.TimeSpentInSeconds,
+                Status = "Pending",
+                UpdatedDate = DateTime.Now
             });
 
             return newDoc;

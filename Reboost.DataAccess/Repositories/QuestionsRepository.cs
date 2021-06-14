@@ -194,7 +194,7 @@ namespace Reboost.DataAccess.Repositories
                             Section = task.Name,
                             Count = 0
                         };
-            
+
             var listQuery = new List<SummaryPerUser>();
             foreach (var item in query)
             {
@@ -212,7 +212,7 @@ namespace Reboost.DataAccess.Repositories
                 newquery.Count = item.Count;
                 foreach (var _item in listQuery)
                 {
-                    if(newquery.Section == _item.Section && _item.Count>0)
+                    if (newquery.Section == _item.Section && _item.Count > 0)
                     {
                         newquery.Count = 1;
                     }
@@ -225,12 +225,12 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<List<string>> GetTestForCurrentUsers(string UserId)
         {
-            return await(from us in ReboostDbContext.UserScores
-                         join ts in ReboostDbContext.TestSections on us.SectionId equals ts.Id
-                         join t in ReboostDbContext.Tests on ts.TestId equals t.Id
-                         where us.UserId == UserId
-                         group t by t.Name into g
-                         select g.Key).ToListAsync();
+            return await (from us in ReboostDbContext.UserScores
+                          join ts in ReboostDbContext.TestSections on us.SectionId equals ts.Id
+                          join t in ReboostDbContext.Tests on ts.TestId equals t.Id
+                          where us.UserId == UserId
+                          group t by t.Name into g
+                          select g.Key).ToListAsync();
         }
         public async Task<List<int>> GetQuestionCompletedIdByUser(string UserId)
         {
@@ -244,45 +244,66 @@ namespace Reboost.DataAccess.Repositories
         {
             return await (from s in ReboostDbContext.Samples
                           join q in ReboostDbContext.Questions on s.QuestionId equals q.Id
-                          where q.Id == questionId 
-                          select new SampleForQuestion {  Id = s.Id, QuestionId = s.QuestionId, SampleText = s.SampleText, BandScore = s.BandScore, Comment = s.Comment, LastActivityDate = s.LastActivityDate, Title = q.Title }).ToListAsync();
-            
+                          where q.Id == questionId
+                          select new SampleForQuestion { Id = s.Id, QuestionId = s.QuestionId, SampleText = s.SampleText, BandScore = s.BandScore, Comment = s.Comment, LastActivityDate = s.LastActivityDate, Title = q.Title }).ToListAsync();
+
+        }
+        private string GetAction(string status)
+        {
+            switch (status.Trim())
+            {
+                case SubmissionStatus.PENDING:
+                case SubmissionStatus.SUBMITTED:
+                case SubmissionStatus.COMPLETED:
+                case SubmissionStatus.REVIEW_REQUESTED: return "View Submission";
+                case SubmissionStatus.REVIEWED: return "View Review";
+                default: return "View Submission";
+            }
         }
         public async Task<List<SubmissionsModel>> GetAllSubmissionByUserIdAsync(string userId)
         {
-            var listReviewRequest = await (from r in ReboostDbContext.ReviewRequests 
-                                    where r.UserId == userId
-                                    select r
+            
+            var listReviewRequest = await (from r in ReboostDbContext.ReviewRequests
+                                           where r.UserId == userId
+                                           select r
                                     ).ToListAsync();
 
-            var listsubmissions = await (from q in ReboostDbContext.Questions
-                                        join s in ReboostDbContext.Submissions on q.Id equals s.QuestionId
-                                        where s.UserId == userId
-                                        select new SubmissionsModel
-                                        {
-                                            Id = s.Id,
-                                            Question = q.Title,
-                                            Status = "Submitted",
-                                            Action = "Request now",
-                                            TimeTaken = s.TimeSpentInSeconds,
-                                            TimeSubmitted = s.SubmittedDate
-                                        }).ToListAsync();
-            foreach(ReviewRequests r in listReviewRequest)
-            {
-                int flag = listsubmissions.Any(s => s.Id == r.SubmissionId && r.Status == "Completed") ? 2 : listsubmissions.Any(s => s.Id == r.SubmissionId) ? 1 : 0;
-                if(flag == 2)
-                {
-                    int index = listsubmissions.FindIndex(s => s.Id == r.SubmissionId);
-                    listsubmissions[index].Action = "View Review";
-                    listsubmissions[index].Status = "Reviewed";
-                }
-                else if (flag == 1)
-                {
-                    int index = listsubmissions.FindIndex(s => s.Id == r.SubmissionId);
-                    listsubmissions[index].Action = "View";
-                    listsubmissions[index].Status = "Requested";
-                }
-            }
+            var listsubmissions = await (from s in ReboostDbContext.Submissions
+                                         join q in ReboostDbContext.Questions on s.QuestionId equals q.Id
+                                         where s.UserId == userId
+                                         orderby s.UpdatedDate descending, s.SubmittedDate descending
+                                         select new SubmissionsModel
+                                         {
+                                             Id = s.Id,
+                                             QuestionId = q.Id,
+                                             Question = q.Title,
+                                             Status = s.Status,
+                                             Action =
+                                                (s.Status == SubmissionStatus.PENDING ||
+                                                s.Status == SubmissionStatus.SUBMITTED ||
+                                                s.Status == SubmissionStatus.REVIEW_REQUESTED) ? "View Submission" :
+                                                (s.Status == SubmissionStatus.REVIEWED || 
+                                                s.Status == SubmissionStatus.COMPLETED) ? "View Review" : "View Submission",
+                                             TimeTaken = s.TimeSpentInSeconds,
+                                             TimeSubmitted = s.SubmittedDate
+                                         }).ToListAsync();
+
+            //foreach (ReviewRequests r in listReviewRequest)
+            //{
+            //    //int flag = listsubmissions.Any(s => s.Id == r.SubmissionId && r.Status == "Completed") ? 2 : listsubmissions.Any(s => s.Id == r.SubmissionId) ? 1 : 0;
+            //    //if (listsubmissions.Any(s => s.Id == r.SubmissionId && r.Status == "Completed"))
+            //    //{
+            //    //    int index = listsubmissions.FindIndex(s => s.Id == r.SubmissionId);
+            //    //    listsubmissions[index].Action = "View Review";
+            //    //    listsubmissions[index].Status = "Reviewed";
+            //    //}
+            //    //else if (listsubmissions.Any(s => s.Id == r.SubmissionId))
+            //    //{
+            //    //    int index = listsubmissions.FindIndex(s => s.Id == r.SubmissionId);
+            //    //    listsubmissions[index].Action = "View Submission";
+            //    //    listsubmissions[index].Status = "Requested";
+            //    //}
+            //}
             return listsubmissions;
         }
     }
