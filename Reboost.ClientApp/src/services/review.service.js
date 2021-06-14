@@ -49,6 +49,9 @@ const reviewService = {
   getReviewsById() {
     return http.get('/review/getById').then(rs => rs.data)
   },
+  getById(id) {
+    return http.get(`/review/${id}`).then(rs => rs.data)
+  },
   changeReviewStatus(id, status) {
     return http.post(`/review/status/change/${id}`, { status }).then(rs => rs.data)
   },

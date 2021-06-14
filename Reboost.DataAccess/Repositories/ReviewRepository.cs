@@ -36,13 +36,16 @@ namespace Reboost.DataAccess.Repositories
         Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
         Task<ReviewRequests> GetReviewRequestBySubmissionId(int submissionId, string userId);
         Task<int> CheckRevieweeReviewValidationAsync(User user, int reviewId);
-        Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data);
-        Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId, string userId);
+        Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId);
+        Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId);
 
         Task<RequestQueue> AddRequestQueue(RequestQueue data, string userID);
         Task<GetReviewsModel> CreateReviewFromQueue(string userID);
         Task<List<Reviews>> GetRatedReviewsAsync(string userId);
         Task<GetReviewsModel> GetPendingReviewAsync(string userId);
+        Task<Reviews> GetReviewByIdAsync(int id);
+
+        Task<IEnumerable<Reviews>> GetUnRatedReviewOfUser(string userId);
     }
 
     public class ReviewRepository : IReviewRepository
@@ -119,7 +122,7 @@ namespace Reboost.DataAccess.Repositories
                 return "Current Review not existed";
             }
 
-            ReviewRequests requests = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
+            ReviewRequests request = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
 
             if (review.Status.Contains(RaterStatus.REVISION))
             {
@@ -153,10 +156,18 @@ namespace Reboost.DataAccess.Repositories
                 }
             }
 
-            if (requests != null)
+            if (request != null)
             {
-                requests.Status = "Completed";
-                requests.CompletedDateTime = DateTime.Now;
+                //Update submission status to Reviewed
+                var submission = db.Submissions.Where(s => s.Id == request.SubmissionId).FirstOrDefault();
+                if(submission != null)
+                {
+                    submission.UpdatedDate = DateTime.Now;
+                    submission.Status = SubmissionStatus.REVIEWED;
+                }
+
+                request.Status = ReviewRequestStatus.COMPLETED;
+                request.CompletedDateTime = DateTime.Now;
             }
             db.ReviewData.AddRange(data);
             await db.SaveChangesAsync();
@@ -309,6 +320,9 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<ReviewRequests> CreateRequestAsync(ReviewRequests request)
         {
+            Submissions sub = await db.Submissions.Where(s => s.Id == request.SubmissionId).FirstOrDefaultAsync();
+            sub.Status = ReviewRequestStatus.REVIEW_REQUETED;
+
             await db.ReviewRequests.AddAsync(request);
             await db.SaveChangesAsync();
             return await Task.FromResult(request);
@@ -383,16 +397,83 @@ namespace Reboost.DataAccess.Repositories
             }
             return 0;
         }
-        public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data)
+        public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId)
         {
-            
+            var review = db.Reviews.Where(r => r.Id == data.ReviewId).FirstOrDefault();
+            data.UserId = review.ReviewerId; //Assign ratee id
+
             await db.ReviewRatings.AddAsync(data);
+            
+
+
+            //Update user rate (UserRanks)
+            decimal rate = 0;
+            var userRates = db.ReviewRatings.Where(r => r.UserId == review.ReviewerId).ToList();
+
+            //because record has just added has not been committed to DB, need to add them to the list to calculate average
+            userRates.Add(new ReviewRatings { Rate = data.Rate });
+
+            rate = userRates.Average(r => r.Rate);
+
+            UserRanks rank = await db.UserRanks.Where(r => r.UserId == review.ReviewerId).FirstOrDefaultAsync();
+            if(rank == null)
+            {
+                await db.UserRanks.AddAsync(new UserRanks { UserId = review.ReviewerId, AverageReviewRate = data.Rate });
+            }
+            else
+            {
+                rank.AverageReviewRate = rate;
+            }
+
+            //List<ReviewRequests> requests = await db.ReviewRequests.Where(r => r.UserId == data.UserId).ToListAsync();
+            //List<Reviews> userRatedList = await this.GetRatedReviewsAsync(data.UserId);
+
+            //bool pendingFlag = true;
+            //if(requests.Count >0 && requests.Count == userRatedList.Count)
+            //{
+            //    foreach(ReviewRequests r in requests)
+            //    {
+            //        r.Status = "Submitted";
+            //        Submissions submission = await db.Submissions.FindAsync(r.SubmissionId);
+            //        submission.Type = "Completed";
+            //        await db.SaveChangesAsync();
+            //    }   
+            //}
+
+            
+
+            //Update submission status as review has been rated
+            var requestId = db.Reviews.Where(r => r.Id == data.ReviewId).FirstOrDefault()?.RequestId;
+            var request = db.ReviewRequests.Where(r => r.Id == requestId).FirstOrDefault();
+            if(requestId != null)
+            {
+                var submission = db.Submissions.Where(s => s.Id == request.SubmissionId).FirstOrDefault();
+                submission.Status = SubmissionStatus.COMPLETED;
+
+                request.Status = ReviewRequestStatus.RATED;
+            }
+
+
             await db.SaveChangesAsync();
+
+            //If there is no un-rated reviews left, change all Pending submission to Submitted
+            var unratedReviews = await GetUnRatedReviewOfUser(raterId);
+            if (unratedReviews.Count() == 0)
+            {
+                var pendingSubmissions = db.Submissions.Where(s => s.UserId == raterId && s.Status == SubmissionStatus.PENDING);
+                foreach (var sub in pendingSubmissions)
+                {
+                    sub.Status = SubmissionStatus.SUBMITTED;
+                }
+            }
+
+            await db.SaveChangesAsync();
+
             return data;
         }
-        public async Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId, string userId)
+        public async Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId)
         {
-            var rs = await db.ReviewRatings.Where(r => r.ReviewId == reviewId && r.UserId == userId).FirstOrDefaultAsync();
+            var rs = await db.ReviewRatings.Where(r => r.ReviewId == reviewId).FirstOrDefaultAsync();
             return rs;
         }
         public async Task<RequestQueue> AddRequestQueue(RequestQueue data, string userID)
@@ -423,25 +504,26 @@ namespace Reboost.DataAccess.Repositories
         public async Task<GetReviewsModel> CreateReviewFromQueue(string userID)
         {
             decimal rate = 0;
-            var userRates = await db.ReviewRatings.Where(r => r.UserId == userID).ToListAsync();
+            var userRate = await db.UserRanks.Where(r => r.UserId == userID).FirstOrDefaultAsync();
 
-            if(userRates.Count > 0)
+            if(userRate != null)
             {
-                rate = userRates.Average(r => r.Rate);
+                rate = userRate.AverageReviewRate;
             }
-            
-            var request = await (from queue in db.RequestQueue
-                                 where queue.MinimumRate <= rate && queue.Status == 0
-                                 orderby queue.Priority descending
+
+            var request = await (from queue in db.RequestQueue 
+                                 join rq in db.ReviewRequests on queue.RequestId equals rq.Id
+                                 where queue.MinimumRate <= rate && queue.Status == 0 && rq.Status != "Pending"
+                                 orderby queue.Priority descending, queue.RequestedDatetime ascending
                                  select queue).FirstOrDefaultAsync();
 
-            //var request = await db.RequestQueue
+            //var request = db.RequestQueue
             //    .FromSqlRaw(@"UPDATE TOP(1) RequestQueue WITH (UPDLOCK, READPAST)
             //                SET Status = 1
             //                OUTPUT inserted.*
-            //                FROM RequestQueue rv
-            //                INNER JOIN ReviewRequest rq ON ??????
-            //                WHERE Status = 0 AND minimunRate <= rate AND rq.status != 'Pending'").FirstOrDefaultAsync();
+            //                FROM RequestQueue rq
+            //                INNER JOIN ReviewRequests rr ON rq.RequestId = rr.Id 
+            //                WHERE rq.Status = 0 AND minimumRate <= " + rate + " AND rr.Status != 'Pending'").AsEnumerable().FirstOrDefault();
 
             if (request != null)
             {
@@ -485,7 +567,7 @@ namespace Reboost.DataAccess.Repositories
             var pending = await (from r in db.Reviews
                                  join request in db.ReviewRequests on r.RequestId equals request.Id
                                  join queue in db.RequestQueue on request.Id equals queue.RequestId
-                                 where r.ReviewerId == userId && request.Status != "Completed" && queue.Status==1
+                                 where r.ReviewerId == userId && request.Status != "Completed" && request.Status != "Rated" && queue.Status==1
                                  select r).FirstOrDefaultAsync();
             if (pending != null)
             {
@@ -495,5 +577,20 @@ namespace Reboost.DataAccess.Repositories
 
             return null;
         } 
+
+        public async Task<IEnumerable<Reviews>> GetUnRatedReviewOfUser(string userId)
+        {
+            return await (from rv in db.Reviews
+                          join rq in db.ReviewRequests on rv.RequestId equals rq.Id
+                          join rt in db.ReviewRatings on rv.Id equals rt.ReviewId into completedReviews
+                          from rated in completedReviews.DefaultIfEmpty()
+                          where rv.RevieweeId == userId && rq.Status == ReviewRequestStatus.COMPLETED && rated == null
+                          select rv).ToListAsync();
+        }
+        
+        public async Task<Reviews> GetReviewByIdAsync(int id)
+        {
+            return await db.Reviews.FindAsync(id);
+        }
     }
 }

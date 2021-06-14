@@ -30,6 +30,7 @@ namespace Reboost.Service.Services
         Task<string> CreateNewSampleReviewDocumentAsync(string type, User user);
         Task<List<Reviews>> GetReviewsAsync();
         Task<List<Reviews>> GetReviewsByUserIdAsync(string userId);
+        Task<Reviews> GetReviewByIdAsync(int id);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
         Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
         Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId);
@@ -37,11 +38,11 @@ namespace Reboost.Service.Services
         Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
         Task<int> CheckRevieweeReviewValidationAsync(User user, int reviewId);
         Task<ReviewRequests> GetReviewRequestBySubmissionId(int requestId, string userId);
-        Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data);
-        Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId, string userId);
+        Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId);
+        Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId);
         Task<RequestQueue> AddRequestQueue(RequestQueue data, string userId);
         Task<GetReviewsModel> CreateReviewFromQueue(string userId);
-        Task<List<Reviews>> GetRatedReviewsAsync(string userId);
+        Task<IEnumerable<Reviews>> GetRatedReviewsAsync(string userId);
         Task<GetReviewsModel> GetPendingReviewAsync(string userId);
 
     }
@@ -162,24 +163,28 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.CheckRevieweeReviewValidationAsync(user, reviewId);
         }
-        public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data)
+        public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId)
         {
-            return await _unitOfWork.Review.CreateReviewRatingAsync(data);
+            return await _unitOfWork.Review.CreateReviewRatingAsync(data, raterId);
         }
-        public async Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId, string userId)
+        public async Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId)
         {
-            return await _unitOfWork.Review.GetReviewRatingsByReviewIdAsync(reviewId, userId);
+            return await _unitOfWork.Review.GetReviewRatingsByReviewIdAsync(reviewId);
         }
         public async Task<GetReviewsModel> CreateReviewFromQueue(string userId) {
             return await _unitOfWork.Review.CreateReviewFromQueue(userId);
         }
-        public async Task<List<Reviews>> GetRatedReviewsAsync(string userId)
+        public async Task<IEnumerable<Reviews>> GetRatedReviewsAsync(string userId)
         {
-            return await _unitOfWork.Review.GetRatedReviewsAsync(userId);
+            return await _unitOfWork.Review.GetUnRatedReviewOfUser(userId);
         }
         public async Task<GetReviewsModel> GetPendingReviewAsync(string userId)
         {
             return await _unitOfWork.Review.GetPendingReviewAsync(userId);
+        }
+        public async Task<Reviews> GetReviewByIdAsync(int id)
+        {
+            return await _unitOfWork.Review.GetReviewByIdAsync(id);
         }
     }
 }

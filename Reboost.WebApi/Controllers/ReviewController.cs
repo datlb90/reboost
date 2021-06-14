@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using Reboost.Service.Services;
@@ -20,10 +21,13 @@ namespace Reboost.WebApi.Controllers
 
         private IUserService _userService;
         private IRaterService _raterService;
-        public ReviewController(IReviewService service, IUserService userService, IRaterService raterService) : base(service)
+        private ReboostDbContext db;
+
+        public ReviewController(IReviewService service, IUserService userService, IRaterService raterService, ReboostDbContext ctx ) : base(service)
         {
             _userService = userService;
             _raterService = raterService;
+            db = ctx;
         }
         [Authorize]
         [HttpGet("getAnnotation/{docId}/{reviewId}")]
@@ -183,6 +187,15 @@ namespace Reboost.WebApi.Controllers
             
             return Ok(rs);
         }
+
+        [Authorize]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetReviewByIdAsync(int id)
+        {
+            var rs = await _service.GetReviewByIdAsync(id);
+            return Ok(rs);
+        }
+
         [Authorize]
         [HttpPost("request")]
         public async Task<IActionResult> CreateReviewRequestAsync([FromBody] ReviewRequests request)
@@ -193,6 +206,8 @@ namespace Reboost.WebApi.Controllers
 
             request.UserId = currentUser.Id;
             var rs = await _service.CreateRequestAsync(request);
+
+            //Add new request to request queue
             await _service.AddRequestQueue(new RequestQueue { RequestId = rs.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
             return Ok(rs);
         }
@@ -227,6 +242,11 @@ namespace Reboost.WebApi.Controllers
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
             var request = await _service.GetReviewRequestBySubmissionId(id, currentUser.Id);
+            if (request == null)
+            {
+                request = await _service.CreateRequestAsync(new ReviewRequests() { UserId = currentUser.Id, SubmissionId = id } );
+                await _service.AddRequestQueue(new RequestQueue { RequestId = request.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
+            }
             var rs = await _service.GetOrCreateReviewByReviewRequestAsync(request.Id, currentUser.Id);
             return Ok(rs);
         }
@@ -237,20 +257,17 @@ namespace Reboost.WebApi.Controllers
             var currentUserClaim = HttpContext.User;
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
+            
+            //data.UserId = currentUser.Id;
 
-            data.UserId = currentUser.Id;
-            var rs = await _service.CreateReviewRatingAsync(data);
+            var rs = await _service.CreateReviewRatingAsync(data, currentUser.Id);
             return Ok(rs);
         }
         [Authorize]
         [HttpGet("reviewRating/{reviewId}")]
         public async Task<IActionResult> GetReviewRatingByReviewIdAsync([FromRoute] int reviewId)
         {
-            var currentUserClaim = HttpContext.User;
-            var email = currentUserClaim.FindFirst("Email");
-            var currentUser = await _userService.GetByEmailAsync(email.Value);
-
-            var rs = await _service.GetReviewRatingsByReviewIdAsync(reviewId, currentUser.Id);
+            var rs = await _service.GetReviewRatingsByReviewIdAsync(reviewId);
             return Ok(rs);
         }
         [Authorize]

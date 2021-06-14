@@ -3,12 +3,15 @@
 
     <div id="content-wrapper" style="background: rgb(248, 249, 250); height: inherit; width: 100%;position: absolute; overflow: unset;">
       <div id="left-panel" :class="{'hideQuestion': !showQuestion}">
-        <el-tabs type="border-card">
-          <el-tab-pane label="Question">
+        <el-tabs v-model="selectedTab" type="border-card">
+          <el-tab-pane name="question" label="Question">
             <tabQuestion ref="tabQuestion" :questionid="questionId" :reviewid="reviewId" />
           </el-tab-pane>
-          <el-tab-pane label="Rubric">
+          <el-tab-pane name="rubric" label="Rubric">
             <tabRubric ref="tabRubric" :current-user="currentUser" :questionid="questionId" :reviewid="reviewId" @setStatusText="setStatusText" />
+          </el-tab-pane>
+          <el-tab-pane v-if="isRate" name="rate" label="Rate">
+            <tabRate ref="tabRate" :reviewid="reviewId" />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -184,6 +187,7 @@ import PDFJS from 'pdf-dist/webpack.js'
 import ToolBar from '../../components/controls/Viewer_ToolBar'
 import TabQuestion from './Review_TabQuestion'
 import TabRubric from './Review_TabRubric'
+import TabRate from './Review_TabRate'
 import TextToolGroup from '../../components/controls/TextToolGroup'
 // PDFJSAnnotate
 import PDFJSAnnotate from '@/pdfjs/PDFJSAnnotate'
@@ -213,7 +217,8 @@ export default {
     'toolbar': ToolBar,
     'tabQuestion': TabQuestion,
     'tabRubric': TabRubric,
-    'textToolGroup': TextToolGroup
+    'textToolGroup': TextToolGroup,
+    'tabRate': TabRate
   },
   data() {
     return {
@@ -275,7 +280,12 @@ export default {
       isRect: false,
       isRendering: false,
       commentsNotSaved: [],
-      isView: false
+      isView: false,
+      isRate: false,
+      rateValue: 0,
+      rateComment: null,
+      selectedTab: 'question',
+      isReviewAuth: false
     }
   },
   computed: {
@@ -301,6 +311,8 @@ export default {
       this.documentId = +this.$route.params.docId
       this.isView = this.$route.params.isViewOrRate === 'view' || this.$route.params.isViewOrRate === 'rate'
       this.RENDER_OPTIONS.documentId = this.documentId
+      this.isRate = this.$route.params.isViewOrRate === 'rate'
+      this.loadRate()
     }
   },
   async mounted() {
@@ -309,7 +321,6 @@ export default {
     localStorage.setItem(`${this.documentId}/tooltype`, 'cursor')
     localStorage.setItem(`${this.documentId}/color`, '#ff0000')
     PDFJSAnnotate.getStoreAdapter().clearAnnotations(this.documentId)
-
     // Render stuff
     this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId }).then(async() => {
       PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
@@ -323,7 +334,7 @@ export default {
       // this.ScaleAndRotate();
     })
 
-    if (this.currentUser.role === 'Admin' || this.isView) {
+    if (this.currentUser.role === 'Admin' || this.isView || this.isRate) {
       document.getElementById('viewerContainer').style.userSelect = 'none'
       this.$refs.toolBar.disableAnnotationCreate()
       this.disableToolbarSubmit()
@@ -331,7 +342,6 @@ export default {
       enableEdit()
     }
   },
-
   beforeCreate: function() {
     document.body.style = 'overflow: hidden'
   },
@@ -764,7 +774,7 @@ export default {
             var posYY = parseInt(rect.top) + rect.height + 10
             deleteTool.style = 'position: absolute; top: ' + posYY + 'px; left: ' + posXX + 'px;'
           }
-        } else if (type == 'highlight' && (this.currentUser.role != 'Admin' && !this.isView)) {
+        } else if (type == 'highlight' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
           this.colorChosen = target.getAttribute('stroke')
           uuid = target.getAttribute('data-pdf-annotate-id')
           this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
@@ -852,7 +862,7 @@ export default {
             const endPos = gTop + commentCards[this.order].offsetHeight
             if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
           }
-        } else if (type == 'area' && (this.currentUser.role != 'Admin' && !this.isView)) {
+        } else if (type == 'area' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
           target.classList.add('rectangle-selected')
           this.isRect = true
           this.isTextbox = null
@@ -874,7 +884,7 @@ export default {
             const posY = parseInt(rect.top) + parseInt(target.getAttribute('height')) * this.RENDER_OPTIONS.scale + 10
             rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
           }
-        } else if (type == 'textbox' && (this.currentUser.role != 'Admin' && !this.isView)) {
+        } else if (type == 'textbox' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
           this.isTextbox = target
           this.isRect = false
           this.colorChosen = target.getAttribute('stroke')
@@ -2119,7 +2129,7 @@ export default {
               message: 'Submitted!',
               duration: 2000
             })
-            this.$router.push('reviews')
+            this.$router.push('/reviews')
           } else {
             this.$notify.error({
               title: 'Submit failed',
@@ -2627,6 +2637,27 @@ export default {
     disableToolbarButtons() {
       this.activeButton = 'cursor'
       this.$refs.toolBar.disableButtons()
+    },
+    loadRate() {
+      if (this.isRate) {
+        reviewService.getReviewRating(this.$route.params.reviewId).then(rs => {
+          if (rs) {
+            this.selectedTab = 'rate'
+            this.$refs.tabRate.updateData({ value: rs.rate, comment: rs.comment, rated: true })
+          } else if (this.isReviewAuth) {
+            // this.$refs.tabRate.updateData({ value: 0, comment: 'Please wait for reviewee!', rated: true })
+            this.isRate = false
+          }
+        })
+      } else {
+        reviewService.getById(this.$route.params.reviewId).then(rs => {
+          if (rs && this.currentUser.id === rs.reviewerId) {
+            this.isReviewAuth = true
+            this.isRate = true
+            this.loadRate()
+          }
+        })
+      }
     }
     // End migration
   }

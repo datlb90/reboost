@@ -1,5 +1,5 @@
 <template>
-  <div style="margin-top:25px;">
+  <div id="reviews" style="margin-top:25px;">
     <el-row class="row-flex">
       <el-col :span="15">
         <div style="display: flex; justify-content:space-between">
@@ -40,7 +40,11 @@
               align="center"
               prop="reviewRequest.status"
               label="Status"
-            />
+            >
+              <template slot-scope="scope">
+                <el-tag :type="getStatusVariant(scope.row.reviewRequest.status)">{{ scope.row.reviewRequest.status }}</el-tag>
+              </template>
+            </el-table-column>
             <el-table-column
               label="Date Completed"
               align="center"
@@ -106,11 +110,9 @@ export default {
           this.reviewsList = rs
           this.reviewsListCached = [...this.reviewsList]
           this.loadList()
-          console.log('reviews', rs)
         }
       })
       reviewService.getPendingReview().then(r => {
-        console.log('pending review', r)
         this.pendingReview = r
       })
     },
@@ -148,6 +150,17 @@ export default {
     },
     onPendingClick() {
       this.$router.push({ name: PageName.REVIEW, params: { questionId: this.pendingReview.reviewRequest.submission.questionId, docId: this.pendingReview.reviewRequest.submission.docId, reviewId: this.pendingReview.reviewId }})
+    },
+    getStatusVariant(status) {
+      let type = 'primary'
+      switch (status.trim()) {
+        case 'In Progress': type = 'warning'; break
+        case 'Completed': type = 'success'; break
+
+        default:
+          type = 'primary'
+      }
+      return type
     }
   }
 }
@@ -164,5 +177,10 @@ h3{
 .pagination{
   margin: 20px;
   justify-content: center;
+}
+</style>
+<style>
+#reviews .el-table .cell {
+    text-overflow: unset !important;
 }
 </style>

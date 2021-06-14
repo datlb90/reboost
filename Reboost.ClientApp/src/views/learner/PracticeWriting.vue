@@ -346,16 +346,8 @@ export default {
       }
     },
     submit() {
-      if (this.unRatedList.length > 0) {
-        this.$notify({
-          title: 'Error',
-          message: 'You have some reviews have not rated yet. Please do rating all reviews.',
-          type: 'error',
-          duration: 1000
-        })
-        return
-      }
       localStorage.removeItem(this.idLocalStorage)
+
       if (!this.writingContent) {
         this.$notify({
           title: 'Error',
@@ -374,18 +366,35 @@ export default {
         questionId: +this.questionId,
         timeSpentInSeconds: this.timeSpent
       }
-      // console.log('SUBMIT DATA', data)
-      documentService.submitDocument(data).then(rs => {
-        this.$notify({
-          title: 'Success',
-          message: 'Submit success',
-          type: 'success',
-          duration: 1000
+
+      if (this.unRatedList.length > 0) {
+        data.status = 'Pending'
+        documentService.submitPendingDocument(data).then(rs => {
+          this.$notify({
+            title: 'Success',
+            message: 'Submit success',
+            type: 'success',
+            duration: 1000
+          })
+          this.writtingSubmitted = true
+          this.hasSubmitionForThisQuestion = true
+          this.timeSpent = 0
         })
-        this.writtingSubmitted = true
-        this.hasSubmitionForThisQuestion = true
-        this.timeSpent = 0
-      })
+      } else {
+        data.status = 'Submitted'
+        documentService.submitDocument(data).then(rs => {
+          this.$notify({
+            title: 'Success',
+            message: 'Submit success',
+            type: 'success',
+            duration: 1000
+          })
+          this.writtingSubmitted = true
+          this.hasSubmitionForThisQuestion = true
+          this.timeSpent = 0
+        })
+      }
+      // console.log('SUBMIT DATA', data)
     },
     toggleBtnShowTab() {
       this.isShowTimer = true

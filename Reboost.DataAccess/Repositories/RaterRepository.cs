@@ -95,19 +95,11 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<decimal> GetRaterRatingAsync(string UserID)
         {
-            var rs = await (from rr in ReboostDbContext.ReviewRatings
-                            join r in ReboostDbContext.Reviews on rr.ReviewId equals r.Id
-                            where r.ReviewerId == UserID
-                            select rr).ToListAsync();
-            if (rs.Count > 0)
-            {
-                decimal total = 0;
-                foreach (ReviewRatings r in rs)
-                {
-                    total += r.Rate;
-                }
+            var rs = await ReboostDbContext.UserRanks.Where(r => r.UserId == UserID).FirstOrDefaultAsync();
 
-                return (total / (rs.Count));
+            if (rs.AverageReviewRate > 0)
+            {
+                return rs.AverageReviewRate;
             }
             return 0;
         }
