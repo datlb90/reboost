@@ -139,7 +139,7 @@
               <span v-if="isShowCountWord && countWord != 0" style="margin-left: 15px;">Words: {{ countWord }}</span>
             </div>
             <div v-if="writtingSubmitted">
-              <el-tag type="success">Your writting has been successfully submitted. You can request a review now.</el-tag>
+              <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;">reviews.</a> </el-tag>
             </div>
             <div v-if="getQuestion != ''">
               <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit & Request Review</el-button>
@@ -148,12 +148,12 @@
                   Get Writting Preview
                 </el-button>
                 <el-dropdown-menu slot="dropdown" size="mini">
-                  <el-dropdown-item command="free">Free Peer Review</el-dropdown-item>
+                  <el-dropdown-item :disabled="isFreeRequested" command="free">Free Peer Review</el-dropdown-item>
                   <el-dropdown-item command="checkout">Pro Rater Review</el-dropdown-item>
                   <el-dropdown-item divided>View Review Sample</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
-              <el-button v-if="hasSubmitionForThisQuestion" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0) || (unRatedList.length > 0)" @click="submit()">Save</el-button>
+              <el-button v-if="hasSubmitionForThisQuestion" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Save</el-button>
             </div>
           </div>
           <div style="flex-grow: 1;">
@@ -222,7 +222,9 @@ export default {
       idLocalStorage: '',
       timeout: null,
       submissionId: null,
-      unRatedList: null
+      unRatedList: [],
+      isFreeRequested: false,
+      submittedMessage: 'Your writting has been successfully submitted. You can request a review now.'
     }
   },
   computed: {
@@ -315,10 +317,18 @@ export default {
         console.log('Current user submition for this question', rs)
         if (rs && rs.length > 0) {
           const latestSubmition = rs[0]
-          this.submissionId = rs[0]['id']
+          this.submissionId = rs[0]['submissions'][0]?.id
           this.writingContent = latestSubmition.text
           this.hasSubmitionForThisQuestion = true
           this.countWords()
+
+          if (this.submissionId) {
+            reviewService.getReviewRequestBySubmissionId(this.submissionId).then(rs => {
+              if (rs) {
+                this.isFreeRequested = true
+              }
+            })
+          }
         } else {
           if (localStorage.getItem(this.idLocalStorage) && localStorage.getItem(this.idLocalStorage) != '') {
             this.writingContent = localStorage.getItem(this.idLocalStorage)
@@ -327,7 +337,7 @@ export default {
         }
       })
       reviewService.getUnratedReview().then(rs => {
-        this.unRatedList = rs
+        if (rs.length > 0) { this.unRatedList = rs }
       })
     },
     calculateContainerHeight() {
@@ -376,6 +386,7 @@ export default {
             type: 'success',
             duration: 1000
           })
+          this.submittedMessage = 'Your submission is currently pending, please rate all of your unrated '
           this.writtingSubmitted = true
           this.hasSubmitionForThisQuestion = true
           this.timeSpent = 0
@@ -504,6 +515,16 @@ export default {
         SubmissionId: this.submissionId,
         FeedbackType: 'Free',
         Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
+      }).then(rs => {
+        if (rs) {
+          this.$notify.success({
+            title: 'Submission Requested',
+            message: 'Requested!',
+            duration: 1500
+          })
+          this.isFreeRequested = true
+        }
+        console.log('requested', rs)
       })
     }
   }

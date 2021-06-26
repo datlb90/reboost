@@ -4,6 +4,11 @@
       <el-col :span="15">
         <h3>My Subsmissions</h3>
         <el-main>
+          <el-tag
+            v-if="unRatedList.length>0"
+            style="margin: 0 0 10px 0"
+            type="warning"
+          >You currently have unrated reviews, please rate all of your unrated reviews</el-tag>
           <el-table
             :data="listSubmissionsPerPage"
             stripe
@@ -50,8 +55,11 @@
                 <div class="action-column-cell">
                   <el-button size="mini" @click="actionClick(scope.row.action, scope.row)">{{ scope.row.action }}</el-button>
                 </div>
-                <div v-if="scope.row.status.trim() == 'Submitted'" class="action-column-cell">
+                <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
                   <el-button size="mini" @click="actionClick('Request Review', scope.row)">Request Review</el-button>
+                </div>
+                <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
+                  <el-button size="mini" @click="actionClick('Request Pro Review', scope.row)">Request Pro Review</el-button>
                 </div>
               </template>
             </el-table-column>
@@ -68,16 +76,22 @@
         </el-main>
       </el-col>
     </el-row>
+    <div>
+      <checkout :visible="checkoutVisible" @closed="checkoutVisible=false" />
+    </div>
   </div>
 </template>
 <script>
 import reviewService from '../../services/review.service'
 import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 import questionService from '../../services/question.service'
+import CheckOut from '../../components/controls/CheckOut.vue'
 import moment from 'moment'
 export default {
   name: 'Submissions',
-  components: {},
+  components: {
+    'checkout': CheckOut
+  },
   data() {
     return {
       tableData: [],
@@ -87,7 +101,8 @@ export default {
       pageSize: 15,
       total: 0,
       page: 1,
-      unRatedList: null
+      checkoutVisible: false,
+      unRatedList: []
     }
   },
   computed: {
@@ -121,8 +136,11 @@ export default {
           this.loadList()
         }
       })
+
       reviewService.getUnratedReview().then(rs => {
-        this.unRatedList = rs
+        if (rs.length > 0) {
+          this.unRatedList = rs
+        }
       })
     },
     getTimeFromDateCreateToNow(time) {
@@ -138,34 +156,29 @@ export default {
     loadList() {
       this.listSubmissionsPerPage = this.submissionsListCached.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
       this.total = this.submissionsListCached.length
+      console.log(this.listSubmissionsPerPage)
     },
     actionClick(action, e) {
       if (action.trim() === 'Request Review') {
-        // if (this.unRatedList.length > 0) {
-        //   this.$notify.error({
-        //     title: 'You have unrated review',
-        //     message: 'Please rate them and request later',
-        //     duration: 2000
-        //   })
-        // } else
-        // {
         reviewService.createReviewRequest({
           UserId: this.currentUser.id,
           SubmissionId: e.id,
           FeedbackType: 'Free',
           Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
         }).then(rs => {
-          this.$notify.success({
-            title: 'Submission Requested',
-            message: 'Requested!',
-            duration: 1000
-          })
-          this.submissionsListCached.forEach(r => {
-            if (r.id === e.id) {
-              r.status = 'Review Requested'
-              r.action = 'View'
-            }
-          })
+          if (rs) {
+            this.$notify.success({
+              title: 'Submission Requested',
+              message: 'Requested!',
+              duration: 1500
+            })
+            this.submissionsListCached.forEach(r => {
+              if (r.id === e.id) {
+                r.status = 'Review Requested'
+                r.action = 'View Submission'
+              }
+            })
+          }
           this.loadList()
         })
         // }
@@ -175,6 +188,8 @@ export default {
         reviewService.getOrCreateReviewBySubmissionId(e.id).then(rs => {
           this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}/rate`)
         })
+      } else if (action == 'Request Pro Review') {
+        this.checkoutVisible = true
       }
     }
   }

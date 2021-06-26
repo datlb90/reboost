@@ -16,7 +16,7 @@
           <b-navbar-toggle target="navbarSupportedContent" />
 
           <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
-            <ul v-if="role == 'Learner'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+            <ul v-if="role == 'Learner' && selectedTest.length>0" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
               <li class="nav-item">
                 <router-link to="/questions" class="nav-link">Questions</router-link>
               </li>
@@ -38,6 +38,11 @@
               <li class="nav-item">
                 <router-link to="/dicuss" class="nav-link">Discuss</router-link>
               </li> -->
+            </ul>
+            <ul v-if="role == 'Learner' && selectedTest.length==0" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+              <li class="nav-item">
+                <router-link to="/SelectYourTest" class="nav-link">Select Your Test</router-link>
+              </li>
             </ul>
             <ul v-if="role == 'Rater'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
 
@@ -94,7 +99,7 @@
                 <el-dropdown-item>Action 2</el-dropdown-item>
                 <el-dropdown-item>Action 3</el-dropdown-item>
                 <el-dropdown-item disabled>Action 4</el-dropdown-item> -->
-                <el-dropdown-item command="selectTest" divided>Select your test</el-dropdown-item>
+                <el-dropdown-item command="selectTest" divided>Select your test: {{ testsToText() }}</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -126,10 +131,16 @@ export default {
     },
     currentUser() {
       return this.$store.getters['auth/getUser']
+    },
+    selectedTest() {
+      return this.$store.getters['auth/getSelectedTest']
     }
   },
   mounted() {
     const that = this
+    if (this.currentUser?.id) {
+      this.$store.dispatch('auth/setSelectedTest')
+    }
     window.addEventListener('scroll', () => {
       const scrollPos = window.scrollY
       // eslint-disable-next-line no-console
@@ -139,9 +150,14 @@ export default {
         that.isSticky = false
       }
     })
-    raterService.getRaterRating().then(rs => {
-      this.raterRating = rs
-    })
+    if (this.currentUser.id) {
+      raterService.getRaterRating().then(rs => {
+        this.raterRating = rs
+      })
+    }
+    if (!this.currentUser.stripeCustomerId) {
+      this.$store.dispatch('auth/loadCustomerId')
+    }
   },
   created() {
     console.log(this.role)
@@ -150,7 +166,7 @@ export default {
     handleCommand(action) {
       if (action === 'logout') {
         this.$store.dispatch('auth/logout').then(rs => {
-          this.$router.push('/')
+          this.$router.push('/login')
         })
       } else if (action === 'selectTest') {
         this.$router.push('/SelectYourTest')
@@ -158,6 +174,17 @@ export default {
     },
     toFix(number) {
       return Number((number).toFixed(1))
+    },
+    testsToText() {
+      var rs = ''
+      if (this.selectedTest.length > 0) {
+        if (this.selectedTest.length == 2) {
+          rs = 'TOEFL & IELTS'
+        } else {
+          rs = this.selectedTest[0].toUpperCase()
+        }
+      }
+      return rs
     }
   }
 }

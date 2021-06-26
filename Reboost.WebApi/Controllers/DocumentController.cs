@@ -56,7 +56,7 @@ namespace Reboost.WebApi.Controllers
                 UserId = model.UserId,
                 QuestionId = model.QuestionId,
                 SubmittedDate = DateTime.Now,
-                Type = "Pending",
+                Type = "Submission",
                 TimeSpentInSeconds = model.TimeSpentInSeconds,
                 Status = "Pending",
                 UpdatedDate = DateTime.Now

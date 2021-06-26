@@ -18,9 +18,9 @@
               :disabled="isRated"
             />
           </div>
-          <div v-if="!isRated" style="margin: 10px 0 10px 5px;text-align: end;">
+          <div v-if="!isRated" style="margin: 10px 0 10px 5px;">
             <el-button size="mini " type="primary" @click="rateReviewer()">
-              Rate
+              Submit
             </el-button>
           </div>
         </div>
@@ -60,6 +60,12 @@ export default ({
       }).then(r => {
         if (r) {
           this.isRated = true
+          this.$notify({
+            title: 'Success',
+            message: 'Rate success',
+            type: 'success',
+            duration: 1500
+          })
         }
       })
     }

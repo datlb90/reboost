@@ -155,7 +155,8 @@
     <!-- Submit button -->
     <div id="submit-container" class="submit-button" style="align-items: center;">
       <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
-      <el-button :disabled="readOnly" type="primary" size="mini" @click="submitReview()">Submit</el-button>
+      <el-button v-if="isAuthor" :disabled="readOnly||israte" type="primary" size="mini" @click="submitReview()">Submit</el-button>
+      <el-button v-if="israte && !isAuthor" type="primary" size="mini" @click="rateReview()">Rate Review</el-button>
     </div>
 
   </div>
@@ -174,7 +175,9 @@ export default ({
     reviewid: { type: Number, default: null },
     expandcolorpicker: { type: Boolean, default: false },
     renderoptions: { type: Object, default: null },
-    reviewPage: ReviewVue
+    reviewPage: ReviewVue,
+    israte: { type: Boolean, default: false },
+    isAuthor: { type: Boolean, default: false }
   },
   data() {
     return {
@@ -520,6 +523,9 @@ export default ({
     showTextTool() {
       const textTool = document.getElementById('textTool')
       textTool.style.display = 'flex'
+    },
+    rateReview() {
+      this.$emit('rateBtnClick')
     }
   }
 })

@@ -36,11 +36,18 @@ namespace Reboost.DataAccess.Repositories
         }
         public async Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId)
         {
-            return await (from doc in ReboostDbContext.Documents
+            var submission = await ReboostDbContext.Submissions.Where(s => s.UserId == userId && s.QuestionId == questionId).FirstOrDefaultAsync();
+
+            var rs = await (from doc in ReboostDbContext.Documents
                          join sub in ReboostDbContext.Submissions on doc.Id equals sub.DocId
                          where sub.UserId == userId && sub.QuestionId == questionId
                          orderby sub.SubmittedDate descending
                          select doc).ToListAsync();
+            foreach(Documents d in rs)
+            {
+                d.Submissions.Add(submission);
+            }
+            return rs;
         }
         private ReboostDbContext ReboostDbContext
         {

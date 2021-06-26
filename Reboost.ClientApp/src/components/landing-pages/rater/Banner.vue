@@ -85,6 +85,7 @@
 
 <script>
 import { mapActions } from 'vuex'
+import { PageName } from '@/app.constant'
 export default {
   name: 'Banner',
   data() {
@@ -122,7 +123,7 @@ export default {
         Role: 'Rater'
       })
       if (user) {
-        console.log(user)
+        this.$router.push({ name: PageName.AFTER_LOGIN })
       }
     }
   }
