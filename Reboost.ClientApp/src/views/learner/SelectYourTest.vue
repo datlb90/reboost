@@ -262,7 +262,11 @@ export default {
             }
           }
           userService.addScore(this.currentUser.id, scores).then(rs => {
-            this.$router.push('/questions')
+            this.$store.dispatch('auth/setSelectedTest').then(() => {
+              if (rs.userScores.length > 0) {
+                this.$router.push('/questions')
+              }
+            })
           })
         }
       })

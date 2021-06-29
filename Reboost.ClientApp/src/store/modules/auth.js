@@ -1,4 +1,6 @@
 import authService from '@/services/auth.service'
+import userService from '@/services/user.service'
+import paymentService from '@/services/payment.service'
 
 const state = {
   user: {
@@ -8,7 +10,8 @@ const state = {
     role: null,
     token: null,
     expireDate: null
-  }
+  },
+  selectedTest: []
 }
 
 const actions = {
@@ -30,6 +33,50 @@ const actions = {
   },
   async logout({ state, commit }) {
     commit('CLEAR_USER')
+  },
+  async setSelectedTest({ state, commit }) {
+    await userService.getUserScore(state.user.id).then(rs => {
+      if (rs.length > 0) {
+        const toeflSections = [1, 2, 3, 4]
+        const ieltsSections = [5, 6, 7, 8]
+
+        var ieltsFlag = true
+        var toeflFlag = true
+
+        var listTest = []
+
+        for (var s in ieltsSections) {
+          if (rs.filter(r => r['sectionId'] == ieltsSections[s]).length == 0) {
+            ieltsFlag = false
+            break
+          }
+        }
+        for (var sc in toeflSections) {
+          if (rs.filter(r => r['sectionId'] == toeflSections[sc]).length == 0) {
+            toeflFlag = false
+            break
+          }
+        }
+
+        if (ieltsFlag) {
+          listTest.push('ielts')
+        }
+        if (toeflFlag) {
+          listTest.push('toefl')
+        }
+
+        commit('SET_SELECTED_TEST', listTest)
+        return listTest
+      } else {
+        commit('SET_SELECTED_TEST', [])
+        return []
+      }
+    })
+  },
+  async loadCustomerId({ commit }) {
+    return paymentService.getCustomerId().then(rs => {
+      commit('SET_CUSTOMER_ID', rs)
+    })
   }
 }
 
@@ -39,11 +86,18 @@ const mutations = {
   },
   CLEAR_USER(state) {
     state.user = {}
+  },
+  SET_SELECTED_TEST(state, test) {
+    state.selectedTest = test
+  },
+  SET_CUSTOMER_ID(state, id) {
+    state.user.stripeCustomerId = id
   }
 }
 
 const getters = {
-  getUser: state => state.user
+  getUser: state => state.user,
+  getSelectedTest: state => state.selectedTest
 }
 
 export default {

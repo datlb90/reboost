@@ -19,7 +19,7 @@ namespace Reboost.Service.Services
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<Annotations> annotations, IEnumerable<InTextComments> comments);
-        Task<String> SaveFeedback(int reviewId, List<ReviewData> data);
+        Task<Reviews> SaveFeedback(int reviewId, List<ReviewData> data);
         Task<List<ReviewData>> LoadFeedback(int reviewId);
         Task<Annotations> AddAnnotationAsync(Annotations annotation);
         Task<InTextComments> AddInTextCommentAsync(int docId, int reviewId, InTextComments cmt, Annotations anno);
@@ -37,12 +37,12 @@ namespace Reboost.Service.Services
         Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int submissionId, string userId);
         Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
         Task<int> CheckRevieweeReviewValidationAsync(User user, int reviewId);
-        Task<ReviewRequests> GetReviewRequestBySubmissionId(int requestId, string userId);
+        Task<ReviewRequests> GetReviewRequestBySubmissionId(int submissionId, string userId);
         Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId);
         Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId);
         Task<RequestQueue> AddRequestQueue(RequestQueue data, string userId);
         Task<GetReviewsModel> CreateReviewFromQueue(string userId);
-        Task<IEnumerable<Reviews>> GetRatedReviewsAsync(string userId);
+        Task<IEnumerable<Reviews>> GetUnRatedReviewsAsync(string userId);
         Task<GetReviewsModel> GetPendingReviewAsync(string userId);
 
     }
@@ -83,7 +83,7 @@ namespace Reboost.Service.Services
             }
             return await _unitOfWork.Review.SaveCommentsAsync(_comments);
         }
-        public async Task<String> SaveFeedback(int reviewId, List<ReviewData> data)
+        public async Task<Reviews> SaveFeedback(int reviewId, List<ReviewData> data)
         { 
             return await _unitOfWork.Review.SaveFeedback(reviewId, data);
         }
@@ -174,7 +174,7 @@ namespace Reboost.Service.Services
         public async Task<GetReviewsModel> CreateReviewFromQueue(string userId) {
             return await _unitOfWork.Review.CreateReviewFromQueue(userId);
         }
-        public async Task<IEnumerable<Reviews>> GetRatedReviewsAsync(string userId)
+        public async Task<IEnumerable<Reviews>> GetUnRatedReviewsAsync(string userId)
         {
             return await _unitOfWork.Review.GetUnRatedReviewOfUser(userId);
         }

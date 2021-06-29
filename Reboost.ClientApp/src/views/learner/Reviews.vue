@@ -46,7 +46,7 @@
               </template>
             </el-table-column>
             <el-table-column
-              label="Date Completed"
+              label="Last Activity Date"
               align="center"
             >
               <template slot-scope="scope">

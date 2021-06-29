@@ -23,7 +23,7 @@ const reviewService = {
     return http.post(`/review/inTextComment/${docId}/${reviewId}`, { comment, annotation })
   },
   saveReviewFeedback(reviewId, data) {
-    return http.post(`/review/feedback/${reviewId}`, data)
+    return http.post(`/review/feedback/${reviewId}`, data).then(rs => rs.data)
   },
   loadReviewFeedback(reviewId) {
     return http.get(`/review/feedback/${reviewId}`).then(rs => rs.data)
@@ -81,6 +81,9 @@ const reviewService = {
   },
   getPendingReview() {
     return http.get('/review/pending').then(rs => rs.data)
+  },
+  getReviewRequestBySubmissionId(submissionId) {
+    return http.get(`/review/getRequest/${submissionId}`).then(rs => rs.data)
   }
 }
 

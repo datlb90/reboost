@@ -24,6 +24,8 @@
           :documentid="documentId"
           :reviewid="reviewId"
           :renderoptions="RENDER_OPTIONS"
+          :israte="isRate"
+          :is-author="isReviewAuth"
           @expandColorPickerToggle="expandColorPicker=$event"
           @hideQuestion="hideQuestion($event)"
           @submit="submitReview"
@@ -32,6 +34,7 @@
           @scaleChange="handleScale($event)"
           @highLightText="highlightEvent($event)"
           @toolBarButtonChange="toolBarButtonClick($event)"
+          @rateBtnClick="rateReview"
         />
         <div id="viewerContainer">
           <div
@@ -209,6 +212,7 @@ import { enableEdit } from '@/pdfjs/UI/edit'
 import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
+import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 // import { highlightText } from '../../pdfjs/UI/highlight-text.js'
 
 export default {
@@ -304,7 +308,7 @@ export default {
       return this.$store.getters['auth/getUser']
     }
   },
-  beforeMount() {
+  async beforeMount() {
     if (this.$route.params.docId && this.$route.params.reviewId && this.$route.params.questionId) {
       this.questionId = +this.$route.params.questionId
       this.reviewId = +this.$route.params.reviewId
@@ -312,7 +316,6 @@ export default {
       this.isView = this.$route.params.isViewOrRate === 'view' || this.$route.params.isViewOrRate === 'rate'
       this.RENDER_OPTIONS.documentId = this.documentId
       this.isRate = this.$route.params.isViewOrRate === 'rate'
-      this.loadRate()
     }
   },
   async mounted() {
@@ -324,7 +327,6 @@ export default {
     // Render stuff
     this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId }).then(async() => {
       PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
-
       await this.render()
       this.$refs.toolBar.handleScale('fitPage')
       this.$refs.toolBar.insertExpandMenu()
@@ -333,6 +335,8 @@ export default {
       // this.ToolbarButtons()
       // this.ScaleAndRotate();
     })
+
+    await this.loadRate()
 
     if (this.currentUser.role === 'Admin' || this.isView || this.isRate) {
       document.getElementById('viewerContainer').style.userSelect = 'none'
@@ -2123,7 +2127,7 @@ export default {
         }
         reviewService.saveReviewFeedback(this.reviewId, reviewData).then(rs => {
           this.disableToolbarSubmit()
-          if (rs.data == '') {
+          if (rs) {
             this.$notify.success({
               title: 'Submit success',
               message: 'Submitted!',
@@ -2638,26 +2642,30 @@ export default {
       this.activeButton = 'cursor'
       this.$refs.toolBar.disableButtons()
     },
-    loadRate() {
-      if (this.isRate) {
-        reviewService.getReviewRating(this.$route.params.reviewId).then(rs => {
-          if (rs) {
-            this.selectedTab = 'rate'
-            this.$refs.tabRate.updateData({ value: rs.rate, comment: rs.comment, rated: true })
-          } else if (this.isReviewAuth) {
-            // this.$refs.tabRate.updateData({ value: 0, comment: 'Please wait for reviewee!', rated: true })
-            this.isRate = false
-          }
-        })
-      } else {
-        reviewService.getById(this.$route.params.reviewId).then(rs => {
-          if (rs && this.currentUser.id === rs.reviewerId) {
-            this.isReviewAuth = true
-            this.isRate = true
-            this.loadRate()
-          }
-        })
-      }
+    async loadRate() {
+      await reviewService.getById(this.$route.params.reviewId).then(async rs => {
+        if (rs && this.currentUser.id === rs.reviewerId) {
+          this.isReviewAuth = true
+        }
+        if (rs && (this.currentUser.id === rs.reviewerId || this.currentUser.id === rs.revieweeId) && rs.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED) {
+          this.isRate = true
+          await reviewService.getReviewRating(this.$route.params.reviewId).then(rs => {
+            if (rs) {
+              this.selectedTab = 'rate'
+              this.$refs.tabRate.updateData({ value: rs.rate, comment: rs.comment, rated: true })
+              this.isView = true
+            } else if (this.isReviewAuth) {
+              // this.$refs.tabRate.updateData({ value: 0, comment: 'Please wait for reviewee!', rated: true })
+              this.isRate = false
+            }
+          })
+        } else if (rs && this.currentUser.id === rs.revieweeId) {
+          this.isView = true
+        }
+      })
+    },
+    rateReview() {
+      this.selectedTab = 'rate'
     }
     // End migration
   }

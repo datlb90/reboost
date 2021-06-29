@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
+using Reboost.WebApi.Email;
 using Reboost.Service.Services;
 using Reboost.Shared;
 
@@ -21,12 +22,14 @@ namespace Reboost.WebApi.Controllers
 
         private IUserService _userService;
         private IRaterService _raterService;
+        private IMailService _mailService;
         private ReboostDbContext db;
 
-        public ReviewController(IReviewService service, IUserService userService, IRaterService raterService, ReboostDbContext ctx ) : base(service)
+        public ReviewController(IReviewService service, IUserService userService, IRaterService raterService, IMailService mailService, ReboostDbContext ctx ) : base(service)
         {
             _userService = userService;
             _raterService = raterService;
+            _mailService = mailService;
             db = ctx;
         }
         [Authorize]
@@ -110,6 +113,16 @@ namespace Reboost.WebApi.Controllers
         public async Task<IActionResult> ReviewFeedback([FromRoute] int id, [FromBody] List<ReviewData> data)
         {
             var rs = await _service.SaveFeedback(id, data);
+            if(rs!= null)
+            {
+                var currentUserClaim = HttpContext.User;
+                var email = currentUserClaim.FindFirst("Email");
+                var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+                var result = await _service.GetOrCreateReviewByReviewRequestAsync(rs.RequestId, currentUser.Id);
+
+                await _mailService.SendEmailAsync(email.Value, "Review Update", "Your submission has just been updated! Follow the link at: localhost:3011/review/"+result.ReviewRequest.Submission.QuestionId+"/"+result.ReviewRequest.Submission.DocId+"/"+result.ReviewId);
+            }
             return Ok(rs);
         }
         [Authorize]
@@ -205,6 +218,13 @@ namespace Reboost.WebApi.Controllers
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
             request.UserId = currentUser.Id;
+
+            var exist = await _service.GetReviewRequestBySubmissionId(request.SubmissionId, currentUser.Id);
+            if(exist!= null)
+            {
+                return Ok(exist);
+            }
+
             var rs = await _service.CreateRequestAsync(request);
 
             //Add new request to request queue
@@ -233,6 +253,7 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.GetOrCreateReviewByReviewRequestAsync(id, currentUser.Id);
             return Ok(rs);
         }
+
         [Authorize]
         [HttpGet("submission/{id}")]
         public async Task<IActionResult> GetOrCreateReviewBySubmissionId([FromRoute] int id)
@@ -250,6 +271,7 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.GetOrCreateReviewByReviewRequestAsync(request.Id, currentUser.Id);
             return Ok(rs);
         }
+
         [Authorize]
         [HttpPost("reviewRating")]
         public async Task<IActionResult> CreateReviewRatingAsync([FromBody] ReviewRatings data)
@@ -279,6 +301,7 @@ namespace Reboost.WebApi.Controllers
             var review = await _service.CreateReviewFromQueue(currentUser.Id);
             return Ok(review);
         }
+
         [Authorize]
         [HttpGet("unrated")]
         public async Task<IActionResult> GetUnratedReviews()
@@ -287,9 +310,10 @@ namespace Reboost.WebApi.Controllers
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
-            var unrated = await _service.GetRatedReviewsAsync(currentUser.Id);
+            var unrated = await _service.GetUnRatedReviewsAsync(currentUser.Id);
             return Ok(unrated);
         }
+
         [Authorize]
         [HttpGet("pending")]
         public async Task<IActionResult> GetPendingReview()
@@ -300,5 +324,30 @@ namespace Reboost.WebApi.Controllers
             var pending = await _service.GetPendingReviewAsync(currentUser.Id);
             return Ok(pending);
         }
+
+        //Just for testing
+        [HttpGet("{reviewId}/rate/info")]
+        public async Task<IActionResult> GetRatingInfo(int reviewId)
+        {
+            var rs = db.ReviewRatings.Where(r => r.ReviewId == reviewId).FirstOrDefault();
+            if (rs == null)
+            {
+                Ok(await Task.FromResult(new { code = 400, messages = "Id not found" }));
+            }
+            return Ok(await Task.FromResult(rs));
+        }
+
+        [Authorize]
+        [HttpGet("getRequest/{submissionId}")]
+        public async Task<IActionResult> GetRequestBySubmissionId(int submissionId)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+            
+            var rs = await _service.GetReviewRequestBySubmissionId(submissionId, currentUser.Id);
+            return Ok(rs);
+        }
+
     }
 }

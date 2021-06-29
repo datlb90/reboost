@@ -19,7 +19,6 @@ const actions = {
   },
   loadPaymentMethods({ commit }, id) {
     if (!id) {
-      console.log('user do not have a customerId')
       commit('SET_PAYMENTMETHOD', null)
       return null
     }

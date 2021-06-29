@@ -88,10 +88,9 @@ export default {
   async mounted() {
     this.$store.dispatch('payment/loadProducts')
     this.$store.dispatch('payment/loadPrices')
+
     paymentService.getCustomerSubscriptions(this.currentUser.stripeCustomerId).then(rs => {
-      console.log('USER SUBSCRIPTION FULL', rs)
       this.subscribedPlans = rs.data.map(s => s.items.data[0].plan)
-      console.log('USER SUBSCRIPTION', this.subscribedPlans)
     })
   },
   methods: {

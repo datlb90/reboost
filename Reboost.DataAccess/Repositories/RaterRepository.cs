@@ -97,7 +97,7 @@ namespace Reboost.DataAccess.Repositories
         {
             var rs = await ReboostDbContext.UserRanks.Where(r => r.UserId == UserID).FirstOrDefaultAsync();
 
-            if (rs.AverageReviewRate > 0)
+            if (rs != null && rs.AverageReviewRate > 0)
             {
                 return rs.AverageReviewRate;
             }

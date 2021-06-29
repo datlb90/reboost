@@ -75,7 +75,8 @@ namespace Reboost.Service.Services
         }
         public async Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId)
         {
-            return await _unitOfWork.Documents.SearchByUser(userId, questionId);
+            var rs = await _unitOfWork.Documents.SearchByUser(userId, questionId);
+            return rs;
         }
     }
 }

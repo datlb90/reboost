@@ -56,6 +56,9 @@ const paymentService = {
   },
   updateDefaultPaymentMethod(customerId, defaultPaymentMethodId) {
     return http.get('/payment/updateDefaultPaymentMethod/' + customerId + '/' + defaultPaymentMethodId)
+  },
+  getCustomerId() {
+    return http.get('/payment/customerId').then(rs => rs.data)
   }
 }
 export default paymentService
