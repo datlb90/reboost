@@ -336,7 +336,7 @@ export default {
             this.status = rs.status
             this.$notify({
               title: 'Success',
-              message: 'Update success',
+              message: 'Update successfully',
               type: 'success',
               duration: 2000
             })

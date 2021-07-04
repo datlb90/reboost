@@ -658,7 +658,7 @@ export default {
       _discussion.content = this.topicContent
       _discussion.tags = selected.map(t => ({ Id: t[0].id, Name: t[0].name }))
       this.UpdateDiscussion(_discussion)
-      console.log(_discussion)
+      console.log('update', _discussion)
       this.addDialogVisible = false
     }
   }

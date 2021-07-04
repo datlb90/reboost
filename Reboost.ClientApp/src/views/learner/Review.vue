@@ -53,7 +53,7 @@
         <div slot="header" class="clearfix">
           <div>
             <div style="font-size: 15px; font-weight: bold; text-align: left;">
-              Dat Le
+              {{ currentUser.username }}
             </div>
           </div>
         </div>
@@ -91,10 +91,10 @@
         <div slot="header" class="clearfix">
           <div>
             <div style="font-size: 15px; font-weight: bold; text-align: left;">
-              Dat Le
+              {{ currentUser.username }}
             </div>
             <div style="font-size: 12px; text-align: left;">
-              3:16 PM Jul 7
+              {{ getDateNow }}
             </div>
           </div>
           <el-button v-if="(currentUser.role !== 'Admin' || isView) && comment.isSaved == true" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
@@ -213,6 +213,7 @@ import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
 import { REVIEW_REQUEST_STATUS } from '../../app.constant'
+import moment from 'moment'
 // import { highlightText } from '../../pdfjs/UI/highlight-text.js'
 
 export default {
@@ -306,6 +307,9 @@ export default {
     },
     currentUser() {
       return this.$store.getters['auth/getUser']
+    },
+    getDateNow() {
+      return moment(Date.now()).format('hh:mm MMMM Do')
     }
   },
   async beforeMount() {
@@ -355,6 +359,7 @@ export default {
     clearInterval(this.setIntervalForScroll)
     document.removeEventListener('keyup', this.keyupHandler)
     this.unRegisterEvents()
+    document.body.style.overflow = null
   },
   methods: {
     async annotationAdded(documentId, pageNumber, annotation) {
@@ -763,7 +768,7 @@ export default {
       if (!text && (typeof (target) != 'undefined') && (target != null)) {
         const type = target.getAttribute('data-pdf-annotate-type')
         this.annotationClicked = target
-        if (type == 'strikeout') {
+        if (type == 'strikeout' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
           this.colorChosen = target.getAttribute('stroke')
           uuid = target.getAttribute('data-pdf-annotate-id')
           this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
@@ -1507,6 +1512,7 @@ export default {
             const target = this.getHighlightByCommentId(comment.uuid)
             target.setAttribute('data-pdf-annotate-type', 'area')
           }
+
           await PDFJSAnnotate.getStoreAdapter().deleteComment(this.documentId, comment.uuid, false)
           this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
           this.commentsNotSaved.splice(this.commentsNotSaved.indexOf(comment.uuid), 1)
@@ -1514,6 +1520,7 @@ export default {
             element.isSelected = false
             element.isSaved = true
           })
+
           if (this.commentsNotSaved) {
             this.comments.forEach(cmt => {
               this.commentsNotSaved.forEach(el => {
@@ -2129,7 +2136,7 @@ export default {
           this.disableToolbarSubmit()
           if (rs) {
             this.$notify.success({
-              title: 'Submit success',
+              title: 'Success',
               message: 'Submitted!',
               duration: 2000
             })
@@ -2163,7 +2170,9 @@ export default {
       const containerHeight = window.innerHeight - headerHeight
       const elContainer = document.getElementById('reviewContainer')
 
-      elContainer.style.height = containerHeight + 'px'
+      if (elContainer.style) {
+        elContainer.style.height = containerHeight + 'px'
+      }
       const rightPanel = document.getElementById('right-panel')
       const viewerContainer = document.getElementById('viewerContainer')
       viewerContainer.style.height = rightPanel.offsetHeight - document.getElementById('tool-bar').offsetHeight - 5 + 'px'
@@ -2644,9 +2653,14 @@ export default {
     },
     async loadRate() {
       await reviewService.getById(this.$route.params.reviewId).then(async rs => {
+        if (rs) {
+          this.$refs.toolBar.loadReviewData(rs)
+        }
+
         if (rs && this.currentUser.id === rs.reviewerId) {
           this.isReviewAuth = true
         }
+
         if (rs && (this.currentUser.id === rs.reviewerId || this.currentUser.id === rs.revieweeId) && rs.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED) {
           this.isRate = true
           await reviewService.getReviewRating(this.$route.params.reviewId).then(rs => {
@@ -2659,7 +2673,7 @@ export default {
               this.isRate = false
             }
           })
-        } else if (rs && this.currentUser.id === rs.revieweeId) {
+        } else if (rs && this.currentUser.id === rs.revieweeId && rs.reviewerId !== rs.revieweeId) {
           this.isView = true
         }
       })

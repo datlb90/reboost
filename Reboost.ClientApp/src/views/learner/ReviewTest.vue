@@ -1259,7 +1259,7 @@ export default {
         }).then(rs => {
           this.$notify({
             title: 'Success',
-            message: 'Submit success',
+            message: 'Submit successfully',
             type: 'success',
             duration: 1000
           })

@@ -35,9 +35,9 @@
                 type="primary"
                 class="login-btn"
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
-                @click="signUp()"
+                @click="signIn()"
               >
-                Sign Up
+                Sign In
               </el-button>
               <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
                 Or you can sign in with
@@ -65,8 +65,10 @@
                   policies
                 </a>
               </div>
-
             </form>
+          </div>
+          <div class="banner-form ml-3 mt-3" style="padding: 30px">
+            Don't have an account? <a style="color: rgb(101 139 179); text-decoration: none;" href="/register">Sign up</a>
           </div>
         </div>
 
@@ -109,18 +111,18 @@ export default {
     this.facebookFormAction = 'api/auth/external/facebook/Learner/' + encodeURIComponent(this.returnUrl)
   },
   methods: {
-    ...mapActions('auth', ['register']),
+    ...mapActions('auth', ['login']),
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
     },
     submitGoohlrLoginForm() {
       this.$refs.googleLoginForm.submit()
     },
-    async signUp() {
-      const user = await this.register({
+    async signIn() {
+      this.$store.dispatch('auth/logout')
+      const user = await this.login({
         Email: this.email,
-        Password: this.password,
-        Role: 'Learner'
+        Password: this.password
       })
       if (user) {
         this.$router.push({ name: PageName.AFTER_LOGIN })

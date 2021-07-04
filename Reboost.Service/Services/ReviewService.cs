@@ -32,11 +32,11 @@ namespace Reboost.Service.Services
         Task<List<Reviews>> GetReviewsByUserIdAsync(string userId);
         Task<Reviews> GetReviewByIdAsync(int id);
         Task<Reviews> ChangeStatusAsync(int id, string newStatus);
-        Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests);
+        Task<ReviewRequests> CreateRequestAsync(string userId, ReviewRequests requests);
         Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId);
         Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int submissionId, string userId);
         Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
-        Task<int> CheckRevieweeReviewValidationAsync(User user, int reviewId);
+        Task<int> CheckReviewValidationAsync(string role, User user, int reviewId);
         Task<ReviewRequests> GetReviewRequestBySubmissionId(int submissionId, string userId);
         Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId);
         Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId);
@@ -138,11 +138,11 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.GetReviewsByUserIdAsync(userId);
         }
-        public async Task<ReviewRequests> CreateRequestAsync(ReviewRequests requests)
+        public async Task<ReviewRequests> CreateRequestAsync(string userId, ReviewRequests requests)
         {
             DateTime now = DateTime.Now;
             requests.RequestedDateTime = now;
-            return await _unitOfWork.Review.CreateRequestAsync(requests);
+            return await _unitOfWork.Review.CreateRequestAsync(userId, requests);
         }
         public async Task<RequestQueue> AddRequestQueue(RequestQueue requestQueue, string userId) {
             return await _unitOfWork.Review.AddRequestQueue(requestQueue, userId);
@@ -159,9 +159,9 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.GetReviewRequestBySubmissionId(submissionId, userId);
         }
-        public async Task<int> CheckRevieweeReviewValidationAsync(User user, int reviewId)
+        public async Task<int> CheckReviewValidationAsync(string role, User user, int reviewId)
         {
-            return await _unitOfWork.Review.CheckRevieweeReviewValidationAsync(user, reviewId);
+            return await _unitOfWork.Review.CheckReviewValidationAsync(role, user, reviewId);
         }
         public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId)
         {

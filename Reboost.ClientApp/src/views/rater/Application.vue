@@ -527,7 +527,7 @@ export default {
             raterService.insert(formData).then(rs => {
               this.$notify({
                 title: 'Success',
-                message: 'Created success',
+                message: 'Created successfully',
                 type: 'success',
                 duration: 2000
               })
@@ -538,7 +538,7 @@ export default {
             raterService.update(formData).then(rs => {
               this.$notify({
                 title: 'Success',
-                message: 'Update success',
+                message: 'Update successfully',
                 type: 'success',
                 duration: 2000
               })

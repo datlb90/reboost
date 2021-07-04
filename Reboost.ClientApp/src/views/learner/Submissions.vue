@@ -147,7 +147,9 @@ export default {
       return moment(new Date(time)).fromNow()
     },
     getTimeTaken(time) {
-      return moment(time).get('minute') + ' min ' + moment(time).get('second') + ' sec '
+      var minutes = Math.floor(time / 60)
+      var seconds = time - minutes * 60
+      return minutes + ' min ' + seconds + ' sec '
     },
     handleCurrentChange(val) {
       this.page = val
@@ -174,7 +176,16 @@ export default {
             })
             this.submissionsListCached.forEach(r => {
               if (r.id === e.id) {
-                r.status = 'Review Requested'
+                if (this.unRatedList.length > 0) {
+                  r.status = 'Pending'
+                } else {
+                  r.status = 'Review Requested'
+                  this.$notify.success({
+                    title: 'Submission Requested',
+                    message: 'Requested!',
+                    duration: 1500
+                  })
+                }
                 r.action = 'View Submission'
               }
             })

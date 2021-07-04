@@ -194,6 +194,8 @@ export default {
             content: this.formPostDiscussion.topicContent,
             level: 0
           }).then(rs => {
+            this.formPostDiscussion.topicTitle = ''
+            this.formPostDiscussion.topicContent = ''
             this.loadDiscussions()
           })
           this.addDialogVisible = false

@@ -21,7 +21,7 @@
                 type="primary"
                 class="login-btn"
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
-                @click="singIn()"
+                @click="signIn()"
               >
                 Sign In
               </el-button>
@@ -108,13 +108,16 @@ export default {
     submitGoohlrLoginForm() {
       this.$refs.googleLoginForm.submit()
     },
-    async singIn() {
+    async signIn() {
+      this.$store.dispatch('auth/logout')
       const user = await this.login({
         Email: this.form.username,
         Password: this.form.password
       })
       if (user) {
-        this.$router.push({ name: PageName.AFTER_LOGIN })
+        this.$store.dispatch('auth/setSelectedTest').then(rs => {
+          this.$router.push({ name: PageName.AFTER_LOGIN })
+        })
       }
     }
   }

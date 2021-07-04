@@ -86,6 +86,7 @@ const mutations = {
   },
   CLEAR_USER(state) {
     state.user = {}
+    state.selectedTest = []
   },
   SET_SELECTED_TEST(state, test) {
     state.selectedTest = test

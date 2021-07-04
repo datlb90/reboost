@@ -21,7 +21,9 @@ export const RATER_STATUS = {
   DOCUMENT_REQUESTED: 'DocumentRequested',
   DOCUMENT_SUBMITTED: 'DocumentSubmitted',
   REVISION_REQUESTED: 'RevisionRequested',
-  REVISION_COMPLETED: 'RevisionCompleted'
+  REVISION_COMPLETED: 'RevisionCompleted',
+  TRAINING_APPROVED: 'TrainingApproved',
+  DOCUMENT_COMPLETED: 'DocumentCompleted'
 }
 export const REVIEW_REQUEST_STATUS = {
   IN_PROGRESS: 'In Progress',
@@ -42,6 +44,7 @@ export const PageName = {
   RATER_STATUS: 'ApplicationStatus',
   SELECT_YOUR_TEST: 'SelectYourTest',
   REVIEW: 'Review',
+  REVIEWS: 'Reviews',
   SUBMISSIONS: 'Submissions',
   NOT_FOUND: 'PageNotFound'
 }

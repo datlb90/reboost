@@ -60,14 +60,15 @@ namespace Reboost.WebApi.Controllers
             return BadRequest(new { message = "Permission denined" });
         }
         [Authorize]
-        [HttpGet("reviewee/{revieweeId}/auth")]
-        public async Task<IActionResult> RevieweeReviewAuthentication([FromRoute] int revieweeId)
+        [HttpGet("reviewee/{reviewId}/auth")]
+        public async Task<IActionResult> RevieweeReviewAuthentication([FromRoute] int reviewId)
         {
             var currentUserClaim = HttpContext.User;
             var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
-            var check = await _service.CheckRevieweeReviewValidationAsync(currentUser, revieweeId);
+            var check = await _service.CheckReviewValidationAsync(role.Value,currentUser, reviewId);
             if (check!=0)
             {
                 return Ok(check);
@@ -113,15 +114,13 @@ namespace Reboost.WebApi.Controllers
         public async Task<IActionResult> ReviewFeedback([FromRoute] int id, [FromBody] List<ReviewData> data)
         {
             var rs = await _service.SaveFeedback(id, data);
-            if(rs!= null)
+            if(rs != null && rs.RevieweeId.Trim() != "1")
             {
-                var currentUserClaim = HttpContext.User;
-                var email = currentUserClaim.FindFirst("Email");
-                var currentUser = await _userService.GetByEmailAsync(email.Value);
+                var reviewee = await _userService.GetByIdAsync(rs.RevieweeId);
 
-                var result = await _service.GetOrCreateReviewByReviewRequestAsync(rs.RequestId, currentUser.Id);
+                var result = await _service.GetOrCreateReviewByReviewRequestAsync(rs.RequestId, reviewee.Id);
 
-                await _mailService.SendEmailAsync(email.Value, "Review Update", "Your submission has just been updated! Follow the link at: localhost:3011/review/"+result.ReviewRequest.Submission.QuestionId+"/"+result.ReviewRequest.Submission.DocId+"/"+result.ReviewId);
+                await _mailService.SendEmailAsync(reviewee.Email, "Review Update", "Your submission has just been updated! Follow the link at: localhost:3011/review/"+result.ReviewRequest.Submission.QuestionId+"/"+result.ReviewRequest.Submission.DocId+"/"+result.ReviewId);
             }
             return Ok(rs);
         }
@@ -225,7 +224,14 @@ namespace Reboost.WebApi.Controllers
                 return Ok(exist);
             }
 
-            var rs = await _service.CreateRequestAsync(request);
+            var rs = await _service.CreateRequestAsync(currentUser.Id, request);
+            
+            var unrate = await _service.GetUnRatedReviewsAsync(currentUser.Id);
+            
+            if(unrate.Count() > 0)
+            {
+                return Ok(rs);
+            }
 
             //Add new request to request queue
             await _service.AddRequestQueue(new RequestQueue { RequestId = rs.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
@@ -265,7 +271,7 @@ namespace Reboost.WebApi.Controllers
             var request = await _service.GetReviewRequestBySubmissionId(id, currentUser.Id);
             if (request == null)
             {
-                request = await _service.CreateRequestAsync(new ReviewRequests() { UserId = currentUser.Id, SubmissionId = id } );
+                request = await _service.CreateRequestAsync(currentUser.Id, new ReviewRequests() { UserId = currentUser.Id, SubmissionId = id } );
                 await _service.AddRequestQueue(new RequestQueue { RequestId = request.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
             }
             var rs = await _service.GetOrCreateReviewByReviewRequestAsync(request.Id, currentUser.Id);

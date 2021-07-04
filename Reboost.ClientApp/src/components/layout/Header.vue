@@ -89,7 +89,7 @@
                 <i class="far fa-user-circle" style="font-size: 24px;" />
               </span>
               <el-dropdown-menu slot="dropdown">
-                <div style="padding:0 10px; display:inline-grid">
+                <div style="padding:0px 20px; display:inline-grid">
                   <span style="padding:5px 0px;font-weight:700;font-size:20px;">{{ currentUser.username }}</span>
                   <span>Email: {{ currentUser.email }}</span>
                   <span>Role: {{ currentUser.role }}</span>
@@ -99,7 +99,7 @@
                 <el-dropdown-item>Action 2</el-dropdown-item>
                 <el-dropdown-item>Action 3</el-dropdown-item>
                 <el-dropdown-item disabled>Action 4</el-dropdown-item> -->
-                <el-dropdown-item command="selectTest" divided>Select your test: {{ testsToText() }}</el-dropdown-item>
+                <el-dropdown-item command="selectTest" divided>Selected test {{ testsToText() }}</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>

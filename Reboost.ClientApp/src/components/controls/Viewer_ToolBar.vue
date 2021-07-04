@@ -152,6 +152,10 @@
         </div>
       </button>
     </div>
+    <div v-if="isReviewSample()" class="submit-button">
+      <el-button type="success" size="mini" @click="approveTraining()">Approve</el-button>
+      <el-button type="danger" size="mini" @click="rejectTraining()">Reject</el-button>
+    </div>
     <!-- Submit button -->
     <div id="submit-container" class="submit-button" style="align-items: center;">
       <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
@@ -166,6 +170,8 @@
 import ColorPicker from './ColorPicker'
 import UI from '@/pdfjs/UI'
 import ReviewVue from '@/views/learner/Review.vue'
+import { UserRole, RATER_STATUS } from '../../app.constant'
+import reviewService from '../../services/review.service'
 export default ({
   name: 'ToolBar',
   components: {
@@ -197,11 +203,14 @@ export default ({
       maxScale: 2,
       disableAnnotation: false,
       showChevronScroll: false,
-      clickedAnnotation: null
+      clickedAnnotation: null,
+      reviewData: null
     }
   },
   computed: {
-
+    currentUser() {
+      return this.$store.getters['auth/getUser']
+    }
   },
   watch: {
   },
@@ -526,6 +535,52 @@ export default ({
     },
     rateReview() {
       this.$emit('rateBtnClick')
+    },
+    isReviewSample() {
+      if ((this.documentid == 69 || this.documentid == 68) && this.currentUser.role === UserRole.ADMIN && (this.reviewData?.status?.includes('TrainingSubmitted') || this.reviewData?.status?.includes('Completed'))) {
+        console.log('---------', this.reviewData)
+        return true
+      }
+      return false
+    },
+    loadReviewData(rs) {
+      this.reviewData = rs
+    },
+    rejectTraining() {
+      var newStatus
+      if (this.reviewData.status.includes('IELTS')) {
+        newStatus = 'IELTSTrainingRevision'
+      } else {
+        newStatus = 'TOEFLTrainingRevision'
+      }
+      reviewService.changeReviewStatus(this.reviewData.id, newStatus).then(rs => {
+        if (rs) {
+          this.$notify.error({
+            title: RATER_STATUS.REVISION,
+            message: 'Submitted Training Revision Requested!',
+            duration: 2000
+          })
+          this.reviewData.status = newStatus
+        }
+      })
+    },
+    approveTraining() {
+      var newStatus
+      if (this.reviewData.status.includes('IELTS')) {
+        newStatus = 'IELTSTrainingApproved'
+      } else {
+        newStatus = 'TOEFLTrainingApproved'
+      }
+      reviewService.changeReviewStatus(this.reviewData.id, newStatus).then(rs => {
+        if (rs) {
+          this.$notify.success({
+            title: RATER_STATUS.APPROVED,
+            message: 'Submitted Training Approved!',
+            duration: 2000
+          })
+          this.reviewData.status = newStatus
+        }
+      })
     }
   }
 })

@@ -24,6 +24,9 @@
                         </div>
                       </div>
                       <div>
+                        <el-tag v-if="isTesting" class="mr-2" type="warning">{{ minute }} : {{ second }}</el-tag>
+                        <el-tag v-if="isTesting" class="mr-2" type="warning">In test mode</el-tag>
+                        <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" @click="startTest()">Start Test</el-button>
                         <!-- <el-switch v-model="isTest" style="display: block" active-color="#13ce66" inactive-color="#ff4949" active-text="Test" inactive-text="Practice" @change="changedOption()" /> -->
                         <el-checkbox v-model="isTest" size="mini" border @change="changedOption()">Test Mode</el-checkbox>
                       </div>
@@ -139,7 +142,7 @@
               <span v-if="isShowCountWord && countWord != 0" style="margin-left: 15px;">Words: {{ countWord }}</span>
             </div>
             <div v-if="writtingSubmitted">
-              <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;">reviews.</a> </el-tag>
+              <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;"> Reviews.</a> </el-tag>
             </div>
             <div v-if="getQuestion != ''">
               <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit & Request Review</el-button>
@@ -165,6 +168,17 @@
     <div>
       <checkout :visible="checkoutVisible" @closed="checkoutVisible=false" />
     </div>
+    <el-dialog
+      title="Time Out"
+      :visible.sync="dialogVisible"
+      width="30%"
+    >
+      <span>Your test time is over. Do you want to submit your current writting?</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submit">Submit</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -178,12 +192,14 @@ import TabDisCussion from '../learner/PracticeWriting_TabDiscussion.vue'
 import TabRubric from '../learner/PracticeWriting_TabRubric.vue'
 import TabSamples from '../learner/PracticeWriting_TabSamples.vue'
 import CheckOut from '../../components/controls/CheckOut.vue'
+// import moment from 'moment'
 import {
   Splitpanes,
   Pane
 } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { REVIEW_REQUEST_STATUS } from '../../app.constant'
+import moment from 'moment'
 export default {
   name: 'PracticeWriting',
   components: {
@@ -224,7 +240,12 @@ export default {
       submissionId: null,
       unRatedList: [],
       isFreeRequested: false,
-      submittedMessage: 'Your writting has been successfully submitted. You can request a review now.'
+      showStartTestButton: false,
+      isTesting: false,
+      dialogVisible: false,
+      submittedMessage: 'Your writting has been successfully submitted. You can request a review now.',
+      isStart: false,
+      timeStart: null
     }
   },
   computed: {
@@ -310,11 +331,12 @@ export default {
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
+    clearInterval(this.timeSpentInterval)
   },
   methods: {
     loadData() {
       documentService.search(this.currentUser.id, this.questionId).then(rs => {
-        console.log('Current user submition for this question', rs)
+        console.log('Current user submittion for this question', rs)
         if (rs && rs.length > 0) {
           const latestSubmition = rs[0]
           this.submissionId = rs[0]['submissions'][0]?.id
@@ -356,7 +378,17 @@ export default {
       }
     },
     submit() {
+      this.dialogVisible = false
       localStorage.removeItem(this.idLocalStorage)
+
+      clearInterval(this.timeSpentInterval)
+
+      var timeInSeconds
+      if (this.isTesting) {
+        timeInSeconds = (+this.getDataQuestion.time.slice(0, 2) - this.minute - 1) * 60 + 60 - this.second
+      } else {
+        timeInSeconds = moment().diff(this.timeStart, 'seconds')
+      }
 
       if (!this.writingContent) {
         this.$notify({
@@ -368,41 +400,46 @@ export default {
         return
       }
 
-      clearInterval(this.timeSpentInterval)
       var data = {
         filename: new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() + new Date().getDate().toString() + new Date().getHours().toString() + new Date().getMinutes().toString() + new Date().getSeconds().toString() + '.pdf',
         text: this.writingContent,
         userId: this.currentUser.id,
         questionId: +this.questionId,
-        timeSpentInSeconds: this.timeSpent
+        timeSpentInSeconds: timeInSeconds
       }
 
       if (this.unRatedList.length > 0) {
         data.status = 'Pending'
         documentService.submitPendingDocument(data).then(rs => {
-          this.$notify({
-            title: 'Success',
-            message: 'Submit success',
-            type: 'success',
-            duration: 1000
-          })
-          this.submittedMessage = 'Your submission is currently pending, please rate all of your unrated '
-          this.writtingSubmitted = true
-          this.hasSubmitionForThisQuestion = true
-          this.timeSpent = 0
+          if (rs) {
+            this.$notify({
+              title: 'Success',
+              message: 'Submit successfully',
+              type: 'success',
+              duration: 1000
+            })
+            this.submittedMessage = 'Your submission is currently pending, please rate all of your unrated.'
+            this.writtingSubmitted = true
+            this.hasSubmitionForThisQuestion = true
+            this.timeSpent = 0
+            this.submissionId = rs.submissions[0]?.id
+          }
         })
       } else {
         data.status = 'Submitted'
         documentService.submitDocument(data).then(rs => {
-          this.$notify({
-            title: 'Success',
-            message: 'Submit success',
-            type: 'success',
-            duration: 1000
-          })
-          this.writtingSubmitted = true
-          this.hasSubmitionForThisQuestion = true
-          this.timeSpent = 0
+          if (rs) {
+            this.$notify({
+              title: 'Success',
+              message: 'Submit successfully',
+              type: 'success',
+              duration: 1000
+            })
+            this.writtingSubmitted = true
+            this.hasSubmitionForThisQuestion = true
+            this.timeSpent = 0
+            this.submissionId = rs.submissions[0]?.id
+          }
         })
       }
       // console.log('SUBMIT DATA', data)
@@ -411,40 +448,14 @@ export default {
       this.isShowTimer = true
       this.isShowReading = false
       this.timeSpent = 0
-      clearInterval(this.timeSpentInterval)
-      if (this.isTest) {
-        this.isShowReading = true
-        this.timeSpentInterval = setInterval(() => {
-          this.timeSpent++
-          // console.log('TICK')
-        }, 1000)
-        var hld = setInterval(() => {
-          this.second--
-          if (this.second < 0) {
-            this.second = 59
-            this.minute--
-            if (this.minute < 0) {
-              this.isShowReading = false
-              clearInterval(hld)
-              if (this.getListening != '') {
-                this.isShowListeningTab = true
-              }
-              if (this.getChart != '') {
-                this.isShowChart = true
-              }
-            }
-          }
-        }, 1000)
-      } else {
-        this.isShowReading = false
-        this.isShowTimer = false
+      this.isShowReading = false
+      this.isShowTimer = false
 
-        if (this.getListening != '') {
-          this.isShowListeningTab = true
-        }
-        if (this.getChart != '') {
-          this.isShowChart = true
-        }
+      if (this.getListening != '') {
+        this.isShowListeningTab = true
+      }
+      if (this.getChart != '') {
+        this.isShowChart = true
       }
     },
     toggleDirection() {
@@ -466,6 +477,11 @@ export default {
       this.isShowCountWord = !this.isShowCountWord
     },
     countWords() {
+      if (!this.isStart) {
+        this.isStart = true
+        this.timeStart = moment()
+      }
+
       this.countWord = this.writingContent.trim().split(/\b\S+\b/).length - 1
       if (!this.hasSubmitionForThisQuestion) {
         clearTimeout(this.timeout)
@@ -475,20 +491,27 @@ export default {
       }
     },
     changedOption() {
-      this.timeSpent = 0
-      clearInterval(this.timeSpentInterval)
-      if (!this.isTest) {
-        this.isShowReading = true
-        this.minute = 0
-        this.second = 3
-        this.closeTimer = false
-        this.isShowScript = false
-        this.isShowTimer = false
+      if (this.isTest) {
+        const time = +this.getDataQuestion.time.slice(0, 2)
+        this.minute = time
+        this.second = 0
       } else {
-        if (!this.closeTimer) {
-          this.isShowReading = false
-        }
+        this.isTesting = false
+        clearInterval(this.timeSpentInterval)
       }
+      this.showStartTestButton = !this.showStartTestButton
+      // if (!this.isTest) {
+      //   this.isShowReading = true
+      //   this.minute = 0
+      //   this.second = 3
+      //   this.closeTimer = false
+      //   this.isShowScript = false
+      //   this.isShowTimer = false
+      // } else {
+      //   if (!this.closeTimer) {
+      //     this.isShowReading = false
+      //   }
+      // }
     },
     showDiscussion(e) {
       if (e.label == 'Discussions') {
@@ -526,7 +549,26 @@ export default {
         }
         console.log('requested', rs)
       })
+    },
+    startTest() {
+      const time = +this.getDataQuestion.time.slice(0, 2)
+      this.isTesting = true
+      this.minute = time
+      this.second = 0
+
+      this.timeSpentInterval = setInterval(() => {
+        this.second--
+        if (this.second < 0) {
+          this.second = 59
+          this.minute--
+          if (this.minute < 0) {
+            clearInterval(this.timeSpentInterval)
+            this.dialogVisible = true
+          }
+        }
+      }, 1000)
     }
+
   }
 }
 </script>

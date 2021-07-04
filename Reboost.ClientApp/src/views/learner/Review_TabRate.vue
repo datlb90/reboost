@@ -62,7 +62,7 @@ export default ({
           this.isRated = true
           this.$notify({
             title: 'Success',
-            message: 'Rate success',
+            message: 'Rate successfully',
             type: 'success',
             duration: 1500
           })
