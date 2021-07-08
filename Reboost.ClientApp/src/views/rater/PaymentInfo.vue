@@ -312,7 +312,7 @@ export default {
                 this.$store.dispatch('payment/loadDefaultPaymentMethod', this.currentUser.stripeCustomerId)
                 this.$notify({
                   title: 'Update Sucess',
-                  message: 'SUCESS',
+                  message: 'Updated successfully',
                   type: 'success',
                   duration: 3000
                 })
@@ -321,7 +321,7 @@ export default {
               } else {
                 this.$notify({
                   title: 'Error',
-                  message: 'Update Error',
+                  message: 'Error occured!',
                   type: 'error',
                   duration: 3000
                 })

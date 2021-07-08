@@ -72,7 +72,7 @@ import Payout from '../views/rater/Payout.vue'
 import Reviews from '../views/learner/Reviews.vue'
 import PaymentInfo from '../views/rater/PaymentInfo.vue'
 import Submissions from '../views/learner/Submissions.vue'
-import PageNotFound from '../views/PageNotFound.vue'
+// import PageNotFound from '../views/PageNotFound.vue'
 import protect from './guard'
 import { PageName, Role } from '@/app.constant'
 
@@ -171,7 +171,7 @@ const router = new VueRouter({
       beforeEnter: async(to, from, next) => {
         const check = await userReviewAuthentication(to.params.reviewId)
         if (check) {
-          next({ path: 'notfound' })
+          next({ name: PageName.NOT_FOUND })
         } else {
           next()
         }
@@ -225,33 +225,13 @@ const router = new VueRouter({
     },
     {
       path: '/reviews',
-      name: 'Reviews',
+      name: PageName.REVIEWS,
       component: Reviews,
       meta: {
         plainLayout: false,
         landingPage: false,
         loginRequired: true
       }
-      // beforeEnter: async(to, from, next) => {
-      //   const check = await isApprovedRater()
-      //   console.log('check', check)
-      //   switch (check.code) {
-      //     case -1:
-      //       next({ path: 'notfound' })
-      //       break
-      //     case 0:
-      //       next({ path: 'rater/apply' })
-      //       break
-      //     case 1:
-      //       next({ path: `rater/application/status/${check.rater.id}` })
-      //       break
-      //     case 2:
-      //       next()
-      //       break
-      //     default:
-      //       next()
-      //   }
-      // }
     },
     {
       path: '/test',
@@ -378,7 +358,7 @@ const router = new VueRouter({
         loginRequired: true
       }
     },
-    { path: '/notfound', name: PageName.PageNotFound, component: PageNotFound },
+    // { path: '/notfound', name: PageName.PageNotFound, component: PageNotFound },
 
     { path: '/it-startup', component: ITStartup },
     { path: '/developer', component: Developer },
@@ -406,7 +386,7 @@ const router = new VueRouter({
     { path: '/pricing', component: Pricing },
     { path: '/faq', component: Faq },
     { path: '/coming-soon', component: ComingSoon },
-    { path: '/not-found', component: NotFound },
+    { path: '/not-found', name: PageName.NOT_FOUND, component: NotFound },
     { path: '/blog-grid', component: BlogGrid },
     { path: '/blog-right-sidebar', component: BlogRightSidebar },
     { path: '/blog-grid-two', component: BlogGridTwo },

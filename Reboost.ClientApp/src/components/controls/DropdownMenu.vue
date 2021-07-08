@@ -8,14 +8,14 @@
     <div ref="menu" class="c-dropdown-menu--menu">
       <ul class="c-dropdown-menu--menu--inner">
         <li v-for="(item, index) in data" :key="index" class="c-dropdown-menu--menu-item">
-          <input :id="generateId(item.text)" v-model="item.checked" type="checkbox">
+          <input :id="generateId(item.text)" v-model="item.checked" type="checkbox" @click="itemClicked(item)">
           <label :for="generateId(item.text)">{{ item.text }}</label>
         </li>
       </ul>
-      <div class="c-dropdown-menu--footer">
+      <!-- <div class="c-dropdown-menu--footer">
         <a style="margin-right: 10px" @click="confirm()">Confirm</a>
         <a @click="reset()">Reset</a>
-      </div>
+      </div> -->
     </div>
 
   </div>
@@ -84,7 +84,7 @@ export default {
     },
     confirm() {
       this.$emit('confirm', this.data)
-      this.toggleMenu('hide')
+      // this.toggleMenu('hide')
     },
     reset() {
       // for (const item of this.data) {
@@ -93,6 +93,11 @@ export default {
       // }
       // this.data = this.data.map(i => ({ ...i, checked: false }))
       this.$emit('reset')
+    },
+    itemClicked(e) {
+      setTimeout(() => {
+        this.confirm()
+      }, 50)
     }
   }
 }

@@ -275,8 +275,8 @@
             <el-button v-if="!raterId" size="mini">Cancel</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
             <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve</el-button>
-            <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">Reject</el-button>
-            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status===RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
+            <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">{{ titleBtnReject }}</el-button>
+            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status===RATER_STATUS.DOCUMENT_SUBMITTED)" :disabled="!formRegister.note" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
             <el-dropdown v-if="completedTraining(formRegister,'IELTS')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">
@@ -287,7 +287,7 @@
             <el-dropdown v-if="completedTraining(formRegister,'TOEFL')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
               TOEFL
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item :command="{type:'TOEFLTraining',action:'approve'}">Approve</el-dropdown-item>
+                <el-dropdown-item :command="{type:'TOEFLTraining',action:'approve'}">Approve for Training</el-dropdown-item>
                 <el-dropdown-item :command="{type:'TOEFLTraining',action:'reject'}">Revision</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -357,7 +357,8 @@ export default {
       toggleImagePopup: false,
       popUpImageUrl: null,
       portraitImg: true,
-      RATER_STATUS: RATER_STATUS
+      RATER_STATUS: RATER_STATUS,
+      titleBtnReject: 'Reject'
     }
   },
   computed: {
@@ -450,6 +451,11 @@ export default {
         this.formRegister.firstName = rs.user.firstName
         // Last name
         this.formRegister.lastName = rs.user.lastName
+
+        // Name button reject
+        if (rs.status === RATER_STATUS.DOCUMENT_REQUESTED) {
+          this.titleBtnReject = 'Document Request'
+        }
       })
     },
     async onSubmit(formName, createOrUpdate, hideSaveNotify) {
@@ -549,7 +555,7 @@ export default {
               raterService.insert(formData).then(rs => {
                 this.$notify({
                   title: 'Success',
-                  message: 'Created success',
+                  message: 'Created successfully',
                   type: 'success',
                   duration: 2000
                 })
@@ -564,7 +570,7 @@ export default {
                 if (typeof (hideSaveNotify) == 'undefined') {
                   this.$notify({
                     title: 'Success',
-                    message: 'Update success',
+                    message: 'Update successfully',
                     type: 'success',
                     duration: 2000
                   })
@@ -658,6 +664,7 @@ export default {
     completedTraining(e, status) {
       status += RATER_STATUS.TRAINING
       var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && r.status.includes(status))[0]
+
       if (t) {
         return true
       }
@@ -665,9 +672,11 @@ export default {
     },
     async trainingDropdownClick(e) {
       await this.onSubmit('formRegister', 'update', true)
+
       var t = this.getAllReviews.filter(r => r.reviewerId == this.formRegister.userId && r.reviewData.length > 0 && r.status.includes(e.type))[0]
+
       var newStatus = e.action == 'approve' ? e.type + RATER_STATUS.APPROVED : e.type + RATER_STATUS.REVISION
-      console.log('------------', this.getAllReviews, t)
+
       reviewService.changeReviewStatus(t.id, newStatus).then(rs => {
         if (rs.status.includes(RATER_STATUS.REVISION)) {
           this.$notify.error({

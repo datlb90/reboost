@@ -201,7 +201,7 @@ export default ({
         localStorage.setItem('reviewComment', JSON.stringify(retrievedObject))
 
         this.setStatusText('Saved')
-      }, 200)
+      }, 50)
     },
     setStatusText(label) {
       this.$emit('setStatusText')

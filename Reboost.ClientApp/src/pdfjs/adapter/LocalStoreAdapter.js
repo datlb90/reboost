@@ -51,9 +51,7 @@ export default class LocalStoreAdapter extends StoreAdapter {
         return new Promise((resolve, reject) => {
           const index = findAnnotation(documentId, annotationId)
           const rs = getAnnotations(documentId)[index]
-          if (rs.type == 'comment-highlight' || rs.type == 'point') {
-            //
-          } else if (index > -1) {
+          if (index > -1) {
             const annotations = getAnnotations(documentId)
             annotations.splice(index, 1)
             updateAnnotations(documentId, annotations)
@@ -105,6 +103,7 @@ export default class LocalStoreAdapter extends StoreAdapter {
           resolve(true)
         })
       },
+
       deleteComment(documentId, commentId, status) {
         return new Promise((resolve, reject) => {
           getAnnotations(documentId)
@@ -133,7 +132,9 @@ export default class LocalStoreAdapter extends StoreAdapter {
           resolve(deleteList.filter(item => { return (item.class == 'Comment') }))
         })
       },
+
       clearAnnotations(docId) { localStorage.removeItem(`${docId}/annotations`) },
+
       loadAnnotations(docId, { annotations, comments }) {
         localStorage.setItem(`${docId}/annotations`, JSON.stringify(annotations))
         comments.forEach(cmt => {

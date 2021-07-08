@@ -13,7 +13,7 @@
     </div>
     <el-table ref="filterTable" size="mini" :data="displayData" style="width: 100%">
       <el-table-column prop="fullName" label="Application Name" width="160" />
-      <el-table-column prop="appliedDate" label="Application Date" sortable width="180" column-key="appliedDate" :filters="filterDate" :filter-method="filterHandler" />
+      <el-table-column prop="appliedDate" label="Application Date" sortable width="180" column-key="appliedDate" />
       <el-table-column prop="occupation" label="Occupation" width="140" />
       <el-table-column prop="firstLanguage" label="First Language" width="130" />
       <!-- <el-table-column prop="applyTo" label="Applied For" width="120">
@@ -25,10 +25,14 @@
           { text: RATER_STATUS.APPLIED, value: RATER_STATUS.APPLIED },
           { text: RATER_STATUS.APPROVED, value: RATER_STATUS.APPROVED },
           { text: RATER_STATUS.TRAINING, value: RATER_STATUS.TRAINING },
+          { text: RATER_STATUS.REVISION, value: RATER_STATUS.REVISION },
           { text: RATER_STATUS.DOCUMENT_REQUESTED, value: RATER_STATUS.DOCUMENT_REQUESTED },
           { text: RATER_STATUS.DOCUMENT_SUBMITTED, value: RATER_STATUS.DOCUMENT_SUBMITTED },
           { text: RATER_STATUS.REVISION_REQUESTED, value: RATER_STATUS.REVISION_REQUESTED },
-          { text: RATER_STATUS.REJECTED, value: RATER_STATUS.REJECTED }
+          { text: RATER_STATUS.REVISION_COMPLETED, value: RATER_STATUS.REVISION_COMPLETED },
+          { text: RATER_STATUS.REJECTED, value: RATER_STATUS.REJECTED },
+          { text: RATER_STATUS.TRAINING_APPROVED, value: RATER_STATUS.TRAINING_APPROVED },
+          { text: RATER_STATUS.DOCUMENT_COMPLETED, value: RATER_STATUS.DOCUMENT_COMPLETED }
         ]"
         :filter-method="filterTag"
         filter-placement="bottom-end"
@@ -109,6 +113,13 @@ export default {
       this.textSearch = ''
     },
     filterTag(value, row) {
+      // var table
+      // if (!this.textSearch) {
+      //   table = this.getAllRater
+      // } else {
+      //   table = this.getAllRater.filter(data => data.fullName.toLowerCase().includes(this.textSearch.toLowerCase()))
+      // }
+      // this.total = table.filter(data => data.status.toLowerCase().includes(row.status.toLowerCase())).length
       return row.status === value
     },
     filterHandler(value, row, column) {

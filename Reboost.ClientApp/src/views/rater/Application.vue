@@ -264,7 +264,7 @@
             <el-button v-if="!raterId" type="primary" size="mini" @click="onSubmit('formRegister', 'create')">Create</el-button>
             <el-button v-if="!raterId" size="mini">Cancel</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
-            <el-button v-if="raterId" class="button" size="mini" type="success" @click="updateStatus('Approved')">Approve</el-button>
+            <el-button v-if="raterId" class="button" size="mini" type="success" @click="updateStatus('Approved')">Approve for training</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus('Rejected')">Reject</el-button>
           </el-form-item>
         </el-form>
@@ -286,14 +286,14 @@ import moment from 'moment'
 // import Notification from 'element-ui'
 import * as mapUtil from '@/utils/model-mapping'
 import * as stringUtil from '@/utils/string'
-import { RATER_STATUS, PageName } from '@/app.constant'
+import { PageName } from '@/app.constant'
 
 export default {
   name: 'Application',
   beforeRouteEnter(to, from, next) {
     raterService.getByCurrentUser().then(rs => {
       console.log('current user rater', rs)
-      if (rs && rs.status === RATER_STATUS.APPLIED) {
+      if (rs && rs.status) {
         return next({ name: PageName.RATER_STATUS, params: { id: rs.id }})
       }
       next()
@@ -527,7 +527,7 @@ export default {
             raterService.insert(formData).then(rs => {
               this.$notify({
                 title: 'Success',
-                message: 'Created success',
+                message: 'Created successfully',
                 type: 'success',
                 duration: 2000
               })
@@ -538,7 +538,7 @@ export default {
             raterService.update(formData).then(rs => {
               this.$notify({
                 title: 'Success',
-                message: 'Update success',
+                message: 'Updated successfully',
                 type: 'success',
                 duration: 2000
               })

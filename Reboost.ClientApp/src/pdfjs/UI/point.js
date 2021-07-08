@@ -91,7 +91,7 @@ function savePoint() {
   )
   annotation.top = annotation.y
   annotation.left = annotation.x
-  console.log('annoation', annotation)
+
   // const commentWrapper = document.getElementById('add-new-comment')
   // const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
   PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation, true)

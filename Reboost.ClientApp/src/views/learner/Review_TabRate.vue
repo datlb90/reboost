@@ -18,8 +18,11 @@
               :disabled="isRated"
             />
           </div>
-          <div v-if="!isRated" style="margin: 10px 0 10px 5px;">
-            <el-button size="mini " type="primary" @click="rateReviewer()">
+          <div style="margin: 10px 0 10px 5px;">
+            <el-button v-if="!isReviewAuth" :disabled="isRated" size="mini " type="primary" @click="rateReviewer()">
+              Submit
+            </el-button>
+            <el-button v-if="isReviewAuth && isRated" :disabled="isSubmitted" size="mini " type="primary" @click="submitRate()">
               Submit
             </el-button>
           </div>
@@ -34,7 +37,9 @@ import reviewService from '@/services/review.service.js'
 export default ({
   name: 'TabRate',
   props: {
-    reviewid: { type: Number, default: null }
+    reviewid: { type: Number, default: null },
+    isReviewAuth: { type: Boolean, default: false },
+    isSubmitted: { type: Boolean, default: false }
   },
   data() {
     return {
@@ -62,7 +67,24 @@ export default ({
           this.isRated = true
           this.$notify({
             title: 'Success',
-            message: 'Rate success',
+            message: 'Rated successfully',
+            type: 'success',
+            duration: 1500
+          })
+        }
+      })
+    },
+    submitRate() {
+      reviewService.submitRate({
+        ReviewId: +this.$route.params.reviewId,
+        Rate: parseFloat(this.rateValue),
+        Comment: this.rateComment
+      }).then(rs => {
+        if (rs) {
+          this.isSubmitted = true
+          this.$notify({
+            title: 'Success',
+            message: 'Submitted!',
             type: 'success',
             duration: 1500
           })

@@ -21,11 +21,14 @@ export const RATER_STATUS = {
   DOCUMENT_REQUESTED: 'DocumentRequested',
   DOCUMENT_SUBMITTED: 'DocumentSubmitted',
   REVISION_REQUESTED: 'RevisionRequested',
-  REVISION_COMPLETED: 'RevisionCompleted'
+  REVISION_COMPLETED: 'RevisionCompleted',
+  TRAINING_APPROVED: 'TrainingApproved',
+  DOCUMENT_COMPLETED: 'DocumentCompleted'
 }
 export const REVIEW_REQUEST_STATUS = {
   IN_PROGRESS: 'In Progress',
-  COMPLETED: 'Completed'
+  COMPLETED: 'Completed',
+  RATED: 'Rated'
 }
 export const configs = {
   stripeApiKey: 'pk_test_51I9tu1D04tWYlOu2cVzeLBsGuDK4aRvfkR4tJb18W20hxgtf4989r2JeSbuua653nGkzY6IlFU7JTPYKyqne64VP00CLSFo42c'
@@ -42,6 +45,7 @@ export const PageName = {
   RATER_STATUS: 'ApplicationStatus',
   SELECT_YOUR_TEST: 'SelectYourTest',
   REVIEW: 'Review',
+  REVIEWS: 'Reviews',
   SUBMISSIONS: 'Submissions',
   NOT_FOUND: 'PageNotFound'
 }

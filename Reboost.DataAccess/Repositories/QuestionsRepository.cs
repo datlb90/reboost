@@ -7,6 +7,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Reboost.Shared;
 
 namespace Reboost.DataAccess.Repositories
 {
@@ -73,6 +74,7 @@ namespace Reboost.DataAccess.Repositories
                             Title = quest.Title,
                             Section = task.Name,
                             Test = test.Name,
+                            Time = task.Time,
                             Type = quest.Type,
                             Sample = quest.HasSample,
                             AverageScore = quest.AverageScore,
@@ -88,7 +90,7 @@ namespace Reboost.DataAccess.Repositories
 
             using (var command = context.Database.GetDbConnection().CreateCommand())
             {
-                command.CommandText = "select q.Id as Id, q.Title, ts.Name as Test, q.type as Type, q.hasSample as Sample, t.Name as Section, q.AverageScore as AverageScore, q.SubmissionCount as Submission, q.LikeCount as LikeCount, q.Status as Status"
+                command.CommandText = "select q.Id as Id, q.Title, ts.Name as Test, q.type as Type, q.hasSample as Sample, t.Name as Section, t.Time as Time, q.AverageScore as AverageScore, q.SubmissionCount as Submission, q.LikeCount as LikeCount, q.Status as Status"
                     + " From Questions q"
                     + " INNER JOIN Tasks t ON q.TaskId = t.Id"
                     + " INNER JOIN TestSections s ON t.SectionId = s.Id"
@@ -110,6 +112,7 @@ namespace Reboost.DataAccess.Repositories
                             Title = result.GetFieldValue<string>("Title"),
                             Section = result.GetFieldValue<string>("Section"),
                             Test = result.GetFieldValue<string>("Test"),
+                            Time = result.GetFieldValue<string>("Time"),
                             Type = result.GetFieldValue<string>("Type"),
                             Sample = result.GetFieldValue<bool>("Sample"),
                             AverageScore = result.GetFieldValue<string>("AverageScore"),
@@ -129,7 +132,7 @@ namespace Reboost.DataAccess.Repositories
 
             using (var command = context.Database.GetDbConnection().CreateCommand())
             {
-                command.CommandText = "select q.Id as Id, q.Title, ts.Name as Test, q.type as Type, q.hasSample as Sample, t.Name as Section, q.AverageScore as AverageScore, q.SubmissionCount as Submission, q.LikeCount as LikeCount, q.DisLikeCount as DisLikeCount, t.Direction as Direction"
+                command.CommandText = "select q.Id as Id, q.Title, ts.Name as Test, q.type as Type, q.hasSample as Sample, t.Name as Section, q.AverageScore as AverageScore, q.SubmissionCount as Submission, q.LikeCount as LikeCount, q.DisLikeCount as DisLikeCount, t.Direction as Direction, t.Time as Time"
                     + " From Questions q"
                     + " INNER JOIN Tasks t ON q.TaskId = t.Id"
                     + " INNER JOIN TestSections s ON t.SectionId = s.Id"
@@ -159,6 +162,7 @@ namespace Reboost.DataAccess.Repositories
                         entities.Title = result.GetFieldValue<string>("Title");
                         entities.Section = result.GetFieldValue<string>("Section");
                         entities.Test = result.GetFieldValue<string>("Test");
+                        entities.Time = result.GetFieldValue<string>("Time");
                         entities.Type = result.GetFieldValue<string>("Type");
                         entities.Sample = result.GetFieldValue<bool>("Sample");
                         entities.AverageScore = result.GetFieldValue<string>("AverageScore");
@@ -176,6 +180,7 @@ namespace Reboost.DataAccess.Repositories
         public async Task<List<SummaryPerUser>> GetSummaryByUserId(string userId)
         {
             var tests = await GetTestForCurrentUsers(userId);
+
             var query = from sub in ReboostDbContext.Submissions
                         join quest in ReboostDbContext.Questions on sub.QuestionId equals quest.Id
                         join task in ReboostDbContext.Tasks on quest.TaskId equals task.Id
@@ -188,12 +193,14 @@ namespace Reboost.DataAccess.Repositories
                             Section = g.Key,
                             Count = g.Count()
                         };
+
             var tasks = from task in ReboostDbContext.Tasks
                         select new SummaryPerUser
                         {
                             Section = task.Name,
                             Count = 0
                         };
+
 
             var listQuery = new List<SummaryPerUser>();
             foreach (var item in query)
@@ -214,10 +221,38 @@ namespace Reboost.DataAccess.Repositories
                 {
                     if (newquery.Section == _item.Section && _item.Count > 0)
                     {
-                        newquery.Count = 1;
+                        newquery.Count = _item.Count;
                     }
                 }
                 listTask.Add(newquery);
+            }
+
+            var ielts = await (from task in ReboostDbContext.Tasks
+                        where task.SectionId == 8
+                        select task).ToListAsync();
+
+            var toefls = await (from task in ReboostDbContext.Tasks
+                               where task.SectionId == 4
+                               select task).ToListAsync();
+
+            if (tests.Count == 1)
+            {
+                if(tests[0].ToUpper() == TestsName.TOEFL)
+                {
+                    foreach (var item in ielts)
+                    {
+                        var t = listTask.Where(r => r.Section.Trim() == item.Name.Trim()).FirstOrDefault();
+                        listTask.Remove(t);
+                    }
+                }
+                else
+                {
+                    foreach (var item in toefls)
+                    {
+                        var t = listTask.Where(r => r.Section.Trim() != item.Name.Trim()).FirstOrDefault();
+                        listTask.Remove(t);
+                    }
+                }
             }
 
             return listTask;
