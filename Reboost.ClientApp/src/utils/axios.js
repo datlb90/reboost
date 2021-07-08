@@ -55,10 +55,21 @@ instance.interceptors.response.use(
 	  if (error.response.data.title) { message += error.response.data.title + ' ' }
       if (error.response.data.modelState) { message += error.response.data.modelState.invalid_grant + ' ' }
       if (error.response.data.innerException) { message += error.response.data.innerException.exceptionMessage }
+      if (error.response.config.url === '/auth/register') {
+        if (Array.isArray(error.response.data.errors)) {
+          error.response.data.errors.forEach(e => {
+            message += '<br/>' + '-   ' + e
+          })
+        } else {
+          error.response.data.errors.Email ? message += '<br/>' + '- ' + error.response.data.errors.Email[0] : ''
+          error.response.data.errors.Password ? message += '<br/>' + '- ' + error.response.data.errors.Password[0] : ''
+        }
+      }
 
       Notification.error({
         title: 'Error',
-        message: message
+        message: message,
+        dangerouslyUseHTMLString: error.response.config.url === '/auth/register'
       })
     }
   }

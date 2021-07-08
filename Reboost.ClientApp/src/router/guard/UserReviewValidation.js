@@ -28,7 +28,6 @@ export async function isApprovedRater() {
 
     if (currentUser.role && (currentUser.role.toLowerCase() === 'rater' || currentUser.role.toLowerCase() === 'admin')) {
       reviewService.raterApprovedCheck().then(r => {
-        console.log(r)
         if (r.status === RATER_STATUS.APPROVED || currentUser.role.toLowerCase() === 'admin') {
           resolve({ code: 2, rater: r })
         }
@@ -49,8 +48,7 @@ export async function isApprovedRater() {
 
 export async function revieweeReviewAuthentication(reviewId) {
   return new Promise((resolve, reject) => {
-    reviewService.revieweeReviewAuth(reviewId).then(r => {
-      console.log('reivewee auth', r)
+    reviewService.ReviewAuth(reviewId).then(r => {
       if (typeof (r) != 'undefined' && r.status == 200) {
         resolve(r.data)
       } else {

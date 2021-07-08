@@ -152,11 +152,15 @@
         </div>
       </button>
     </div>
+    <div v-if="isReviewSample()" class="submit-button">
+      <el-button type="success" size="mini" @click="approveTraining()">Approve</el-button>
+      <el-button type="danger" size="mini" @click="rejectTraining()">Reject</el-button>
+    </div>
     <!-- Submit button -->
     <div id="submit-container" class="submit-button" style="align-items: center;">
       <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
-      <el-button v-if="isAuthor" :disabled="readOnly||israte" type="primary" size="mini" @click="submitReview()">Submit</el-button>
-      <el-button v-if="israte && !isAuthor" type="primary" size="mini" @click="rateReview()">Rate Review</el-button>
+      <el-button v-if="isAuthor" :disabled="readOnly||isRate" type="primary" size="mini" @click="submitReview()">Submit</el-button>
+      <el-button v-if="isRate && !isAuthor && !isRated" type="primary" size="mini" @click="rateReview()">Rate Review</el-button>
     </div>
 
   </div>
@@ -166,6 +170,8 @@
 import ColorPicker from './ColorPicker'
 import UI from '@/pdfjs/UI'
 import ReviewVue from '@/views/learner/Review.vue'
+import { UserRole, RATER_STATUS } from '../../app.constant'
+import reviewService from '../../services/review.service'
 export default ({
   name: 'ToolBar',
   components: {
@@ -176,7 +182,8 @@ export default ({
     expandcolorpicker: { type: Boolean, default: false },
     renderoptions: { type: Object, default: null },
     reviewPage: ReviewVue,
-    israte: { type: Boolean, default: false },
+    isRate: { type: Boolean, default: false },
+    isRated: { type: Boolean, default: false },
     isAuthor: { type: Boolean, default: false }
   },
   data() {
@@ -197,11 +204,14 @@ export default ({
       maxScale: 2,
       disableAnnotation: false,
       showChevronScroll: false,
-      clickedAnnotation: null
+      clickedAnnotation: null,
+      reviewData: null
     }
   },
   computed: {
-
+    currentUser() {
+      return this.$store.getters['auth/getUser']
+    }
   },
   watch: {
   },
@@ -526,6 +536,52 @@ export default ({
     },
     rateReview() {
       this.$emit('rateBtnClick')
+    },
+    isReviewSample() {
+      if ((this.documentid == 69 || this.documentid == 68) && this.currentUser.role === UserRole.ADMIN && (this.reviewData?.status?.includes('TrainingSubmitted') || this.reviewData?.status?.includes('Completed'))) {
+        console.log('---------', this.reviewData)
+        return true
+      }
+      return false
+    },
+    loadReviewData(rs) {
+      this.reviewData = rs
+    },
+    rejectTraining() {
+      var newStatus
+      if (this.reviewData.status.includes('IELTS')) {
+        newStatus = 'IELTSTrainingRevision'
+      } else {
+        newStatus = 'TOEFLTrainingRevision'
+      }
+      reviewService.changeReviewStatus(this.reviewData.id, newStatus).then(rs => {
+        if (rs) {
+          this.$notify.error({
+            title: RATER_STATUS.REVISION,
+            message: 'Submitted Training Revision Requested!',
+            duration: 2000
+          })
+          this.reviewData.status = newStatus
+        }
+      })
+    },
+    approveTraining() {
+      var newStatus
+      if (this.reviewData.status.includes('IELTS')) {
+        newStatus = 'IELTSTrainingApproved'
+      } else {
+        newStatus = 'TOEFLTrainingApproved'
+      }
+      reviewService.changeReviewStatus(this.reviewData.id, newStatus).then(rs => {
+        if (rs) {
+          this.$notify.success({
+            title: RATER_STATUS.APPROVED,
+            message: 'Submitted Training Approved!',
+            duration: 2000
+          })
+          this.reviewData.status = newStatus
+        }
+      })
     }
   }
 })

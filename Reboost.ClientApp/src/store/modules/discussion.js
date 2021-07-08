@@ -38,7 +38,7 @@ const actions = {
     commit('SET_DISCUSSION', discussion)
   },
   updateDiscussion({ commit }, discussion) {
-    return discussionService.update(discussion).then(result => {
+    discussionService.update(discussion).then(result => {
       commit('UPDATE_DISCUSSION', discussion)
     })
   },

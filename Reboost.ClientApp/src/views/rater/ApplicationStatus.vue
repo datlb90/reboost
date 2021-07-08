@@ -43,7 +43,7 @@
             <p>Unfortunately, your application was denied because your credentials do not match with the requirements for becoming a rater. We look forward to receiving your application again in the near future. If you have any questions or concerns regarding this, please feel free to contact us as support@reboost.ai.
             </p>
           </div>
-          <div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED)" class="note-container">
+          <div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="note-container">
             <div class="label-container" style="width: 155px">
               Note
             </div>
@@ -336,7 +336,7 @@ export default {
             this.status = rs.status
             this.$notify({
               title: 'Success',
-              message: 'Update success',
+              message: 'Updated successfully',
               type: 'success',
               duration: 2000
             })

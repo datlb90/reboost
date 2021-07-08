@@ -13,8 +13,8 @@ const reviewService = {
   userReviewAuth(reviewId) {
     return http.get(`/review/${reviewId}/auth`).then(rs => rs)
   },
-  revieweeReviewAuth(revieweeId) {
-    return http.get(`/review/reviewee/${revieweeId}/auth`).then(rs => rs)
+  ReviewAuth(reviewId) {
+    return http.get(`/review/reviewee/${reviewId}/auth`).then(rs => rs)
   },
   raterApprovedCheck() {
     return http.post(`/review/rater/auth`).then(rs => rs.data)
@@ -84,6 +84,9 @@ const reviewService = {
   },
   getReviewRequestBySubmissionId(submissionId) {
     return http.get(`/review/getRequest/${submissionId}`).then(rs => rs.data)
+  },
+  submitRate(data) {
+    return http.post('/review/submitRate', data).then(rs => rs.data)
   }
 }
 

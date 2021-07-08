@@ -1,24 +1,41 @@
 import authService from '@/services/auth.service'
 import { PageName, UserRole } from '@/app.constant'
 import store from '../../store'
+import { isApprovedRater, revieweeReviewAuthentication } from '../guard/UserReviewValidation'
 
-export default async router => {
+export default async(router) => {
   router.beforeEach(async(to, from, next) => {
     console.log('router before each', to, from)
     const currentUser = store.getters['auth/getUser']
+    console.log('getUser', currentUser)
 
-    if (!currentUser.id) {
-      if (to.path == '/login') {
-        return next()
-      }
-      // return next('/login')
+    if (to.name === PageName.NOT_FOUND) {
+      next()
+      return
     }
 
-    if (
-      store.getters['auth/getSelectedTest'].length == 0 &&
-      currentUser.role.trim() === UserRole.LEARNER &&
-      to.path != '/SelectYourTest'
-    ) {
+    if (!currentUser || !currentUser.id) {
+      if (to.path == '/login' || to.path == '/' || to.path == '/register' || to.path == '/rater/register') {
+        next()
+        return
+      }
+      next('/login')
+      return
+    }
+
+    if (currentUser.role.trim() === UserRole.LEARNER && (to.path.includes('/rater/') || to.path.includes('/admin/'))) {
+      next({ name: PageName.NOT_FOUND })
+      return
+    }
+
+    if (currentUser.role.trim() === UserRole.RATER && to.path.includes('/admin/')) {
+      next({ name: PageName.NOT_FOUND })
+      return
+    }
+
+    if (store.getters['auth/getSelectedTest'].length == 0 &&
+    currentUser.role.trim() === UserRole.LEARNER &&
+    (to.path != '/SelectYourTest')) {
       if (to.path == '/login') {
         next()
         return
@@ -36,14 +53,9 @@ export default async router => {
     // Check user role
     if (to.meta.role) {
       const currentUser = authService.getCurrentUser()
-      if (
-        !currentUser ||
-        !currentUser.role ||
-        currentUser.role !== to.meta.role
-      ) {
+      if (!currentUser || !currentUser.role || currentUser.role !== to.meta.role) {
         return next('/notfound')
       }
-
       next()
     }
 
@@ -51,13 +63,28 @@ export default async router => {
     if (currentUser && currentUser.role) {
       const role = currentUser.role
       if (to.name === PageName.AFTER_LOGIN) {
-        console.log('AFTER LOGIN', currentUser)
         if (role === UserRole.ADMIN) {
           return next({ name: PageName.RATERS })
         } else if (role === UserRole.RATER) {
-          return next({ name: PageName.RATER_APPLY })
+          const check = await isApprovedRater()
+          switch (check.code) {
+            case -1:
+              next({ name: PageName.RATER_STATUS, params: { id: check.rater.id }})
+              break
+            case 0:
+              next({ name: PageName.RATER_APPLY })
+              break
+            case 1:
+              next({ path: `rater/application/status/${check.rater.id}` })
+              break
+            case 2:
+              next({ name: PageName.REVIEWS })
+              break
+            default:
+              next()
+          }
+          return
         } else if (role === UserRole.LEARNER) {
-          console.log('AFTER LOGIN as Leaner', role)
           await store.dispatch('auth/setSelectedTest').then(rs => {
             const tests = store.getters['auth/getSelectedTest']
             if (tests.length > 0) {
@@ -67,7 +94,17 @@ export default async router => {
           })
         } else {
           next({ name: PageName.NOT_FOUND })
+          return
         }
+      }
+    }
+
+    // Check review auth
+    if (to.name === PageName.REVIEW) {
+      const check = await revieweeReviewAuthentication(to.params.reviewId)
+      if (check === 0) {
+        next({ name: PageName.NOT_FOUND })
+        return
       }
     }
 

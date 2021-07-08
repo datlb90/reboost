@@ -10,6 +10,7 @@ namespace Reboost.Shared
         public string Title { get; set; }
         public string Section { get; set; }
         public string Test { get; set; }
+        public string Time { get; set; }
         public string Type { get; set; }
         public bool Sample { get; set; }
         public string AverageScore { get; set; }

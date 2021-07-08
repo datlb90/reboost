@@ -110,8 +110,12 @@ namespace Reboost.Service.Services
                     await _unitOfWork.Discussion.AddTag(tag);
                 }
             }
-            var discussionVote = update.DiscussionVote.Last();
-            await _unitOfWork.Discussion.CreateDiscussionVote(discussionVote);
+            var discussionVote = update.DiscussionVote.LastOrDefault();
+            if (discussionVote != null)
+            {
+                await _unitOfWork.Discussion.CreateDiscussionVote(discussionVote);
+            }
+
             update.Tags = null;
             update.DiscussionVote = null;
             update.UpdatedDate = DateTime.Now;

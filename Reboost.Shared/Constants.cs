@@ -26,4 +26,14 @@ namespace Reboost.Shared
         public const string REVIEW_REQUETED = "Review Requested";
         public const string RATED = "Rated";
     }
+    public static class TestsName
+    {
+        public const string IELTS = "IELTS";
+        public const string TOEFL = "TOEFL";
+    }
+    public static class RaterReviewsTrainingStatus
+    {
+        public const string Submitted = "Submitted";
+        public const string REVISION = "Revision";
+    }
 }

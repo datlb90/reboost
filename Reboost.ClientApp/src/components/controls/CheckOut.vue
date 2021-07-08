@@ -16,7 +16,7 @@
         <img style="width:50px; height:50px; margin: 0 10px;" src="@/assets/img/checkout-icon-premium.png" alt="">
         <div class="title-container">
           <span>Writting preview</span>
-          <span class="title-price">$35.00</span>
+          <span class="title-price">${{ total }}.00</span>
         </div>
       </div>
       <div class="co-form" :class="{ active: activeStep == 1 }">
@@ -89,7 +89,7 @@
       <div class="co-form-footer__title">
         <div>
           <span>Item:</span>
-          <span class="title-price title-price__footer">${{ total }}</span>
+          <span class="title-price title-price__footer">${{ total }}.00</span>
         </div>
         <div>
           <span>Estimate Tax:</span>
@@ -98,7 +98,7 @@
         <div class="divider--horizontal divider" />
         <div class="title-footer__total">
           <span>Order total: </span>
-          <span class="title-price title-price__footer">${{ total }}</span>
+          <span class="title-price title-price__footer">${{ total }}.00</span>
         </div>
       </div>
       <div>
@@ -138,7 +138,7 @@ export default {
       checkoutDisable: true,
       newMethod: false,
       selectedMethod: null,
-      amount: 35000,
+      amount: 3500,
       paymentIntent: null,
       total: null
     }
