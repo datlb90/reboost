@@ -54,7 +54,7 @@
         <div slot="header" class="clearfix">
           <div>
             <div style="font-size: 15px; font-weight: bold; text-align: left;">
-              {{ currentUser.username }}
+              {{ loadedAnnotation.reviewer.firstName }} {{ loadedAnnotation.reviewer.lastName }}
             </div>
           </div>
         </div>
@@ -92,7 +92,7 @@
         <div slot="header" class="clearfix">
           <div>
             <div style="font-size: 15px; font-weight: bold; text-align: left;">
-              {{ currentUser.username }}
+              {{ loadedAnnotation.reviewer.firstName }} {{ loadedAnnotation.reviewer.lastName }}
             </div>
             <div style="font-size: 12px; text-align: left;">
               {{ getDateNow }}
@@ -186,7 +186,7 @@
 //   DefaultAnnotationLayerFactory,
 //   DefaultTextLayerFactory
 // } from "pdfjs-dist/web/pdf_viewer.js";
-
+import raterService from '../../services/rater.service'
 import PDFJS from 'pdf-dist/webpack.js'
 import ToolBar from '../../components/controls/Viewer_ToolBar'
 import TabQuestion from './Review_TabQuestion'
@@ -213,7 +213,7 @@ import { enableEdit } from '@/pdfjs/UI/edit'
 import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
-import { REVIEW_REQUEST_STATUS } from '../../app.constant'
+import { RATER_STATUS, REVIEW_REQUEST_STATUS } from '../../app.constant'
 import moment from 'moment'
 // import { highlightText } from '../../pdfjs/UI/highlight-text.js'
 
@@ -293,7 +293,8 @@ export default {
       selectedTab: 'question',
       isReviewAuth: false,
       isRated: false,
-      isSubmitRate: false
+      isSubmitRate: false,
+      statusRater: ''
     }
   },
   computed: {
@@ -305,7 +306,8 @@ export default {
 
       return {
         annotations: data.annotations.map(a => ({ ...JSON.parse(a.data), id: a.id, top: a.top, pageNum: a.pageNum, color: a.color })),
-        comments: data.comments.map(c => ({ ...JSON.parse(c.data), documentId: this.documentId, id: c.id }))
+        comments: data.comments.map(c => ({ ...JSON.parse(c.data), documentId: this.documentId, id: c.id })),
+        reviewer: data.user
       }
     },
     currentUser() {
@@ -341,6 +343,9 @@ export default {
       this.hideDeleteToolBar()
       // this.ToolbarButtons()
       // this.ScaleAndRotate();
+    })
+    await raterService.getByCurrentUser().then(rs => {
+      this.statusRater = rs.status
     })
 
     await this.loadRate()
@@ -2143,7 +2148,12 @@ export default {
               message: 'Submitted!',
               duration: 2000
             })
-            this.$router.push('/reviews')
+            console.log('submit ne', rs)
+            if (this.statusRater === RATER_STATUS.APPROVED) {
+              this.$router.push('/reviews')
+            } else {
+              this.$router.push('/rater/application')
+            }
           } else {
             this.$notify.error({
               title: 'Submit failed',

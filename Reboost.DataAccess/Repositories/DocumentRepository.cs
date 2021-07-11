@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Reboost.DataAccess.Entities;
+using Reboost.DataAccess.Models;
 
 namespace Reboost.DataAccess.Repositories
 {
@@ -12,6 +13,8 @@ namespace Reboost.DataAccess.Repositories
         Task<IEnumerable<Documents>> GetByFileName(string fileName);
         Task<IEnumerable<Documents>> GetByStatus(string status);
         Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId);
+        Task<Documents> GetSubmissionByIdAsync(int id);
+        Task<Documents> UpdateDocumentBySubmissionId(int id, DocumentRequestModel data);
     }
 
     public class DocumentRespository : BaseRepository<Documents>, IDocumentRepository
@@ -49,6 +52,33 @@ namespace Reboost.DataAccess.Repositories
             }
             return rs;
         }
+
+        public async Task<Documents> GetSubmissionByIdAsync(int id)
+        {
+            var submission = await ReboostDbContext.Submissions.FindAsync(id);
+
+            var rs = await ReboostDbContext.Documents.FindAsync(submission.DocId);
+            return rs;
+
+        }
+
+        public async Task<Documents> UpdateDocumentBySubmissionId(int id, DocumentRequestModel data)
+        {
+            var submission = await ReboostDbContext.Submissions.FindAsync(id);
+            
+            var doc = await ReboostDbContext.Documents.FindAsync(submission.DocId);
+
+            submission.TimeSpentInSeconds = data.TimeSpentInSeconds;
+
+            doc.Text = data.Text;
+            doc.Filename = data.Filename;
+            doc.Data = data.Data;
+
+            await ReboostDbContext.SaveChangesAsync();
+
+            return data;
+        }
+
         private ReboostDbContext ReboostDbContext
         {
             get { return context as ReboostDbContext; }

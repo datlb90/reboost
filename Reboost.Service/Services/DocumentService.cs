@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
+using Reboost.DataAccess.Models;
 
 namespace Reboost.Service.Services
 {
@@ -22,6 +23,8 @@ namespace Reboost.Service.Services
 
         Task<IEnumerable<Documents>> GetByStatus(string status);
         Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId);
+        Task<Documents> GetSubmissionById(int id);
+        Task<Documents> UpdateDocumentBySubmissionId(int id, DocumentRequestModel data);
     }
 
     public class DocumentService : IDocumentService
@@ -76,6 +79,22 @@ namespace Reboost.Service.Services
         public async Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId)
         {
             var rs = await _unitOfWork.Documents.SearchByUser(userId, questionId);
+            return rs;
+        }
+
+        public async Task<Documents> GetSubmissionById(int id)
+        {
+            var rs = await _unitOfWork.Documents.GetSubmissionByIdAsync(id);
+            return rs;
+        }
+
+        public async Task<Documents> UpdateDocumentBySubmissionId(int id, DocumentRequestModel data)
+        {
+            data.Status = "Submitted";
+            data.Data = _pdfService.WriteParagraph(data.Text);
+
+            var rs = await _unitOfWork.Documents.UpdateDocumentBySubmissionId(id, data);
+
             return rs;
         }
     }

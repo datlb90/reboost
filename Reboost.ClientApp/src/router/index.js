@@ -309,6 +309,14 @@ const router = new VueRouter({
       }
     },
     {
+      path: '/PracticeWriting/:id/:submissionId',
+      component: PracticeWriting,
+      name: 'PracticeWriting',
+      meta: {
+        loginRequired: true
+      }
+    },
+    {
       path: '/SelectYourTest',
       component: SelectYourTest,
       name: PageName.SELECT_YOUR_TEST,

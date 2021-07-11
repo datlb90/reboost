@@ -20,11 +20,11 @@ namespace Reboost.Shared
         //[StringLength(50, MinimumLength = 5)]
         //public string ConfirmPassword { get; set; }
 
-        //[Required]
-        //public string FirstName { get; set; }
+        [Required]
+        public string FirstName { get; set; }
 
-        //[Required]
-        //public string LastName { get; set; }
+        [Required]
+        public string LastName { get; set; }
 
         [Required]
         public string Role { get; set; }

@@ -3,17 +3,22 @@
     <div>
       <div class="wrapper">
         <div>
-          <el-form :model="form">
+          <el-form ref="formSignUp" :model="form">
             <div style="margin: auto; width: 140px; padding-left: 10px; padding-bottom: 30px;">
               <router-link class="navbar-brand" to="/" style="padding-top: 0px;">
                 <img src="@/assets/logo/green_logo.png" alt="logo" style="width: 140px;">
               </router-link>
             </div>
-            <el-form-item style="text-align: left;">
+            <el-form-item style="text-align: left;" prop="firstName" :rules="[{ required: true, message: 'First name is required'}]">
+              <el-input id="firstName" v-model="form.firstName" error="Ahihi" type="text" placeholder="First Name" />
+            </el-form-item>
+            <el-form-item style="text-align: left;" prop="lastName" :rules="[{ required: true, message: 'Last name is required'}]">
+              <el-input id="lastName" v-model="form.lastName" type="text" placeholder="Last Name" />
+            </el-form-item>
+            <el-form-item style="text-align: left;" prop="username" :rules="[{ required: true, message: 'Username or email is required'}]">
               <el-input id="email" v-model="form.username" type="text" placeholder="Username or email" />
             </el-form-item>
-            <el-form-item style="text-align: left;">
-
+            <el-form-item style="text-align: left;" prop="password" :rules="[{ required: true, message: 'Password is required'}]">
               <el-input id="password" v-model="form.password" type="password" autocomplete="off" placeholder="Password" />
             </el-form-item>
             <el-form-item>
@@ -79,8 +84,10 @@ export default {
       user: null,
       mgr: null,
       form: {
-        username: '',
-        password: ''
+        username: null,
+        password: null,
+        firstName: null,
+        lastName: null
       },
       googleExternalLogin: null,
       returnUrl: '/',
@@ -99,15 +106,21 @@ export default {
       this.$refs.facebookLoginForm.submit()
     },
     async signUp() {
-      const user = await this.register({
-        Email: this.form.username,
-        Password: this.form.password,
-        Role: 'Learner'
-      })
+      this.$refs['formSignUp'].validate(async valid => {
+        if (valid) {
+          const user = await this.register({
+            Email: this.form.username,
+            Password: this.form.password,
+            FirstName: this.form.firstName,
+            LastName: this.form.lastName,
+            Role: 'Learner'
+          })
 
-      if (user) {
-        this.$router.push({ name: PageName.AFTER_LOGIN })
-      }
+          if (user) {
+            this.$router.push({ name: PageName.AFTER_LOGIN })
+          }
+        } else return false
+      })
     }
   }
 }

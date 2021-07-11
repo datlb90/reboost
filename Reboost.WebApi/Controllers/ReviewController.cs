@@ -37,6 +37,11 @@ namespace Reboost.WebApi.Controllers
         public async Task<IActionResult> GetAnnotationsAsync([FromRoute] int docId, [FromRoute] int reviewId)
         {
             var rs = await _service.GetAnnotationsAsync(docId, reviewId);
+            var review = await _service.GetReviewByIdAsync(reviewId);
+            var user = await _userService.GetByIdAsync(review.ReviewerId);
+
+            rs.User = user;
+
             return Ok(rs);
         }
         [Authorize]

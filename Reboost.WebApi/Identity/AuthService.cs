@@ -71,7 +71,9 @@ namespace Reboost.WebApi.Identity
             var identityUser = new ApplicationUser
             {
                 Email = model.Email,
-                UserName = GetUsernameFromEmail(model.Email)
+                UserName = GetUsernameFromEmail(model.Email),
+                FirstName = model.FirstName,
+                LastName = model.LastName
             };
 
             var result = await _userManger.CreateAsync(identityUser, model.Password);
@@ -130,7 +132,9 @@ namespace Reboost.WebApi.Identity
                         Email = identityUser.Email,
                         Role = roles.FirstOrDefault(), // Each user has only one role
                         Token = tokenAsString,
-                        ExpireDate = token.ValidTo
+                        ExpireDate = token.ValidTo,
+                        FirstName = model.FirstName,
+                        LastName = model.LastName
                     };
 
                     return new UserManagerResponse
@@ -344,6 +348,8 @@ namespace Reboost.WebApi.Identity
             UserLoginModel userModel = new UserLoginModel
             {
                 Id = user.Id,
+                FirstName = _user.FirstName,
+                LastName = _user.LastName,
                 Username = user.UserName,
                 Email = user.Email,
                 Role = roles.FirstOrDefault(), // Each user has only one role
