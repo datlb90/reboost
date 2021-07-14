@@ -187,12 +187,14 @@ namespace Reboost.DataAccess.Repositories
                         join sec in ReboostDbContext.TestSections on task.SectionId equals sec.Id
                         join test in ReboostDbContext.Tests on sec.TestId equals test.Id
                         where sub.UserId == userId && tests.Contains(test.Name)
-                        group quest by task.Name into g
+                        group quest by new { task.Name, quest.Id } into g
                         select new SummaryPerUser
                         {
-                            Section = g.Key,
+                            Section = g.Key.Name,
                             Count = g.Count()
                         };
+
+
 
             var tasks = from task in ReboostDbContext.Tasks
                         select new SummaryPerUser
@@ -221,7 +223,7 @@ namespace Reboost.DataAccess.Repositories
                 {
                     if (newquery.Section == _item.Section && _item.Count > 0)
                     {
-                        newquery.Count = _item.Count;
+                        newquery.Count++;
                     }
                 }
                 listTask.Add(newquery);

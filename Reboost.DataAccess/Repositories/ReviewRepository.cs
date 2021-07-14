@@ -60,9 +60,11 @@ namespace Reboost.DataAccess.Repositories
         {
             var annotations = await db.Annotations.AsNoTracking().Where(a => a.DocumentId == docId && a.ReviewId == reviewId).ToListAsync();
             var comments = db.InTextComments.AsNoTracking().Where(c => annotations.Select(a => a.Id).Contains(c.AnnotationId));
+            
             return new AnnotationModel { 
                 Annotations = annotations,
-                Comments = comments
+                Comments = comments,
+                User = null
             };
         }
 

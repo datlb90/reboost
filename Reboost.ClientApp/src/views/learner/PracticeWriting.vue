@@ -145,22 +145,25 @@
               <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;"> Reviews.</a> </el-tag>
             </div>
             <div v-if="getQuestion != ''">
-              <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit & Request Review</el-button>
-              <el-dropdown v-if="writtingSubmitted || hasSubmitionForThisQuestion" size="mini" @command="checkoutVisibles">
+              <el-dropdown v-if="writtingSubmitted || hasSubmitionForThisQuestion " size="mini" @command="checkoutVisibles">
                 <el-button size="mini">
                   Get Writting Preview
                 </el-button>
                 <el-dropdown-menu slot="dropdown" size="mini">
-                  <el-dropdown-item :disabled="isFreeRequested" command="free">Free Peer Review</el-dropdown-item>
+                  <el-dropdown-item :disabled="isFreeRequested || unRatedList.length > 0" command="free">Free Peer Review</el-dropdown-item>
                   <el-dropdown-item command="checkout">Pro Rater Review</el-dropdown-item>
                   <el-dropdown-item divided>View Review Sample</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
-              <el-button v-if="hasSubmitionForThisQuestion" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Save</el-button>
+
+              <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit & Request Review</el-button>
+              <el-button v-if="isEdit" style="margin-left:5px" size="mini" @click="isEdit=false">Edit</el-button>
+              <el-button v-if="hasSubmitionForThisQuestion&& !isEdit" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Save</el-button>
+
             </div>
           </div>
           <div style="flex-grow: 1;">
-            <textarea v-model="writingContent" placeholder="Please input..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
+            <textarea v-model="writingContent" :disabled="isEdit" placeholder="Please input..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
           </div>
         </div>
       </pane>
@@ -235,7 +238,6 @@ export default {
       hasSubmitionForThisQuestion: false,
       timeSpent: 0,
       timeSpentInterval: null,
-      idLocalStorage: '',
       timeout: null,
       submissionId: null,
       unRatedList: [],
@@ -245,7 +247,9 @@ export default {
       dialogVisible: false,
       submittedMessage: 'Your writting has been successfully submitted. You can request a review now.',
       isStart: false,
-      timeStart: null
+      timeStart: null,
+      idSubmissionStorage: null,
+      isEdit: false
     }
   },
   computed: {
@@ -312,21 +316,32 @@ export default {
   },
   async mounted() {
     this.questionId = this.$route.params.id
+    this.submissionId = this.$route.params.submissionId
+
     this.$store.dispatch('question/loadQuestion', +this.questionId).then(rs => {
       this.calculateContainerHeight()
       this.loadCompleted = true
     })
+
     userService.hasSubmissionOnTaskOf(this.currentUser.id, this.questionId).then(rs => {
       if (rs) {
         this.email = this.currentUser.email
         this.hideDirection = 'Show'
       }
     })
+
     window.addEventListener('resize', this.calculateContainerHeight.bind(this))
     this.setIntervalForScroll = setInterval(() => {
       this.calculateStylePaddingScroll()
     }, 80)
+
+    if (this.submissionId) {
+      this.idSubmissionStorage = this.currentUser.username + '_QuestionId' + this.questionId + '_SubmissionId' + this.submissionId
+      this.isEdit = true
+    }
+
     this.idLocalStorage = this.currentUser.username + '_QuestionId' + this.questionId
+
     this.loadData()
   },
   destroyed() {
@@ -335,31 +350,44 @@ export default {
   },
   methods: {
     loadData() {
-      documentService.search(this.currentUser.id, this.questionId).then(rs => {
-        console.log('Current user submittion for this question', rs)
-        if (rs && rs.length > 0) {
-          const latestSubmition = rs[0]
-          this.submissionId = rs[0]['submissions'][0]?.id
-          this.writingContent = latestSubmition.text
-          this.hasSubmitionForThisQuestion = true
-          this.countWords()
-
-          if (this.submissionId) {
-            reviewService.getReviewRequestBySubmissionId(this.submissionId).then(rs => {
-              if (rs) {
-                this.isFreeRequested = true
-              }
-            })
+      if (this.submissionId) {
+        reviewService.getReviewRequestBySubmissionId(this.submissionId).then(rs => {
+          if (rs) {
+            this.isFreeRequested = true
           }
-        } else {
-          if (localStorage.getItem(this.idLocalStorage) && localStorage.getItem(this.idLocalStorage) != '') {
-            this.writingContent = localStorage.getItem(this.idLocalStorage)
+        })
+
+        documentService.getBySubmissionId(+this.submissionId).then(rs => {
+          console.log(`submission: ${this.submissionId} data`, rs)
+          if (rs) {
+            const latestSubmition = rs
+            this.writingContent = latestSubmition.text
+            this.hasSubmitionForThisQuestion = true
+          }
+          if (localStorage.getItem(this.idSubmissionStorage) && localStorage.getItem(this.idSubmissionStorage) != '') {
+            this.writingContent = localStorage.getItem(this.idSubmissionStorage)
             this.countWords()
           }
-        }
-      })
+        })
+      } else {
+        this.writingContent = localStorage.getItem(this.idLocalStorage)
+        this.countWords()
+        // documentService.search(this.currentUser.id, this.questionId).then(rs => {
+        //   if (rs && rs.length > 0) {
+        //     this.submissionId = rs[0]['submissions'][0]?.id
+        //     this.$router.push(`/PracticeWriting/${this.questionId}/${this.submissionId}`)
+        //     this.loadData()
+        //   } else {
+
+        //   }
+        // })
+      }
+
       reviewService.getUnratedReview().then(rs => {
-        if (rs.length > 0) { this.unRatedList = rs }
+        if (rs.length > 0) {
+          this.unRatedList = rs
+          console.log('unrated list : ', rs)
+        }
       })
     },
     calculateContainerHeight() {
@@ -408,40 +436,59 @@ export default {
         timeSpentInSeconds: timeInSeconds
       }
 
-      if (this.unRatedList.length > 0) {
-        data.status = 'Pending'
-        documentService.submitPendingDocument(data).then(rs => {
+      if (this.submissionId) {
+        data.status = this.unRatedList.length > 0 ? 'Pending' : 'Submitted'
+        this.submittedMessage = this.unRatedList.length > 0 ? 'Your submission is currently pending, please rate all of your unrated.' : this.submittedMessage
+        this.timeSpent = 0
+
+        documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
+            this.writtingSubmitted = true
             this.$notify({
               title: 'Success',
-              message: 'Submit successfully',
+              message: 'Updated successfully',
               type: 'success',
               duration: 1000
             })
-            this.submittedMessage = 'Your submission is currently pending, please rate all of your unrated.'
-            this.writtingSubmitted = true
-            this.hasSubmitionForThisQuestion = true
-            this.timeSpent = 0
-            this.submissionId = rs.submissions[0]?.id
           }
         })
       } else {
-        data.status = 'Submitted'
-        documentService.submitDocument(data).then(rs => {
-          if (rs) {
-            this.$notify({
-              title: 'Success',
-              message: 'Submit successfully',
-              type: 'success',
-              duration: 1000
-            })
-            this.writtingSubmitted = true
-            this.hasSubmitionForThisQuestion = true
-            this.timeSpent = 0
-            this.submissionId = rs.submissions[0]?.id
-          }
-        })
+        if (this.unRatedList.length > 0) {
+          data.status = 'Pending'
+          documentService.submitPendingDocument(data).then(rs => {
+            if (rs) {
+              this.$notify({
+                title: 'Success',
+                message: 'Submitted successfully',
+                type: 'success',
+                duration: 1000
+              })
+              this.submittedMessage = 'Your submission is currently pending, please rate all of your unrated.'
+              this.writtingSubmitted = true
+              this.hasSubmitionForThisQuestion = true
+              this.timeSpent = 0
+              this.submissionId = rs.submissions[0]?.id
+            }
+          })
+        } else {
+          data.status = 'Submitted'
+          documentService.submitDocument(data).then(rs => {
+            if (rs) {
+              this.$notify({
+                title: 'Success',
+                message: 'Submitted successfully',
+                type: 'success',
+                duration: 1000
+              })
+              this.writtingSubmitted = true
+              this.hasSubmitionForThisQuestion = true
+              this.timeSpent = 0
+              this.submissionId = rs.submissions[0]?.id
+            }
+          })
+        }
       }
+
       // console.log('SUBMIT DATA', data)
     },
     toggleBtnShowTab() {
@@ -483,12 +530,14 @@ export default {
       }
 
       this.countWord = this.writingContent.trim().split(/\b\S+\b/).length - 1
-      if (!this.hasSubmitionForThisQuestion) {
-        clearTimeout(this.timeout)
-        this.timeout = setTimeout(() => {
-          localStorage.setItem(this.idLocalStorage, this.writingContent)
-        }, 500)
-      }
+
+      clearTimeout(this.timeout)
+      this.timeout = setTimeout(() => {
+        if (this.idSubmissionStorage) {
+          localStorage.setItem(this.idSubmissionStorage, this.writingContent)
+        }
+        localStorage.setItem(this.idLocalStorage, this.writingContent)
+      }, 50)
     },
     changedOption() {
       if (this.isTest) {

@@ -90,7 +90,7 @@
               </span>
               <el-dropdown-menu slot="dropdown">
                 <div style="padding:0px 20px; display:inline-grid">
-                  <span style="padding:5px 0px;font-weight:700;font-size:20px;">{{ currentUser.username }}</span>
+                  <span style="padding:5px 0px;font-weight:700;font-size:20px;">Hi, {{ displayName }}</span>
                   <span>Email: {{ currentUser.email }}</span>
                   <span>Role: {{ currentUser.role }}</span>
                   <span>Rating: {{ toFix(raterRating) }} <i class="fas fa-star" /></span>
@@ -134,6 +134,9 @@ export default {
     },
     selectedTest() {
       return this.$store.getters['auth/getSelectedTest']
+    },
+    displayName() {
+      return this.currentUser.firstName ?? this.currentUser.username
     }
   },
   mounted() {
@@ -141,6 +144,7 @@ export default {
     if (this.currentUser?.id) {
       this.$store.dispatch('auth/setSelectedTest')
     }
+    console.log('asdasd', this.currentUser)
     window.addEventListener('scroll', () => {
       const scrollPos = window.scrollY
       // eslint-disable-next-line no-console

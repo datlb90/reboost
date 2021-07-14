@@ -31,7 +31,7 @@ namespace Reboost.WebApi.Controllers
         public async Task<Documents> Create(DocumentRequestModel model)
         {
             var newDoc = await _docService.Create(model);
-            await _submissionService.CreateAsync(new Submissions { 
+            await _submissionService.CreateAsync(new Submissions {
                 DocId = newDoc.Id,
                 UserId = model.UserId,
                 QuestionId = model.QuestionId,
@@ -111,6 +111,20 @@ namespace Reboost.WebApi.Controllers
         [Route("search/user/{userId}/question/{questionId}")]
         public async Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId) {
             return await _docService.SearchByUser(userId, questionId);
+        }
+
+        [HttpGet]
+        [Route("submission/{id}")]
+        public async Task<Documents> GetSubmissionByIdAsync(int id)
+        {
+            return await _docService.GetSubmissionById(id);
+        }
+
+        [HttpPut]
+        [Route("submission/{id}")]
+        public async Task<Documents> UpdateDocumentBySubmissionId(int id, DocumentRequestModel model)
+        {
+            return await _docService.UpdateDocumentBySubmissionId(id, model);
         }
     }
 }

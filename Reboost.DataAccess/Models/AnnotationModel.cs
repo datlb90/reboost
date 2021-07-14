@@ -9,5 +9,6 @@ namespace Reboost.DataAccess.Models
     {
         public IEnumerable<Annotations> Annotations { get; set; }
         public IEnumerable<InTextComments> Comments { get; set; }
+        public User User { get; set; }
     }
 }
