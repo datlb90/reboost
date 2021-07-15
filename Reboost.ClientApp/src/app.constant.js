@@ -22,6 +22,7 @@ export const RATER_STATUS = {
   DOCUMENT_SUBMITTED: 'DocumentSubmitted',
   REVISION_REQUESTED: 'RevisionRequested',
   REVISION_COMPLETED: 'RevisionCompleted',
+  TRAINING_COMPLETED: 'TrainingCompleted',
   TRAINING_APPROVED: 'TrainingApproved',
   DOCUMENT_COMPLETED: 'DocumentCompleted'
 }

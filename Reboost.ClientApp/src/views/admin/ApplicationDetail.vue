@@ -17,7 +17,7 @@
           <el-form-item v-if="raterId" size="mini" label="Current Status">
             <el-tag
               :type="
-                formRegister.status === RATER_STATUS.APPROVED || formRegister.status === RATER_STATUS.TRAINING
+                formRegister.status === RATER_STATUS.APPROVED || formRegister.status === RATER_STATUS.TRAINING || formRegister.status === RATER_STATUS.TRAINING_COMPLETED
                   ? 'success'
                   : formRegister.status === RATER_STATUS.APPLIED
                     ? 'primary'
@@ -274,17 +274,18 @@
             <el-button v-if="!raterId" type="primary" size="mini" @click="onSubmit('formRegister', 'create')">Create</el-button>
             <el-button v-if="!raterId" size="mini">Cancel</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
-            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve</el-button>
-            <el-button v-if="raterId" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">{{ titleBtnReject }}</el-button>
-            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status===RATER_STATUS.DOCUMENT_SUBMITTED)" :disabled="!formRegister.note" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
-            <el-dropdown v-if="completedTraining(formRegister,'IELTS')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
+            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve for training</el-button>
+            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && (formRegister.status === RATER_STATUS.TRAINING_COMPLETED ||formRegister.status === RATER_STATUS.TRAINING || formRegister.status === RATER_STATUS.REVISION_COMPLETED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.APPROVED)">Approve</el-button>
+            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && formRegister.status !== RATER_STATUS.DOCUMENT_REQUESTED" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">{{ titleBtnReject }}</el-button>
+            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status===RATER_STATUS.DOCUMENT_SUBMITTED || formRegister.status===RATER_STATUS.DOCUMENT_REQUESTED)" :disabled="!formRegister.note" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
+            <el-dropdown v-if="completedTraining(formRegister,'IELTS') && formRegister.status !== RATER_STATUS.APPROVED" style="margin: 0 10px 0" size="mini" split-button type="primary" @click="redirectToTraining('IELTS')" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'IELTSTraining',action:'approve'}">Approve for Training</el-dropdown-item>
                 <el-dropdown-item :command="{type:'IELTSTraining',action:'reject'}">Revision</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
-            <el-dropdown v-if="completedTraining(formRegister,'TOEFL')" style="margin: 0 10px 0" size="mini" split-button type="primary" @command="trainingDropdownClick">
+            <el-dropdown v-if="completedTraining(formRegister,'TOEFL') && formRegister.status !== RATER_STATUS.APPROVED" style="margin: 0 10px 0" size="mini" split-button type="primary" @click="redirectToTraining('TOEFL')" @command="trainingDropdownClick">
               TOEFL
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'TOEFLTraining',action:'approve'}">Approve for Training</el-dropdown-item>
@@ -451,11 +452,6 @@ export default {
         this.formRegister.firstName = rs.user.firstName
         // Last name
         this.formRegister.lastName = rs.user.lastName
-
-        // Name button reject
-        if (rs.status === RATER_STATUS.DOCUMENT_REQUESTED) {
-          this.titleBtnReject = 'Document Request'
-        }
       })
     },
     async onSubmit(formName, createOrUpdate, hideSaveNotify) {
@@ -592,42 +588,41 @@ export default {
       })
     },
     async updateStatus(status) {
-      await this.onSubmit('formRegister', 'update', true)
-      if (status === RATER_STATUS.DOCUMENT_REQUESTED && this.formRegister.note.trim() === '') {
-        this.$notify.error({
-          title: RATER_STATUS.DOCUMENT_REQUESTED,
-          message: 'Please add a note for rater!',
-          duration: 2000
+      await this.onSubmit('formRegister', 'update', true).then(r => {
+        raterService.updateStatus(this.raterId, status).then(rs => {
+          this.formRegister.status = status
+          if (rs.status == RATER_STATUS.TRAINING) {
+            this.$notify.success({
+              title: RATER_STATUS.TRAINING,
+              message: 'Rater approved! Rater can start training now.',
+              duration: 2000
+            })
+          } else if (rs.status == RATER_STATUS.REJECTED) {
+            this.$notify.error({
+              title: RATER_STATUS.REJECTED,
+              message: 'Rater Rejected!',
+              duration: 2000
+            })
+          } else if (rs.status == RATER_STATUS.DOCUMENT_REQUESTED) {
+            this.$notify.info({
+              title: RATER_STATUS.DOCUMENT_REQUESTED,
+              message: 'Rater Document Requested!',
+              duration: 2000
+            })
+          } else if (rs.status == RATER_STATUS.REVISION_REQUESTED) {
+            this.$notify.info({
+              title: RATER_STATUS.DOCUMENT_REQUESTED,
+              message: 'Rater Revision Requested!',
+              duration: 2000
+            })
+          } else if (rs.status == RATER_STATUS.APPROVED) {
+            this.$notify.info({
+              title: RATER_STATUS.APPROVED,
+              message: 'Rater approved!',
+              duration: 2000
+            })
+          }
         })
-        return
-      }
-      raterService.updateStatus(this.raterId, status).then(rs => {
-        this.formRegister.status = status
-        if (rs.status == RATER_STATUS.TRAINING) {
-          this.$notify.success({
-            title: RATER_STATUS.TRAINING,
-            message: 'Rater approved! Rater can start training now.',
-            duration: 2000
-          })
-        } else if (rs.status == RATER_STATUS.REJECTED) {
-          this.$notify.error({
-            title: RATER_STATUS.REJECTED,
-            message: 'Rater Rejected!',
-            duration: 2000
-          })
-        } else if (rs.status == RATER_STATUS.DOCUMENT_REQUESTED) {
-          this.$notify.info({
-            title: RATER_STATUS.DOCUMENT_REQUESTED,
-            message: 'Rater Document Requested!',
-            duration: 2000
-          })
-        } else if (rs.status == RATER_STATUS.REVISION_REQUESTED) {
-          this.$notify.info({
-            title: RATER_STATUS.DOCUMENT_REQUESTED,
-            message: 'Rater Revision Requested!',
-            duration: 2000
-          })
-        }
       })
     },
     handleRemoveIdPhoto(file, fileList) {
@@ -694,6 +689,13 @@ export default {
           }
         }
       })
+    },
+    redirectToTraining(e) {
+      var status = e + RATER_STATUS.TRAINING
+      var t = this.getAllReviews.filter(r => r.reviewerId == this.formRegister.userId && r.reviewData.length > 0 && r.status.includes(status))[0]
+      var redirectlink = e === 'IELTS' ? '/review/9/69/' : '/review/12/68/'
+      redirectlink += t?.id
+      this.$router.push(redirectlink)
     }
   }
 }

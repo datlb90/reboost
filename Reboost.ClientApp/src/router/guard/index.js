@@ -23,7 +23,7 @@ export default async(router) => {
       return
     }
 
-    if (currentUser.role.trim() === UserRole.LEARNER && (to.path.includes('/rater/') || to.path.includes('/admin/'))) {
+    if (currentUser.role.trim() === UserRole.LEARNER && ((to.path.includes('/rater/') || to.path.includes('/admin/')) && !to.path.includes('/rater/register'))) {
       next({ name: PageName.NOT_FOUND })
       return
     }

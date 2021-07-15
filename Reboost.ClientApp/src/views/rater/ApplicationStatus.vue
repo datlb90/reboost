@@ -22,7 +22,7 @@
               :type="
                 status === RATER_STATUS.APPLIED
                   ? 'primary'
-                  :status === RATER_STATUS.APPROVED || status === RATER_STATUS.TRAINING
+                  :status === RATER_STATUS.APPROVED || status === RATER_STATUS.TRAINING || status === RATER_STATUS.TRAINING_COMPLETED
                     ? 'success'
                     :status === RATER_STATUS.REJECTED
                       ? 'danger'
@@ -41,6 +41,10 @@
           </div>
           <div :class="[status === RATER_STATUS.REJECTED ? 'denied' : 'hidden']">
             <p>Unfortunately, your application was denied because your credentials do not match with the requirements for becoming a rater. We look forward to receiving your application again in the near future. If you have any questions or concerns regarding this, please feel free to contact us as support@reboost.ai.
+            </p>
+          </div>
+          <div :class="[status === RATER_STATUS.TRAINING_COMPLETED ? 'inReview' : 'hidden']">
+            <p>Your submission has been submitted for review. We will contact you shortly.
             </p>
           </div>
           <div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="note-container">

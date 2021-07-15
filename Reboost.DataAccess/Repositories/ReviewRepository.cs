@@ -127,8 +127,22 @@ namespace Reboost.DataAccess.Repositories
 
             if ((review.Status.Contains(TestsName.IELTS)|| review.Status.Contains(TestsName.TOEFL)) && !review.Status.Contains(RaterStatus.REVISION))
             {
-                if(!review.Status.Contains(RaterReviewsTrainingStatus.Submitted))
+                if (!review.Status.Contains(RaterReviewsTrainingStatus.Submitted))
+                {
                     review.Status += RaterReviewsTrainingStatus.Submitted;
+
+                    RaterRepository _raterRepository = new RaterRepository(db);
+                    Raters rater = await _raterRepository.GetByUserIdAsync(review.ReviewerId);
+                    List<string> trainingCount = await _raterRepository.GetApplyTo(rater.Id);
+
+                    List<Reviews> rvs = await db.Reviews.Where(r => r.ReviewerId == review.ReviewerId && r.Status.Contains("Training")).ToListAsync();
+
+                    if(rvs.Count() == trainingCount.Count())
+                    {
+                        rater.Status = RaterStatus.TRAININGCOMPLETED;
+                    }
+
+                }
                 await db.SaveChangesAsync();
                 return review;
             }
@@ -168,7 +182,7 @@ namespace Reboost.DataAccess.Repositories
             }
             else
             {
-                review.Status = ReviewRequestStatus.RATED;
+                review.Status = ReviewRequestStatus.COMPLETED;
                 review.LastActivityDate = DateTime.Now;
             }
 
@@ -257,8 +271,10 @@ namespace Reboost.DataAccess.Repositories
         {
             Reviews rv = await db.Reviews.FindAsync(id);
             rv.Status = newStatus;
+
+
             
-            List<Reviews> rvs = await db.Reviews.Where(r => r.ReviewerId == rv.ReviewerId).ToListAsync();
+            List<Reviews> rvs = await db.Reviews.Where(r => r.ReviewerId == rv.ReviewerId && r.Status.Contains("Training")).ToListAsync();
             bool approvedFlag = true;
             bool isRevision = false;
 
@@ -423,7 +439,7 @@ namespace Reboost.DataAccess.Repositories
         public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId)
         {
             var review = db.Reviews.Where(r => r.Id == data.ReviewId).FirstOrDefault();
-            review.Status = ReviewRequestStatus.RATED;
+            review.Status = ReviewRequestStatus.COMPLETED;
 
             data.UserId = review.ReviewerId; //Assign ratee id
 
@@ -562,7 +578,7 @@ namespace Reboost.DataAccess.Repositories
                                  join question in db.Questions on rq.Submission.QuestionId equals question.Id
                                  join sec in db.TestSections on question.Task.SectionId equals sec.Id
                                  join test in db.Tests on sec.TestId equals test.Id
-                                 where queue.MinimumRate <= rate && queue.Status == 0 && rq.Status != "Pending" && tests.Contains(test.Name)
+                                 where queue.MinimumRate <= rate && queue.Status == 0 && rq.Status != "Pending" && tests.Contains(test.Name) && rq.UserId != userID
                                  orderby queue.Priority descending, queue.RequestedDatetime ascending
                                  select queue).FirstOrDefaultAsync();
 

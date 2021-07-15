@@ -539,7 +539,6 @@ export default ({
     },
     isReviewSample() {
       if ((this.documentid == 69 || this.documentid == 68) && this.currentUser.role === UserRole.ADMIN && (this.reviewData?.status?.includes('TrainingSubmitted') || this.reviewData?.status?.includes('Completed'))) {
-        console.log('---------', this.reviewData)
         return true
       }
       return false

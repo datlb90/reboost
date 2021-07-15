@@ -42,7 +42,7 @@
               label="Status"
             >
               <template slot-scope="scope">
-                <el-tag :type="getStatusVariant(scope.row.reviewRequest.status)">{{ scope.row.reviewRequest.status }}</el-tag>
+                <el-tag :type="getStatusVariant(scope.row.review.status)">{{ scope.row.review.status }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column
@@ -155,7 +155,7 @@ export default {
       let type = 'primary'
       switch (status.trim()) {
         case 'In Progress': type = 'warning'; break
-        case 'Completed': type = 'success'; break
+        case 'Completed': type = 'info'; break
 
         default:
           type = 'primary'
