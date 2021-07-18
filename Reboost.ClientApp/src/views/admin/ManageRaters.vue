@@ -49,7 +49,7 @@
             :type="
               scope.row.status === RATER_STATUS.APPROVED
                 ? 'success'
-                : scope.row.status === RATER_STATUS.APPLIED || scope.row.status === RATER_STATUS.TRAINING
+                : scope.row.status === RATER_STATUS.APPLIED || scope.row.status === RATER_STATUS.TRAINING || scope.row.status === RATER_STATUS.TRAINING_COMPLETED
                   ? 'primary'
                   : scope.row.status === RATER_STATUS.DOCUMENT_REQUESTED || scope.row.status === RATER_STATUS.DOCUMENT_SUBMITTED || scope.row.status === RATER_STATUS.REVISION_REQUESTED
                     ? 'warning'
@@ -107,7 +107,8 @@ export default {
         { text: RATER_STATUS.REVISION_REQUESTED, value: RATER_STATUS.REVISION_REQUESTED, checked: false },
         { text: RATER_STATUS.REVISION_COMPLETED, value: RATER_STATUS.REVISION_COMPLETED, checked: false },
         { text: RATER_STATUS.REJECTED, value: RATER_STATUS.REJECTED, checked: false },
-        { text: RATER_STATUS.TRAINING_APPROVED, value: RATER_STATUS.TRAINING_APPROVED, checked: false },
+        { text: RATER_STATUS.TRAINING_COMPLETED, value: RATER_STATUS.TRAINING_COMPLETED, checked: false },
+        // { text: RATER_STATUS.TRAINING_APPROVED, value: RATER_STATUS.TRAINING_APPROVED, checked: false },
         { text: RATER_STATUS.DOCUMENT_COMPLETED, value: RATER_STATUS.DOCUMENT_COMPLETED, checked: false }
       ]
     }

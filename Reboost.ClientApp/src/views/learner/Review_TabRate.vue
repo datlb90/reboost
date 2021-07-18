@@ -22,9 +22,6 @@
             <el-button v-if="!isReviewAuth" :disabled="isRated" size="mini " type="primary" @click="rateReviewer()">
               Submit
             </el-button>
-            <el-button v-if="isReviewAuth && isRated" :disabled="isSubmitted" size="mini " type="primary" @click="submitRate()">
-              Submit
-            </el-button>
           </div>
         </div>
       </div>
@@ -38,8 +35,7 @@ export default ({
   name: 'TabRate',
   props: {
     reviewid: { type: Number, default: null },
-    isReviewAuth: { type: Boolean, default: false },
-    isSubmitted: { type: Boolean, default: false }
+    isReviewAuth: { type: Boolean, default: false }
   },
   data() {
     return {
@@ -81,7 +77,6 @@ export default ({
         Comment: this.rateComment
       }).then(rs => {
         if (rs) {
-          this.isSubmitted = true
           this.$notify({
             title: 'Success',
             message: 'Submitted!',

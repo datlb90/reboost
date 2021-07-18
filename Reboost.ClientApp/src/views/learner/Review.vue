@@ -11,7 +11,7 @@
             <tabRubric ref="tabRubric" :current-user="currentUser" :questionid="questionId" :reviewid="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
           <el-tab-pane v-if="isRate" name="rate" label="Rate">
-            <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" :is-submitted="isSubmitRate" />
+            <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -293,7 +293,6 @@ export default {
       selectedTab: 'question',
       isReviewAuth: false,
       isRated: false,
-      isSubmitRate: false,
       statusRater: ''
     }
   },
@@ -2674,12 +2673,8 @@ export default {
           this.isReviewAuth = true
         }
 
-        if (rs && (this.currentUser.id === rs.reviewerId || this.currentUser.id === rs.revieweeId) && (rs.status.trim() === REVIEW_REQUEST_STATUS.RATED || rs.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED)) {
+        if (rs && (this.currentUser.id === rs.reviewerId || this.currentUser.id === rs.revieweeId) && rs.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED) {
           this.isRate = true
-
-          if (rs.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED) {
-            this.isSubmitRate = true
-          }
 
           await reviewService.getReviewRating(this.$route.params.reviewId).then(rs => {
             if (rs) {

@@ -49,7 +49,7 @@
               <li class="nav-item">
                 <router-link to="/rater/apply" class="nav-link">Application</router-link>
               </li>
-              <li class="nav-item">
+              <li v-if="isApprovedRater" class="nav-item">
                 <router-link to="/reviews" class="nav-link">Review</router-link>
               </li>
               <!-- <li class="nav-item">
@@ -114,6 +114,9 @@
 
 <script>
 import raterService from '../../services/rater.service'
+import reviewService from '../../services/review.service'
+import { RATER_STATUS } from '../../app.constant'
+
 export default {
   name: 'HeaderTwo',
   data() {
@@ -121,7 +124,8 @@ export default {
       role: this.$store.state.auth.user.role,
       isSticky: false,
       appInProgress: true,
-      raterRating: 0
+      raterRating: 0,
+      isApprovedRater: false
     }
   },
 
@@ -144,7 +148,8 @@ export default {
     if (this.currentUser?.id) {
       this.$store.dispatch('auth/setSelectedTest')
     }
-    console.log('asdasd', this.currentUser)
+    console.log('current user', this.currentUser)
+    this.checkApprovedRater()
     window.addEventListener('scroll', () => {
       const scrollPos = window.scrollY
       // eslint-disable-next-line no-console
@@ -189,6 +194,15 @@ export default {
         }
       }
       return rs
+    },
+    checkApprovedRater() {
+      if (this.currentUser.role === 'Rater') {
+        reviewService.raterApprovedCheck().then(r => {
+          if (r && r.status === RATER_STATUS.APPROVED) {
+            this.isApprovedRater = true
+          }
+        })
+      }
     }
   }
 }
