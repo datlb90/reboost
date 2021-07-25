@@ -10,6 +10,83 @@
         </el-steps>
       </el-col>
     </el-row>
+    <el-row v-if="status === RATER_STATUS.APPLIED || status === RATER_STATUS.REJECTED || status === RATER_STATUS.DOCUMENT_REQUESTED || status === RATER_STATUS.APPROVED || status === RATER_STATUS.DOCUMENT_SUBMITTED" class="row-flex">
+      <el-col :span="15" class="col-border">
+        <div class="margin-container">
+          <div class="flex-box">
+            <div class="label-container">
+              Application status
+            </div>
+            <el-tag
+              :type="
+                status === RATER_STATUS.APPLIED
+                  ? 'primary'
+                  :status === RATER_STATUS.APPROVED || status === RATER_STATUS.TRAINING || status === RATER_STATUS.TRAINING_COMPLETED
+                    ? 'success'
+                    :status === RATER_STATUS.REJECTED
+                      ? 'danger'
+                      : status===RATER_STATUS.DOCUMENT_REQUESTED
+                        ? 'warning' : 'warning'
+              "
+            >{{ status }}</el-tag>
+
+          </div>
+          <div :class="[status === RATER_STATUS.APPLIED ? 'inReview' : 'hidden']">
+            <p>Thank you for applying. Your application is curretly in review. We will notify you via email if your application is approved, denied, or if we need additional information.</p>
+          </div>
+          <div :class="[status === RATER_STATUS.TRAINING ? 'verified' : 'hidden']">
+            <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
+            </p>
+          </div>
+          <div :class="[status === RATER_STATUS.REJECTED ? 'denied' : 'hidden']">
+            <p>Unfortunately, your application was denied because your credentials do not match with the requirements for becoming a rater. We look forward to receiving your application again in the near future. If you have any questions or concerns regarding this, please feel free to contact us as support@reboost.ai.
+            </p>
+          </div>
+          <div :class="[status === RATER_STATUS.TRAINING_COMPLETED ? 'inReview' : 'hidden']">
+            <p>Your submission has been submitted for review. We will contact you shortly.
+            </p>
+          </div>
+          <div :class="[status === RATER_STATUS.APPROVED ? 'inReview' : 'hidden']">
+            <p>Your request to become a Reboost IELT rater has been completely approved. You can now receive review requests and start rating and earning money. We will send you review requests periodically.
+            </p>
+          </div>
+          <!--<div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="note-container">
+            <div class="label-container" style="width: 155px">
+              Note
+            </div>
+            <el-input
+              v-model="note"
+              type="textarea"
+              :rows="2"
+              :disabled="true"
+            />
+          </div>-->
+          <div v-if="status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED" style="margin-left:150px" class="button-container">
+            <el-tooltip v-if="applyToList.includes('IELTS')" :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
+              <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin:0" size="mini" @click="redirectToTraining('IELTS')">Complete IELTS Training</el-button>
+            </el-tooltip>
+            <el-tooltip v-if="applyToList.includes('TOEFL')" :content="isApprove('TOEFL')?'You have passed this training':'Start your TOEFL Training'" placement="top">
+              <el-button :type="isApprove('TOEFL')?'success':'primary'" style="margin: 0 10px 0" size="mini" @click="redirectToTraining('TOEFL')">Complete TOEFL Training</el-button>
+            </el-tooltip>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="row-flex">
+      <el-col :span="15" class="col-border">
+        <div class="margin-container">
+          <div class="label-container mb-2" style="width: 155px">
+            Note
+          </div>
+          <el-input
+            v-model="note"
+            type="textarea"
+            :rows="4"
+            :disabled="true"
+          />
+        </div>
+      </el-col>
+    </el-row>
     <el-row v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" class="row-flex">
       <el-col :span="15" class="col-border">
         <div class="margin-container">
@@ -96,84 +173,8 @@
         </div>
       </el-col>
     </el-row>
-    <el-row v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="row-flex">
-      <el-col :span="15" class="col-border">
-        <div class="margin-container">
-          <div class="label-container mb-2" style="width: 155px">
-            Note
-          </div>
-          <el-input
-            v-model="note"
-            type="textarea"
-            :rows="4"
-            :disabled="true"
-          />
-        </div>
-      </el-col>
-    </el-row>
-    <el-row v-if="status === RATER_STATUS.APPLIED || status === RATER_STATUS.REJECTED || status === RATER_STATUS.DOCUMENT_REQUESTED || status === RATER_STATUS.APPROVED || status === RATER_STATUS.DOCUMENT_SUBMITTED" class="row-flex">
-      <el-col :span="15" class="col-border">
-        <div class="margin-container">
-          <div class="flex-box">
-            <div class="label-container">
-              Application status
-            </div>
-            <el-tag
-              :type="
-                status === RATER_STATUS.APPLIED
-                  ? 'primary'
-                  :status === RATER_STATUS.APPROVED || status === RATER_STATUS.TRAINING || status === RATER_STATUS.TRAINING_COMPLETED
-                    ? 'success'
-                    :status === RATER_STATUS.REJECTED
-                      ? 'danger'
-                      : status===RATER_STATUS.DOCUMENT_REQUESTED
-                        ? 'warning' : 'warning'
-              "
-            >{{ status }}</el-tag>
 
-          </div>
-          <div :class="[status === RATER_STATUS.APPLIED ? 'inReview' : 'hidden']">
-            <p>Thank you for applying. Your application is curretly in review. We will notify you via email if your application is approved, denied, or if we need additional information.</p>
-          </div>
-          <div :class="[status === RATER_STATUS.TRAINING ? 'verified' : 'hidden']">
-            <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
-            </p>
-          </div>
-          <div :class="[status === RATER_STATUS.REJECTED ? 'denied' : 'hidden']">
-            <p>Unfortunately, your application was denied because your credentials do not match with the requirements for becoming a rater. We look forward to receiving your application again in the near future. If you have any questions or concerns regarding this, please feel free to contact us as support@reboost.ai.
-            </p>
-          </div>
-          <div :class="[status === RATER_STATUS.TRAINING_COMPLETED ? 'inReview' : 'hidden']">
-            <p>Your submission has been submitted for review. We will contact you shortly.
-            </p>
-          </div>
-          <div :class="[status === RATER_STATUS.APPROVED ? 'inReview' : 'hidden']">
-            <p>Your request to become a Reboost IELT rater has been completely approved. You can now receive review requests and start rating and earning money. We will send you review requests periodically.
-            </p>
-          </div>
-          <!--<div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="note-container">
-            <div class="label-container" style="width: 155px">
-              Note
-            </div>
-            <el-input
-              v-model="note"
-              type="textarea"
-              :rows="2"
-              :disabled="true"
-            />
-          </div>-->
-          <div v-if="status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED" style="margin-left:150px" class="button-container">
-            <el-tooltip v-if="applyToList.includes('IELTS')" :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
-              <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin:0" size="mini" @click="redirectToTraining('IELTS')">Complete IELTS Training</el-button>
-            </el-tooltip>
-            <el-tooltip v-if="applyToList.includes('TOEFL')" :content="isApprove('TOEFL')?'You have passed this training':'Start your TOEFL Training'" placement="top">
-              <el-button :type="isApprove('TOEFL')?'success':'primary'" style="margin: 0 10px 0" size="mini" @click="redirectToTraining('TOEFL')">Complete TOEFL Training</el-button>
-            </el-tooltip>
-          </div>
-        </div>
-      </el-col>
-    </el-row>
-    <el-row v-if="applyToList.includes('IELTS') && status !== RATER_STATUS.APPROVED && status !== RATER_STATUS.APPLIED" class="row-flex">
+    <el-row v-if="applyToList.includes('IELTS') && status !== RATER_STATUS.APPROVED && status !== RATER_STATUS.APPLIED && status !== RATER_STATUS.DOCUMENT_REQUESTED && status !== RATER_STATUS.DOCUMENT_SUBMITTED" class="row-flex">
       <el-col :span="15" class="col-border">
         <div class="margin-container">
           <div class="flex-box">
@@ -209,7 +210,7 @@
         </div>
       </el-col>
     </el-row>
-    <el-row v-if="applyToList.includes('TOEFL') && status !== RATER_STATUS.APPROVED && status !== RATER_STATUS.APPLIED" class="row-flex">
+    <el-row v-if="applyToList.includes('TOEFL') && status !== RATER_STATUS.APPROVED && status !== RATER_STATUS.APPLIED && status !== RATER_STATUS.DOCUMENT_REQUESTED && status !== RATER_STATUS.DOCUMENT_SUBMITTED" class="row-flex">
       <el-col :span="15" class="col-border">
         <div class="margin-container">
           <div class="flex-box">
