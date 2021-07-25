@@ -10,14 +10,114 @@
         </el-steps>
       </el-col>
     </el-row>
-    <el-row class="row-flex">
+    <el-row v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" class="row-flex">
+      <el-col :span="15" class="col-border">
+        <div class="margin-container">
+          <el-form ref="formRegister" class="file-upload-form" :model="formRegister" label-position="left" label-width="150px" style="width:100%;">
+            <el-form-item
+              v-if="applyToList.includes('IELTS')"
+              size="mini"
+              label="IELTS Credentials"
+              prop="iELTSCertificatePhotos"
+              :rules="[
+                { required: true, message: 'IELTS Credentials Photos is required'}]"
+            >
+              <el-upload
+                class="upload-demo"
+                action=""
+                :on-preview="previewImage"
+                :file-list="formRegister.iELTSCertificatePhotos"
+                :on-change="handleChangeIELTS"
+                :on-remove="handleRemoveIELTS"
+                :auto-upload="false"
+                list-type="picture"
+              >
+                <el-button type="primary">Click to upload</el-button>
+                <div slot="tip" class="el-upload__tip">
+                  <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                </div>
+              </el-upload>
+            </el-form-item>
+            <el-form-item
+              v-if="applyToList.includes('TOEFL')"
+              size="mini"
+              label="TOEFL Credentials"
+              prop="tOEFLCertificatePhotos"
+              :rules="[
+                { required: true, message: 'TOEFL Credentials Photos is required'}]"
+            >
+              <el-upload
+                class="upload-demo"
+                action=""
+                :on-preview="previewImage"
+                :on-change="handleChangeTOEFL"
+                :on-remove="handleRemoveTOEFL"
+                :file-list="formRegister.tOEFLCertificatePhotos"
+                :auto-upload="false"
+                list-type="picture"
+              >
+                <el-button type="primary">Click to upload</el-button>
+                <div slot="tip" class="el-upload__tip">
+                  <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                </div>
+              </el-upload>
+            </el-form-item>
+            <el-form-item
+              size="mini"
+              label="Photo ID"
+              prop="iDCardPhotos"
+              :rules="[
+                { required: true, message: 'IDPhotos is required'}]"
+            >
+              <el-upload
+                class="upload-demo"
+                action=""
+                :on-preview="previewImage"
+                :file-list="formRegister.iDCardPhotos"
+                :on-change="handleChangeIdPhoto"
+                :on-remove="handleRemoveIdPhoto"
+                :auto-upload="false"
+                list-type="picture"
+              >
+                <el-button type="primary">Click to upload</el-button>
+                <div slot="tip" class="el-upload__tip">
+                  <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.</p>
+                </div>
+              </el-upload>
+            </el-form-item>
+            <el-form-item
+              size="mini"
+              label="Biography"
+            >
+              <el-input v-model="formRegister.biography" type="textarea" :rows="5" placeholder="Tell us a little bit about yourself and the reason why you apply to become our rater" />
+            </el-form-item>
+          </el-form>
+          <el-button v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" style="margin-top:10px" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="row-flex">
+      <el-col :span="15" class="col-border">
+        <div class="margin-container">
+          <div class="label-container mb-2" style="width: 155px">
+            Note
+          </div>
+          <el-input
+            v-model="note"
+            type="textarea"
+            :rows="4"
+            :disabled="true"
+          />
+        </div>
+      </el-col>
+    </el-row>
+    <el-row v-if="status === RATER_STATUS.APPLIED || status === RATER_STATUS.REJECTED || status === RATER_STATUS.DOCUMENT_REQUESTED || status === RATER_STATUS.APPROVED || status === RATER_STATUS.DOCUMENT_SUBMITTED" class="row-flex">
       <el-col :span="15" class="col-border">
         <div class="margin-container">
           <div class="flex-box">
             <div class="label-container">
               Application status
             </div>
-
             <el-tag
               :type="
                 status === RATER_STATUS.APPLIED
@@ -35,7 +135,7 @@
           <div :class="[status === RATER_STATUS.APPLIED ? 'inReview' : 'hidden']">
             <p>Thank you for applying. Your application is curretly in review. We will notify you via email if your application is approved, denied, or if we need additional information.</p>
           </div>
-          <div :class="[status === RATER_STATUS.TRAINING || status === RATER_STATUS.APPROVED ? 'verified' : 'hidden']">
+          <div :class="[status === RATER_STATUS.TRAINING ? 'verified' : 'hidden']">
             <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
             </p>
           </div>
@@ -47,7 +147,11 @@
             <p>Your submission has been submitted for review. We will contact you shortly.
             </p>
           </div>
-          <div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="note-container">
+          <div :class="[status === RATER_STATUS.APPROVED ? 'inReview' : 'hidden']">
+            <p>Your request to become a Reboost IELT rater has been completely approved. You can now receive review requests and start rating and earning money. We will send you review requests periodically.
+            </p>
+          </div>
+          <!--<div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="note-container">
             <div class="label-container" style="width: 155px">
               Note
             </div>
@@ -57,7 +161,7 @@
               :rows="2"
               :disabled="true"
             />
-          </div>
+          </div>-->
           <div v-if="status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED" style="margin-left:150px" class="button-container">
             <el-tooltip v-if="applyToList.includes('IELTS')" :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
               <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin:0" size="mini" @click="redirectToTraining('IELTS')">Complete IELTS Training</el-button>
@@ -66,81 +170,77 @@
               <el-button :type="isApprove('TOEFL')?'success':'primary'" style="margin: 0 10px 0" size="mini" @click="redirectToTraining('TOEFL')">Complete TOEFL Training</el-button>
             </el-tooltip>
           </div>
-          <div>
-            <el-form v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" ref="formRegister" class="file-upload-form" :model="formRegister" label-position="left" label-width="150px" style="width:100%;">
-              <el-form-item
-                v-if="applyToList.includes('IELTS')"
-                size="mini"
-                label="IELTS Credentials"
-                prop="iELTSCertificatePhotos"
-                :rules="[
-                  { required: true, message: 'IELTS Credentials Photos is required'}]"
-              >
-                <el-upload
-                  class="upload-demo"
-                  action=""
-                  :on-preview="previewImage"
-                  :file-list="formRegister.iELTSCertificatePhotos"
-                  :on-change="handleChangeIELTS"
-                  :on-remove="handleRemoveIELTS"
-                  :auto-upload="false"
-                  list-type="picture"
-                >
-                  <el-button type="primary">Click to upload</el-button>
-                  <div slot="tip" class="el-upload__tip">
-                    <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
-                  </div>
-                </el-upload>
-              </el-form-item>
-              <el-form-item
-                v-if="applyToList.includes('TOEFL')"
-                size="mini"
-                label="TOEFL Credentials"
-                prop="tOEFLCertificatePhotos"
-                :rules="[
-                  { required: true, message: 'TOEFL Credentials Photos is required'}]"
-              >
-                <el-upload
-                  class="upload-demo"
-                  action=""
-                  :on-preview="previewImage"
-                  :on-change="handleChangeTOEFL"
-                  :on-remove="handleRemoveTOEFL"
-                  :file-list="formRegister.tOEFLCertificatePhotos"
-                  :auto-upload="false"
-                  list-type="picture"
-                >
-                  <el-button type="primary">Click to upload</el-button>
-                  <div slot="tip" class="el-upload__tip">
-                    <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
-                  </div>
-                </el-upload>
-              </el-form-item>
-              <el-form-item
-                size="mini"
-                label="Photo ID"
-                prop="iDCardPhotos"
-                :rules="[
-                  { required: true, message: 'IDPhotos is required'}]"
-              >
-                <el-upload
-                  class="upload-demo"
-                  action=""
-                  :on-preview="previewImage"
-                  :file-list="formRegister.iDCardPhotos"
-                  :on-change="handleChangeIdPhoto"
-                  :on-remove="handleRemoveIdPhoto"
-                  :auto-upload="false"
-                  list-type="picture"
-                >
-                  <el-button type="primary">Click to upload</el-button>
-                  <div slot="tip" class="el-upload__tip">
-                    <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.</p>
-                  </div>
-                </el-upload>
-              </el-form-item>
-            </el-form>
-            <el-button v-if="status===RATER_STATUS.DOCUMENT_REQUESTED" style="margin-top:10px" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row v-if="applyToList.includes('IELTS') && status !== RATER_STATUS.APPROVED && status !== RATER_STATUS.APPLIED" class="row-flex">
+      <el-col :span="15" class="col-border">
+        <div class="margin-container">
+          <div class="flex-box">
+            <div class="label-container">
+              IELTS Application status
+            </div>
+            <el-tag
+              :type="
+                statusIELTS === RATER_STATUS.TRAINING
+                  ? 'success'
+                  : 'warning'
+              "
+            >{{ statusIELTS }}</el-tag>
+
+          </div>
+          <div :class="[statusIELTS === RATER_STATUS.TRAINING || statusIELTS === RATER_STATUS.IELTS_TRAINING_REVISION ? 'verified' : 'hidden']">
+            <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
+            </p>
+          </div>
+          <div :class="[statusIELTS === RATER_STATUS.IELTS_TRAINING_COMPLETED ? 'inReview' : 'hidden']">
+            <p>Your submission has been submitted for review. We will contact you shortly.
+            </p>
+          </div>
+          <div :class="[statusIELTS === RATER_STATUS.IELTS_TRAINING_APPROVED ? 'inReview' : 'hidden']">
+            <p>Your request to become a Reboost IELT rater has been completely approved. You can now receive review requests and start rating and earning money. We will send you review requests periodically.
+            </p>
+          </div>
+          <div v-if="isCompletedTrainingIELTS && (status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED || status === RATER_STATUS.REVISION_COMPLETED)" class="button-container">
+            <el-tooltip :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
+              <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin:0" size="mini" @click="redirectToTraining('IELTS')">Complete IELTS Training</el-button>
+            </el-tooltip>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row v-if="applyToList.includes('TOEFL') && status !== RATER_STATUS.APPROVED && status !== RATER_STATUS.APPLIED" class="row-flex">
+      <el-col :span="15" class="col-border">
+        <div class="margin-container">
+          <div class="flex-box">
+            <div class="label-container">
+              TOEFL Application status
+            </div>
+            <el-tag
+              :type="
+                statusTOEFL === RATER_STATUS.TRAINING
+                  ? 'success'
+                  : 'warning'
+              "
+            >{{ statusTOEFL }}</el-tag>
+
+          </div>
+          <div :class="[statusTOEFL === RATER_STATUS.TRAINING || statusTOEFL === RATER_STATUS.TOEFL_TRAINING_REVISION ? 'verified' : 'hidden']">
+            <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
+            </p>
+          </div>
+          <div :class="[statusTOEFL === RATER_STATUS.TOEFT_TRAINING_COMPLETED ? 'inReview' : 'hidden']">
+            <p>Your submission has been submitted for review. We will contact you shortly.
+            </p>
+          </div>
+          <div :class="[statusTOEFL === RATER_STATUS.TOEFT_TRAINING_APPROVED ? 'inReview' : 'hidden']">
+            <p>Your request to become a Reboost IELT rater has been completely approved. You can now receive review requests and start rating and earning money. We will send you review requests periodically.
+            </p>
+          </div>
+          <div v-if="isCompletedTrainingTOEFT && (status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED || status === RATER_STATUS.REVISION_COMPLETED)" class="button-container">
+            <el-tooltip :content="isApprove('TOEFL')?'You have passed this training':'Start your TOEFL Training'" placement="top">
+              <el-button :type="isApprove('TOEFL')?'success':'primary'" size="mini" @click="redirectToTraining('TOEFL')">Complete TOEFL Training</el-button>
+            </el-tooltip>
           </div>
         </div>
       </el-col>
@@ -179,12 +279,17 @@ export default {
       formRegister: {
         id: '',
         iDCardPhotos: [],
+        biography: '',
         iELTSCertificatePhotos: [],
         tOEFLCertificatePhotos: []
       },
       popUpImageUrl: null,
       toggleImagePopup: false,
-      RATER_STATUS: RATER_STATUS
+      RATER_STATUS: RATER_STATUS,
+      isCompletedTrainingIELTS: true,
+      isCompletedTrainingTOEFT: true,
+      statusIELTS: '',
+      statusTOEFL: ''
     }
   },
   computed: {
@@ -197,7 +302,39 @@ export default {
   },
   mounted() {
     this.onLoad()
-    this.$store.dispatch('review/loadReviewsById')
+    this.$store.dispatch('review/loadReviewsById').then(() => {
+      if (this.getReviews && this.getReviews.length > 0) {
+        this.getReviews.forEach(r => {
+          if (r.status.includes('IELTS')) {
+            if (r.status.includes('Submitted')) {
+              this.isCompletedTrainingIELTS = false
+              this.statusIELTS = RATER_STATUS.IELTS_TRAINING_COMPLETED
+            } else if (r.status.includes('Approved')) {
+              this.statusIELTS = RATER_STATUS.IELTS_TRAINING_APPROVED
+            } else if (r.status.includes('RevisionCompleted')) {
+              this.isCompletedTrainingIELTS = false
+              this.statusIELTS = RATER_STATUS.IELTS_REVISION_COMPLETED
+            } else if (r.status.includes('TrainingRevision')) {
+              this.statusIELTS = RATER_STATUS.IELTS_TRAINING_REVISION
+            }
+          } else if (r.status.includes('TOEFL')) {
+            if (r.status.includes('Submitted')) {
+              this.isCompletedTrainingTOEFT = false
+              this.statusTOEFL = RATER_STATUS.TOEFT_TRAINING_COMPLETED
+            } else if (r.status.includes('Approved')) {
+              this.statusTOEFL = RATER_STATUS.TOEFT_TRAINING_APPROVED
+            } else if (r.status.includes('RevisionCompleted')) {
+              this.isCompletedTrainingTOEFT = false
+              this.statusTOEFL = RATER_STATUS.TOEFL_REVISION_COMPLETED
+            } else if (r.status.includes('TrainingRevision')) {
+              this.statusTOEFL = RATER_STATUS.TOEFL_TRAINING_REVISION
+            }
+          }
+        })
+      }
+    })
+    this.statusIELTS = RATER_STATUS.TRAINING
+    this.statusTOEFL = RATER_STATUS.TRAINING
   },
   methods: {
     onLoad() {
@@ -208,6 +345,7 @@ export default {
     },
     loadDetail(id) {
       console.log('load detail', mapUtil)
+
       raterService.getById(id).then(rs => {
         this.formRegister = mapUtil.map(rs, this.formRegister)
         this.loadCompleted = true
@@ -285,6 +423,8 @@ export default {
           formData.set('UserId', this.currentUser.id)
           formData.set('Id', this.formRegister.id)
           formData.set('Status', RATER_STATUS.DOCUMENT_SUBMITTED)
+          formData.set('Biography', this.formRegister.biography)
+
           let count = 0
           for (const p of this.formRegister.iDCardPhotos) {
             console.log('ID')
@@ -303,7 +443,6 @@ export default {
           }
 
           if (this.getApplyTo('IELTS')) {
-            console.log('IELTS')
             for (const p of this.formRegister.iELTSCertificatePhotos) {
               formData.set(`RaterCredentials[${count}][TestId]`, '2')
               formData.set(`RaterCredentials[${count}][CredentialType]`, 'IELTSPhoto')
@@ -321,7 +460,6 @@ export default {
           }
 
           if (this.getApplyTo('TOEFL')) {
-            console.log('TOEFL')
             for (const p of this.formRegister.tOEFLCertificatePhotos) {
               formData.set(`RaterCredentials[${count}][TestId]`, '1')
               formData.set(`RaterCredentials[${count}][CredentialType]`, 'TOEFLPhoto')
@@ -346,7 +484,6 @@ export default {
             })
           })
         } else {
-          console.log('error submit!!')
           this.$notify.error({
             title: 'Error',
             message: 'Error occured!',

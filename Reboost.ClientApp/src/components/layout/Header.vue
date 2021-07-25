@@ -175,7 +175,7 @@ export default {
     handleCommand(action) {
       if (action === 'logout') {
         this.$store.dispatch('auth/logout').then(rs => {
-          this.$router.push('/login')
+          this.$router.push('/')
         })
       } else if (action === 'selectTest') {
         this.$router.push('/SelectYourTest')

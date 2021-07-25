@@ -32,8 +32,7 @@
           </b-collapse>
 
           <div class="others-option">
-            <a href="/rater/register" class="btn btn-light">Sign Up</a>
-            <a href="/login" class="btn btn-primary">Sign In</a>
+            <a href="/rater/login" class="btn btn-primary">Sign In</a>
           </div>
         </nav>
       </div>

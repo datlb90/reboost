@@ -46,6 +46,7 @@
           >
             <el-input v-model="formRegister.firstName" type="text" />
           </el-form-item>
+
           <el-form-item
             size="mini"
             label="Last Name"
@@ -56,6 +57,7 @@
           >
             <el-input v-model="formRegister.lastName" type="text" />
           </el-form-item>
+
           <el-form-item
             size="mini"
             label="Gender"
@@ -68,6 +70,7 @@
               <el-option v-for="item in gender" :key="item.id" :label="item.name" :value="item.name" />
             </el-select>
           </el-form-item>
+
           <el-form-item
             size="mini"
             label="Occupation"
@@ -78,6 +81,7 @@
           >
             <el-input v-model="formRegister.occupation" placeholder="Please input your occupation" />
           </el-form-item>
+
           <el-form-item
             size="mini"
             label="First Language"
@@ -287,6 +291,7 @@ import moment from 'moment'
 import * as mapUtil from '@/utils/model-mapping'
 import * as stringUtil from '@/utils/string'
 import { PageName } from '@/app.constant'
+import { UserRole } from '../../app.constant'
 
 export default {
   name: 'Application',
@@ -366,10 +371,16 @@ export default {
         this.ieltsScores.push(i.toFixed(1))
       }
       this.ieltsScores.reverse()
+
       for (let i = 0; i <= 30; i += 1) {
         this.toeflScores.push(i)
       }
       this.toeflScores.reverse()
+
+      if (this.currentUser?.role === UserRole.RATER) {
+        this.formRegister.firstName = this.currentUser.firstName
+        this.formRegister.lastName = this.currentUser.lastName
+      }
       // lookupService.getByType('OCCUPATION').then(rs => {
       //   this.occupation = rs;
       // });
@@ -381,7 +392,6 @@ export default {
       // });
 
       if (this.$route.params.id) {
-        console.log('ID', this.$route.params.id)
         this.raterId = this.$route.params.id
         this.loadDetail(this.$route.params.id)
       }
@@ -392,6 +402,7 @@ export default {
         this.formRegister = mapUtil.map(rs, this.formRegister)
         this.formRegister.appliedDate = rs.appliedDate.toString()
         this.formRegister.appliedDate = this.formRegister.appliedDate.slice(0, 10)
+
         // Files
         if (rs.raterCredentials) {
           for (const f of rs.raterCredentials) {
@@ -545,7 +556,6 @@ export default {
             })
           }
         } else {
-          console.log('error submit!!')
           this.$notify.error({
             title: 'Error',
             message: 'Error occured!',

@@ -33,7 +33,7 @@
     </el-row>
     <el-table ref="filterTable" size="mini" :data="raters" style="width: 100%">
       <el-table-column prop="fullName" label="Application Name" width="160" />
-      <el-table-column prop="appliedDate" label="Application Date" sortable width="180" column-key="appliedDate" />
+      <el-table-column prop="appliedDate" label="Application Date" sortable width="180" />
       <el-table-column prop="occupation" label="Occupation" width="140" />
       <el-table-column prop="firstLanguage" label="First Language" width="130" />
       <!-- <el-table-column prop="applyTo" label="Applied For" width="120">
@@ -62,8 +62,6 @@
       <el-table-column label="Operations">
         <template slot-scope="scope">
           <el-button size="mini" @click="handleView(scope.$index, scope.row)">View</el-button>
-          <el-button v-if="completedTraining(scope.row,'IELTS')" :type="isApproved(scope.row,'IELTS')?'success':'info'" size="mini" @click="TrainingReview(scope.row,'IELTS')">IELTS</el-button>
-          <el-button v-if="completedTraining(scope.row,'TOEFL')" :type="isApproved(scope.row,'TOEFL')?'success':'info'" size="mini" @click="TrainingReview(scope.row,'TOEFL')">TOEFL</el-button>
           <el-button v-if="scope.row.status == 'Training Completed'" size="mini" type="warning">Review</el-button>
         </template>
       </el-table-column>
@@ -77,6 +75,7 @@
 <script>
 import { RATER_STATUS } from '../../app.constant'
 import DropdownMenu from '../../components/controls/DropdownMenu'
+import moment from 'moment'
 
 export default {
   name: 'ManageRaters',
@@ -115,7 +114,8 @@ export default {
   },
   computed: {
     getAllRater() {
-      return this.$store.getters['rater/getAll']
+      var data = this.$store.getters['rater/getAll'].map(i => ({ ...i, appliedDate: moment(new Date(i.appliedDate)).fromNow() }))
+      return data
     },
     getAllReviews() {
       return this.$store.getters['review/getReviews']
@@ -123,7 +123,7 @@ export default {
   },
   mounted() {
     this.$store.dispatch('rater/loadRaters').then(() => {
-      this.raterCached = this.$store.getters['rater/getAll']
+      this.raterCached = this.getAllRater
       this.totalRow = this.ratersCount = this.raterCached.length
       this.loadTable()
     })
@@ -181,6 +181,7 @@ export default {
       status += 'Training'
 
       var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status.includes(status)))[0]
+      console.log('tttttttttt', t, this.getAllReviews)
       if (t) {
         return true
       }

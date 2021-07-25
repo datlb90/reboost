@@ -52,8 +52,8 @@ const reviewService = {
   getById(id) {
     return http.get(`/review/${id}`).then(rs => rs.data)
   },
-  changeReviewStatus(id, status) {
-    return http.post(`/review/status/change/${id}`, { status }).then(rs => rs.data)
+  changeReviewStatus(id, data) {
+    return http.post(`/review/status/change/${id}`, data).then(rs => rs.data)
   },
   createReviewRequest(request) {
     return http.post('/review/request', request).then(rs => rs.data)
@@ -87,6 +87,12 @@ const reviewService = {
   },
   submitRate(data) {
     return http.post('/review/submitRate', data).then(rs => rs.data)
+  },
+  createProReviewRequest(request) {
+    return http.post('/review/request/pro', request).then(rs => rs.data)
+  },
+  getLinkToReviewByProRequestId(id) {
+    return http.get(`/review/request/pro/${id}`).then(rs => rs.data)
   }
 }
 

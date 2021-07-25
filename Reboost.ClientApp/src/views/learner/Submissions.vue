@@ -33,7 +33,7 @@
               align="center"
             >
               <template slot-scope="scope">
-                <el-tag :type="getStatusVariant(scope.row.status)">{{ scope.row.status }}</el-tag>
+                <el-tag :type="getStatusVariant(scope.row.status)">{{ getStatusName(scope.row.status) }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column
@@ -128,6 +128,11 @@ export default {
       }
       return type
     },
+    getStatusName(status) {
+      console.log(status, status.trim())
+      if (status.trim() === 'Reviewed') return 'Review and Un-Rated'
+      return status
+    },
     onLoad() {
       questionService.getSubmissionsByUserId(this.currentUser.id).then(rs => {
         if (rs) {
@@ -200,7 +205,20 @@ export default {
           this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}/rate`)
         })
       } else if (action == 'Request Pro Review') {
-        this.checkoutVisible = true
+        // this.checkoutVisible = true
+
+        reviewService.createProReviewRequest({
+          UserId: this.currentUser.id,
+          SubmissionId: e.id,
+          FeedbackType: 'Pro',
+          Status: REVIEW_REQUEST_STATUS.WAITING
+        }).then(r => {
+          this.$notify.success({
+            title: 'Submission Requested',
+            message: 'Requested!',
+            duration: 1500
+          })
+        })
       }
     }
   }

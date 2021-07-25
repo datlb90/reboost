@@ -31,7 +31,7 @@
               <a href="/forgot/password" style="float: left; color: rgb(101 139 179); text-decoration: none;">
                 Forgot Password?
               </a>
-              <a href="/register" style="float: right; color: rgb(101 139 179); text-decoration: none;">
+              <a :href="linkToRegister" style="float: right; color: rgb(101 139 179); text-decoration: none;">
                 Sign Up
               </a>
             </el-form-item>
@@ -89,6 +89,17 @@ export default {
       googleFormAction: null,
       facebookFormAction: null
     }
+  },
+  computed: {
+    linkToRegister() {
+      if (this.$router.currentRoute.path.includes('/rater')) {
+        return '/rater/register'
+      }
+      return '/register'
+    }
+  },
+  mounted() {
+    console.log('1111111111', this.$router.currentRoute.path.includes('/rater'))
   },
   beforeRouteEnter(to, from, next) {
     if (authService.isAuthenticated()) {

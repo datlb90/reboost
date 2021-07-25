@@ -70,7 +70,7 @@ namespace Reboost.Service.Services
 
         public async Task<IEnumerable<Raters>> GetAllAsync()
         {
-            return await _unitOfWork.Raters.GetAllAsync(null, "User");
+            return (await _unitOfWork.Raters.GetAllAsync(null, "User")).OrderByDescending(r => r.AppliedDate);
         }
 
         public async Task<Raters> GetByIdAsync(int id)
@@ -130,6 +130,7 @@ namespace Reboost.Service.Services
 
             _rater.RaterCredentials = rater.RaterCredentials;
             _rater.Status = rater.Status;
+            _rater.Biography = rater.Biography;
 
             await _unitOfWork.RaterCredential.UpdateManyByRaterAync(rater.Id, rater.RaterCredentials.ToList());
 

@@ -194,8 +194,6 @@ namespace Reboost.DataAccess.Repositories
                             Count = g.Count()
                         };
 
-
-
             var tasks = from task in ReboostDbContext.Tasks
                         select new SummaryPerUser
                         {

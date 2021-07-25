@@ -30,8 +30,8 @@ namespace Reboost.Service.Services
         Task<string> CreateNewSampleReviewDocumentAsync(string type, User user);
         Task<List<Reviews>> GetReviewsAsync();
         Task<List<Reviews>> GetReviewsByUserIdAsync(string userId);
-        Task<Reviews> GetReviewByIdAsync(int id);
-        Task<Reviews> ChangeStatusAsync(int id, string newStatus);
+        Task<GetReviewsModel> GetReviewByIdAsync(int id);
+        Task<Reviews> ChangeStatusAsync(int id, UpdateStatusModel model);
         Task<ReviewRequests> CreateRequestAsync(string userId, ReviewRequests requests);
         Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId);
         Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int submissionId, string userId);
@@ -45,7 +45,10 @@ namespace Reboost.Service.Services
         Task<IEnumerable<Reviews>> GetUnRatedReviewsAsync(string userId);
         Task<GetReviewsModel> GetPendingReviewAsync(string userId);
         Task<ReviewRatings> SubmitReviewRatingAsync(ReviewRatings data, string userId);
-
+        Task<CreatedProRequestModel> CreateProRequestAsync(ReviewRequests request);
+        Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request);
+        Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId);
+        Task<int> IsProRequestCheckAsync(int reviewId);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -131,9 +134,9 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.GetReviewsAsync();
         }
-        public async Task<Reviews> ChangeStatusAsync(int id, string newStatus)
+        public async Task<Reviews> ChangeStatusAsync(int id, UpdateStatusModel model)
         {
-            return await _unitOfWork.Review.ChangeStatusAsync(id, newStatus);
+            return await _unitOfWork.Review.ChangeStatusAsync(id, model);
         }
         public async Task<List<Reviews>> GetReviewsByUserIdAsync(string userId)
         {
@@ -183,7 +186,7 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.GetPendingReviewAsync(userId);
         }
-        public async Task<Reviews> GetReviewByIdAsync(int id)
+        public async Task<GetReviewsModel> GetReviewByIdAsync(int id)
         {
             return await _unitOfWork.Review.GetReviewByIdAsync(id);
         }
@@ -191,6 +194,22 @@ namespace Reboost.Service.Services
         public async Task<ReviewRatings> SubmitReviewRatingAsync(ReviewRatings data, string userId)
         {
             return await _unitOfWork.Review.SubmitReviewRatingAsync(data, userId);
+        }
+        public async Task<CreatedProRequestModel> CreateProRequestAsync(ReviewRequests request)
+        {
+            return await _unitOfWork.Review.CreateProRequestAsync(request);
+        }
+        public async Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request)
+        {
+            return await _unitOfWork.Review.ReRequestProRequestAsync(request);
+        }
+        public async Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId)
+        {
+            return await _unitOfWork.Review.GetOrCreateReviewByProRequestId(requestId, currentUserId);
+        }
+        public async Task<int> IsProRequestCheckAsync(int reviewId)
+        {
+            return await _unitOfWork.Review.IsProRequestCheckAsync(reviewId);
         }
     }
 }
