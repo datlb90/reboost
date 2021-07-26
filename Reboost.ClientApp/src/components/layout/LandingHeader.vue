@@ -10,8 +10,8 @@
 
           <b-navbar-toggle target="navbarSupportedContent" />
 
-          <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
-            <ul id="top-menu" class="navbar-nav nav ml-auto">
+          <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu justify-content-center" is-nav>
+            <ul id="top-menu" class="navbar-nav nav">
 
               <li class="nav-item">
                 <a href="howItWorks" class="nav-link">How It Works</a>
@@ -41,7 +41,7 @@
 
           <div class="others-option">
             <a href="/rater" class="btn btn-light">Become A Rater</a>
-            <a href="/login" class="btn btn-primary">Sign In</a>
+            <!-- <a href="/login" class="btn btn-primary">Sign In</a> -->
           </div>
         </nav>
       </div>

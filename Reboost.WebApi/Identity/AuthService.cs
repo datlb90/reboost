@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authentication;
 using Reboost.DataAccess.Entities;
 using Reboost.Service.Services;
 using Stripe;
+using System.Text.RegularExpressions;
 
 namespace Reboost.WebApi.Identity
 {
@@ -294,6 +295,16 @@ namespace Reboost.WebApi.Identity
 
         public async Task<UserManagerResponse> LoginUserAsync(LoginViewModel model)
         {
+            Regex regex = new Regex(@"^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$",RegexOptions.CultureInvariant | RegexOptions.Singleline);
+            if (!regex.IsMatch(model.Email))
+            {
+                return new UserManagerResponse
+                {
+                    Message = "Invalid email",
+                    IsSuccess = false,
+                };
+            }
+
             var user = await _userManger.FindByEmailAsync(model.Email);
 
             if (user == null)

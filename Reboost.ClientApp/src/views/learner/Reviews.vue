@@ -136,7 +136,6 @@ export default {
     },
     onNewRequestClick() {
       reviewService.newRequest().then(rs => {
-        console.log('new review result', rs)
         if (rs) {
           this.$router.push({ name: PageName.REVIEW, params: { questionId: rs.reviewRequest.submission.questionId, docId: rs.reviewRequest.submission.docId, reviewId: rs.reviewId }})
         } else {

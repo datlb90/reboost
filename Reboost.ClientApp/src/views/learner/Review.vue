@@ -27,6 +27,7 @@
           :is-rate="isRate"
           :is-rated="isRated"
           :is-author="isReviewAuth"
+          :is-submit="isSubmit"
           @expandColorPickerToggle="expandColorPicker=$event"
           @hideQuestion="hideQuestion($event)"
           @submit="submitReview"
@@ -36,6 +37,8 @@
           @highLightText="highlightEvent($event)"
           @toolBarButtonChange="toolBarButtonClick($event)"
           @rateBtnClick="rateReview"
+          @openDialogRevise="reviseDialogVisible = true"
+          @closeDialogRevise="reviseDialogVisible = false"
         />
         <div id="viewerContainer">
           <div
@@ -54,7 +57,7 @@
         <div slot="header" class="clearfix">
           <div>
             <div style="font-size: 15px; font-weight: bold; text-align: left;">
-              {{ loadedAnnotation.reviewer.firstName }} {{ loadedAnnotation.reviewer.lastName }}
+              {{ commentUserName() }}
             </div>
           </div>
         </div>
@@ -92,10 +95,7 @@
         <div slot="header" class="clearfix">
           <div>
             <div style="font-size: 15px; font-weight: bold; text-align: left;">
-              {{ loadedAnnotation.reviewer.firstName }} {{ loadedAnnotation.reviewer.lastName }}
-            </div>
-            <div style="font-size: 12px; text-align: left;">
-              {{ getDateNow }}
+              {{ commentUserName() }}
             </div>
           </div>
           <el-button v-if="(currentUser.role !== 'Admin' || isView) && comment.isSaved == true" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
@@ -170,6 +170,27 @@
       </ul>
     </div>
     <!-- /Inline color picker -->
+    <el-dialog
+      title="Revision Request"
+      :visible.sync="reviseDialogVisible"
+      width="30%"
+      center
+    >
+      <el-form ref="formNote" :model="form">
+        <el-form-item prop="noteRevision" :rules="[{ required: true, message: 'Note is required', trigger: 'blur' }]">
+          <el-input
+            v-model="form.noteRevision"
+            type="textarea"
+            :rows="4"
+            placeholder="Please input note"
+          />
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="reviseDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="onSubmitRevise">Submit</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -213,7 +234,7 @@ import { enableEdit } from '@/pdfjs/UI/edit'
 import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
-import { RATER_STATUS, REVIEW_REQUEST_STATUS } from '../../app.constant'
+import { RATER_STATUS, REVIEW_REQUEST_STATUS, UserRole } from '../../app.constant'
 import moment from 'moment'
 // import { highlightText } from '../../pdfjs/UI/highlight-text.js'
 
@@ -228,6 +249,10 @@ export default {
   },
   data() {
     return {
+      reviseDialogVisible: false,
+      form: {
+        noteRevision: null
+      },
       rubricCriteria: [],
       criteriaFeedback: {},
       showDirection: true,
@@ -293,7 +318,8 @@ export default {
       selectedTab: 'question',
       isReviewAuth: false,
       isRated: false,
-      statusRater: ''
+      statusRater: '',
+      isSubmit: false
     }
   },
   computed: {
@@ -340,11 +366,15 @@ export default {
       this.$refs.toolBar.insertExpandMenu()
       this.handleCommentPositionsRestore()
       this.hideDeleteToolBar()
+      this.showBtnSubmit()
       // this.ToolbarButtons()
       // this.ScaleAndRotate();
     })
+
     await raterService.getByCurrentUser().then(rs => {
-      this.statusRater = rs.status
+      if (rs) {
+        this.statusRater = rs.status
+      }
     })
 
     await this.loadRate()
@@ -2147,11 +2177,17 @@ export default {
               message: 'Submitted!',
               duration: 2000
             })
-            console.log('submit ne', rs)
-            if (this.statusRater === RATER_STATUS.APPROVED) {
+
+            if (this.currentUser?.role == UserRole.RATER && this.statusRater === RATER_STATUS.APPROVED) {
               this.$router.push('/reviews')
             } else {
+              this.$store.dispatch('review/loadReviewsById')
               this.$router.push('/rater/application')
+            }
+
+            // Redirect if user is Learner
+            if (this.currentUser?.role == UserRole.LEARNER) {
+              this.$router.push('/reviews')
             }
           } else {
             this.$notify.error({
@@ -2665,35 +2701,57 @@ export default {
     },
     async loadRate() {
       await reviewService.getById(this.$route.params.reviewId).then(async rs => {
-        if (rs) {
+        if (rs.review) {
+          if (rs.review.status === REVIEW_REQUEST_STATUS.COMPLETED) {
+            this.isView = true
+          }
           this.$refs.toolBar.loadReviewData(rs)
         }
 
-        if (rs && this.currentUser.id === rs.reviewerId) {
+        if (rs.review && this.currentUser.id === rs.review.reviewerId) {
           this.isReviewAuth = true
         }
 
-        if (rs && (this.currentUser.id === rs.reviewerId || this.currentUser.id === rs.revieweeId) && rs.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED) {
+        if (rs.review && (this.currentUser.id === rs.review.reviewerId || this.currentUser.id === rs.review.revieweeId) && rs.review.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED) {
           this.isRate = true
 
-          await reviewService.getReviewRating(this.$route.params.reviewId).then(rs => {
-            if (rs) {
+          await reviewService.getReviewRating(this.$route.params.reviewId).then(r => {
+            if (r) {
               this.isRated = true
               this.selectedTab = 'rate'
-              this.$refs.tabRate.updateData({ value: rs.rate, comment: rs.comment, rated: true })
+              this.$refs.tabRate.updateData({ value: r.rate, comment: r.comment, rated: true })
               this.isView = true
             } else if (this.isReviewAuth) {
               // this.$refs.tabRate.updateData({ value: 0, comment: 'Please wait for reviewee!', rated: true })
               this.isRate = false
             }
           })
-        } else if (rs && this.currentUser.id === rs.revieweeId && rs.reviewerId !== rs.revieweeId) {
+        } else if (rs.review && this.currentUser.id === rs.review.revieweeId && rs.review.reviewerId !== rs.review.revieweeId) {
           this.isView = true
         }
       })
     },
     rateReview() {
       this.selectedTab = 'rate'
+    },
+    showBtnSubmit() {
+      var data = this.loadedAnnotation
+      if (data && data.annotations?.length !== 0 && data.comments?.length !== 0) {
+        this.isSubmit = true
+      }
+    },
+    onSubmitRevise() {
+      this.$refs['formNote'].validate((valid) => {
+        if (valid) {
+          this.$refs.toolBar.rejectTraining(this.form.noteRevision)
+        }
+      })
+    },
+    commentUserName() {
+      if (this.loadedAnnotation.reviewer) {
+        return this.loadedAnnotation.reviewer.firstName + this.loadedAnnotation.reviewer.lastName
+      }
+      return this.currentUser.firstName + this.currentUser.lastName
     }
     // End migration
   }

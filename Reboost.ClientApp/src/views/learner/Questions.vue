@@ -241,8 +241,9 @@ export default {
       })
     },
     clickPickOne() {
-      var chosenNumber = Math.floor(Math.random() * this.questionCached.length)
-      var id = this.questionCached[chosenNumber].id
+      var listNoCompleted = this.questionCached.filter(r => r.status.trim() !== 'Completed')
+      var chosenNumber = Math.floor(Math.random() * listNoCompleted.length)
+      var id = listNoCompleted[chosenNumber].id
       this.$router.push({
         name: 'PracticeWriting',
         params: {

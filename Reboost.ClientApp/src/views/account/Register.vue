@@ -10,7 +10,7 @@
               </router-link>
             </div>
             <el-form-item style="text-align: left;" prop="firstName" :rules="[{ required: true, message: 'First name is required'}]">
-              <el-input id="firstName" v-model="form.firstName" error="Ahihi" type="text" placeholder="First Name" />
+              <el-input id="firstName" v-model="form.firstName" type="text" placeholder="First Name" />
             </el-form-item>
             <el-form-item style="text-align: left;" prop="lastName" :rules="[{ required: true, message: 'Last name is required'}]">
               <el-input id="lastName" v-model="form.lastName" type="text" placeholder="Last Name" />

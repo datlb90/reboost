@@ -125,7 +125,10 @@ export default {
         Password: this.password
       })
       if (user) {
-        this.$router.push({ name: PageName.AFTER_LOGIN })
+        // this.$router.push({ name: PageName.AFTER_LOGIN })
+        this.$store.dispatch('auth/setSelectedTest').then(rs => {
+          this.$router.push({ name: PageName.AFTER_LOGIN })
+        })
       }
     }
   }

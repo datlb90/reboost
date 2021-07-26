@@ -138,6 +138,15 @@ const router = new VueRouter({
       }
     },
     {
+      path: '/rater/login',
+      name: PageName.LOGIN,
+      component: Login,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
       path: '/after-login',
       name: PageName.AFTER_LOGIN
     },
@@ -217,6 +226,15 @@ const router = new VueRouter({
       path: '/review/test',
       name: 'Review Test',
       component: ReviewTest,
+      meta: {
+        plainLayout: false,
+        landingPage: false,
+        loginRequired: true
+      }
+    },
+    {
+      path: '/review/pro/:id',
+      name: 'Get Review',
       meta: {
         plainLayout: false,
         landingPage: false,

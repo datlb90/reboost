@@ -56,6 +56,14 @@
           >
             <el-input v-model="formRegister.lastName" type="text" />
           </el-form-item>
+
+          <el-form-item v-if="raterId" size="mini" label="Email" prop="email">
+            <el-input
+              v-model="formRegister.email"
+              :disabled="true"
+            />
+          </el-form-item>
+
           <el-form-item
             size="mini"
             label="Gender"
@@ -275,10 +283,12 @@
             <el-button v-if="!raterId" size="mini">Cancel</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
             <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve for training</el-button>
-            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && (formRegister.status === RATER_STATUS.TRAINING_COMPLETED ||formRegister.status === RATER_STATUS.TRAINING || formRegister.status === RATER_STATUS.REVISION_COMPLETED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.APPROVED)">Approve</el-button>
-            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && formRegister.status !== RATER_STATUS.DOCUMENT_REQUESTED" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">{{ titleBtnReject }}</el-button>
+            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && formRegister.status !== RATER_STATUS.TRAINING && (formRegister.status !== RATER_STATUS.TRAINING_COMPLETED || formRegister.status === RATER_STATUS.REVISION_COMPLETED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.APPROVED)">Approve</el-button>
+            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && formRegister.status !== RATER_STATUS.TRAINING && formRegister.status !== RATER_STATUS.DOCUMENT_REQUESTED && formRegister.status !== RATER_STATUS.TRAINING_COMPLETED" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">Reject</el-button>
             <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status===RATER_STATUS.DOCUMENT_SUBMITTED || formRegister.status===RATER_STATUS.DOCUMENT_REQUESTED)" :disabled="!formRegister.note" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
-            <el-dropdown v-if="completedTraining(formRegister,'IELTS') && formRegister.status !== RATER_STATUS.APPROVED" style="margin: 0 10px 0" size="mini" split-button type="primary" @click="redirectToTraining('IELTS')" @command="trainingDropdownClick">
+            <el-button v-if="completedTraining(formRegister,'IELTS') && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="redirectToTraining('IELTS')">View IELTS Training</el-button>
+            <el-button v-if="completedTraining(formRegister,'TOEFL') && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="redirectToTraining('TOEFL')">View TOEFL Training</el-button>
+            <!-- <el-dropdown v-if="completedTraining(formRegister,'IELTS') && formRegister.status !== RATER_STATUS.APPROVED" style="margin: 0 10px 0" size="mini" split-button type="primary" @click="redirectToTraining('IELTS')" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'IELTSTraining',action:'approve'}">Approve for Training</el-dropdown-item>
@@ -291,7 +301,7 @@
                 <el-dropdown-item :command="{type:'TOEFLTraining',action:'approve'}">Approve for Training</el-dropdown-item>
                 <el-dropdown-item :command="{type:'TOEFLTraining',action:'reject'}">Revision</el-dropdown-item>
               </el-dropdown-menu>
-            </el-dropdown>
+            </el-dropdown> -->
           </el-form-item>
         </el-form>
       </el-col>
@@ -323,6 +333,7 @@ export default {
         id: '',
         firstName: '',
         lastName: '',
+        email: '',
         gender: '',
         occupation: '',
         status: '',
@@ -358,8 +369,7 @@ export default {
       toggleImagePopup: false,
       popUpImageUrl: null,
       portraitImg: true,
-      RATER_STATUS: RATER_STATUS,
-      titleBtnReject: 'Reject'
+      RATER_STATUS: RATER_STATUS
     }
   },
   computed: {
@@ -452,6 +462,8 @@ export default {
         this.formRegister.firstName = rs.user.firstName
         // Last name
         this.formRegister.lastName = rs.user.lastName
+        // Email
+        this.formRegister.email = rs.user.email
       })
     },
     async onSubmit(formName, createOrUpdate, hideSaveNotify) {
@@ -575,7 +587,6 @@ export default {
               })
             }
           } else {
-            console.log('error submit!!')
             this.$notify.error({
               title: 'Error',
               message: 'Error occured!',
@@ -672,7 +683,7 @@ export default {
 
       var newStatus = e.action == 'approve' ? e.type + RATER_STATUS.APPROVED : e.type + RATER_STATUS.REVISION
 
-      reviewService.changeReviewStatus(t.id, newStatus).then(rs => {
+      reviewService.changeReviewStatus(t.id, { status: newStatus }).then(rs => {
         if (rs.status.includes(RATER_STATUS.REVISION)) {
           this.$notify.error({
             title: RATER_STATUS.REVISION,

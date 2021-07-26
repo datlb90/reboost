@@ -15,21 +15,30 @@ export const SCORES = {
 export const RATER_STATUS = {
   APPLIED: 'Applied',
   TRAINING: 'Training',
-  APPROVED: 'Approved',
+  APPROVED: 'Final Approval',
   REJECTED: 'Rejected',
   REVISION: 'Revision',
+  IELTS_TRAINING_REVISION: 'IELTSTrainingRevision',
+  TOEFL_TRAINING_REVISION: 'TOEFLTrainingRevision',
   DOCUMENT_REQUESTED: 'DocumentRequested',
   DOCUMENT_SUBMITTED: 'DocumentSubmitted',
   REVISION_REQUESTED: 'RevisionRequested',
   REVISION_COMPLETED: 'RevisionCompleted',
+  IELTS_REVISION_COMPLETED: 'IELTSRevisionCompleted',
+  TOEFL_REVISION_COMPLETED: 'TOEFLRevisionCompleted',
   TRAINING_COMPLETED: 'TrainingCompleted',
+  IELTS_TRAINING_COMPLETED: 'IELTSTrainingSubmitted',
+  TOEFT_TRAINING_COMPLETED: 'TOEFLTrainingSubmitted',
   TRAINING_APPROVED: 'TrainingApproved',
+  IELTS_TRAINING_APPROVED: 'IELTSTrainingApproved',
+  TOEFT_TRAINING_APPROVED: 'TOEFLTrainingApproved',
   DOCUMENT_COMPLETED: 'DocumentCompleted'
 }
 export const REVIEW_REQUEST_STATUS = {
   IN_PROGRESS: 'In Progress',
   COMPLETED: 'Completed',
-  RATED: 'Rated'
+  RATED: 'Rated',
+  WAITING: 'Waiting'
 }
 export const configs = {
   stripeApiKey: 'pk_test_51I9tu1D04tWYlOu2cVzeLBsGuDK4aRvfkR4tJb18W20hxgtf4989r2JeSbuua653nGkzY6IlFU7JTPYKyqne64VP00CLSFo42c'
@@ -37,6 +46,7 @@ export const configs = {
 }
 export const PageName = {
   LOGIN: 'Login',
+  RATER_LOGIN: 'RaterLogin',
   AFTER_LOGIN: 'AfterLogin',
   REGISTER: 'Register',
   REGISTER_RATER: 'RaterRegister',

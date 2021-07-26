@@ -31,5 +31,6 @@ namespace Reboost.DataAccess.Entities
     public class UpdateStatusModel
     {
         public string status { get; set; }
+        public string note { get; set; }
     }
 }

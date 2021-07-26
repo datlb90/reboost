@@ -48,7 +48,7 @@
                       </div>
                     </el-col>
                   </el-row>
-                  <el-row>
+                  <el-row v-if="isShowQuestion">
                     <div v-if="!isShowListeningTab && getReading != ''">
                       <div class="header-practice" style="margin-bottom: 8px; display: flex;">
                         <div style="flex-grow: 1; display: flex; align-items: center;">
@@ -100,14 +100,14 @@
                       </div>
                     </el-col>
                   </el-row>
-                  <div v-if="getReading != '' && !isShowListeningTab && isShowReading" style="margin: 0;">
+                  <div v-if="isShowQuestion && getReading != '' && !isShowListeningTab && isShowReading" style="margin: 0;">
                     <pre> {{ getReading.content }}</pre>
                   </div>
-                  <div v-if="isShowScript && isShowListeningTab" class="body-transcript" style="margin: 0;">
+                  <div v-if="isShowQuestion && isShowScript && isShowListeningTab" class="body-transcript" style="margin: 0;">
                     <pre> {{ getTranscript.content }}</pre>
                   </div>
                 </div>
-                <div v-if="isShowChart || (getReading == '' && getChart != '')" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%;">
+                <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%;">
                   <div style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center;">
                     <img src="../../assets/chart/1.png" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
                   </div>
@@ -147,18 +147,18 @@
             <div v-if="getQuestion != ''">
               <el-dropdown v-if="writtingSubmitted || hasSubmitionForThisQuestion " size="mini" @command="checkoutVisibles">
                 <el-button size="mini">
-                  Get Writting Preview
+                  Get Writting Review
                 </el-button>
                 <el-dropdown-menu slot="dropdown" size="mini">
-                  <el-dropdown-item :disabled="isFreeRequested || unRatedList.length > 0" command="free">Free Peer Review</el-dropdown-item>
-                  <el-dropdown-item command="checkout">Pro Rater Review</el-dropdown-item>
+                  <el-dropdown-item :disabled="isProRequested||isFreeRequested || unRatedList.length > 0" command="free">Free Peer Review</el-dropdown-item>
+                  <el-dropdown-item :disabled="isProRequested" command="checkout">Pro Rater Review</el-dropdown-item>
                   <el-dropdown-item divided>View Review Sample</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
 
               <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit & Request Review</el-button>
               <el-button v-if="isEdit" style="margin-left:5px" size="mini" @click="isEdit=false">Edit</el-button>
-              <el-button v-if="hasSubmitionForThisQuestion&& !isEdit" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Save</el-button>
+              <el-button v-if="hasSubmitionForThisQuestion&& !isEdit" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit</el-button>
 
             </div>
           </div>
@@ -242,6 +242,7 @@ export default {
       submissionId: null,
       unRatedList: [],
       isFreeRequested: false,
+      isProRequested: false,
       showStartTestButton: false,
       isTesting: false,
       dialogVisible: false,
@@ -249,7 +250,8 @@ export default {
       isStart: false,
       timeStart: null,
       idSubmissionStorage: null,
-      isEdit: false
+      isEdit: false,
+      isShowQuestion: true
     }
   },
   computed: {
@@ -352,8 +354,10 @@ export default {
     loadData() {
       if (this.submissionId) {
         reviewService.getReviewRequestBySubmissionId(this.submissionId).then(rs => {
+          console.log('request data ', rs)
           if (rs) {
-            this.isFreeRequested = true
+            this.isFreeRequested = rs.feedbackType == 'Free'
+            this.isProRequested = rs.feedbackType == 'Pro'
           }
         })
 
@@ -366,8 +370,8 @@ export default {
           }
           if (localStorage.getItem(this.idSubmissionStorage) && localStorage.getItem(this.idSubmissionStorage) != '') {
             this.writingContent = localStorage.getItem(this.idSubmissionStorage)
-            this.countWords()
           }
+          this.countWords()
         })
       } else {
         this.writingContent = localStorage.getItem(this.idLocalStorage)
@@ -444,6 +448,7 @@ export default {
         documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
             this.writtingSubmitted = true
+            this.isEdit = true
             this.$notify({
               title: 'Success',
               message: 'Updated successfully',
@@ -468,6 +473,7 @@ export default {
               this.hasSubmitionForThisQuestion = true
               this.timeSpent = 0
               this.submissionId = rs.submissions[0]?.id
+              this.isEdit = true
             }
           })
         } else {
@@ -484,6 +490,7 @@ export default {
               this.hasSubmitionForThisQuestion = true
               this.timeSpent = 0
               this.submissionId = rs.submissions[0]?.id
+              this.isEdit = true
             }
           })
         }
@@ -548,6 +555,7 @@ export default {
         this.isTesting = false
         clearInterval(this.timeSpentInterval)
       }
+      this.isShowQuestion = !this.isShowQuestion
       this.showStartTestButton = !this.showStartTestButton
       // if (!this.isTest) {
       //   this.isShowReading = true
@@ -604,6 +612,7 @@ export default {
       this.isTesting = true
       this.minute = time
       this.second = 0
+      this.isShowQuestion = true
 
       this.timeSpentInterval = setInterval(() => {
         this.second--

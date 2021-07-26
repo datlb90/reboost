@@ -6,7 +6,7 @@ namespace Reboost.Shared
 {
     public static class RaterStatus
     {
-        public const string APPROVED = "Approved";
+        public const string APPROVED = "Final Approval";
         public const string COMPLETED = "Completed";
         public const string TRAINING = "Training";
         public const string TRAININGCOMPLETED = "TrainingCompleted";
@@ -26,6 +26,7 @@ namespace Reboost.Shared
         public const string COMPLETED = "Completed";
         public const string REVIEW_REQUETED = "Review Requested";
         public const string RATED = "Rated";
+        public const string WAITING = "Waiting";
     }
     public static class TestsName
     {
@@ -36,5 +37,15 @@ namespace Reboost.Shared
     {
         public const string Submitted = "Submitted";
         public const string REVISION = "Revision";
+    }
+    public static class ReviewStatus
+    {
+        public const string IN_PROGRESS = "In Progress";
+        public const string COMPLETED = "Completed";
+    }
+    public static class ReviewRequestType
+    {
+        public const string FREE = "Free";
+        public const string PRO = "Pro";
     }
 }

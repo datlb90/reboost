@@ -1,4 +1,5 @@
 import authService from '@/services/auth.service'
+import reviewService from '../../services/review.service'
 import { PageName, UserRole } from '@/app.constant'
 import store from '../../store'
 import { isApprovedRater, revieweeReviewAuthentication } from '../guard/UserReviewValidation'
@@ -14,8 +15,24 @@ export default async(router) => {
       return
     }
 
+    // Check logged in
+    if (to.meta && to.meta.loginRequired) {
+      if (!authService.isAuthenticated()) {
+        return next('/login')
+      }
+    }
+
+    // Check user role
+    if (to.meta.role) {
+      const currentUser = authService.getCurrentUser()
+      if (!currentUser || !currentUser.role || currentUser.role !== to.meta.role) {
+        return next('/notfound')
+      }
+      next()
+    }
+
     if (!currentUser || !currentUser.id) {
-      if (to.path == '/login' || to.path == '/' || to.path == '/register' || to.path == '/rater/register') {
+      if (to.path == '/login' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register') {
         next()
         return
       }
@@ -41,22 +58,6 @@ export default async(router) => {
         return
       }
       return next('/SelectYourTest')
-    }
-
-    // Check logged in
-    if (to.meta && to.meta.loginRequired) {
-      if (!authService.isAuthenticated()) {
-        return next('/login')
-      }
-    }
-
-    // Check user role
-    if (to.meta.role) {
-      const currentUser = authService.getCurrentUser()
-      if (!currentUser || !currentUser.role || currentUser.role !== to.meta.role) {
-        return next('/notfound')
-      }
-      next()
     }
 
     // Navigate to appropriate page base on user role after login
@@ -103,6 +104,18 @@ export default async(router) => {
     if (to.name === PageName.REVIEW) {
       const check = await revieweeReviewAuthentication(to.params.reviewId)
       if (check === 0) {
+        next({ name: PageName.NOT_FOUND })
+        return
+      }
+    }
+
+    // Link to pro review request
+    if (to.path.includes('/review/pro/')) {
+      if (currentUser.role != UserRole.RATER) {
+        reviewService.getLinkToReviewByProRequestId(to.params.id).then(rs => {
+          next({ path: `/review/${rs.submission.questionId}/${rs.submission.docId}/${rs.reviewId}` })
+        })
+      } else {
         next({ name: PageName.NOT_FOUND })
         return
       }

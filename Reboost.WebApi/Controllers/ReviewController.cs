@@ -38,7 +38,7 @@ namespace Reboost.WebApi.Controllers
         {
             var rs = await _service.GetAnnotationsAsync(docId, reviewId);
             var review = await _service.GetReviewByIdAsync(reviewId);
-            var user = await _userService.GetByIdAsync(review.ReviewerId);
+            var user = await _userService.GetByIdAsync(review.Review.ReviewerId);
 
             rs.User = user;
 
@@ -118,15 +118,30 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("feedback/{id}")]
         public async Task<IActionResult> ReviewFeedback([FromRoute] int id, [FromBody] List<ReviewData> data)
         {
+            // Check if it is a pro request, return 1 if is a pro request, -1 if it not a pro request, 0 if review's timeout end
+            var isProRequest = await _service.IsProRequestCheckAsync(id);
+
+            // Check if pro review's timeout end
+            if(isProRequest==0)
+            {
+                return BadRequest(new { message = "Your review's timeout has ended!" });
+            }
+
             var rs = await _service.SaveFeedback(id, data);
+
+            // Send mail if review is not a training review
             if(rs != null && rs.RevieweeId.Trim() != "1")
             {
+                // Get reviewee's Id
                 var reviewee = await _userService.GetByIdAsync(rs.RevieweeId);
 
+                // Get review's info by reviewee's Id
                 var result = await _service.GetOrCreateReviewByReviewRequestAsync(rs.RequestId, reviewee.Id);
 
+                // Send mail to reviewee
                 await _mailService.SendEmailAsync(reviewee.Email, "Review Update", "Your submission has just been updated! Follow the link at: localhost:3011/review/"+result.ReviewRequest.Submission.QuestionId+"/"+result.ReviewRequest.Submission.DocId+"/"+result.ReviewId);
             }
+
             return Ok(rs);
         }
         [Authorize]
@@ -187,9 +202,9 @@ namespace Reboost.WebApi.Controllers
         }
         [Authorize]
         [HttpPost("status/change/{id}")]
-        public async Task<IActionResult> ChangeReviewStatusAsync([FromBody] UpdateStatusModel status, [FromRoute] int id)
+        public async Task<IActionResult> ChangeReviewStatusAsync([FromBody] UpdateStatusModel model, [FromRoute] int id)
         {
-            var rs = await _service.ChangeStatusAsync(id, status.status);
+            var rs = await _service.ChangeStatusAsync(id, model);
             return Ok(rs);
         }
         [Authorize]
@@ -373,6 +388,55 @@ namespace Reboost.WebApi.Controllers
                 return Ok(await Task.FromResult(new { code = 400, messages = "Review not found" }));
             }
 
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpPost("request/pro")]
+        public async Task<IActionResult> CreateProRequestAsync([FromBody] ReviewRequests request)
+        {
+            // Get current user info
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            request.UserId = currentUser.Id;
+
+            // Get request if exist
+            var exist = await _service.GetReviewRequestBySubmissionId(request.SubmissionId, currentUser.Id);
+
+            if (exist != null)
+            {
+                // Get rater and update requested time of queue
+                var rs = await _service.ReRequestProRequestAsync(exist);
+
+                // Send mail to rater with confirm link
+                await _mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
+
+                return Ok(rs.Request);
+            }
+            else
+            {
+                // Add request and queue then return the rater that applied to this request
+                var rs = await _service.CreateProRequestAsync(request);
+
+                // Send mail to rater with confirm link
+                await _mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
+
+                return Ok(rs.Request);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("request/pro/{id}")]
+        public async Task<IActionResult> GetOrCreateReviewByProRequest(int id)
+        {
+            // Get current user info
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.GetOrCreateReviewByProRequestId(id, currentUser.Id);
             return Ok(rs);
         }
     }
