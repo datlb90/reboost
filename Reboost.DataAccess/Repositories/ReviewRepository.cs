@@ -261,7 +261,10 @@ namespace Reboost.DataAccess.Repositories
                 return null;
             }
 
-            training.Note = model.note;
+            if (model.note != null)
+            {
+                training.Note = model.note;
+            }
             training.Status = model.status;
 
             Raters rater = await db.Raters.Where(r => r.Id == training.RaterId).FirstOrDefaultAsync();
