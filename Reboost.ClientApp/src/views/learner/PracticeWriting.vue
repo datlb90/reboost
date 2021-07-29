@@ -106,9 +106,7 @@
                   <div v-if="isShowQuestion && isShowScript && isShowListeningTab" class="body-transcript" style="margin: 0;">
                     <pre> {{ getTranscript.content }}</pre>
                   </div>
-                </div>
-                <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%;">
-                  <div style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center;">
+                  <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))">
                     <img src="../../assets/chart/1.png" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
                   </div>
                 </div>
@@ -423,7 +421,7 @@ export default {
       }
 
       if (!this.writingContent) {
-        this.$notify({
+        this.$notify.error({
           title: 'Error',
           message: 'Nothing to submit',
           type: 'error',
@@ -449,7 +447,7 @@ export default {
           if (rs) {
             this.writtingSubmitted = true
             this.isEdit = true
-            this.$notify({
+            this.$notify.success({
               title: 'Success',
               message: 'Updated successfully',
               type: 'success',
@@ -462,7 +460,7 @@ export default {
           data.status = 'Pending'
           documentService.submitPendingDocument(data).then(rs => {
             if (rs) {
-              this.$notify({
+              this.$notify.success({
                 title: 'Success',
                 message: 'Submitted successfully',
                 type: 'success',
@@ -480,7 +478,7 @@ export default {
           data.status = 'Submitted'
           documentService.submitDocument(data).then(rs => {
             if (rs) {
-              this.$notify({
+              this.$notify.success({
                 title: 'Success',
                 message: 'Submitted successfully',
                 type: 'success',

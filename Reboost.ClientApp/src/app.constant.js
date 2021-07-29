@@ -14,25 +14,25 @@ export const SCORES = {
 }
 export const RATER_STATUS = {
   APPLIED: 'Applied',
-  TRAINING: 'Training',
+  TRAINING: 'Approved for Training',
+  DOCUMENT_REQUESTED: 'Document Requested',
+  DOCUMENT_SUBMITTED: 'Document Submitted',
+  REVISION_REQUESTED: 'Revision Requested',
+  TRAINING_COMPLETED: 'Training Completed',
   APPROVED: 'Final Approval',
   REJECTED: 'Rejected',
+
   REVISION: 'Revision',
+
   IELTS_TRAINING_REVISION: 'IELTSTrainingRevision',
   TOEFL_TRAINING_REVISION: 'TOEFLTrainingRevision',
-  DOCUMENT_REQUESTED: 'DocumentRequested',
-  DOCUMENT_SUBMITTED: 'DocumentSubmitted',
-  REVISION_REQUESTED: 'RevisionRequested',
-  REVISION_COMPLETED: 'RevisionCompleted',
+
   IELTS_REVISION_COMPLETED: 'IELTSRevisionCompleted',
   TOEFL_REVISION_COMPLETED: 'TOEFLRevisionCompleted',
-  TRAINING_COMPLETED: 'TrainingCompleted',
   IELTS_TRAINING_COMPLETED: 'IELTSTrainingSubmitted',
   TOEFT_TRAINING_COMPLETED: 'TOEFLTrainingSubmitted',
-  TRAINING_APPROVED: 'TrainingApproved',
   IELTS_TRAINING_APPROVED: 'IELTSTrainingApproved',
-  TOEFT_TRAINING_APPROVED: 'TOEFLTrainingApproved',
-  DOCUMENT_COMPLETED: 'DocumentCompleted'
+  TOEFT_TRAINING_APPROVED: 'TOEFLTrainingApproved'
 }
 export const REVIEW_REQUEST_STATUS = {
   IN_PROGRESS: 'In Progress',
@@ -74,4 +74,11 @@ export const SubmissionStatus = {
   REVIEW_REQUESTED: 'Review Requested',
   REVIEWED: 'Reviewed',
   COMPLETED: 'Completed'
+}
+export const RATER_TRAINING_STATUS = {
+  APPROVED: 'Approved',
+  IN_PROGRESS: 'In Progress',
+  COMPLETED: 'Completed',
+  REVISION_REQUEST: 'Revision Requested',
+  REVISION_COMPLETED: 'Revision Completed'
 }

@@ -104,7 +104,7 @@ namespace Reboost.WebApi.Controllers
             return Ok(new { annotations = savedAnnots, comments = savedComments });
         }
         [Authorize]
-        [HttpPost("createSampleReview/{type}")]
+        [HttpPost("createReviewTraining/{type}")]
         public async Task<IActionResult> CreateNewSampleReviewDocumentAsync([FromRoute] string type)
         {
             var currentUserClaim = HttpContext.User;
@@ -201,7 +201,7 @@ namespace Reboost.WebApi.Controllers
             return Ok(rs);
         }
         [Authorize]
-        [HttpPost("status/change/{id}")]
+        [HttpPost("training/status/change/{id}")]
         public async Task<IActionResult> ChangeReviewStatusAsync([FromBody] UpdateStatusModel model, [FromRoute] int id)
         {
             var rs = await _service.ChangeStatusAsync(id, model);
@@ -436,7 +436,17 @@ namespace Reboost.WebApi.Controllers
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
+            //var currentUser = await GetCurrentUser();
+
             var rs = await _service.GetOrCreateReviewByProRequestId(id, currentUser.Id);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("training/{id}")]
+        public async Task<IActionResult> GetRaterTrainingAsync(int id)
+        {
+            var rs = await _service.GetRaterTrainingsAsync(id);
             return Ok(rs);
         }
     }

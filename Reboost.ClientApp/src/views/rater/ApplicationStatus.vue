@@ -2,7 +2,7 @@
   <div style="margin-top:25px;" :style="{visibility: loadCompleted?'visible':'hidden'}">
     <el-row class="row-flex">
       <el-col :span="15" class="col-border">
-        <el-steps :active="2" align-center>
+        <el-steps :active="status === RATER_STATUS.APPLIED ? 1 : 2" align-center>
           <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
           <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
           <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning" />
@@ -10,7 +10,7 @@
         </el-steps>
       </el-col>
     </el-row>
-    <el-row v-if="status === RATER_STATUS.APPLIED || status === RATER_STATUS.REJECTED || status === RATER_STATUS.DOCUMENT_REQUESTED || status === RATER_STATUS.APPROVED || status === RATER_STATUS.DOCUMENT_SUBMITTED" class="row-flex">
+    <el-row class="row-flex">
       <el-col :span="15" class="col-border">
         <div class="margin-container">
           <div class="flex-box">
@@ -34,20 +34,24 @@
           <div :class="[status === RATER_STATUS.APPLIED ? 'inReview' : 'hidden']">
             <p>Thank you for applying. Your application is curretly in review. We will notify you via email if your application is approved, denied, or if we need additional information.</p>
           </div>
-          <div :class="[status === RATER_STATUS.TRAINING ? 'verified' : 'hidden']">
+          <div :class="[status === RATER_STATUS.DOCUMENT_SUBMITTED ? 'inReview' : 'hidden']" style="background-color: #fdf6ec;border-left: 5px solid #e6a23c;">
+            <p>Thank you for submitting the additional documents. We will review them and get back to you shortly.
+            </p>
+          </div>
+          <div :class="[status === RATER_STATUS.TRAINING ? 'inReview' : 'hidden']">
             <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
             </p>
           </div>
           <div :class="[status === RATER_STATUS.REJECTED ? 'denied' : 'hidden']">
-            <p>Unfortunately, your application was denied because your credentials do not match with the requirements for becoming a rater. We look forward to receiving your application again in the near future. If you have any questions or concerns regarding this, please feel free to contact us as support@reboost.ai.
+            <p>Thank you for your interest in becoming our rater. Unfortunately, your application was rejected at this time. We encourage you to try again using a different account at a future time.
             </p>
           </div>
           <div :class="[status === RATER_STATUS.TRAINING_COMPLETED ? 'inReview' : 'hidden']">
             <p>Your submission has been submitted for review. We will contact you shortly.
             </p>
           </div>
-          <div :class="[status === RATER_STATUS.APPROVED ? 'inReview' : 'hidden']">
-            <p>Your request to become a Reboost IELT rater has been completely approved. You can now receive review requests and start rating and earning money. We will send you review requests periodically.
+          <div :class="[status === RATER_STATUS.APPROVED ? 'verified' : 'hidden']">
+            <p>Congratulations! Your application to become a Reboost rater has been approved. You will start receiving review requests via email. Please try to complete these requests as soon as you can to earn money.
             </p>
           </div>
           <!--<div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="note-container">
@@ -61,18 +65,18 @@
               :disabled="true"
             />
           </div>-->
-          <div v-if="status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED" style="margin-left:150px" class="button-container">
+          <!-- <div v-if="status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED" style="margin-left:150px" class="button-container">
             <el-tooltip v-if="applyToList.includes('IELTS')" :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
               <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin:0" size="mini" @click="redirectToTraining('IELTS')">Complete IELTS Training</el-button>
             </el-tooltip>
             <el-tooltip v-if="applyToList.includes('TOEFL')" :content="isApprove('TOEFL')?'You have passed this training':'Start your TOEFL Training'" placement="top">
               <el-button :type="isApprove('TOEFL')?'success':'primary'" style="margin: 0 10px 0" size="mini" @click="redirectToTraining('TOEFL')">Complete TOEFL Training</el-button>
             </el-tooltip>
-          </div>
+          </div> -->
         </div>
       </el-col>
     </el-row>
-    <el-row v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="row-flex">
+    <el-row v-if="note && note.length && (status===RATER_STATUS.DOCUMENT_REQUESTED)" class="row-flex">
       <el-col :span="15" class="col-border">
         <div class="margin-container">
           <div class="label-container mb-2" style="width: 155px">
@@ -174,7 +178,7 @@
       </el-col>
     </el-row>
 
-    <el-row v-if="applyToList.includes('IELTS') && status !== RATER_STATUS.APPROVED && status !== RATER_STATUS.APPLIED && status !== RATER_STATUS.DOCUMENT_REQUESTED && status !== RATER_STATUS.DOCUMENT_SUBMITTED" class="row-flex">
+    <el-row v-if="applyToList.includes('IELTS') && status !== RATER_STATUS.APPROVED && status !== RATER_STATUS.APPLIED && status !== RATER_STATUS.DOCUMENT_REQUESTED && status !== RATER_STATUS.DOCUMENT_SUBMITTED && status !== RATER_STATUS.REJECTED" class="row-flex">
       <el-col :span="15" class="col-border">
         <div class="margin-container">
           <div class="flex-box">
@@ -182,30 +186,52 @@
               IELTS Application status
             </div>
             <el-tag
+              v-if="statusIELTS"
               :type="
                 statusIELTS === RATER_STATUS.TRAINING
                   ? 'success'
-                  : 'warning'
+                  : statusIELTS === RATER_TRAINING_STATUS.COMPLETED || statusIELTS === RATER_TRAINING_STATUS.APPROVED
+                    ? 'success'
+                    : 'warning'
               "
             >{{ statusIELTS }}</el-tag>
 
           </div>
-          <div :class="[statusIELTS === RATER_STATUS.TRAINING || statusIELTS === RATER_STATUS.IELTS_TRAINING_REVISION ? 'verified' : 'hidden']">
-            <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
+          <div :class="[statusIELTS==null ? 'inReview' : 'hidden']">
+            <p>Start your IELTS training.
             </p>
           </div>
-          <div :class="[statusIELTS === RATER_STATUS.IELTS_TRAINING_COMPLETED ? 'inReview' : 'hidden']">
+          <div :class="[(statusIELTS && statusIELTS === RATER_TRAINING_STATUS.IN_PROGRESS) ? 'inReview' : 'hidden']">
+            <p>Complete your training.
+            </p>
+          </div>
+          <div :class="[(statusIELTS === RATER_TRAINING_STATUS.COMPLETED || statusIELTS === RATER_TRAINING_STATUS.REVISION_COMPLETED) ? 'verified' : 'hidden']">
             <p>Your submission has been submitted for review. We will contact you shortly.
             </p>
           </div>
-          <div :class="[statusIELTS === RATER_STATUS.IELTS_TRAINING_APPROVED ? 'inReview' : 'hidden']">
-            <p>Your request to become a Reboost IELT rater has been completely approved. You can now receive review requests and start rating and earning money. We will send you review requests periodically.
+          <div :class="[statusIELTS === RATER_TRAINING_STATUS.REVISION_REQUEST ? 'denied' : 'hidden']">
+            <p>Please review your submission again.
             </p>
           </div>
-          <div v-if="isCompletedTrainingIELTS && (status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED || status === RATER_STATUS.REVISION_COMPLETED)" class="button-container">
+          <div :class="[statusIELTS === RATER_TRAINING_STATUS.APPROVED ? 'verified' : 'hidden']">
+            <p>Your submission has been approved.
+            </p>
+          </div>
+          <div v-if="isCompletedTrainingIELTS && (status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED)" class="button-container">
             <el-tooltip :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
               <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin:0" size="mini" @click="redirectToTraining('IELTS')">Complete IELTS Training</el-button>
             </el-tooltip>
+          </div>
+          <div v-if="ieltsTraining&&ieltsTraining.status==RATER_TRAINING_STATUS.REVISION_REQUEST" class="button-container">
+            <div class="label-container mb-2" style="width: 155px">
+              Note for IELTS Training
+            </div>
+            <el-input
+              v-model="ieltsTraining.note"
+              type="textarea"
+              :rows="2"
+              :disabled="true"
+            />
           </div>
         </div>
       </el-col>
@@ -218,30 +244,52 @@
               TOEFL Application status
             </div>
             <el-tag
+              v-if="statusTOEFL"
               :type="
                 statusTOEFL === RATER_STATUS.TRAINING
                   ? 'success'
-                  : 'warning'
+                  : statusTOEFL === RATER_TRAINING_STATUS.COMPLETED || statusTOEFL === RATER_TRAINING_STATUS.APPROVED
+                    ? 'success'
+                    : 'warning'
               "
             >{{ statusTOEFL }}</el-tag>
 
           </div>
-          <div :class="[statusTOEFL === RATER_STATUS.TRAINING || statusTOEFL === RATER_STATUS.TOEFL_TRAINING_REVISION ? 'verified' : 'hidden']">
-            <p>Your application has been reviewed and verified. You are just one step away from becoming our rater. After completing our training process, you can start rating and earing extra money.
+          <div :class="[statusTOEFL==null ? 'inReview' : 'hidden']">
+            <p>Start your TOEFL training.
             </p>
           </div>
-          <div :class="[statusTOEFL === RATER_STATUS.TOEFT_TRAINING_COMPLETED ? 'inReview' : 'hidden']">
+          <div :class="[(statusTOEFL && statusTOEFL === RATER_TRAINING_STATUS.IN_PROGRESS) ? 'inReview' : 'hidden']">
+            <p>Complete your training.
+            </p>
+          </div>
+          <div :class="[(statusTOEFL === RATER_TRAINING_STATUS.COMPLETED || statusTOEFL === RATER_TRAINING_STATUS.REVISION_COMPLETED) ? 'verified' : 'hidden']">
             <p>Your submission has been submitted for review. We will contact you shortly.
             </p>
           </div>
-          <div :class="[statusTOEFL === RATER_STATUS.TOEFT_TRAINING_APPROVED ? 'inReview' : 'hidden']">
-            <p>Your request to become a Reboost IELT rater has been completely approved. You can now receive review requests and start rating and earning money. We will send you review requests periodically.
+          <div :class="[statusTOEFL === RATER_TRAINING_STATUS.REVISION_REQUEST ? 'denied' : 'hidden']">
+            <p>Please review your submission again.
             </p>
           </div>
-          <div v-if="isCompletedTrainingTOEFT && (status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED || status === RATER_STATUS.REVISION_COMPLETED)" class="button-container">
+          <div :class="[statusTOEFL === RATER_TRAINING_STATUS.APPROVED ? 'verified' : 'hidden']">
+            <p>Your submission has been approved.
+            </p>
+          </div>
+          <div v-if="isCompletedTrainingTOEFT && (status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED)" class="button-container">
             <el-tooltip :content="isApprove('TOEFL')?'You have passed this training':'Start your TOEFL Training'" placement="top">
               <el-button :type="isApprove('TOEFL')?'success':'primary'" size="mini" @click="redirectToTraining('TOEFL')">Complete TOEFL Training</el-button>
             </el-tooltip>
+          </div>
+          <div v-if="toeflTraining&&toeflTraining.status==RATER_TRAINING_STATUS.REVISION_REQUEST" class="button-container">
+            <div class="label-container mb-2" style="width: 155px">
+              Note for TOEFL Training
+            </div>
+            <el-input
+              v-model="toeflTraining.note"
+              type="textarea"
+              :rows="2"
+              :disabled="true"
+            />
           </div>
         </div>
       </el-col>
@@ -261,7 +309,7 @@ import raterService from '@/services/rater.service'
 import * as mapUtil from '@/utils/model-mapping'
 import reviewService from '@/services/review.service.js'
 import * as stringUtil from '@/utils/string'
-import { RATER_STATUS } from '../../app.constant'
+import { RATER_STATUS, RATER_TRAINING_STATUS } from '../../app.constant'
 
 export default {
   name: 'ApplicationStatus',
@@ -287,10 +335,14 @@ export default {
       popUpImageUrl: null,
       toggleImagePopup: false,
       RATER_STATUS: RATER_STATUS,
+      RATER_TRAINING_STATUS: RATER_TRAINING_STATUS,
       isCompletedTrainingIELTS: true,
       isCompletedTrainingTOEFT: true,
-      statusIELTS: '',
-      statusTOEFL: ''
+      statusIELTS: null,
+      statusTOEFL: null,
+      raterTraining: null,
+      ieltsTraining: null,
+      toeflTraining: null
     }
   },
   computed: {
@@ -303,39 +355,6 @@ export default {
   },
   mounted() {
     this.onLoad()
-    this.$store.dispatch('review/loadReviewsById').then(() => {
-      if (this.getReviews && this.getReviews.length > 0) {
-        this.getReviews.forEach(r => {
-          if (r.status.includes('IELTS')) {
-            if (r.status.includes('Submitted')) {
-              this.isCompletedTrainingIELTS = false
-              this.statusIELTS = RATER_STATUS.IELTS_TRAINING_COMPLETED
-            } else if (r.status.includes('Approved')) {
-              this.statusIELTS = RATER_STATUS.IELTS_TRAINING_APPROVED
-            } else if (r.status.includes('RevisionCompleted')) {
-              this.isCompletedTrainingIELTS = false
-              this.statusIELTS = RATER_STATUS.IELTS_REVISION_COMPLETED
-            } else if (r.status.includes('TrainingRevision')) {
-              this.statusIELTS = RATER_STATUS.IELTS_TRAINING_REVISION
-            }
-          } else if (r.status.includes('TOEFL')) {
-            if (r.status.includes('Submitted')) {
-              this.isCompletedTrainingTOEFT = false
-              this.statusTOEFL = RATER_STATUS.TOEFT_TRAINING_COMPLETED
-            } else if (r.status.includes('Approved')) {
-              this.statusTOEFL = RATER_STATUS.TOEFT_TRAINING_APPROVED
-            } else if (r.status.includes('RevisionCompleted')) {
-              this.isCompletedTrainingTOEFT = false
-              this.statusTOEFL = RATER_STATUS.TOEFL_REVISION_COMPLETED
-            } else if (r.status.includes('TrainingRevision')) {
-              this.statusTOEFL = RATER_STATUS.TOEFL_TRAINING_REVISION
-            }
-          }
-        })
-      }
-    })
-    this.statusIELTS = RATER_STATUS.TRAINING
-    this.statusTOEFL = RATER_STATUS.TRAINING
   },
   methods: {
     onLoad() {
@@ -347,6 +366,21 @@ export default {
     loadDetail(id) {
       console.log('load detail', mapUtil)
 
+      // Load rater's training
+      reviewService.getRaterTrainings(id).then(rs => {
+        this.raterTraining = rs
+
+        this.ieltsTraining = rs.filter(r => r.test === 'IELTS')[0]
+        if (this.ieltsTraining) {
+          this.statusIELTS = this.ieltsTraining.status
+        }
+
+        this.toeflTraining = rs.filter(r => r.test === 'TOEFL')[0]
+        if (this.toeflTraining) {
+          this.statusTOEFL = this.toeflTraining.status
+        }
+      })
+
       raterService.getById(id).then(rs => {
         this.formRegister = mapUtil.map(rs, this.formRegister)
         this.loadCompleted = true
@@ -354,7 +388,10 @@ export default {
         rs.applyTo.forEach(e => {
           this.applyToList.push(e)
         })
+
         this.status = rs.status
+        console.log('status', this.status)
+
         this.note = rs.note
 
         // Files
@@ -372,9 +409,9 @@ export default {
       })
     },
     redirectToTraining(e) {
-      reviewService.createNewReviewSample(e.toLowerCase()).then(r => {
+      reviewService.createReviewTrainingSample(e.toLowerCase()).then(r => {
         if (r != 'failed') {
-          var pushUrl = e.toLowerCase() == 'toefl' ? '/review/12/68/' + r : '/review/9/69/' + r
+          var pushUrl = e.toLowerCase() == 'toefl' ? '/review/12/219/' + r : '/review/9/220/' + r
           this.$router.push(pushUrl)
         }
       })
@@ -477,7 +514,7 @@ export default {
 
           raterService.updateCredential(formData).then(rs => {
             this.status = rs.status
-            this.$notify({
+            this.$notify.success({
               title: 'Success',
               message: 'Updated successfully',
               type: 'success',

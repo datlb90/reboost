@@ -49,6 +49,7 @@ namespace Reboost.DataAccess.Repositories
         Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request);
         Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId);
         Task<int> IsProRequestCheckAsync(int reviewId);
+        Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId);
     }
 
     public class ReviewRepository : IReviewRepository
@@ -128,83 +129,56 @@ namespace Reboost.DataAccess.Repositories
                 return null;
             }
 
-            db.ReviewData.AddRange(data);
+            await db.ReviewData.AddRangeAsync(data);
 
-            if ((review.Status.Contains(TestsName.IELTS)|| review.Status.Contains(TestsName.TOEFL)) && !review.Status.Contains(RaterStatus.REVISION))
+            // Check if review is a training, then change rater status to 'Training Completed' if his/her have finished all training that applied to
+            Raters rater = await db.Raters.Where(r => r.UserId == review.ReviewerId).FirstOrDefaultAsync();
+            if(rater != null && rater.Status != RaterStatus.APPROVED)
             {
-                if (!review.Status.Contains(RaterReviewsTrainingStatus.Submitted))
-                {
-                    review.Status += RaterReviewsTrainingStatus.Submitted;
-
-                    RaterRepository _raterRepository = new RaterRepository(db);
-                    Raters rater = await _raterRepository.GetByUserIdAsync(review.ReviewerId);
-                    List<string> trainingCount = await _raterRepository.GetApplyTo(rater.Id);
-
-                    List<Reviews> rvs = await db.Reviews.Where(r => r.ReviewerId == review.ReviewerId && r.Status.Contains("Training")).ToListAsync();
-
-                    if(rvs.Count() == trainingCount.Count())
-                    {
-                        rater.Status = RaterStatus.TRAININGCOMPLETED;
-                    }
-
-                }
-                await db.SaveChangesAsync();
-                return review;
-            }
-
-            ReviewRequests request = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
-
-            if (review.Status.Contains(RaterStatus.REVISION))
-            {
-                var index = review.Status.IndexOf(RaterStatus.REVISION);
-                review.Status = review.Status.Substring(0, index) + RaterStatus.REVISIONCOMPLETED;
-                int completedCount = 0;
-
-                Raters rater = await db.Raters.Where(r => r.UserId == review.ReviewerId).FirstOrDefaultAsync();
+                RaterTraining training = await db.RaterTraining.Where(t => t.ReviewId == reviewId).FirstOrDefaultAsync();
 
                 RaterRepository _raterRepository = new RaterRepository(db);
-                List<Reviews> listUserReview = await GetReviewsByUserIdAsync(rater.UserId);
-                var trainingCount = listUserReview.Count(rater => rater.Status.Contains(RaterStatus.REVISION));
+                Raters _rater = await _raterRepository.GetByUserIdAsync(review.ReviewerId);
+                List<string> trainingCount = await _raterRepository.GetApplyTo(_rater.Id);
 
-                foreach (Reviews r in listUserReview)
+                if (training.Status == RaterTrainingStatus.REVISION_REQUEST)
                 {
-                    if (r.Status.Contains(RaterStatus.REVISIONCOMPLETED))
-                    {
-                        completedCount += 1;
-                    }
-                    else
-                    {
-                        if(r.Id == reviewId)
-                        {
-                            completedCount += 1;
-                        }
-                    }
+                    training.Status = RaterTrainingStatus.REVISION_COMPLETED;
                 }
-                if(completedCount == trainingCount)
+                else
                 {
-                    rater.Status = RaterStatus.REVISIONCOMPLETED;
+                    training.Status = RaterTrainingStatus.COMPLETED;
                 }
+
+                int completedTrainingCount = await db.RaterTraining.Where(t => t.RaterId == rater.Id && (t.Status.Contains(RaterTrainingStatus.COMPLETED) || t.Status==RaterTrainingStatus.APPROVED)).CountAsync();
+
+                if (trainingCount.Count() == (completedTrainingCount+1))
+                {
+                    rater.Status = RaterStatus.TRAINING_COMPLETED;
+                }
+
             }
             else
             {
-                review.Status = ReviewRequestStatus.COMPLETED;
-                review.LastActivityDate = DateTime.Now;
-            }
+                ReviewRequests request = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
 
-            if (request != null)
-            {
-                //Update submission status to Reviewed
-                var submission = db.Submissions.Where(s => s.Id == request.SubmissionId).FirstOrDefault();
-                if(submission != null)
+                if (request != null)
                 {
-                    submission.UpdatedDate = DateTime.Now;
-                    submission.Status = SubmissionStatus.REVIEWED;
-                }
+                    //Update submission status to 'Reviewed'
+                    var submission = db.Submissions.Where(s => s.Id == request.SubmissionId).FirstOrDefault();
+                    if (submission != null)
+                    {
+                        submission.UpdatedDate = DateTime.Now;
+                        submission.Status = SubmissionStatus.REVIEWED;
+                    }
 
-                request.Status = ReviewRequestStatus.COMPLETED;
-                request.CompletedDateTime = DateTime.Now;
+                    request.Status = ReviewRequestStatus.COMPLETED;
+                    request.CompletedDateTime = DateTime.Now;
+                }
             }
 
+            review.Status = ReviewStatus.COMPLETED;
+            review.LastActivityDate = DateTime.Now;
             await db.SaveChangesAsync();
             return review;
         }
@@ -275,57 +249,41 @@ namespace Reboost.DataAccess.Repositories
         public async Task<Reviews> ChangeStatusAsync(int id, UpdateStatusModel model)
         {
             Reviews rv = await db.Reviews.FindAsync(id);
-            rv.Status = model.status;
-            
-            List<Reviews> rvs = await db.Reviews.Where(r => r.ReviewerId == rv.ReviewerId && r.Status.Contains("Training")).ToListAsync();
-            bool approvedFlag = true;
-            bool isRevision = false;
+            RaterTraining training = await db.RaterTraining.Where(t => t.ReviewId == id).FirstOrDefaultAsync();
 
-            Raters rater = await db.Raters.Where(r => r.UserId == rv.ReviewerId).FirstOrDefaultAsync();
-            if (!String.IsNullOrEmpty(model.note))
+            if(rv== null || training == null)
             {
-                if (!String.IsNullOrEmpty(rater.Note) && !String.Equals(rater.Note, "null"))
-                {
-                    rater.Note = rater.Note + "\n" + model.note;
-                }
-                else
-                {
-                    rater.Note = model.note;
-                }
+                return null;
             }
 
-            RaterRepository _raterRepository = new RaterRepository(db); 
-            List<string> trainingCount = await _raterRepository.GetApplyTo(rater.Id);
-
-            foreach (Reviews r in rvs)
+            if(training.Status == RaterTrainingStatus.APPROVED)
             {
-                if (!r.Status.Contains(RaterStatus.APPROVED))
-                {
-                    if (r.Status.Contains(RaterStatus.REVISION)&&!r.Status.Contains(RaterStatus.REVISIONCOMPLETED))
-                    {
-                        isRevision = true;
-                    }
-                    approvedFlag = false;
-                    break;
-                }
+                return null;
             }
 
-            if (approvedFlag && model.status.Contains(RaterStatus.APPROVED))
+            training.Note = model.note;
+            training.Status = model.status;
+
+            Raters rater = await db.Raters.Where(r => r.Id == training.RaterId).FirstOrDefaultAsync();
+
+            if(model.status == RaterTrainingStatus.REVISION_REQUEST)
             {
-                if(trainingCount.Count == rvs.Count)
+                rv.Status = ReviewStatus.IN_PROGRESS;
+                rater.Status = RaterStatus.REVISION_REQUESTED;
+            }
+
+            if(model.status == RaterTrainingStatus.APPROVED)
+            {
+                RaterRepository _raterRepository = new RaterRepository(db);
+                List<string> trainingCount = await _raterRepository.GetApplyTo(rater.Id);
+
+                int approvedTrainingCount = await db.RaterTraining.Where(t => t.RaterId == rater.Id && t.Status ==  RaterTrainingStatus.APPROVED).CountAsync();
+
+                if (trainingCount.Count() == (approvedTrainingCount + 1))
                 {
                     rater.Status = RaterStatus.APPROVED;
                 }
-                else
-                {
-                    rater.Status = isRevision ? RaterStatus.REVISIONREQUESTED : RaterStatus.TRAINING;
-                }
-            }
-
-            if (model.status.Contains(RaterStatus.REVISION))
-            {
-                rater.Status = RaterStatus.REVISIONREQUESTED;
-            }
+            }                   
 
             await db.SaveChangesAsync();
             return await Task.FromResult(rv);
@@ -338,22 +296,23 @@ namespace Reboost.DataAccess.Repositories
 
             if (!applyTo.Contains(type.ToUpper()))
             {
-                return await Task.FromResult("failed");
+                return await Task.FromResult("Failed");
             }
 
             string status = type.ToUpper() + RaterStatus.TRAINING;
 
-            Reviews existed = await db.Reviews.Where(rv => rv.ReviewerId == user.Id && (rv.Status.Contains(status))).FirstOrDefaultAsync();
-            if(existed!= null)
+            RaterTraining exist = await db.RaterTraining.Where(r => r.RaterId == rater.Id && r.Test == type.ToUpper()).FirstOrDefaultAsync();
+            if(exist!= null)
             {
-                return await Task.FromResult(existed.Id.ToString());
-            };
+                return await Task.FromResult(exist.ReviewId.ToString());
+            }
 
-            DateTime currentTime = DateTime.Now;
-
-            Reviews rv = new Reviews { RequestId = 1, FinalScore = 0, ReviewerId = user.Id, RevieweeId = "1", Status = status, TimeSpentInSeconds = 0, LastActivityDate = currentTime };
-            
+            Reviews rv = new Reviews { RequestId = 1, FinalScore = 0, ReviewerId = user.Id, RevieweeId = "1", Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = DateTime.Now };
             await db.Reviews.AddAsync(rv);
+            await db.SaveChangesAsync();
+
+            RaterTraining newTraining = new RaterTraining { RaterId = rater.Id, Note = null, ReviewId = rv.Id, Status = ReviewStatus.IN_PROGRESS, Test = type.ToUpper() };
+            await db.RaterTraining.AddAsync(newTraining);
             await db.SaveChangesAsync();
       
             return await Task.FromResult(rv.Id.ToString());
@@ -776,6 +735,24 @@ namespace Reboost.DataAccess.Repositories
             // Get first rater base on apply date 
             var rater = minRatersDetailList.OrderBy(r => r.AppliedDate).FirstOrDefault();
 
+
+
+            //Query rater that have lowest assigned requests
+            var selectedRater = (from r in db.Raters
+                                 join a in (from a in db.RequestAsignments where a.Status == RequestAssigmentStatus.ASSIGNED select a) on r.Id equals a.RaterId into raterFull
+                                 from a in raterFull.DefaultIfEmpty()
+                                 orderby r.AppliedDate
+                                 group r by r.Id into g
+                                 select new
+                                 {
+                                     RaterId = g.Key,
+                                     AssignedRequests = g.Count()
+                                 }).OrderBy(r => r.AssignedRequests).FirstOrDefault();
+
+            //Assign the pro request for selected rater
+            // - Insert a record to RequestAssignment for selected rater
+            // - Send email to selected rater
+
             return rater;
         }
 
@@ -786,7 +763,7 @@ namespace Reboost.DataAccess.Repositories
             var queue = await db.RequestQueue.Where(q => q.RequestId == requestId).FirstOrDefaultAsync();
 
             // Return null if not exist
-            if(request == null || queue == null)
+            if (request == null || queue == null)
             {
                 return null;
             }
@@ -809,7 +786,7 @@ namespace Reboost.DataAccess.Repositories
             }
 
             // Create new review if not existed
-            Reviews rv = new Reviews { RevieweeId = request.UserId, RequestId = request.Id, ReviewerId = currentUserId, LastActivityDate= DateTime.Now, FinalScore = null, TimeSpentInSeconds = 0, Status = ReviewStatus.IN_PROGRESS };
+            Reviews rv = new Reviews { RevieweeId = request.UserId, RequestId = request.Id, ReviewerId = currentUserId, LastActivityDate = DateTime.Now, FinalScore = null, TimeSpentInSeconds = 0, Status = ReviewStatus.IN_PROGRESS };
             await db.Reviews.AddAsync(rv);
 
             // Change Request, RequestQueue status to 'In Progess'
@@ -824,6 +801,10 @@ namespace Reboost.DataAccess.Repositories
             result.Review = rv;
             result.ReviewRequest = request;
             result.Submission = await db.Submissions.Where(s => s.Id == result.ReviewRequest.SubmissionId).FirstOrDefaultAsync();
+
+            
+            
+
 
             return result;
         }
@@ -851,6 +832,11 @@ namespace Reboost.DataAccess.Repositories
 
             // Return -1 if it is NOT a pro request
             return -1;
+        }
+
+        public async Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId)
+        {
+            return await db.RaterTraining.Where(r => r.RaterId == raterId).ToListAsync();
         }
     }
 }

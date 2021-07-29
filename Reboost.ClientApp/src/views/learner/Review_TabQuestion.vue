@@ -9,9 +9,9 @@
           <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
           <el-button size="mini" @click="notShowDirection">Never show this again</el-button>
         </div>
-        <div v-if="currentUser && currentUser.status === RATER_STATUS.REVISION_REQUESTED" class="tip note" transition="fade" style="margin-bottom: 10px;">
+        <div v-if="currentUser && trainingNote" class="tip note" transition="fade" style="margin-bottom: 10px;">
           <p style="width: 98%;">
-            Note: {{ currentUser.note }}
+            Note: {{ trainingNote }}
           </p>
         </div>
 
@@ -54,7 +54,8 @@
 </template>
 <script>
 import raterService from '@/services/rater.service'
-import { RATER_STATUS } from '../../app.constant'
+import reviewService from '@/services/review.service.js'
+import { RATER_STATUS, RATER_TRAINING_STATUS } from '../../app.constant'
 export default ({
   name: 'TabQuestion',
   components: {
@@ -69,7 +70,8 @@ export default ({
       showDirection: true,
       isShowScript: false,
       currentUser: null,
-      RATER_STATUS: RATER_STATUS
+      RATER_STATUS: RATER_STATUS,
+      trainingNote: null
     }
   },
   computed: {
@@ -118,6 +120,15 @@ export default ({
   async mounted() {
     await raterService.getByCurrentUser().then(rs => {
       this.currentUser = rs
+      if (rs.status === RATER_STATUS.REVISION_REQUESTED) {
+        // Load rater's training
+        reviewService.getRaterTrainings(rs.id).then(r => {
+          var currentTraining = r.filter(r => r.reviewId === this.reviewid)[0]
+          if (currentTraining.status == RATER_TRAINING_STATUS.REVISION_REQUEST) {
+            this.trainingNote = currentTraining.note
+          }
+        })
+      }
     })
 
     console.log('this.getDataQuestionParts', this.getDataQuestionParts)

@@ -407,7 +407,7 @@ export default {
           this.UpVote(discussion)
         })
         .catch(() => {
-          this.$notify({
+          this.$notify.error({
             title: 'Error',
             message: 'You are voting too frequently. Please wait.',
             type: 'error',
@@ -451,7 +451,7 @@ export default {
           this.DownVote(discussion)
         })
         .catch(() => {
-          this.$notify({
+          this.$notify.error({
             title: 'Error',
             message: 'You are voting too frequently. Please wait.',
             type: 'error',
@@ -496,7 +496,7 @@ export default {
           this.UpVote(_discussion)
         })
         .catch(() => {
-          this.$notify({
+          this.$notify.error({
             title: 'Error',
             message: 'You are voting too frequently. Please wait.',
             type: 'error',
@@ -540,7 +540,7 @@ export default {
           this.DownVote(_discussion)
         })
         .catch(() => {
-          this.$notify({
+          this.$notify.error({
             title: 'Error',
             message: 'You are voting too frequently. Please wait.',
             type: 'error',

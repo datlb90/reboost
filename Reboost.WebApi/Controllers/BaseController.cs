@@ -17,6 +17,7 @@ namespace Reboost.WebApi.Controllers
         public BaseController(T service)
         {
             _service = service;
+            //_userService = userService;
         }
     }
 }

@@ -154,7 +154,6 @@
     </div>
     <div v-if="isReviewSample()" class="submit-button">
       <el-button type="success" size="mini" @click="approveTraining()">Approve</el-button>
-      <!--<el-button type="danger" size="mini" @click="rejectTraining()">Reject</el-button>-->
       <el-button type="danger" size="mini" @click="openDialogRevise()">Revise</el-button>
     </div>
     <!-- Submit button -->
@@ -170,7 +169,7 @@
 import ColorPicker from './ColorPicker'
 import UI from '@/pdfjs/UI'
 import ReviewVue from '@/views/learner/Review.vue'
-import { UserRole, RATER_STATUS } from '../../app.constant'
+import { UserRole, RATER_STATUS, RATER_TRAINING_STATUS } from '../../app.constant'
 import reviewService from '../../services/review.service'
 export default ({
   name: 'ToolBar',
@@ -212,6 +211,9 @@ export default ({
   computed: {
     currentUser() {
       return this.$store.getters['auth/getUser']
+    },
+    selectedRater() {
+      return this.$store.getters['rater/getSelected']
     }
   },
   watch: {
@@ -539,9 +541,10 @@ export default ({
       this.$emit('rateBtnClick')
     },
     isReviewSample() {
-      console.log('hihi', this.reviewData)
-      if ((this.documentid == 69 || this.documentid == 68) && this.currentUser.role === UserRole.ADMIN && (this.reviewData?.review?.status?.includes('TrainingSubmitted') || this.reviewData?.review?.status?.includes('Completed'))) {
-        return true
+      if (this.currentUser.role === UserRole.ADMIN) {
+        if (this.selectedRater.status === RATER_STATUS.TRAINING || this.selectedRater.status === RATER_STATUS.TRAINING_COMPLETED || this.selectedRater.status === RATER_STATUS.REVISION_REQUESTED) {
+          return true
+        }
       }
       return false
     },
@@ -549,42 +552,37 @@ export default ({
       this.reviewData = rs
     },
     rejectTraining(note) {
-      console.log('ahihihihihihi', note, this.reviewData)
-      var newStatus
-      if (this.reviewData.review.status.includes('IELTS')) {
-        note = 'Note for IELTS: ' + note
-        newStatus = 'IELTSTrainingRevision'
-      } else {
-        note = 'Note for TOEFL: ' + note
-        newStatus = 'TOEFLTrainingRevision'
-      }
-      reviewService.changeReviewStatus(this.reviewData.review.id, { status: newStatus, note: note }).then(rs => {
+      reviewService.changeTrainingStatus(this.reviewData.review.id, { status: RATER_TRAINING_STATUS.REVISION_REQUEST, note: note }).then(rs => {
+        this.$emit('closeDialogRevise')
         if (rs) {
-          this.$emit('closeDialogRevise')
           this.$notify.error({
             title: RATER_STATUS.REVISION,
             message: 'Submitted Training Revision Requested!',
             duration: 2000
           })
-          this.reviewData.review.status = newStatus
+        } else {
+          this.$notify.error({
+            title: RATER_STATUS.REVISION,
+            message: 'This training has been approved!',
+            duration: 2000
+          })
         }
       })
     },
     approveTraining() {
-      var newStatus
-      if (this.reviewData.review.status.includes('IELTS')) {
-        newStatus = 'IELTSTrainingApproved'
-      } else {
-        newStatus = 'TOEFLTrainingApproved'
-      }
-      reviewService.changeReviewStatus(this.reviewData.review.id, { status: newStatus }).then(rs => {
+      reviewService.changeTrainingStatus(this.reviewData.review.id, { status: RATER_TRAINING_STATUS.APPROVED }).then(rs => {
         if (rs) {
           this.$notify.success({
             title: RATER_STATUS.APPROVED,
             message: 'Submitted Training Approved!',
             duration: 2000
           })
-          this.reviewData.review.status = newStatus
+        } else {
+          this.$notify.error({
+            title: RATER_STATUS.REVISION,
+            message: 'This training has been approved!',
+            duration: 2000
+          })
         }
       })
     },

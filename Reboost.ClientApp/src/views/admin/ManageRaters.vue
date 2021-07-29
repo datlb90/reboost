@@ -62,7 +62,7 @@
       <el-table-column label="Operations">
         <template slot-scope="scope">
           <el-button size="mini" @click="handleView(scope.$index, scope.row)">View</el-button>
-          <el-button v-if="scope.row.status == 'Training Completed'" size="mini" type="warning">Review</el-button>
+          <!-- <el-button v-if="scope.row.status == RATER_STATUS.TRAINING_COMPLETED" size="mini" type="warning">Review</el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -98,17 +98,13 @@ export default {
       ratersCount: 0,
       filterStatus: [
         { text: RATER_STATUS.APPLIED, value: RATER_STATUS.APPLIED, checked: false },
-        { text: RATER_STATUS.APPROVED, value: RATER_STATUS.APPROVED, checked: false },
-        { text: RATER_STATUS.TRAINING, value: RATER_STATUS.TRAINING, checked: false },
-        { text: RATER_STATUS.REVISION, value: RATER_STATUS.REVISION, checked: false },
         { text: RATER_STATUS.DOCUMENT_REQUESTED, value: RATER_STATUS.DOCUMENT_REQUESTED, checked: false },
         { text: RATER_STATUS.DOCUMENT_SUBMITTED, value: RATER_STATUS.DOCUMENT_SUBMITTED, checked: false },
-        { text: RATER_STATUS.REVISION_REQUESTED, value: RATER_STATUS.REVISION_REQUESTED, checked: false },
-        { text: RATER_STATUS.REVISION_COMPLETED, value: RATER_STATUS.REVISION_COMPLETED, checked: false },
-        { text: RATER_STATUS.REJECTED, value: RATER_STATUS.REJECTED, checked: false },
+        { text: RATER_STATUS.TRAINING, value: RATER_STATUS.TRAINING, checked: false },
         { text: RATER_STATUS.TRAINING_COMPLETED, value: RATER_STATUS.TRAINING_COMPLETED, checked: false },
-        // { text: RATER_STATUS.TRAINING_APPROVED, value: RATER_STATUS.TRAINING_APPROVED, checked: false },
-        { text: RATER_STATUS.DOCUMENT_COMPLETED, value: RATER_STATUS.DOCUMENT_COMPLETED, checked: false }
+        { text: RATER_STATUS.REVISION_REQUESTED, value: RATER_STATUS.REVISION_REQUESTED, checked: false },
+        { text: RATER_STATUS.APPROVED, value: RATER_STATUS.APPROVED, checked: false },
+        { text: RATER_STATUS.REJECTED, value: RATER_STATUS.REJECTED, checked: false }
       ]
     }
   },
@@ -169,7 +165,6 @@ export default {
       return table
     },
     handleView(index, row) {
-      console.log(index, row)
       this.$router.push({
         name: 'ApplicationDetail',
         params: {
@@ -181,7 +176,6 @@ export default {
       status += 'Training'
 
       var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status.includes(status)))[0]
-      console.log('tttttttttt', t, this.getAllReviews)
       if (t) {
         return true
       }
@@ -198,7 +192,7 @@ export default {
     TrainingReview(e, type) {
       type += 'Training'
       var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status.includes(status)))[0]
-      var pushUrl = t.status.includes('IELTSTraining') ? '/review/9/69/' + t.id : '/review/12/68/' + t.id
+      var pushUrl = t.status.includes('IELTSTraining') ? '/review/9/220/' + t.id : '/review/12/219/' + t.id
       this.$router.push(pushUrl)
     },
     search() {
