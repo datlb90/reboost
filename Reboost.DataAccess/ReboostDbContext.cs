@@ -15,6 +15,7 @@ namespace Reboost.DataAccess
         public virtual DbSet<QuestionTypes> QuestionTypes { get; set; }
         public virtual DbSet<RaterCredentials> RaterCredentials { get; set; }
         public virtual DbSet<Raters> Raters { get; set; }
+        public virtual DbSet<RaterTraining> RaterTraining { get; set; }
         public virtual DbSet<RequestQueue> RequestQueue { get; set; }
         public virtual DbSet<ResponseTemplates> ResponseTemplates { get; set; }
         public virtual DbSet<ReviewData> ReviewData { get; set; }
@@ -41,6 +42,7 @@ namespace Reboost.DataAccess
         public virtual DbSet<Payments> Payments { get; set; }
         public virtual DbSet<Annotations> Annotations { get; set; }
         public virtual DbSet<UserStripeAccounts> UserStripeAccounts { get; set; }
+        public virtual DbSet<RequestAssignment> RequestAsignments { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
             : base(options)

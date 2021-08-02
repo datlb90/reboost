@@ -114,7 +114,7 @@ export default {
         this.priceId = ''
         if (s.error) {
           console.error('Subscription errors: ', s)
-          this.$notify({
+          this.$notify.error({
             title: 'Error',
             message: s.error.message,
             type: 'error',

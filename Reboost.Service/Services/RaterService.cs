@@ -89,29 +89,41 @@ namespace Reboost.Service.Services
 
         public async Task<Raters> UpdateAsync(Raters rater, List<IFormFile> uploadFiles)
         {
-            foreach (var item in rater.RaterCredentials)
+            // Update user's credentials
+            if(uploadFiles != null)
             {
-                item.RaterId = rater.Id;
-                var file = uploadFiles.FirstOrDefault(f => f.FileName == item.FileName);
-                if (file != null)
-                    item.Data = GetBytesFromFile(file);
+                foreach (var item in rater.RaterCredentials)
+                {
+                    item.RaterId = rater.Id;
+                    var file = uploadFiles.FirstOrDefault(f => f.FileName == item.FileName);
+                    if (file != null)
+                        item.Data = GetBytesFromFile(file);
+                }
+                await _unitOfWork.RaterCredential.UpdateManyByRaterAync(rater.Id, rater.RaterCredentials.ToList());
             }
 
+            // Update user's firstname and lastname
             var user = await _unitOfWork.Users.GetByIdAsync(rater.UserId);
             if (user == null)
             {
                 throw new AppException(ErrorCode.InvalidArgument, "User not existed");
             }
 
-            user.FirstName = rater.User.FirstName;
-            user.LastName = rater.User.LastName;
+            if(!user.FirstName.Trim().Equals(rater.User.FirstName) || !user.LastName.Trim().Equals(rater.User.LastName))
+            {
+                user.FirstName = rater.User.FirstName;
+                user.LastName = rater.User.LastName;
 
-            await _unitOfWork.Users.UpdateAsync(user);
+                await _unitOfWork.Users.UpdateAsync(user);
+            }
+            
+            // Update user's score
             await _unitOfWork.Users.UpdateScoreAsync(rater.UserId, rater.User.UserScores.ToList());
-            await _unitOfWork.RaterCredential.UpdateManyByRaterAync(rater.Id, rater.RaterCredentials.ToList());
 
             rater.User = null;
             rater.RaterCredentials = null;
+
+            // Update rater's information
             var rs = await _unitOfWork.Raters.Update(rater);
             return rs;
         }

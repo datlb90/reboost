@@ -96,6 +96,22 @@
             placeholder="Input your topic content here ..."
           />
         </el-form-item>
+        <el-select
+          v-model="selectedTags"
+          multiple
+          filterable
+          default-first-option
+          placeholder="Choose tags for your topic"
+          style="width: 50%;"
+          size="mini"
+        >
+          <el-option
+            v-for="tag in tags"
+            :key="tag.id"
+            :label="tag.name"
+            :value="tag.id"
+          />
+        </el-select>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="mini" @click="addDialogVisible = false">Close</el-button>
@@ -152,7 +168,7 @@ export default {
   },
   mounted() {
     this.loadDiscussions()
-    // this.loadTags()
+    this.loadTags()
   },
   methods: {
     filterSelect(value) {
@@ -181,17 +197,21 @@ export default {
     loadTags() {
       this.$store.dispatch('discussion/loadAllTags').then(() => {
         this.tags = this.$store.getters['discussion/getAllTags']
-        console.log('all tags', this.tags)
       })
     },
     submitDiscussion() {
       this.$refs['formPostDiscussion'].validate((valid) => {
         if (valid) {
+          var selected = []
+          for (var item of this.selectedTags) {
+            selected.push(this.tags.filter(t => t.id == item))
+          }
           disussionService.insert({
             questionId: this.currentQuestion.id,
             userId: this.currentUser.id,
             title: this.formPostDiscussion.topicTitle,
             content: this.formPostDiscussion.topicContent,
+            tags: selected.map(t => ({ Id: t[0].id, Name: t[0].name })),
             level: 0
           }).then(rs => {
             this.formPostDiscussion.topicTitle = ''

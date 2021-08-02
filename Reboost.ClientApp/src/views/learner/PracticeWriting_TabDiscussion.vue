@@ -153,7 +153,4 @@ pre {
 .el-dialog__body{
   padding: 15px 20px !important;
 }
-.el-select__tags{
-  top: 63% !important;
-}
 </style>

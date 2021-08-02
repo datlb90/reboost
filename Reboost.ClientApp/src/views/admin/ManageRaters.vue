@@ -31,9 +31,9 @@
         <el-button size="mini" @click="clearFilter">reset all filters</el-button>
       </el-col>
     </el-row>
-    <el-table ref="filterTable" size="mini" :data="raters" style="width: 100%">
+    <el-table ref="filterTable" size="mini" :data="raters" style="width: 100%" @sort-change="changeTableSort">
       <el-table-column prop="fullName" label="Application Name" width="160" />
-      <el-table-column prop="appliedDate" label="Application Date" sortable width="180" />
+      <el-table-column prop="appliedDate" label="Application Date" sortable="custom" width="180" />
       <el-table-column prop="occupation" label="Occupation" width="140" />
       <el-table-column prop="firstLanguage" label="First Language" width="130" />
       <!-- <el-table-column prop="applyTo" label="Applied For" width="120">
@@ -47,13 +47,15 @@
           <el-tag
             size="mini"
             :type="
-              scope.row.status === RATER_STATUS.APPROVED
-                ? 'success'
-                : scope.row.status === RATER_STATUS.APPLIED || scope.row.status === RATER_STATUS.TRAINING || scope.row.status === RATER_STATUS.TRAINING_COMPLETED
-                  ? 'primary'
-                  : scope.row.status === RATER_STATUS.DOCUMENT_REQUESTED || scope.row.status === RATER_STATUS.DOCUMENT_SUBMITTED || scope.row.status === RATER_STATUS.REVISION_REQUESTED
-                    ? 'warning'
-                    : 'danger'"
+              scope.row.status === RATER_STATUS.APPLIED
+                ? 'primary'
+                : scope.row.status === RATER_STATUS.APPROVED || scope.row.status === RATER_STATUS.TRAINING || scope.row.status === RATER_STATUS.TRAINING_COMPLETED
+                  ? 'success'
+                  :status === RATER_STATUS.REJECTED
+                    ? 'danger'
+                    : scope.row.status === RATER_STATUS.DOCUMENT_REQUESTED || scope.row.status === RATER_STATUS.DOCUMENT_SUBMITTED || scope.row.status === RATER_STATUS.REVISION_REQUESTED
+                      ? 'warning'
+                      : 'warning'"
             disable-transitions
           >{{ scope.row.status }}
           </el-tag>
@@ -62,7 +64,7 @@
       <el-table-column label="Operations">
         <template slot-scope="scope">
           <el-button size="mini" @click="handleView(scope.$index, scope.row)">View</el-button>
-          <el-button v-if="scope.row.status == 'Training Completed'" size="mini" type="warning">Review</el-button>
+          <!-- <el-button v-if="scope.row.status == RATER_STATUS.TRAINING_COMPLETED" size="mini" type="warning">Review</el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -98,23 +100,19 @@ export default {
       ratersCount: 0,
       filterStatus: [
         { text: RATER_STATUS.APPLIED, value: RATER_STATUS.APPLIED, checked: false },
-        { text: RATER_STATUS.APPROVED, value: RATER_STATUS.APPROVED, checked: false },
-        { text: RATER_STATUS.TRAINING, value: RATER_STATUS.TRAINING, checked: false },
-        { text: RATER_STATUS.REVISION, value: RATER_STATUS.REVISION, checked: false },
         { text: RATER_STATUS.DOCUMENT_REQUESTED, value: RATER_STATUS.DOCUMENT_REQUESTED, checked: false },
         { text: RATER_STATUS.DOCUMENT_SUBMITTED, value: RATER_STATUS.DOCUMENT_SUBMITTED, checked: false },
-        { text: RATER_STATUS.REVISION_REQUESTED, value: RATER_STATUS.REVISION_REQUESTED, checked: false },
-        { text: RATER_STATUS.REVISION_COMPLETED, value: RATER_STATUS.REVISION_COMPLETED, checked: false },
-        { text: RATER_STATUS.REJECTED, value: RATER_STATUS.REJECTED, checked: false },
+        { text: RATER_STATUS.TRAINING, value: RATER_STATUS.TRAINING, checked: false },
         { text: RATER_STATUS.TRAINING_COMPLETED, value: RATER_STATUS.TRAINING_COMPLETED, checked: false },
-        // { text: RATER_STATUS.TRAINING_APPROVED, value: RATER_STATUS.TRAINING_APPROVED, checked: false },
-        { text: RATER_STATUS.DOCUMENT_COMPLETED, value: RATER_STATUS.DOCUMENT_COMPLETED, checked: false }
+        { text: RATER_STATUS.REVISION_REQUESTED, value: RATER_STATUS.REVISION_REQUESTED, checked: false },
+        { text: RATER_STATUS.APPROVED, value: RATER_STATUS.APPROVED, checked: false },
+        { text: RATER_STATUS.REJECTED, value: RATER_STATUS.REJECTED, checked: false }
       ]
     }
   },
   computed: {
     getAllRater() {
-      var data = this.$store.getters['rater/getAll'].map(i => ({ ...i, appliedDate: moment(new Date(i.appliedDate)).fromNow() }))
+      var data = this.$store.getters['rater/getAll'].map(i => ({ ...i, appliedDate: moment(new Date(i.appliedDate)).format('DD-MM-YYYY hh:mm:ss'), sortTime: moment(i.appliedDate).valueOf() }))
       return data
     },
     getAllReviews() {
@@ -169,7 +167,6 @@ export default {
       return table
     },
     handleView(index, row) {
-      console.log(index, row)
       this.$router.push({
         name: 'ApplicationDetail',
         params: {
@@ -181,7 +178,6 @@ export default {
       status += 'Training'
 
       var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status.includes(status)))[0]
-      console.log('tttttttttt', t, this.getAllReviews)
       if (t) {
         return true
       }
@@ -198,7 +194,7 @@ export default {
     TrainingReview(e, type) {
       type += 'Training'
       var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && (r.status.includes(status)))[0]
-      var pushUrl = t.status.includes('IELTSTraining') ? '/review/9/69/' + t.id : '/review/12/68/' + t.id
+      var pushUrl = t.status.includes('IELTSTraining') ? '/review/9/220/' + t.id : '/review/12/219/' + t.id
       this.$router.push(pushUrl)
     },
     search() {
@@ -226,7 +222,7 @@ export default {
       if (this.checkSample) {
         result = result.filter(rs => rs.sample == true)
       }
-      result = result.sort((a, b) => a.id - b.id)
+      // result = result.sort((a, b) => a.id - b.id)
       return result
     },
     handleClose(tag) {
@@ -236,6 +232,17 @@ export default {
         this.filterStatus.find(s => s.text == tag).checked = false
       }
       this.loadTable()
+    },
+    changeTableSort(column) {
+      var sortingType = column.order
+
+      if (sortingType == 'descending') {
+        this.raterCached = this.raterCached.sort((a, b) => b.sortTime - a.sortTime)
+        this.loadTable()
+      } else {
+        this.raterCached = this.raterCached.sort((a, b) => a.sortTime - b.sortTime)
+        this.loadTable()
+      }
     }
   }
 }

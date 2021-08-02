@@ -2,7 +2,7 @@
   <div style="margin-top:25px;">
     <el-row class="row-flex">
       <el-col :span="15" class="col-border">
-        <el-steps :active="1" align-center>
+        <el-steps :active="formRegister.status === RATER_STATUS.APPLIED ? 1 : 2" align-center>
           <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
           <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
           <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning" />
@@ -278,16 +278,16 @@
           <el-form-item v-if="raterId" size="mini" label="Note">
             <el-input v-model="formRegister.note" type="textarea" :rows="5" placeholder="Note" />
           </el-form-item>
-          <el-form-item size="mini" style="margin: 0;">
+          <el-form-item v-if="raterId && formRegister.status !== RATER_STATUS.REJECTED" size="mini" style="margin: 0;">
             <el-button v-if="!raterId" type="primary" size="mini" @click="onSubmit('formRegister', 'create')">Create</el-button>
             <el-button v-if="!raterId" size="mini">Cancel</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
-            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve for training</el-button>
-            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && formRegister.status !== RATER_STATUS.TRAINING && (formRegister.status !== RATER_STATUS.TRAINING_COMPLETED || formRegister.status === RATER_STATUS.REVISION_COMPLETED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.APPROVED)">Approve</el-button>
-            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && formRegister.status !== RATER_STATUS.TRAINING && formRegister.status !== RATER_STATUS.DOCUMENT_REQUESTED && formRegister.status !== RATER_STATUS.TRAINING_COMPLETED" class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">Reject</el-button>
-            <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPROVED && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status===RATER_STATUS.DOCUMENT_SUBMITTED || formRegister.status===RATER_STATUS.DOCUMENT_REQUESTED)" :disabled="!formRegister.note" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
-            <el-button v-if="completedTraining(formRegister,'IELTS') && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="redirectToTraining('IELTS')">View IELTS Training</el-button>
-            <el-button v-if="completedTraining(formRegister,'TOEFL') && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="redirectToTraining('TOEFL')">View TOEFL Training</el-button>
+            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve for training</el-button>
+            <!-- <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPLIED && formRegister.status !== RATER_STATUS.APPROVED && formRegister.status !== RATER_STATUS.TRAINING && (formRegister.status === RATER_STATUS.TRAINING_COMPLETED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.APPROVED)">Approve</el-button> -->
+            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED || formRegister.status === RATER_STATUS.TRAINING_COMPLETED) " class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">Reject</el-button>
+            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" :disabled="!formRegister.note" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
+            <el-button v-if="completedTraining('IELTS') && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="redirectToTraining('IELTS')">View IELTS Training</el-button>
+            <el-button v-if="completedTraining('TOEFL') && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="redirectToTraining('TOEFL')">View TOEFL Training</el-button>
             <!-- <el-dropdown v-if="completedTraining(formRegister,'IELTS') && formRegister.status !== RATER_STATUS.APPROVED" style="margin: 0 10px 0" size="mini" split-button type="primary" @click="redirectToTraining('IELTS')" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">
@@ -323,7 +323,7 @@ import moment from 'moment'
 // import Notification from 'element-ui'
 import * as mapUtil from '@/utils/model-mapping'
 import * as stringUtil from '@/utils/string'
-import { RATER_STATUS } from '../../app.constant'
+import { RATER_STATUS, RATER_TRAINING_STATUS } from '../../app.constant'
 
 export default {
   name: 'Application',
@@ -369,7 +369,9 @@ export default {
       toggleImagePopup: false,
       popUpImageUrl: null,
       portraitImg: true,
-      RATER_STATUS: RATER_STATUS
+      RATER_STATUS: RATER_STATUS,
+      cloneFormDetail: null,
+      raterTraining: null
     }
   },
   computed: {
@@ -378,14 +380,10 @@ export default {
     },
     applyToTOEFLChecked() {
       return this.getApplyTo('TOEFL')
-    },
-    getAllReviews() {
-      return this.$store.getters['review/getReviews']
     }
   },
   mounted() {
     this.onLoad()
-    this.$store.dispatch('review/loadReviews')
   },
   methods: {
     onLoad() {
@@ -421,6 +419,7 @@ export default {
       console.log('load detail', mapUtil)
       raterService.getById(id).then(rs => {
         console.log('result load detail', rs)
+        this.$store.dispatch('rater/setSelectedRater', rs)
         this.formRegister = mapUtil.map(rs, this.formRegister)
         this.formRegister.appliedDate = rs.appliedDate.toString()
         this.formRegister.appliedDate = this.formRegister.appliedDate.slice(0, 10)
@@ -464,10 +463,26 @@ export default {
         this.formRegister.lastName = rs.user.lastName
         // Email
         this.formRegister.email = rs.user.email
+
+        // Create a clone of form's data
+        this.cloneFormDetail = Object.assign({}, this.formRegister)
+      })
+
+      reviewService.getRaterTrainings(id).then(rs => {
+        this.raterTraining = rs
       })
     },
     async onSubmit(formName, createOrUpdate, hideSaveNotify) {
       console.log('submit ')
+
+      // Get changed fields
+      var changedFieldsName = []
+      for (var e in this.formRegister) {
+        if (this.formRegister[e] !== this.cloneFormDetail[e]) {
+          changedFieldsName.push(e)
+        }
+      }
+
       return new Promise((resolve, reject) => {
         this.$refs[formName].validate((valid) => {
           if (valid) {
@@ -561,7 +576,7 @@ export default {
             }
             if (createOrUpdate == 'create') {
               raterService.insert(formData).then(rs => {
-                this.$notify({
+                this.$notify.success({
                   title: 'Success',
                   message: 'Created successfully',
                   type: 'success',
@@ -573,10 +588,16 @@ export default {
             } else if (createOrUpdate == 'update') {
               formData.set('Id', this.formRegister.id)
               formData.set('Status', this.formRegister.status)
+
+              // if change fields not includes photo then delete upload files
+              if (!changedFieldsName.includes('iDCardPhotos') && !changedFieldsName.includes('iELTSCertificatePhotos') && !changedFieldsName.includes('tOEFLCertificatePhotos')) {
+                formData.delete('UploadedFiles')
+              }
+
               raterService.update(formData).then(rs => {
                 console.log('updated', rs)
                 if (typeof (hideSaveNotify) == 'undefined') {
-                  this.$notify({
+                  this.$notify.success({
                     title: 'Success',
                     message: 'Update successfully',
                     type: 'success',
@@ -590,6 +611,7 @@ export default {
             this.$notify.error({
               title: 'Error',
               message: 'Error occured!',
+              type: 'error',
               duration: 2000
             })
 
@@ -606,30 +628,35 @@ export default {
             this.$notify.success({
               title: RATER_STATUS.TRAINING,
               message: 'Rater approved! Rater can start training now.',
+              type: 'success',
               duration: 2000
             })
           } else if (rs.status == RATER_STATUS.REJECTED) {
             this.$notify.error({
               title: RATER_STATUS.REJECTED,
               message: 'Rater Rejected!',
+              type: 'error',
               duration: 2000
             })
           } else if (rs.status == RATER_STATUS.DOCUMENT_REQUESTED) {
             this.$notify.info({
               title: RATER_STATUS.DOCUMENT_REQUESTED,
               message: 'Rater Document Requested!',
+              type: 'info',
               duration: 2000
             })
           } else if (rs.status == RATER_STATUS.REVISION_REQUESTED) {
             this.$notify.info({
               title: RATER_STATUS.DOCUMENT_REQUESTED,
               message: 'Rater Revision Requested!',
+              type: 'info',
               duration: 2000
             })
           } else if (rs.status == RATER_STATUS.APPROVED) {
             this.$notify.info({
               title: RATER_STATUS.APPROVED,
               message: 'Rater approved!',
+              type: 'info',
               duration: 2000
             })
           }
@@ -667,10 +694,8 @@ export default {
         this.toggleImagePopup = !this.toggleImagePopup
       }
     },
-    completedTraining(e, status) {
-      status += RATER_STATUS.TRAINING
-      var t = this.getAllReviews.filter(r => r.reviewerId == e.userId && r.reviewData.length > 0 && r.status.includes(status))[0]
-
+    completedTraining(type) {
+      var t = this.raterTraining.filter(r => r.test.trim() == type.trim() && (r.status == RATER_TRAINING_STATUS.COMPLETED || r.status == RATER_TRAINING_STATUS.REVISION_COMPLETED))[0]
       if (t) {
         return true
       }
@@ -688,6 +713,7 @@ export default {
           this.$notify.error({
             title: RATER_STATUS.REVISION,
             message: 'Submitted Training Revision Requested!',
+            type: 'error',
             duration: 2000
           })
         } else {
@@ -695,17 +721,17 @@ export default {
             this.$notify.success({
               title: RATER_STATUS.APPROVED,
               message: 'Submitted Training Approved!',
+              type: 'success',
               duration: 2000
             })
           }
         }
       })
     },
-    redirectToTraining(e) {
-      var status = e + RATER_STATUS.TRAINING
-      var t = this.getAllReviews.filter(r => r.reviewerId == this.formRegister.userId && r.reviewData.length > 0 && r.status.includes(status))[0]
-      var redirectlink = e === 'IELTS' ? '/review/9/69/' : '/review/12/68/'
-      redirectlink += t?.id
+    redirectToTraining(type) {
+      var t = this.raterTraining.filter(r => r.test.trim() == type.trim() && (r.status == RATER_TRAINING_STATUS.COMPLETED || r.status == RATER_TRAINING_STATUS.REVISION_COMPLETED))[0]
+      var redirectlink = type === 'IELTS' ? '/review/9/220/' : '/review/12/219/'
+      redirectlink += t?.reviewId
       this.$router.push(redirectlink)
     }
   }

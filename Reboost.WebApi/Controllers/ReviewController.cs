@@ -104,7 +104,7 @@ namespace Reboost.WebApi.Controllers
             return Ok(new { annotations = savedAnnots, comments = savedComments });
         }
         [Authorize]
-        [HttpPost("createSampleReview/{type}")]
+        [HttpPost("createReviewTraining/{type}")]
         public async Task<IActionResult> CreateNewSampleReviewDocumentAsync([FromRoute] string type)
         {
             var currentUserClaim = HttpContext.User;
@@ -122,7 +122,7 @@ namespace Reboost.WebApi.Controllers
             var isProRequest = await _service.IsProRequestCheckAsync(id);
 
             // Check if pro review's timeout end
-            if(isProRequest==0)
+            if (isProRequest == 0)
             {
                 return BadRequest(new { message = "Your review's timeout has ended!" });
             }
@@ -130,7 +130,7 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.SaveFeedback(id, data);
 
             // Send mail if review is not a training review
-            if(rs != null && rs.RevieweeId.Trim() != "1")
+            if(rs != null && rs.RequestId!=0)
             {
                 // Get reviewee's Id
                 var reviewee = await _userService.GetByIdAsync(rs.RevieweeId);
@@ -201,7 +201,7 @@ namespace Reboost.WebApi.Controllers
             return Ok(rs);
         }
         [Authorize]
-        [HttpPost("status/change/{id}")]
+        [HttpPost("training/status/change/{id}")]
         public async Task<IActionResult> ChangeReviewStatusAsync([FromBody] UpdateStatusModel model, [FromRoute] int id)
         {
             var rs = await _service.ChangeStatusAsync(id, model);
@@ -437,6 +437,14 @@ namespace Reboost.WebApi.Controllers
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
             var rs = await _service.GetOrCreateReviewByProRequestId(id, currentUser.Id);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("training/{id}")]
+        public async Task<IActionResult> GetRaterTrainingAsync(int id)
+        {
+            var rs = await _service.GetRaterTrainingsAsync(id);
             return Ok(rs);
         }
     }

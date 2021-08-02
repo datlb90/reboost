@@ -6,12 +6,14 @@ namespace Reboost.Shared
 {
     public static class RaterStatus
     {
+        public const string APPLIED = "Applied";
+        public const string DOCUMENT_REQUESTED = "Document Requested";
+        public const string DOCUMENT_SUBMITTED = "Document Submitted";
         public const string APPROVED = "Final Approval";
         public const string COMPLETED = "Completed";
-        public const string TRAINING = "Training";
-        public const string TRAININGCOMPLETED = "TrainingCompleted";
-        public const string REVISIONREQUESTED = "RevisionRequested";
-        public const string REVISIONCOMPLETED = "RevisionCompleted";
+        public const string TRAINING = "Approved for Training";
+        public const string TRAINING_COMPLETED = "Training Completed";
+        public const string REVISION_REQUESTED = "Revision Requested";
         public const string REVISION = "Revision";
     }
     public static class SubmissionStatus {
@@ -33,10 +35,13 @@ namespace Reboost.Shared
         public const string IELTS = "IELTS";
         public const string TOEFL = "TOEFL";
     }
-    public static class RaterReviewsTrainingStatus
+    public static class RaterTrainingStatus
     {
-        public const string Submitted = "Submitted";
-        public const string REVISION = "Revision";
+        public const string APPROVED = "Approved";
+        public const string IN_PROGRESS = "In Progress";
+        public const string COMPLETED = "Completed";
+        public const string REVISION_REQUEST = "Revision Requested";
+        public const string REVISION_COMPLETED = "Revision Completed";
     }
     public static class ReviewStatus
     {
@@ -47,5 +52,10 @@ namespace Reboost.Shared
     {
         public const string FREE = "Free";
         public const string PRO = "Pro";
+    }
+    public static class RequestAssigmentStatus
+    {
+        public const string ASSIGNED = "Assigned";
+        public const string ACCEPTED = "Accepted";
     }
 }

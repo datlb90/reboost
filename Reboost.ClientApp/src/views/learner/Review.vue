@@ -366,7 +366,6 @@ export default {
       this.$refs.toolBar.insertExpandMenu()
       this.handleCommentPositionsRestore()
       this.hideDeleteToolBar()
-      this.showBtnSubmit()
       // this.ToolbarButtons()
       // this.ScaleAndRotate();
     })
@@ -2146,6 +2145,7 @@ export default {
         this.$notify.error({
           title: 'Field Required',
           message: 'Please fill all rubric fields!',
+          type: 'error',
           duration: 2000
         })
       } else {
@@ -2165,6 +2165,7 @@ export default {
           this.$notify.error({
             title: 'Annotations required',
             message: 'At least 3 annotations required!',
+            type: 'error',
             duration: 2000
           })
           return
@@ -2175,6 +2176,7 @@ export default {
             this.$notify.success({
               title: 'Success',
               message: 'Submitted!',
+              type: 'success',
               duration: 2000
             })
 
@@ -2193,6 +2195,7 @@ export default {
             this.$notify.error({
               title: 'Submit failed',
               message: 'Current review not exist!',
+              type: 'error',
               duration: 2000
             })
           }
@@ -2708,6 +2711,10 @@ export default {
           this.$refs.toolBar.loadReviewData(rs)
         }
 
+        if (rs.review.status.includes(REVIEW_REQUEST_STATUS.COMPLETED)) {
+          this.isSubmit = true
+        }
+
         if (rs.review && this.currentUser.id === rs.review.reviewerId) {
           this.isReviewAuth = true
         }
@@ -2733,12 +2740,6 @@ export default {
     },
     rateReview() {
       this.selectedTab = 'rate'
-    },
-    showBtnSubmit() {
-      var data = this.loadedAnnotation
-      if (data && data.annotations?.length !== 0 && data.comments?.length !== 0) {
-        this.isSubmit = true
-      }
     },
     onSubmitRevise() {
       this.$refs['formNote'].validate((valid) => {

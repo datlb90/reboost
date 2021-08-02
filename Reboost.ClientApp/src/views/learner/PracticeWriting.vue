@@ -106,9 +106,7 @@
                   <div v-if="isShowQuestion && isShowScript && isShowListeningTab" class="body-transcript" style="margin: 0;">
                     <pre> {{ getTranscript.content }}</pre>
                   </div>
-                </div>
-                <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%;">
-                  <div style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center;">
+                  <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))">
                     <img src="../../assets/chart/1.png" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
                   </div>
                 </div>
@@ -141,8 +139,8 @@
               <el-button size="mini" @click="toggleShowCount()">Hide Word Count</el-button>
               <span v-if="isShowCountWord && countWord != 0" style="margin-left: 15px;">Words: {{ countWord }}</span>
             </div>
-            <div v-if="writtingSubmitted">
-              <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;"> Reviews.</a> </el-tag>
+            <div v-if="writtingSubmitted" class="submited-message">
+              <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'" style="white-space: normal; height: 100%;">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;"> Reviews.</a> </el-tag>
             </div>
             <div v-if="getQuestion != ''">
               <el-dropdown v-if="writtingSubmitted || hasSubmitionForThisQuestion " size="mini" @command="checkoutVisibles">
@@ -156,7 +154,7 @@
                 </el-dropdown-menu>
               </el-dropdown>
 
-              <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit & Request Review</el-button>
+              <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit</el-button>
               <el-button v-if="isEdit" style="margin-left:5px" size="mini" @click="isEdit=false">Edit</el-button>
               <el-button v-if="hasSubmitionForThisQuestion&& !isEdit" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit</el-button>
 
@@ -423,7 +421,7 @@ export default {
       }
 
       if (!this.writingContent) {
-        this.$notify({
+        this.$notify.error({
           title: 'Error',
           message: 'Nothing to submit',
           type: 'error',
@@ -449,7 +447,7 @@ export default {
           if (rs) {
             this.writtingSubmitted = true
             this.isEdit = true
-            this.$notify({
+            this.$notify.success({
               title: 'Success',
               message: 'Updated successfully',
               type: 'success',
@@ -462,7 +460,7 @@ export default {
           data.status = 'Pending'
           documentService.submitPendingDocument(data).then(rs => {
             if (rs) {
-              this.$notify({
+              this.$notify.success({
                 title: 'Success',
                 message: 'Submitted successfully',
                 type: 'success',
@@ -480,7 +478,7 @@ export default {
           data.status = 'Submitted'
           documentService.submitDocument(data).then(rs => {
             if (rs) {
-              this.$notify({
+              this.$notify.success({
                 title: 'Success',
                 message: 'Submitted successfully',
                 type: 'success',
@@ -818,11 +816,7 @@ pre {
   outline: none;
   height: 100%;
 }
-
-/* .splitpanes--vertical>.splitpanes__splitter:before {
-  display: none;
-  left: -30px;
-  right: -30px;
-  height: 100%;
-} */
+.submited-message {
+  width: calc(100% - 210px);
+}
 </style>

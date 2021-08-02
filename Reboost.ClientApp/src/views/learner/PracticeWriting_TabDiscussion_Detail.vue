@@ -38,7 +38,7 @@
     <div class="dicussion-detail__comment">
       <div class="comment__header">
         <div class="comment__header__count">
-          <i class="el-icon-chat-line-square"><span style="margin-left: 10px">Comments: {{ listComments.length }}</span></i>
+          <i class="el-icon-chat-line-square"><span style="margin-left: 10px">Comments: {{ countComments }}</span></i>
         </div>
         <div class="comment__header__category">
           <span v-for="item in filterList" :key="item.value" class="selection__Text" :class="{'active':item.value==selectedFilter}" @click="filterSelect(item.value)">{{ item.name }}</span>
@@ -193,7 +193,8 @@
         filterable
         default-first-option
         placeholder="Choose tags for your topic"
-        style="padding: 10px 10px 0 10px;"
+        style="width: 50%; padding: 10px 10px 0 10px;"
+        class="el-select-custom"
         size="mini"
       >
         <el-option
@@ -201,6 +202,7 @@
           :key="tag.id"
           :label="tag.name"
           :value="tag.id"
+          style="top: 63% !important;"
         />
       </el-select>
 
@@ -246,7 +248,8 @@ export default {
       topicTitle: '',
       topicContent: '',
       selectedTags: [],
-      questionOwners: false
+      questionOwners: false,
+      countComments: 0
     }
   },
   computed: {
@@ -298,9 +301,11 @@ export default {
     },
     loadComments() {
       this.$store.dispatch('discussion/loadComments', +this.discussionId).then(() => {
+        var count = 0
         this.listComments = this.$store.getters['discussion/getComments']
         this.listComments = this.listComments.map(i => ({ ...i, textReply: 'Show', showComment: false, showPostCommentChild: false }))
         this.listComments.forEach(rs => {
+          count += rs.discussions.length + 1
           var voted = rs.discussionVote.filter(r => r.userId == this.currentUser.id)
           if (voted[0]) {
             if (voted[0].status == 1) {
@@ -328,6 +333,7 @@ export default {
           })
         })
         this.total = this.listComments.length
+        this.countComments = count
         this.loadListComment()
       })
     },
@@ -407,7 +413,7 @@ export default {
           this.UpVote(discussion)
         })
         .catch(() => {
-          this.$notify({
+          this.$notify.error({
             title: 'Error',
             message: 'You are voting too frequently. Please wait.',
             type: 'error',
@@ -451,7 +457,7 @@ export default {
           this.DownVote(discussion)
         })
         .catch(() => {
-          this.$notify({
+          this.$notify.error({
             title: 'Error',
             message: 'You are voting too frequently. Please wait.',
             type: 'error',
@@ -496,7 +502,7 @@ export default {
           this.UpVote(_discussion)
         })
         .catch(() => {
-          this.$notify({
+          this.$notify.error({
             title: 'Error',
             message: 'You are voting too frequently. Please wait.',
             type: 'error',
@@ -540,7 +546,7 @@ export default {
           this.DownVote(_discussion)
         })
         .catch(() => {
-          this.$notify({
+          this.$notify.error({
             title: 'Error',
             message: 'You are voting too frequently. Please wait.',
             type: 'error',
@@ -822,5 +828,12 @@ pre{
 }
 .disabled i {
   cursor: not-allowed !important;
+}
+</style>
+<style lang="scss">
+.el-select-custom{
+  .el-select__tags{
+    top: 63%;
+  }
 }
 </style>

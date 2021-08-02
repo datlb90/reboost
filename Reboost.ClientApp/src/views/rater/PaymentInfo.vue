@@ -310,7 +310,7 @@ export default {
             paymentService.updateDefaultPaymentMethod(this.currentUser.stripeCustomerId, rs.paymentMethod.id).then(result => {
               if (result) {
                 this.$store.dispatch('payment/loadDefaultPaymentMethod', this.currentUser.stripeCustomerId)
-                this.$notify({
+                this.$notify.success({
                   title: 'Update Sucess',
                   message: 'Updated successfully',
                   type: 'success',
@@ -319,7 +319,7 @@ export default {
                 this.updateVisible = false
                 this.loading = false
               } else {
-                this.$notify({
+                this.$notify.error({
                   title: 'Error',
                   message: 'Error occured!',
                   type: 'error',

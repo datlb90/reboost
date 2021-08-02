@@ -40,8 +40,8 @@ const reviewService = {
   editComment(comment) {
     return http.post(`/review/comment/edit`, comment).then(rs => rs.data)
   },
-  createNewReviewSample(docId) {
-    return http.post(`/review/createSampleReview/${docId}`).then(rs => rs.data)
+  createReviewTrainingSample(type) {
+    return http.post(`/review/createReviewTraining/${type}`).then(rs => rs.data)
   },
   getAllReviews() {
     return http.get('/review/all').then(rs => rs.data)
@@ -52,8 +52,8 @@ const reviewService = {
   getById(id) {
     return http.get(`/review/${id}`).then(rs => rs.data)
   },
-  changeReviewStatus(id, data) {
-    return http.post(`/review/status/change/${id}`, data).then(rs => rs.data)
+  changeTrainingStatus(id, data) {
+    return http.post(`/review/training/status/change/${id}`, data).then(rs => rs.data)
   },
   createReviewRequest(request) {
     return http.post('/review/request', request).then(rs => rs.data)
@@ -93,6 +93,9 @@ const reviewService = {
   },
   getLinkToReviewByProRequestId(id) {
     return http.get(`/review/request/pro/${id}`).then(rs => rs.data)
+  },
+  getRaterTrainings(id) {
+    return http.get(`/review/training/${id}`).then(rs => rs.data)
   }
 }
 

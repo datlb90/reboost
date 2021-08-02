@@ -1257,7 +1257,7 @@ export default {
           annotations: annotations.map(a => ({ ...a, data: JSON.stringify(a) })),
           comments: comments.map(c => ({ ...c, data: JSON.stringify(c) }))
         }).then(rs => {
-          this.$notify({
+          this.$notify.success({
             title: 'Success',
             message: 'Submit successfully',
             type: 'success',
