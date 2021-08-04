@@ -303,13 +303,11 @@ namespace Reboost.DataAccess.Repositories
             }
 
             string status = type.ToUpper() + RaterStatus.TRAINING;
-                        
             RaterTraining exist = await db.RaterTraining.Where(r => r.RaterId == rater.Id && r.Test == type.ToUpper()).FirstOrDefaultAsync();
             if(exist!= null)
             {
                 return await Task.FromResult(exist.ReviewId.ToString());
             }
-
             Reviews rv = new Reviews { RequestId = 0, FinalScore = 0, ReviewerId = user.Id, RevieweeId = "1", Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = DateTime.Now };
             await db.Reviews.AddAsync(rv);
             await db.SaveChangesAsync();
@@ -748,7 +746,6 @@ namespace Reboost.DataAccess.Repositories
                 return null;
 
             raterUser.Rater.User = raterUser.User;
-
             return raterUser.Rater;
         }
 
@@ -803,6 +800,10 @@ namespace Reboost.DataAccess.Repositories
             result.Review = rv;
             result.ReviewRequest = request;
             result.Submission = await db.Submissions.Where(s => s.Id == result.ReviewRequest.SubmissionId).FirstOrDefaultAsync();
+
+            
+            
+
 
             return result;
         }

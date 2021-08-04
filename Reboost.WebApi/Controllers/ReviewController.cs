@@ -436,6 +436,8 @@ namespace Reboost.WebApi.Controllers
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
+            //var currentUser = await GetCurrentUser();
+
             var rs = await _service.GetOrCreateReviewByProRequestId(id, currentUser.Id);
             return Ok(rs);
         }
