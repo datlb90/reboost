@@ -74,7 +74,7 @@ import PaymentInfo from '../views/rater/PaymentInfo.vue'
 import Submissions from '../views/learner/Submissions.vue'
 // import PageNotFound from '../views/PageNotFound.vue'
 import protect from './guard'
-import { PageName, Role } from '@/app.constant'
+import { PageName, Role, UserRole } from '@/app.constant'
 
 // Guard
 import { userReviewAuthentication } from './guard/UserReviewValidation'
@@ -281,7 +281,8 @@ const router = new VueRouter({
       name: PageName.QUESTIONS,
       component: Questions,
       meta: {
-        loginRequired: true
+        loginRequired: true,
+        role: UserRole.LEARNER
       }
     },
     {
@@ -323,7 +324,8 @@ const router = new VueRouter({
         name: 'DiscussionList'
       }],
       meta: {
-        loginRequired: true
+        loginRequired: true,
+        role: UserRole.LEARNER
       }
     },
     {
@@ -339,7 +341,8 @@ const router = new VueRouter({
       component: SelectYourTest,
       name: PageName.SELECT_YOUR_TEST,
       meta: {
-        loginRequired: true
+        loginRequired: true,
+        role: UserRole.LEARNER
       }
     },
     {
@@ -381,7 +384,8 @@ const router = new VueRouter({
       component: Submissions,
       name: PageName.SUBMISSIONS,
       meta: {
-        loginRequired: true
+        loginRequired: true,
+        role: UserRole.LEARNER
       }
     },
     // { path: '/notfound', name: PageName.PageNotFound, component: PageNotFound },

@@ -2145,6 +2145,7 @@ export default {
         this.$notify.error({
           title: 'Field Required',
           message: 'Please fill all rubric fields!',
+          type: 'error',
           duration: 2000
         })
       } else {
@@ -2164,6 +2165,7 @@ export default {
           this.$notify.error({
             title: 'Annotations required',
             message: 'At least 3 annotations required!',
+            type: 'error',
             duration: 2000
           })
           return
@@ -2174,6 +2176,7 @@ export default {
             this.$notify.success({
               title: 'Success',
               message: 'Submitted!',
+              type: 'success',
               duration: 2000
             })
 
@@ -2192,6 +2195,7 @@ export default {
             this.$notify.error({
               title: 'Submit failed',
               message: 'Current review not exist!',
+              type: 'error',
               duration: 2000
             })
           }

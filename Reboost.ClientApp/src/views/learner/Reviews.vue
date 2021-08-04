@@ -142,6 +142,7 @@ export default {
           this.$notify.error({
             title: 'Not available',
             message: 'No request available',
+            type: 'error',
             duration: 2000
           })
         }
@@ -181,5 +182,7 @@ h3{
 <style>
 #reviews .el-table .cell {
     text-overflow: unset !important;
+    word-break: break-word !important;
+
 }
 </style>

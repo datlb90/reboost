@@ -31,9 +31,9 @@
         <el-button size="mini" @click="clearFilter">reset all filters</el-button>
       </el-col>
     </el-row>
-    <el-table ref="filterTable" size="mini" :data="raters" style="width: 100%">
+    <el-table ref="filterTable" size="mini" :data="raters" style="width: 100%" @sort-change="changeTableSort">
       <el-table-column prop="fullName" label="Application Name" width="160" />
-      <el-table-column prop="appliedDate" label="Application Date" sortable width="180" />
+      <el-table-column prop="appliedDate" label="Application Date" sortable="custom" width="180" />
       <el-table-column prop="occupation" label="Occupation" width="140" />
       <el-table-column prop="firstLanguage" label="First Language" width="130" />
       <!-- <el-table-column prop="applyTo" label="Applied For" width="120">
@@ -47,13 +47,15 @@
           <el-tag
             size="mini"
             :type="
-              scope.row.status === RATER_STATUS.APPROVED
-                ? 'success'
-                : scope.row.status === RATER_STATUS.APPLIED || scope.row.status === RATER_STATUS.TRAINING || scope.row.status === RATER_STATUS.TRAINING_COMPLETED
-                  ? 'primary'
-                  : scope.row.status === RATER_STATUS.DOCUMENT_REQUESTED || scope.row.status === RATER_STATUS.DOCUMENT_SUBMITTED || scope.row.status === RATER_STATUS.REVISION_REQUESTED
-                    ? 'warning'
-                    : 'danger'"
+              scope.row.status === RATER_STATUS.APPLIED
+                ? 'primary'
+                : scope.row.status === RATER_STATUS.APPROVED || scope.row.status === RATER_STATUS.TRAINING || scope.row.status === RATER_STATUS.TRAINING_COMPLETED
+                  ? 'success'
+                  :status === RATER_STATUS.REJECTED
+                    ? 'danger'
+                    : scope.row.status === RATER_STATUS.DOCUMENT_REQUESTED || scope.row.status === RATER_STATUS.DOCUMENT_SUBMITTED || scope.row.status === RATER_STATUS.REVISION_REQUESTED
+                      ? 'warning'
+                      : 'warning'"
             disable-transitions
           >{{ scope.row.status }}
           </el-tag>
@@ -110,7 +112,7 @@ export default {
   },
   computed: {
     getAllRater() {
-      var data = this.$store.getters['rater/getAll'].map(i => ({ ...i, appliedDate: moment(new Date(i.appliedDate)).fromNow() }))
+      var data = this.$store.getters['rater/getAll'].map(i => ({ ...i, appliedDate: moment(new Date(i.appliedDate)).format('DD-MM-YYYY hh:mm:ss'), sortTime: moment(i.appliedDate).valueOf() }))
       return data
     },
     getAllReviews() {
@@ -220,7 +222,7 @@ export default {
       if (this.checkSample) {
         result = result.filter(rs => rs.sample == true)
       }
-      result = result.sort((a, b) => a.id - b.id)
+      // result = result.sort((a, b) => a.id - b.id)
       return result
     },
     handleClose(tag) {
@@ -230,6 +232,17 @@ export default {
         this.filterStatus.find(s => s.text == tag).checked = false
       }
       this.loadTable()
+    },
+    changeTableSort(column) {
+      var sortingType = column.order
+
+      if (sortingType == 'descending') {
+        this.raterCached = this.raterCached.sort((a, b) => b.sortTime - a.sortTime)
+        this.loadTable()
+      } else {
+        this.raterCached = this.raterCached.sort((a, b) => a.sortTime - b.sortTime)
+        this.loadTable()
+      }
     }
   }
 }

@@ -149,7 +149,7 @@ export default {
       })
     },
     getTimeFromDateCreateToNow(time) {
-      return moment(new Date(time)).fromNow()
+      return moment(new Date(time)).format('MMMM Do YYYY, hh:mm:ss a')
     },
     getTimeTaken(time) {
       var minutes = Math.floor(time / 60)
@@ -177,6 +177,7 @@ export default {
             this.$notify.success({
               title: 'Submission Requested',
               message: 'Requested!',
+              type: 'success',
               duration: 1500
             })
             this.submissionsListCached.forEach(r => {
@@ -188,6 +189,7 @@ export default {
                   this.$notify.success({
                     title: 'Submission Requested',
                     message: 'Requested!',
+                    type: 'success',
                     duration: 1500
                   })
                 }
@@ -216,6 +218,7 @@ export default {
           this.$notify.success({
             title: 'Submission Requested',
             message: 'Requested!',
+            type: 'success',
             duration: 1500
           })
         })
@@ -247,5 +250,6 @@ h3{
 <style>
 #submission .el-table .cell {
     text-overflow: clip !important;
+    word-break: break-word !important;
 }
 </style>

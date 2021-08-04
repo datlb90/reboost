@@ -558,12 +558,14 @@ export default ({
           this.$notify.error({
             title: RATER_STATUS.REVISION,
             message: 'Submitted Training Revision Requested!',
+            type: 'error',
             duration: 2000
           })
         } else {
           this.$notify.error({
             title: RATER_STATUS.REVISION,
             message: 'This training has been approved!',
+            type: 'error',
             duration: 2000
           })
         }
@@ -575,12 +577,14 @@ export default ({
           this.$notify.success({
             title: RATER_STATUS.APPROVED,
             message: 'Submitted Training Approved!',
+            type: 'success',
             duration: 2000
           })
         } else {
           this.$notify.error({
             title: RATER_STATUS.REVISION,
             message: 'This training has been approved!',
+            type: 'error',
             duration: 2000
           })
         }

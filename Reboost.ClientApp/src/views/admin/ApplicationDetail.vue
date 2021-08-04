@@ -2,7 +2,7 @@
   <div style="margin-top:25px;">
     <el-row class="row-flex">
       <el-col :span="15" class="col-border">
-        <el-steps :active="1" align-center>
+        <el-steps :active="formRegister.status === RATER_STATUS.APPLIED ? 1 : 2" align-center>
           <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
           <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
           <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning" />
@@ -611,6 +611,7 @@ export default {
             this.$notify.error({
               title: 'Error',
               message: 'Error occured!',
+              type: 'error',
               duration: 2000
             })
 
@@ -627,30 +628,35 @@ export default {
             this.$notify.success({
               title: RATER_STATUS.TRAINING,
               message: 'Rater approved! Rater can start training now.',
+              type: 'success',
               duration: 2000
             })
           } else if (rs.status == RATER_STATUS.REJECTED) {
             this.$notify.error({
               title: RATER_STATUS.REJECTED,
               message: 'Rater Rejected!',
+              type: 'error',
               duration: 2000
             })
           } else if (rs.status == RATER_STATUS.DOCUMENT_REQUESTED) {
             this.$notify.info({
               title: RATER_STATUS.DOCUMENT_REQUESTED,
               message: 'Rater Document Requested!',
+              type: 'info',
               duration: 2000
             })
           } else if (rs.status == RATER_STATUS.REVISION_REQUESTED) {
             this.$notify.info({
               title: RATER_STATUS.DOCUMENT_REQUESTED,
               message: 'Rater Revision Requested!',
+              type: 'info',
               duration: 2000
             })
           } else if (rs.status == RATER_STATUS.APPROVED) {
             this.$notify.info({
               title: RATER_STATUS.APPROVED,
               message: 'Rater approved!',
+              type: 'info',
               duration: 2000
             })
           }
@@ -707,6 +713,7 @@ export default {
           this.$notify.error({
             title: RATER_STATUS.REVISION,
             message: 'Submitted Training Revision Requested!',
+            type: 'error',
             duration: 2000
           })
         } else {
@@ -714,6 +721,7 @@ export default {
             this.$notify.success({
               title: RATER_STATUS.APPROVED,
               message: 'Submitted Training Approved!',
+              type: 'success',
               duration: 2000
             })
           }

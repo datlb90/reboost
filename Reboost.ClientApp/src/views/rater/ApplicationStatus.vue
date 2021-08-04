@@ -54,7 +54,7 @@
             <p>Congratulations! Your application to become a Reboost rater has been approved. You will start receiving review requests via email. Please try to complete these requests as soon as you can to earn money.
             </p>
           </div>
-          <!--<div v-if="note && note.length && (status===RATER_STATUS.REVISION_REQUESTED || status===RATER_STATUS.DOCUMENT_REQUESTED || status===RATER_STATUS.REJECTED)" class="note-container">
+          <div v-if="status===RATER_STATUS.REJECTED" class="note-container">
             <div class="label-container" style="width: 155px">
               Note
             </div>
@@ -64,7 +64,7 @@
               :rows="2"
               :disabled="true"
             />
-          </div>-->
+          </div>
           <!-- <div v-if="status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED" style="margin-left:150px" class="button-container">
             <el-tooltip v-if="applyToList.includes('IELTS')" :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
               <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin:0" size="mini" @click="redirectToTraining('IELTS')">Complete IELTS Training</el-button>
@@ -177,8 +177,7 @@
         </div>
       </el-col>
     </el-row>
-
-    <el-row v-if="applyToList.includes('IELTS') && status !== RATER_STATUS.APPROVED && status !== RATER_STATUS.APPLIED && status !== RATER_STATUS.DOCUMENT_REQUESTED && status !== RATER_STATUS.DOCUMENT_SUBMITTED && status !== RATER_STATUS.REJECTED" class="row-flex">
+ <el-row v-if="applyToList.includes('IELTS') && (status === RATER_STATUS.TRAINING||status === RATER_STATUS.REVISION_REQUESTED||status === RATER_STATUS.TRAINING_COMPLETED)" class="row-flex">
       <el-col :span="15" class="col-border">
         <div class="margin-container">
           <div class="flex-box">
@@ -217,7 +216,7 @@
             <p>Your submission has been approved.
             </p>
           </div>
-          <div v-if="isCompletedTrainingIELTS && (status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED)" class="button-container">
+<div v-if="(status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED)" class="button-container">
             <el-tooltip :content="isApprove('IELTS')?'You have passed this training':'Start your IELTS Training'" placement="top">
               <el-button :type="isApprove('IELTS')?'success':'primary'" style="margin:0" size="mini" @click="redirectToTraining('IELTS')">Complete IELTS Training</el-button>
             </el-tooltip>
@@ -236,7 +235,7 @@
         </div>
       </el-col>
     </el-row>
-    <el-row v-if="applyToList.includes('TOEFL') && status !== RATER_STATUS.APPROVED && status !== RATER_STATUS.APPLIED && status !== RATER_STATUS.DOCUMENT_REQUESTED && status !== RATER_STATUS.DOCUMENT_SUBMITTED" class="row-flex">
+    <el-row v-if="applyToList.includes('TOEFL') && (status === RATER_STATUS.TRAINING||status === RATER_STATUS.REVISION_REQUESTED||status === RATER_STATUS.TRAINING_COMPLETED)" class="row-flex">
       <el-col :span="15" class="col-border">
         <div class="margin-container">
           <div class="flex-box">
@@ -275,7 +274,7 @@
             <p>Your submission has been approved.
             </p>
           </div>
-          <div v-if="isCompletedTrainingTOEFT && (status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED)" class="button-container">
+<div v-if="(status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED)" class="button-container">
             <el-tooltip :content="isApprove('TOEFL')?'You have passed this training':'Start your TOEFL Training'" placement="top">
               <el-button :type="isApprove('TOEFL')?'success':'primary'" size="mini" @click="redirectToTraining('TOEFL')">Complete TOEFL Training</el-button>
             </el-tooltip>
@@ -336,8 +335,6 @@ export default {
       toggleImagePopup: false,
       RATER_STATUS: RATER_STATUS,
       RATER_TRAINING_STATUS: RATER_TRAINING_STATUS,
-      isCompletedTrainingIELTS: true,
-      isCompletedTrainingTOEFT: true,
       statusIELTS: null,
       statusTOEFL: null,
       raterTraining: null,
@@ -525,6 +522,7 @@ export default {
           this.$notify.error({
             title: 'Error',
             message: 'Error occured!',
+            type: 'error',
             duration: 2000
           })
           return false

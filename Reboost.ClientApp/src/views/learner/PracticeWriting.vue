@@ -139,8 +139,8 @@
               <el-button size="mini" @click="toggleShowCount()">Hide Word Count</el-button>
               <span v-if="isShowCountWord && countWord != 0" style="margin-left: 15px;">Words: {{ countWord }}</span>
             </div>
-            <div v-if="writtingSubmitted">
-              <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;"> Reviews.</a> </el-tag>
+            <div v-if="writtingSubmitted" class="submited-message">
+              <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'" style="white-space: normal; height: 100%;">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;"> Reviews.</a> </el-tag>
             </div>
             <div v-if="getQuestion != ''">
               <el-dropdown v-if="writtingSubmitted || hasSubmitionForThisQuestion " size="mini" @command="checkoutVisibles">
@@ -154,7 +154,7 @@
                 </el-dropdown-menu>
               </el-dropdown>
 
-              <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit & Request Review</el-button>
+              <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit</el-button>
               <el-button v-if="isEdit" style="margin-left:5px" size="mini" @click="isEdit=false">Edit</el-button>
               <el-button v-if="hasSubmitionForThisQuestion&& !isEdit" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit</el-button>
 
@@ -816,11 +816,7 @@ pre {
   outline: none;
   height: 100%;
 }
-
-/* .splitpanes--vertical>.splitpanes__splitter:before {
-  display: none;
-  left: -30px;
-  right: -30px;
-  height: 100%;
-} */
+.submited-message {
+  width: calc(100% - 210px);
+}
 </style>

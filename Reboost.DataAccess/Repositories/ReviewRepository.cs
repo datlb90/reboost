@@ -303,14 +303,12 @@ namespace Reboost.DataAccess.Repositories
             }
 
             string status = type.ToUpper() + RaterStatus.TRAINING;
-
             RaterTraining exist = await db.RaterTraining.Where(r => r.RaterId == rater.Id && r.Test == type.ToUpper()).FirstOrDefaultAsync();
             if(exist!= null)
             {
                 return await Task.FromResult(exist.ReviewId.ToString());
             }
-
-            Reviews rv = new Reviews { RequestId = 1, FinalScore = 0, ReviewerId = user.Id, RevieweeId = "1", Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = DateTime.Now };
+            Reviews rv = new Reviews { RequestId = 0, FinalScore = 0, ReviewerId = user.Id, RevieweeId = "1", Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = DateTime.Now };
             await db.Reviews.AddAsync(rv);
             await db.SaveChangesAsync();
 
@@ -671,7 +669,7 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<CreatedProRequestModel> CreateProRequestAsync(ReviewRequests request)
         {
-            // Add request and queue
+            // Add request
             request.FeedbackType = ReviewRequestType.PRO;
             request.RequestedDateTime = DateTime.Now;
             request.Status = ReviewRequestStatus.WAITING;
@@ -683,9 +681,16 @@ namespace Reboost.DataAccess.Repositories
 
             await db.SaveChangesAsync();
 
+            // Add request queue
             await AddRequestQueue(new RequestQueue { RequestId = request.Id, RequestedDatetime = DateTime.Now }, request.UserId);
 
-            var rater = await GetRaterForProRequestAsync();
+            var rater = GetRaterForProRequestAsync();
+
+            // Add to request assignment
+            RequestAssignment assignment = new RequestAssignment { CreateDate = DateTime.Now, RaterId = rater.Id, RequestId = request.Id, Status = RequestAssigmentStatus.ASSIGNED };
+            await db.RequestAsignments.AddAsync(assignment);
+            await db.SaveChangesAsync();
+
             return new CreatedProRequestModel{Rater= rater, Request= request };
         }
 
@@ -696,50 +701,27 @@ namespace Reboost.DataAccess.Repositories
             queue.RequestedDatetime = DateTime.Now;
             await db.SaveChangesAsync();
 
-            var rater = await GetRaterForProRequestAsync();
+            var rater = GetRaterForProRequestAsync();
+
+            // Get current assignment and change rater's Id
+            var assignment = await db.RequestAsignments.Where(a => a.RequestId == request.Id && a.Status == RequestAssigmentStatus.ASSIGNED).FirstOrDefaultAsync();
+            if(assignment != null)
+            {
+                assignment.RaterId = rater.Id;
+            }
+            else
+            {
+                RequestAssignment newAssignment = new RequestAssignment { CreateDate = DateTime.Now, RaterId = rater.Id, RequestId = request.Id, Status = RequestAssigmentStatus.ASSIGNED };
+                await db.RequestAsignments.AddAsync(newAssignment);                
+            }
+            await db.SaveChangesAsync();
+
             return new CreatedProRequestModel { Rater = rater, Request = request };
         }
 
         // Get rater for pro request
-        public async Task<Raters> GetRaterForProRequestAsync()
+        public Raters GetRaterForProRequestAsync()
         {
-            // Select all rater that having completed reviews
-            var completedReviewsRaters = await (from reviews in db.Reviews
-                                                where reviews.Status == ReviewRequestStatus.COMPLETED
-                                                group reviews by new { reviews.ReviewerId, reviews.Status } into g
-                                                orderby g.Key.ReviewerId descending
-                                                select new
-                                                {
-                                                    RaterId = g.Key.ReviewerId,
-                                                    CompletedCount = (from re in db.Reviews where re.Status == ReviewRequestStatus.COMPLETED && re.ReviewerId == g.Key.ReviewerId select re).Count()
-                                                }
-                                                ).ToListAsync();
-
-            // Get the minimun value of completed reviews count
-            var minCompletedCount = completedReviewsRaters.Min(r => r.CompletedCount);
-
-            // Get all rater's ID with the minimun value of completed reviews count
-            var minRatersList = completedReviewsRaters.Where(r => r.CompletedCount == minCompletedCount).ToList();
-
-            // Get all rater's details
-            List<Raters> minRatersDetailList = new List<Raters>();
-
-            int i = 0;
-            while (i < minRatersList.Count())
-            {
-                var rs = await db.Raters.Include("User").Where(r => r.UserId == minRatersList[i].RaterId).FirstOrDefaultAsync();
-                if (rs != null)
-                {
-                    minRatersDetailList.Add(rs);
-                }
-                i++;
-            }
-
-            // Get first rater base on apply date 
-            var rater = minRatersDetailList.OrderBy(r => r.AppliedDate).FirstOrDefault();
-
-
-
             //Query rater that have lowest assigned requests
             var selectedRater = (from r in db.Raters
                                  join a in (from a in db.RequestAsignments where a.Status == RequestAssigmentStatus.ASSIGNED select a) on r.Id equals a.RaterId into raterFull
@@ -750,13 +732,21 @@ namespace Reboost.DataAccess.Repositories
                                  {
                                      RaterId = g.Key,
                                      AssignedRequests = g.Count()
-                                 }).OrderBy(r => r.AssignedRequests).FirstOrDefault();
+                                 }).OrderBy(r => r.AssignedRequests).ToList().FirstOrDefault();
 
-            //Assign the pro request for selected rater
-            // - Insert a record to RequestAssignment for selected rater
-            // - Send email to selected rater
+            if (selectedRater == null)
+                return null;
 
-            return rater;
+            var raterUser = (from r in db.Raters
+                             join u in db.Users on r.UserId equals u.Id
+                             where r.Id == selectedRater.RaterId
+                             select new { Rater = r, User = u }).FirstOrDefault();
+
+            if (raterUser == null)
+                return null;
+
+            raterUser.Rater.User = raterUser.User;
+            return raterUser.Rater;
         }
 
         public async Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId)
@@ -771,10 +761,15 @@ namespace Reboost.DataAccess.Repositories
                 return null;
             }
 
-            if (DateTime.Now.Subtract(queue.RequestedDatetime).TotalSeconds > 600)
+            var assignment = await db.RequestAsignments.Where(a => a.RequestId == requestId).FirstOrDefaultAsync();
+
+            if (assignment.Status == RequestAssigmentStatus.ASSIGNED && DateTime.Now.Subtract(queue.RequestedDatetime).TotalSeconds > 600)
             {
                 return null;
             }
+
+            // Change assignment's status to 'Accepted'
+            assignment.Status = RequestAssigmentStatus.ACCEPTED;
 
             // Get review if existed
             GetReviewsModel exist = new GetReviewsModel();
@@ -795,6 +790,7 @@ namespace Reboost.DataAccess.Repositories
             // Change Request, RequestQueue status to 'In Progess'
             request.Status = ReviewStatus.IN_PROGRESS;
             queue.Status = 1;
+            
 
             // Update requested time in queue for checking review timeout
             queue.RequestedDatetime = DateTime.Now;

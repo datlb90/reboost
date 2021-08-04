@@ -122,7 +122,7 @@ namespace Reboost.WebApi.Controllers
             var isProRequest = await _service.IsProRequestCheckAsync(id);
 
             // Check if pro review's timeout end
-            if(isProRequest==0)
+            if (isProRequest == 0)
             {
                 return BadRequest(new { message = "Your review's timeout has ended!" });
             }
@@ -130,7 +130,7 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.SaveFeedback(id, data);
 
             // Send mail if review is not a training review
-            if(rs != null && rs.RevieweeId.Trim() != "1")
+            if(rs != null && rs.RequestId!=0)
             {
                 // Get reviewee's Id
                 var reviewee = await _userService.GetByIdAsync(rs.RevieweeId);

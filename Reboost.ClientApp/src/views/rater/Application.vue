@@ -559,6 +559,7 @@ export default {
           this.$notify.error({
             title: 'Error',
             message: 'Error occured!',
+            type: 'error',
             duration: 2000
           })
           return false
@@ -571,6 +572,7 @@ export default {
         this.$notify.error({
           title: 'Error',
           message: 'Error occured!',
+          type: 'error',
           duration: 2000
         })
       })

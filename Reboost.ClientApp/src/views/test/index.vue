@@ -163,6 +163,7 @@ export default {
       }).catch(error => {
         this.$notify.error({
           title: 'Error',
+          type: 'error',
           message: error
         })
       })

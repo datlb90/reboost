@@ -59,7 +59,6 @@ const actions = {
   },
   increaseView({ commit }, id) {
     return discussionService.increaseView(id).then(rs => {
-      console.log('View Count: ', rs['Views'])
       commit('SET_DISCUSSION', rs)
     })
   }

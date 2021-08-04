@@ -79,7 +79,7 @@ export default ({
         if (rs) {
           this.$notify.success({
             title: 'Success',
-            message: 'Submitted!',
+            message: 'Submit successfully',
             type: 'success',
             duration: 1500
           })
