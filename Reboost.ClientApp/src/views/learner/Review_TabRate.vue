@@ -61,7 +61,7 @@ export default ({
       }).then(r => {
         if (r) {
           this.isRated = true
-          this.$notify({
+          this.$notify.success({
             title: 'Success',
             message: 'Rated successfully',
             type: 'success',
@@ -77,7 +77,7 @@ export default ({
         Comment: this.rateComment
       }).then(rs => {
         if (rs) {
-          this.$notify({
+          this.$notify.success({
             title: 'Success',
             message: 'Submitted!',
             type: 'success',

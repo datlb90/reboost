@@ -12,6 +12,12 @@ const authService = {
         console.log(error)
       })
   },
+  loginFacebook(returnUrl) {
+    return http.post('/auth/external/facebook/Learner/' + returnUrl)
+  },
+  loginGoogle(returnUrl) {
+    return http.post('/auth/external/google/Learner/' + returnUrl)
+  },
   logout() {
     store.dispatch('auth/logout')
   },

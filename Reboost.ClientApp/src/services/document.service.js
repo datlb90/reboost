@@ -15,6 +15,9 @@ const documentService = {
   },
   updateDocumentBySubmissionId(id, data) {
     return http.put(`document/submission/${id}`, data).then(rs => rs.data)
+  },
+  getDocument(id) {
+    return http.get(`document/${id}`)
   }
 }
 

@@ -14,14 +14,11 @@ const actions = {
         }
       })
 
-      console.log('Action load raters', result)
-
       commit('SET_RATERS', result)
     })
   },
   loadRater({ commit }, id) {
     return raterService.getById(id).then(rs => {
-      console.log('Rater: ', rs)
       commit('SET_RATER', rs)
     })
   },

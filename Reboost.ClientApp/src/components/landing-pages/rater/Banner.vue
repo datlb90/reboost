@@ -1,6 +1,6 @@
 <template>
   <!-- Start Main Banner -->
-  <div id="banner" class="main-banner" style="height: 860px; padding-top: 180px; padding-bottom: 80px;">
+  <div id="banner" class="main-banner" style="height: 860px; padding-top: 100px; padding-bottom: 80px;">
     <div class="container">
       <div class="row">
         <div class="col-lg-7 col-md-12">
@@ -19,18 +19,25 @@
 
         <div class="col-lg-5 col-md-12">
           <div class="banner-form ml-3">
-            <form>
-              <div class="form-group">
-                <label>Email address</label>
-                <input v-model="email" type="text" class="form-control" placeholder="Enter username">
-              </div>
+            <el-form ref="formSignUp" :model="form">
+              <el-form-item class="m-1" prop="firstName" :rules="[{ required: true, message: 'First name is required'}]">
+                <label class="m-0">First name</label>
+                <el-input id="firstName" v-model="form.firstName" type="text" placeholder="First Name" />
+              </el-form-item>
 
-              <div class="form-group">
-                <label>Password</label>
-                <input v-model="password" type="password" class="form-control" placeholder="Create a password">
-              </div>
+              <el-form-item class="m-1" prop="lastName" :rules="[{ required: true, message: 'Last name is required'}]">
+                <label class="m-0">Last name</label>
+                <el-input id="lastName" v-model="form.lastName" type="text" placeholder="Last Name" />
+              </el-form-item>
 
-              <!-- <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;" @click="register()">Sign Up</button> -->
+              <el-form-item class="m-1" prop="email" :rules="[{ required: true, message: 'Email address is required'}]">
+                <label class="m-0">Email address</label>
+                <el-input id="email" v-model="form.email" type="text" placeholder="Username or email" />
+              </el-form-item>
+              <el-form-item prop="password" :rules="[{ required: true, message: 'Password is required'}]">
+                <label class="m-0">Password</label>
+                <el-input id="password" v-model="form.password" type="password" autocomplete="off" placeholder="Password" />
+              </el-form-item>
               <el-button
                 type="primary"
                 class="login-btn"
@@ -66,7 +73,7 @@
                 </a>
               </div>
 
-            </form>
+            </el-form>
           </div>
         </div>
 
@@ -93,11 +100,11 @@ export default {
       user: null,
       mgr: null,
       form: {
-        username: '',
-        password: ''
+        email: '',
+        password: '',
+        firstName: null,
+        lastName: null
       },
-      email: null,
-      password: null,
       googleExternalLogin: null,
       returnUrl: '/',
       googleFormAction: null,
@@ -117,14 +124,21 @@ export default {
       this.$refs.googleLoginForm.submit()
     },
     async signUp() {
-      const user = await this.register({
-        Email: this.email,
-        Password: this.password,
-        Role: 'Rater'
+      this.$refs['formSignUp'].validate(async valid => {
+        if (valid) {
+          console.log(this.form)
+          const user = await this.register({
+            Email: this.form.email,
+            Password: this.form.password,
+            FirstName: this.form.firstName,
+            LastName: this.form.lastName,
+            Role: 'Rater'
+          })
+          if (user) {
+            this.$router.push({ name: PageName.AFTER_LOGIN })
+          }
+        } else return false
       })
-      if (user) {
-        this.$router.push({ name: PageName.AFTER_LOGIN })
-      }
     }
   }
 }

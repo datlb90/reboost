@@ -300,7 +300,7 @@ export default {
         .then((result) => {
           if (result.error) {
             console.error(result)
-            this.$notify({
+            this.$notify.error({
               title: 'Error',
               message: result.error.message,
               type: 'error',

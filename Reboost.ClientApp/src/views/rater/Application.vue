@@ -536,7 +536,7 @@ export default {
           }
           if (createOrUpdate == 'create') {
             raterService.insert(formData).then(rs => {
-              this.$notify({
+              this.$notify.success({
                 title: 'Success',
                 message: 'Created successfully',
                 type: 'success',
@@ -547,7 +547,7 @@ export default {
           } else if (createOrUpdate == 'update') {
             formData.set('Id', this.formRegister.id)
             raterService.update(formData).then(rs => {
-              this.$notify({
+              this.$notify.success({
                 title: 'Success',
                 message: 'Updated successfully',
                 type: 'success',

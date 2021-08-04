@@ -114,10 +114,12 @@ export default {
   methods: {
     ...mapActions('auth', ['login']),
     submitFacebookLoginForm() {
-      this.$refs.facebookLoginForm.submit()
+      // this.$refs.facebookLoginForm.submit()
+      authService.loginFacebook(encodeURIComponent(this.returnUrl)).then(rs => { console.log('login facebook', rs) })
     },
     submitGoohlrLoginForm() {
-      this.$refs.googleLoginForm.submit()
+      // this.$refs.googleLoginForm.submit()
+      authService.loginGoogle(encodeURIComponent(this.returnUrl))
     },
     async signIn() {
       this.$store.dispatch('auth/logout')

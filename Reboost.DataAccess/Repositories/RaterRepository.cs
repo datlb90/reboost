@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Reboost.DataAccess.Entities;
+using Reboost.Shared;
 
 namespace Reboost.DataAccess.Repositories
 {

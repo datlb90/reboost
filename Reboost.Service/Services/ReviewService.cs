@@ -49,6 +49,7 @@ namespace Reboost.Service.Services
         Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request);
         Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId);
         Task<int> IsProRequestCheckAsync(int reviewId);
+        Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -210,6 +211,10 @@ namespace Reboost.Service.Services
         public async Task<int> IsProRequestCheckAsync(int reviewId)
         {
             return await _unitOfWork.Review.IsProRequestCheckAsync(reviewId);
+        }
+        public async Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId)
+        {
+            return await _unitOfWork.Review.GetRaterTrainingsAsync(raterId);
         }
     }
 }
