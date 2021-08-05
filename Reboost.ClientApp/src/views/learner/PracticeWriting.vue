@@ -360,7 +360,8 @@ export default {
         })
 
         documentService.getBySubmissionId(+this.submissionId).then(rs => {
-          console.log(`submission: ${this.submissionId} data`, rs)
+          this.timeSpent = rs.submissions[0].timeSpentInSeconds
+
           if (rs) {
             const latestSubmition = rs
             this.writingContent = latestSubmition.text
@@ -430,6 +431,10 @@ export default {
         return
       }
 
+      if (this.timeSpent > 0) {
+        timeInSeconds += this.timeSpent
+      }
+
       var data = {
         filename: new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() + new Date().getDate().toString() + new Date().getHours().toString() + new Date().getMinutes().toString() + new Date().getSeconds().toString() + '.pdf',
         text: this.writingContent,
@@ -438,20 +443,21 @@ export default {
         timeSpentInSeconds: timeInSeconds
       }
 
+      this.timeSpent = 0
+      this.timeStart = moment()
+      this.isEdit = true
+
       if (this.submissionId) {
         data.status = this.unRatedList.length > 0 ? 'Pending' : 'Submitted'
         this.submittedMessage = this.unRatedList.length > 0 ? 'Your submission is currently pending, please rate all of your unrated.' : this.submittedMessage
-        this.timeSpent = 0
-
         documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
             this.writtingSubmitted = true
-            this.isEdit = true
             this.$notify.success({
               title: 'Success',
               message: 'Updated successfully',
               type: 'success',
-              duration: 1000
+              duration: 2000
             })
           }
         })
@@ -464,14 +470,12 @@ export default {
                 title: 'Success',
                 message: 'Submitted successfully',
                 type: 'success',
-                duration: 1000
+                duration: 2000
               })
               this.submittedMessage = 'Your submission is currently pending, please rate all of your unrated.'
               this.writtingSubmitted = true
               this.hasSubmitionForThisQuestion = true
-              this.timeSpent = 0
               this.submissionId = rs.submissions[0]?.id
-              this.isEdit = true
             }
           })
         } else {
@@ -482,13 +486,11 @@ export default {
                 title: 'Success',
                 message: 'Submitted successfully',
                 type: 'success',
-                duration: 1000
+                duration: 2000
               })
               this.writtingSubmitted = true
               this.hasSubmitionForThisQuestion = true
-              this.timeSpent = 0
               this.submissionId = rs.submissions[0]?.id
-              this.isEdit = true
             }
           })
         }

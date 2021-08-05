@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using Reboost.Service.Services;
+using Reboost.WebApi.Email;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -20,11 +21,13 @@ namespace Reboost.WebApi.Controllers
     {
         private readonly IMapper _mapper;
         private IUserService _userService;
+        private IMailService _mailService;
 
-        public RaterController(IRaterService service, IMapper mapper, IUserService userService) : base(service)
+        public RaterController(IRaterService service, IMapper mapper, IUserService userService, IMailService mailService) : base(service)
         {
             _mapper = mapper;
             _userService = userService;
+            _mailService = mailService;
         }
 
         [Authorize]
@@ -92,8 +95,14 @@ namespace Reboost.WebApi.Controllers
         }
         [Authorize]
         [HttpGet("update/status/{id}/{status}")]
-        public async Task<Raters> UpdateStatus(int id, string status) {
-            return await _service.UpdateStatusAsync(id, status);
+        public async Task<Raters> UpdateStatus(int id, string status) 
+        {
+            var rs = await _service.UpdateStatusAsync(id, status);
+            var user = await _userService.GetByIdAsync(rs.UserId);
+
+            await _mailService.SendEmailAsync(user.Email, "Application's Status Updated", "Your application has just been " + rs.Status + ". Please visit your application page for more infomation.");
+
+            return rs;
         }
         [Authorize]
         [HttpGet("rating")]

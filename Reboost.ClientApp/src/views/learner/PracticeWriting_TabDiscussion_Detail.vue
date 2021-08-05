@@ -265,7 +265,6 @@ export default {
   },
   mounted() {
     this.loadCurrentDiscussions()
-    if (this.currentQuestion) { this.$store.dispatch('discussion/increaseView', +this.discussionId) }
     this.loadComments()
     this.loadTags()
   },
@@ -275,6 +274,11 @@ export default {
       console.log('discussionId', +this.discussionId)
       this.$store.dispatch('discussion/loadDiscussionById', +this.discussionId).then(() => {
         this.selectedDiscussion = this.$store.getters['discussion/getSelected']
+
+        if (this.currentQuestion && (this.currentUser.id !== this.selectedDiscussion.userId)) {
+          this.$store.dispatch('discussion/increaseView', +this.discussionId)
+        }
+
         this.dateLastEdit = new Date(this.selectedDiscussion['updatedDate'])
         this.topicTitle = this.selectedDiscussion.title
         this.topicContent = this.selectedDiscussion.content
