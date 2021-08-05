@@ -17,6 +17,8 @@ using Reboost.WebApi.Identity;
 using Reboost.WebApi.Utils;
 using Stripe;
 using System.Text;
+using Hangfire;
+using Hangfire.MemoryStorage;
 
 namespace Reboost.WebApi
 {
@@ -105,6 +107,11 @@ namespace Reboost.WebApi
                 options.UseSqlServer(Configuration.GetConnectionString("ReboostDbContext"), b => b.MigrationsAssembly("Reboost.DataAccess"));
             });
 
+            services.AddHangfire(config =>
+            {
+                config.UseMemoryStorage();
+            });
+
             services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
 
@@ -138,7 +145,7 @@ namespace Reboost.WebApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IReviewService reviewService)
         {
             StripeConfiguration.ApiKey = "sk_test_51I9tu1D04tWYlOu2YZ56fZ4sMfOsXSmRdJ0t3iu5fzdeyOVtL6w3rSb74NTh45kNeDKcbrH9uTQnigaoCwixS9y100zPTgMYoc";
 
@@ -146,6 +153,10 @@ namespace Reboost.WebApi
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // Add Hangfire
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
 
             app.UseGlobalExceptionHandler();
 
@@ -165,6 +176,8 @@ namespace Reboost.WebApi
                     name: "spa-fallback",
                     defaults: new { controller = "CatchAll", action = "Index" });
             });
+
+            //RecurringJob.AddOrUpdate(() => reviewService.UpdateRequestAssignment(), Cron.Minutely);
 
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 

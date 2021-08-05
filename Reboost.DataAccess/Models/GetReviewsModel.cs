@@ -15,5 +15,6 @@ namespace Reboost.DataAccess.Models
         public String QuestionName { get; set; }
         public String TestSection { get; set; }
         public String QuestionType { get; set; }
+        public String Error { get; set; }
     }
 }

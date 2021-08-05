@@ -228,7 +228,7 @@ import {
 } from '@/pdfjs/UI/utils'
 import { addEventListener, removeEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
-import http from '@/utils/axios'
+import docService from '@/services/document.service.js'
 import reviewService from '@/services/review.service.js'
 import { enableEdit } from '@/pdfjs/UI/edit'
 import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
@@ -481,7 +481,7 @@ export default {
     },
     async render() {
       const self = this
-      const response = await http.get(`http://localhost:6990/api/document/${this.documentId}`)
+      const response = await docService.getDocument(this.documentId)
       const arrayBuffer = self.base64ToArrayBuffer(response.data.data)
 
       const pdf = await PDFJS.getDocument(arrayBuffer).promise

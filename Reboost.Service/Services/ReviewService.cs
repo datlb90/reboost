@@ -31,7 +31,7 @@ namespace Reboost.Service.Services
         Task<List<Reviews>> GetReviewsAsync();
         Task<List<Reviews>> GetReviewsByUserIdAsync(string userId);
         Task<GetReviewsModel> GetReviewByIdAsync(int id);
-        Task<Reviews> ChangeStatusAsync(int id, UpdateStatusModel model);
+        Task<ReviewResponseModel> ChangeStatusAsync(int id, UpdateStatusModel model);
         Task<ReviewRequests> CreateRequestAsync(string userId, ReviewRequests requests);
         Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId);
         Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int submissionId, string userId);
@@ -50,6 +50,7 @@ namespace Reboost.Service.Services
         Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId);
         Task<int> IsProRequestCheckAsync(int reviewId);
         Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId);
+        Task<RequestAssignment> UpdateRequestAssignment();
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -135,7 +136,7 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.GetReviewsAsync();
         }
-        public async Task<Reviews> ChangeStatusAsync(int id, UpdateStatusModel model)
+        public async Task<ReviewResponseModel> ChangeStatusAsync(int id, UpdateStatusModel model)
         {
             return await _unitOfWork.Review.ChangeStatusAsync(id, model);
         }
@@ -215,6 +216,10 @@ namespace Reboost.Service.Services
         public async Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId)
         {
             return await _unitOfWork.Review.GetRaterTrainingsAsync(raterId);
+        }
+        public async Task<RequestAssignment> UpdateRequestAssignment()
+        {
+            return await _unitOfWork.Review.UpdateRequestAssignment();
         }
     }
 }

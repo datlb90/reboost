@@ -214,12 +214,18 @@ export default {
           SubmissionId: e.id,
           FeedbackType: 'Pro',
           Status: REVIEW_REQUEST_STATUS.WAITING
-        }).then(r => {
+        }).then(rs => {
           this.$notify.success({
             title: 'Submission Requested',
             message: 'Requested!',
             type: 'success',
             duration: 1500
+          })
+          this.submissionsListCached.forEach(r => {
+            if (r.id === e.id) {
+              r.status = 'Review Requested'
+              r.action = 'View Submission'
+            }
           })
         })
       }

@@ -205,7 +205,12 @@ namespace Reboost.WebApi.Controllers
         public async Task<IActionResult> ChangeReviewStatusAsync([FromBody] UpdateStatusModel model, [FromRoute] int id)
         {
             var rs = await _service.ChangeStatusAsync(id, model);
-            return Ok(rs);
+            if (rs.SendEmail)
+            {
+                await _mailService.SendEmailAsync(rs.RaterEmail, rs.EmailSubject, rs.EmailContent);
+            }
+            
+            return Ok(rs.Reviews);
         }
         [Authorize]
         [HttpGet("getById")]
@@ -436,9 +441,13 @@ namespace Reboost.WebApi.Controllers
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
-            //var currentUser = await GetCurrentUser();
-
             var rs = await _service.GetOrCreateReviewByProRequestId(id, currentUser.Id);
+
+            if(rs.Error.Length > 0)
+            {
+                return BadRequest(new { message = rs.Error });
+            }
+
             return Ok(rs);
         }
 
