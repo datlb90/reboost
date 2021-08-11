@@ -18,7 +18,7 @@ export default async(router) => {
     // Check logged in
     if (to.meta && to.meta.loginRequired) {
       if (!authService.isAuthenticated()) {
-        return next('/login')
+        return next({ path: `/login?returnUrl=${to.path}` })
       }
     }
 
@@ -111,9 +111,9 @@ export default async(router) => {
 
     // Link to pro review request
     if (to.path.includes('/review/pro/')) {
-      if (currentUser.role != UserRole.RATER) {
+      if (currentUser.role === UserRole.RATER) {
         reviewService.getLinkToReviewByProRequestId(to.params.id).then(rs => {
-          next({ path: `/review/${rs.submission.questionId}/${rs.submission.docId}/${rs.reviewId}` })
+          next({ path: `/review/${rs.submission.questionId}/${rs.submission.docId}/${rs.review.id}` })
         })
       } else {
         next({ name: PageName.NOT_FOUND })

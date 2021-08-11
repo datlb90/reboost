@@ -7,12 +7,12 @@ using Reboost.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Reboost.WebApi.Email;
 using Reboost.WebApi.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using System.Web;
 using System.Security.Claims;
+using Reboost.Service.Services;
 
 namespace Reboost.WebApi.Controllers
 {

@@ -99,7 +99,6 @@ export default {
     }
   },
   mounted() {
-    console.log('1111111111', this.$router.currentRoute.path.includes('/rater'))
   },
   beforeRouteEnter(to, from, next) {
     if (authService.isAuthenticated()) {
@@ -129,7 +128,11 @@ export default {
       })
       if (user) {
         this.$store.dispatch('auth/setSelectedTest').then(rs => {
-          this.$router.push({ name: PageName.AFTER_LOGIN })
+          if (this.$router.currentRoute.query?.returnUrl) {
+            this.$router.push({ path: this.$router.currentRoute.query?.returnUrl })
+          } else {
+            this.$router.push({ name: PageName.AFTER_LOGIN })
+          }
         })
       }
     }
