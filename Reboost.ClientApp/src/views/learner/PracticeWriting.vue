@@ -343,6 +343,13 @@ export default {
     this.idLocalStorage = this.currentUser.username + '_QuestionId' + this.questionId
 
     this.loadData()
+
+    reviewService.getUnratedReview().then(rs => {
+      if (rs.length > 0) {
+        this.unRatedList = rs
+      }
+      console.log('unrated list : ', rs)
+    })
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
@@ -385,13 +392,6 @@ export default {
         //   }
         // })
       }
-
-      reviewService.getUnratedReview().then(rs => {
-        if (rs.length > 0) {
-          this.unRatedList = rs
-          console.log('unrated list : ', rs)
-        }
-      })
     },
     calculateContainerHeight() {
       const headerHeight = document.getElementById('header').clientHeight
@@ -536,7 +536,7 @@ export default {
         this.timeStart = moment()
       }
 
-      this.countWord = this.writingContent.trim().split(/\b\S+\b/).length - 1
+      this.countWord = this.writingContent ? this.writingContent.trim().split(/\b\S+\b/).length - 1 : 0
 
       clearTimeout(this.timeout)
       this.timeout = setTimeout(() => {

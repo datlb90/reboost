@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.Service.Services;
-using Reboost.WebApi.Email;
 using Reboost.WebApi.Identity;
 using Reboost.WebApi.Utils;
 using Stripe;
@@ -126,7 +125,7 @@ namespace Reboost.WebApi
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IDataIngestionService, DataIngestionService>();
-            services.AddTransient<IMailService, SendGridMailService>();
+            services.AddTransient<Reboost.Service.Services.IMailService, Reboost.Service.Services.SendGridMailService>();
             services.AddScoped<IPDFService, PDFService>();
             services.AddScoped<IRubricService, RubricService>();
             services.AddScoped<ISubmissionService, SubmissionService>();
@@ -176,8 +175,6 @@ namespace Reboost.WebApi
                     name: "spa-fallback",
                     defaults: new { controller = "CatchAll", action = "Index" });
             });
-
-            //RecurringJob.AddOrUpdate(() => reviewService.UpdateRequestAssignment(), Cron.Minutely);
 
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 

@@ -11,7 +11,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Reboost.WebApi.Email;
 using Microsoft.AspNetCore.Authentication;
 using Reboost.DataAccess.Entities;
 using Reboost.Service.Services;

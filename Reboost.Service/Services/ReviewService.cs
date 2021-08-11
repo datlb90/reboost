@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -50,13 +51,15 @@ namespace Reboost.Service.Services
         Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId);
         Task<int> IsProRequestCheckAsync(int reviewId);
         Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId);
-        Task<RequestAssignment> UpdateRequestAssignment();
+        Task<Raters> ReAssignRaterToAssignment(int requestId);
     }
 
     public class ReviewService : BaseService, IReviewService
     {
-        public ReviewService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        IMailService mailService;
+        public ReviewService(IUnitOfWork unitOfWork, IMailService _mailService) : base(unitOfWork)
         {
+            mailService = _mailService;
         }
         public async Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId)
         {
@@ -199,7 +202,23 @@ namespace Reboost.Service.Services
         }
         public async Task<CreatedProRequestModel> CreateProRequestAsync(ReviewRequests request)
         {
-            return await _unitOfWork.Review.CreateProRequestAsync(request);
+            var rs = await _unitOfWork.Review.CreateProRequestAsync(request);
+
+            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
+
+            // ReAssign to another rater if request not accepted after 10 minutes
+            BackgroundJob.Schedule(() => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10));
+
+            return rs;
+        }
+        public async Task ReAssignRater(int requestId)
+        {
+            var rater = await ReAssignRaterToAssignment(requestId);
+            if (rater != null)
+            {
+                // Send mail to rater with confirm link
+                await mailService.SendEmailAsync(rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + requestId);
+            }
         }
         public async Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request)
         {
@@ -217,9 +236,9 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.GetRaterTrainingsAsync(raterId);
         }
-        public async Task<RequestAssignment> UpdateRequestAssignment()
+        public async Task<Raters> ReAssignRaterToAssignment(int requestId)
         {
-            return await _unitOfWork.Review.UpdateRequestAssignment();
+            return await _unitOfWork.Review.ReAssignRaterToAssignment(requestId);
         }
     }
 }

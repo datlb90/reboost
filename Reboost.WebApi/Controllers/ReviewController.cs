@@ -9,9 +9,9 @@ using Newtonsoft.Json.Linq;
 using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
-using Reboost.WebApi.Email;
 using Reboost.Service.Services;
 using Reboost.Shared;
+using Hangfire;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -91,8 +91,12 @@ namespace Reboost.WebApi.Controllers
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
-            var rater = await _raterService.GetByUserIdAsync(currentUser.Id);
-            return Ok(rater);
+            if (currentUser != null)
+            {
+                var rater = await _raterService.GetByUserIdAsync(currentUser.Id);
+                return Ok(rater);
+            }
+            return BadRequest(new { message = "User not found!" });
         }
         [Authorize]
         [HttpPost("saveAnnotation/{docId}/{reviewId}")]
@@ -259,7 +263,10 @@ namespace Reboost.WebApi.Controllers
             }
 
             //Add new request to request queue
-            await _service.AddRequestQueue(new RequestQueue { RequestId = rs.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
+            if(request.FeedbackType == ReviewRequestType.FREE)
+            {
+                await _service.AddRequestQueue(new RequestQueue { RequestId = rs.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
+            }
             return Ok(rs);
         }
         [Authorize]
@@ -297,7 +304,10 @@ namespace Reboost.WebApi.Controllers
             if (request == null)
             {
                 request = await _service.CreateRequestAsync(currentUser.Id, new ReviewRequests() { UserId = currentUser.Id, SubmissionId = id } );
-                await _service.AddRequestQueue(new RequestQueue { RequestId = request.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
+                if(request.FeedbackType == ReviewRequestType.FREE)
+                {
+                    await _service.AddRequestQueue(new RequestQueue { RequestId = request.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
+                }
             }
             var rs = await _service.GetOrCreateReviewByReviewRequestAsync(request.Id, currentUser.Id);
             return Ok(rs);
@@ -418,15 +428,25 @@ namespace Reboost.WebApi.Controllers
                 // Send mail to rater with confirm link
                 await _mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
 
+                // ReAssign to another rater if request not accepted after 10 minutes
+                BackgroundJob.Schedule(
+                    () => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10)
+                    );
+
                 return Ok(rs.Request);
             }
             else
             {
-                // Add request and queue then return the rater that applied to this request
+                // Add request then return the rater that applied to this request
                 var rs = await _service.CreateProRequestAsync(request);
 
-                // Send mail to rater with confirm link
-                await _mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
+                //// Send mail to rater with confirm link
+                //await _mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
+
+                //// ReAssign to another rater if request not accepted after 10 minutes
+                //BackgroundJob.Schedule(
+                //    () => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10)
+                //    );
 
                 return Ok(rs.Request);
             }
@@ -443,7 +463,7 @@ namespace Reboost.WebApi.Controllers
 
             var rs = await _service.GetOrCreateReviewByProRequestId(id, currentUser.Id);
 
-            if(rs.Error.Length > 0)
+            if(rs.Error?.Length > 0)
             {
                 return BadRequest(new { message = rs.Error });
             }
@@ -457,6 +477,17 @@ namespace Reboost.WebApi.Controllers
         {
             var rs = await _service.GetRaterTrainingsAsync(id);
             return Ok(rs);
+        }
+
+        public async Task<IActionResult> ReAssignRater(int requestId)
+        {
+            var rater = await _service.ReAssignRaterToAssignment(requestId);
+            if(rater!= null)
+            {
+                // Send mail to rater with confirm link
+                await _mailService.SendEmailAsync(rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + requestId);
+            }
+            return Ok();
         }
     }
 }

@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using Reboost.Service.Services;
-using Reboost.WebApi.Email;
 
 namespace Reboost.WebApi.Controllers
 {
