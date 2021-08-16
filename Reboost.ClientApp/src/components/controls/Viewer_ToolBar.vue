@@ -156,11 +156,16 @@
       <el-button type="success" size="mini" @click="approveTraining()">Approve</el-button>
       <el-button type="danger" size="mini" @click="openDialogRevise()">Revise</el-button>
     </div>
+    <div v-if="currentUser.role === UserRole.ADMIN && dispute && dispute.status===DISPUTESTATUS.WAITING" class="submit-button">
+      <el-button type="success" size="mini" @click="changeDisputeStatus(DISPUTESTATUS.ACCEPTED)">Accepted</el-button>
+      <el-button type="danger" size="mini" @click="changeDisputeStatus(DISPUTESTATUS.DENIED)">Denied</el-button>
+    </div>
     <!-- Submit button -->
     <div id="submit-container" class="submit-button" style="align-items: center;">
       <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
       <el-button v-if="isAuthor" :disabled="readOnly||isRate||isSubmit" type="primary" size="mini" @click="submitReview()">Submit</el-button>
       <el-button v-if="isRate && !isAuthor && !isRated" type="primary" size="mini" @click="rateReview()">Rate Review</el-button>
+      <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="danger" size="mini" @click="disputeReview()">Dispute</el-button>
     </div>
   </div>
 </template>
@@ -169,7 +174,7 @@
 import ColorPicker from './ColorPicker'
 import UI from '@/pdfjs/UI'
 import ReviewVue from '@/views/learner/Review.vue'
-import { UserRole, RATER_STATUS, RATER_TRAINING_STATUS } from '../../app.constant'
+import { UserRole, RATER_STATUS, RATER_TRAINING_STATUS, DISPUTESTATUS } from '../../app.constant'
 import reviewService from '../../services/review.service'
 export default ({
   name: 'ToolBar',
@@ -205,7 +210,10 @@ export default ({
       disableAnnotation: false,
       showChevronScroll: false,
       clickedAnnotation: null,
-      reviewData: null
+      reviewData: null,
+      dispute: null,
+      UserRole: UserRole,
+      DISPUTESTATUS: DISPUTESTATUS
     }
   },
   computed: {
@@ -550,6 +558,14 @@ export default ({
     },
     loadReviewData(rs) {
       this.reviewData = rs
+      if (this.reviewData.review.status === 'Completed') {
+        reviewService.getDisputeByReviewId(this.reviewData.review.id).then(rs => {
+          if (rs) {
+            this.dispute = rs
+            console.log('dispute data', rs)
+          }
+        })
+      }
     },
     rejectTraining(note) {
       reviewService.changeTrainingStatus(this.reviewData.review.id, { status: RATER_TRAINING_STATUS.REVISION_REQUEST, note: note }).then(rs => {
@@ -592,6 +608,61 @@ export default ({
     },
     openDialogRevise() {
       this.$emit('openDialogRevise')
+    },
+    disputeReview() {
+      this.$emit('dispute')
+    },
+    submitDispute(data) {
+      const postData = {
+        Name: data.name,
+        QuestionId: data.questionId,
+        Reasons: data.reasons,
+        ReviewId: data.reviewId,
+        ReviewUrl: data.reviewUrl
+      }
+
+      reviewService.createDisputes(postData).then(rs => {
+        if (rs) {
+          this.dispute = rs
+          this.$notify.success({
+            title: 'Dispute created.',
+            message: 'Dispute Created Successfully.',
+            type: 'success',
+            duration: 2000
+          })
+          this.$emit('closeDisputeDialog')
+        } else {
+          this.$notify.error({
+            title: 'Error',
+            message: 'Dispute did not created!',
+            type: 'error',
+            duration: 2000
+          })
+        }
+      })
+    },
+    changeDisputeStatus(status) {
+      if (this.dispute) {
+        reviewService.changeDisputeStatus(this.dispute.id, status).then(rs => {
+          if (rs) {
+            if (status === DISPUTESTATUS.ACCEPTED) {
+              this.$notify.success({
+                title: 'Dispute accepted.',
+                message: 'Dispute accepted.',
+                type: 'success',
+                duration: 2000
+              })
+            } else {
+              this.$notify.error({
+                title: 'Dispute denied.',
+                message: 'Dispute denied',
+                type: 'error',
+                duration: 2000
+              })
+            }
+          }
+        })
+      }
     }
   }
 })

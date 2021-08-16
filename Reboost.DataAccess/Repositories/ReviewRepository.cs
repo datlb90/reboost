@@ -51,6 +51,10 @@ namespace Reboost.DataAccess.Repositories
         Task<int> IsProRequestCheckAsync(int reviewId);
         Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId);
         Task<Raters> ReAssignRaterToAssignment(int requestId);
+        Task<Disputes> CreateDisputeAsync(Disputes disputes);
+        Task<List<Disputes>> GetAllDisputesAsync();
+        Task<Disputes> GetDisputeByReviewIdAsync(int id);
+        Task<Disputes> ChangeDisputeStatusAsync(int id, string status);
     }
 
     public class ReviewRepository : IReviewRepository
@@ -718,20 +722,70 @@ namespace Reboost.DataAccess.Repositories
             var selectedRater = (from r in db.Raters
                                  join a in (from a in db.RequestAssignments where a.Status == RequestAssigmentStatus.ASSIGNED select a) on r.Id equals a.RaterId into raterFull
                                  from a in raterFull.DefaultIfEmpty()
+                                 where r.Status == RaterStatus.APPROVED
                                  orderby r.AppliedDate
                                  group r by r.Id into g
                                  select new
                                  {
                                      RaterId = g.Key,
                                      AssignedRequests = g.Count()
-                                 }).OrderBy(r => r.AssignedRequests).ToList().FirstOrDefault();
+                                 }).OrderBy(r => r.AssignedRequests).ToList();
 
-            if (selectedRater == null)
+            int key = 0;
+            foreach(var r in selectedRater)
+            {
+                var rater =  (from ra in db.Raters
+                                   where ra.Id == r.RaterId
+                                   select ra).FirstOrDefault();
+
+                if (rater == null)
+                    continue;
+
+                var reviews =  (from re in db.Reviews 
+                                     where re.ReviewerId == rater.UserId 
+                                     orderby re.Id descending
+                                     select re).Take(5).ToList();
+
+                int totalDispute = 0;
+
+                foreach (var review in reviews)
+                {
+
+                    var disputeExist =  (from d in db.Disputes
+                                              where d.ReviewId == review.Id
+                                              select d).FirstOrDefault();
+
+                    var rate =  (from ra in db.ReviewRatings
+                                      where ra.ReviewId == review.Id && ra.Rate < 2
+                                      select ra).FirstOrDefault(); 
+
+                    if (disputeExist != null || rate != null)
+                    {
+                        totalDispute++;
+                    }
+                }
+
+                var pendingReviews = (from rv in db.Reviews
+                             join rq in db.ReviewRequests on rv.RequestId equals rq.Id
+                             join rt in db.ReviewRatings on rv.Id equals rt.ReviewId into completedReviews
+                             from rated in completedReviews.DefaultIfEmpty()
+                             where rv.RevieweeId == rater.UserId && rq.Status == ReviewRequestStatus.COMPLETED && rated == null
+                             select rv).ToList();
+
+                if (totalDispute < 3 && pendingReviews.Count()==0)
+                {
+                    key = selectedRater.IndexOf(r);
+                    break;
+                }
+            }
+
+
+            if (selectedRater[key] == null)
                 return null;
 
             var raterUser = (from r in db.Raters
                              join u in db.Users on r.UserId equals u.Id
-                             where r.Id == selectedRater.RaterId
+                             where r.Id == selectedRater[key].RaterId
                              select new { Rater = r, User = u }).FirstOrDefault();
 
             if (raterUser == null)
@@ -843,6 +897,33 @@ namespace Reboost.DataAccess.Repositories
                 return rater;
             }
             return null;
+        }
+
+        public async Task<Disputes> CreateDisputeAsync(Disputes disputes)
+        {
+            await db.Disputes.AddAsync(disputes);
+            await db.SaveChangesAsync();
+            return disputes;
+        }
+
+        public async Task<List<Disputes>> GetAllDisputesAsync()
+        {
+            return await db.Disputes.Include("Review").ToListAsync();
+        }
+
+        public async Task<Disputes> GetDisputeByReviewIdAsync(int id)
+        {
+            var result = await db.Disputes.Include("Review").Where(d => d.ReviewId == id).FirstOrDefaultAsync();
+            return result;
+        }
+
+        public async Task<Disputes> ChangeDisputeStatusAsync(int id, string status)
+        {
+            var dispute = await db.Disputes.Include("Review").Where(d => d.Id == id).FirstOrDefaultAsync();
+            dispute.Status = status == DisputeStatus.ACCEPTED ? DisputeStatus.ACCEPTED : DisputeStatus.DENIED;
+            await db.SaveChangesAsync();
+
+            return dispute;
         }
     }
 }

@@ -96,6 +96,18 @@ const reviewService = {
   },
   getRaterTrainings(id) {
     return http.get(`/review/training/${id}`).then(rs => rs.data)
+  },
+  getAllDisputes() {
+    return http.get('/review/dispute').then(rs => rs.data)
+  },
+  createDisputes(data) {
+    return http.post('/review/dispute', data).then(rs => rs.data)
+  },
+  getDisputeByReviewId(id) {
+    return http.get(`/review/dispute/${id}`).then(rs => rs.data)
+  },
+  changeDisputeStatus(id, status) {
+    return http.get(`/review/dispute/${id}/${status}`).then(rs => rs.data)
   }
 }
 

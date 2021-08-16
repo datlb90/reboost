@@ -70,6 +70,7 @@ import Subscribe from '../views/rater/Subscribe.vue'
 import StartRating from '../views/rater/StartRating.vue'
 import Payout from '../views/rater/Payout.vue'
 import Reviews from '../views/learner/Reviews.vue'
+import Disputes from '../views/learner/Disputes.vue'
 import PaymentInfo from '../views/rater/PaymentInfo.vue'
 import Submissions from '../views/learner/Submissions.vue'
 // import PageNotFound from '../views/PageNotFound.vue'
@@ -245,6 +246,16 @@ const router = new VueRouter({
       path: '/reviews',
       name: PageName.REVIEWS,
       component: Reviews,
+      meta: {
+        plainLayout: false,
+        landingPage: false,
+        loginRequired: true
+      }
+    },
+    {
+      path: '/admin/disputes',
+      name: PageName.DISPUTES,
+      component: Disputes,
       meta: {
         plainLayout: false,
         landingPage: false,

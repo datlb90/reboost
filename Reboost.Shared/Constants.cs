@@ -58,4 +58,10 @@ namespace Reboost.Shared
         public const string ASSIGNED = "Assigned";
         public const string ACCEPTED = "Accepted";
     }
+    public static class DisputeStatus
+    {
+        public const string WAITING = "Waiting";
+        public const string ACCEPTED = "Accepted";
+        public const string DENIED = "Denied";
+    }
 }

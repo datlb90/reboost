@@ -204,7 +204,7 @@ export default {
         this.$router.push(`PracticeWriting/${e.questionId}/${e.id}`)
       } else if (action == 'View Review') {
         reviewService.getOrCreateReviewBySubmissionId(e.id).then(rs => {
-          this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}/rate`)
+          this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}`)
         })
       } else if (action == 'Request Pro Review') {
         // this.checkoutVisible = true

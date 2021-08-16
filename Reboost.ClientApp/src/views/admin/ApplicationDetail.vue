@@ -2,7 +2,7 @@
   <div style="margin-top:25px;">
     <el-row class="row-flex">
       <el-col :span="15" class="col-border">
-        <el-steps :active="formRegister.status === RATER_STATUS.APPLIED ? 1 : 2" align-center>
+        <el-steps :active="formRegister.status === RATER_STATUS.APPLIED ? 1 : formRegister.status === RATER_STATUS.APPROVED ? 3 : 2" align-center>
           <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
           <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
           <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning" />

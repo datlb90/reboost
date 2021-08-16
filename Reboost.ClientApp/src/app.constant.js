@@ -57,6 +57,7 @@ export const PageName = {
   SELECT_YOUR_TEST: 'SelectYourTest',
   REVIEW: 'Review',
   REVIEWS: 'Reviews',
+  DISPUTES: 'Disputes',
   SUBMISSIONS: 'Submissions',
   NOT_FOUND: 'PageNotFound'
 }
@@ -81,4 +82,9 @@ export const RATER_TRAINING_STATUS = {
   COMPLETED: 'Completed',
   REVISION_REQUEST: 'Revision Requested',
   REVISION_COMPLETED: 'Revision Completed'
+}
+export const DISPUTESTATUS = {
+  WAITING: 'Waiting',
+  ACCEPTED: 'Accepted',
+  DENIED: 'Denied'
 }

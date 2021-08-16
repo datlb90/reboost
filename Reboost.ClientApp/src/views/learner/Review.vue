@@ -39,6 +39,8 @@
           @rateBtnClick="rateReview"
           @openDialogRevise="reviseDialogVisible = true"
           @closeDialogRevise="reviseDialogVisible = false"
+          @dispute="openDisputeDialog"
+          @closeDisputeDialog="disputeDialogVisible = false"
         />
         <div id="viewerContainer">
           <div
@@ -98,10 +100,10 @@
               {{ commentUserName() }}
             </div>
           </div>
-          <el-button v-if="(currentUser.role !== 'Admin' || isView) && comment.isSaved == true" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
+          <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
             <i class="far fa-trash-alt" />
           </el-button>
-          <el-button v-if="(currentUser.role !== 'Admin' || isView) && comment.isSaved == true" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
+          <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
             <i class="far fa-edit" />
           </el-button>
         </div>
@@ -170,6 +172,7 @@
       </ul>
     </div>
     <!-- /Inline color picker -->
+    <!-- revise dialog -->
     <el-dialog
       title="Revision Request"
       :visible.sync="reviseDialogVisible"
@@ -189,6 +192,43 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="reviseDialogVisible = false">Cancel</el-button>
         <el-button type="primary" @click="onSubmitRevise">Submit</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- dispute dialog -->
+    <el-dialog
+      title="Dispute Review"
+      :visible.sync="disputeDialogVisible"
+      width="30%"
+      center
+    >
+      <el-form ref="formDispute" :model="disputeForm">
+        <el-form-item prop="name" :rules="[{ required: true }]">
+          <el-input
+            v-model="disputeForm.name"
+            :disabled="true"
+            type="text"
+          />
+        </el-form-item>
+        <el-form-item prop="questionId" :rules="[{ required: true }]">
+          <el-input
+            v-model="disputeForm.questionId"
+            :disabled="true"
+            type="text"
+          />
+        </el-form-item>
+        <el-form-item prop="reasons" :rules="[{ required: true, message: 'Reasons is required.', trigger: 'blur' }]">
+          <el-input
+            v-model="disputeForm.reasons"
+            type="textarea"
+            :rows="4"
+            placeholder="Please input reasons for dispute"
+          />
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="disputeDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submitDispute">Submit</el-button>
       </span>
     </el-dialog>
   </div>
@@ -230,11 +270,11 @@ import { addEventListener, removeEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
 import docService from '@/services/document.service.js'
 import reviewService from '@/services/review.service.js'
-import { enableEdit } from '@/pdfjs/UI/edit'
+import { enableEdit, disableEdit } from '@/pdfjs/UI/edit'
 import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
-import { RATER_STATUS, REVIEW_REQUEST_STATUS, UserRole } from '../../app.constant'
+import { RATER_STATUS, REVIEW_REQUEST_STATUS, UserRole, SubmissionStatus } from '../../app.constant'
 import moment from 'moment'
 // import { highlightText } from '../../pdfjs/UI/highlight-text.js'
 
@@ -252,6 +292,13 @@ export default {
       reviseDialogVisible: false,
       form: {
         noteRevision: null
+      },
+      disputeForm: {
+        name: null,
+        questionId: null,
+        reviewUrl: null,
+        reviewId: null,
+        reasons: null
       },
       rubricCriteria: [],
       criteriaFeedback: {},
@@ -319,7 +366,8 @@ export default {
       isReviewAuth: false,
       isRated: false,
       statusRater: '',
-      isSubmit: false
+      isSubmit: false,
+      disputeDialogVisible: false
     }
   },
   computed: {
@@ -362,8 +410,8 @@ export default {
     this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId }).then(async() => {
       PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
       await this.render()
-      this.$refs.toolBar.handleScale('fitPage')
-      this.$refs.toolBar.insertExpandMenu()
+      this.$refs.toolBar?.handleScale('fitPage')
+      this.$refs.toolBar?.insertExpandMenu()
       this.handleCommentPositionsRestore()
       this.hideDeleteToolBar()
       // this.ToolbarButtons()
@@ -380,8 +428,9 @@ export default {
 
     if (this.currentUser.role === 'Admin' || this.isView || this.isRate) {
       document.getElementById('viewerContainer').style.userSelect = 'none'
-      this.$refs.toolBar.disableAnnotationCreate()
+      this.$refs.toolBar?.disableAnnotationCreate()
       this.disableToolbarSubmit()
+      disableEdit()
     } else {
       enableEdit()
     }
@@ -587,7 +636,7 @@ export default {
         }
         await PDFJSAnnotate.getStoreAdapter().getAnnotation(that.documentId, target.getAttribute('data-pdf-annotate-id')).then(r => {
           that.annotation = r
-          that.$refs.toolBar.handleAnnotationClicked(r)
+          that.$refs.toolBar?.handleAnnotationClicked(r)
         })
         that.handleCommentAnnotationClick(target)
       }
@@ -655,7 +704,7 @@ export default {
         }
         await PDFJSAnnotate.getStoreAdapter().getAnnotation(that.documentId, target.getAttribute('data-pdf-annotate-id')).then(r => {
           that.annotation = r
-          that.$refs.toolBar.handleAnnotationClicked(r)
+          that.$refs.toolBar?.handleAnnotationClicked(r)
         })
         that.handleCommentAnnotationClick(target)
       }
@@ -1221,7 +1270,7 @@ export default {
         await this.updateTypeOfRect('comment-area', status)
       }
       if (this.annotation.type == 'point') {
-        this.$refs.toolBar.handleAnnotationClicked(null)
+        this.$refs.toolBar?.handleAnnotationClicked(null)
       }
       this.disableToolbarButtons()
       if (status) {
@@ -1996,7 +2045,7 @@ export default {
           await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, uuid, newComment.annotation, undefined)
         }
         if (this.annotation.type == 'point') {
-          this.$refs.toolBar.handleAnnotationClicked(null)
+          this.$refs.toolBar?.handleAnnotationClicked(null)
         }
         this.disableToolbarButtons()
         reviewService.addInTextComment(this.documentId, 1, newCmt, anno).then(async rs => {
@@ -2073,7 +2122,7 @@ export default {
         reviewService.editComment(editComment).then(async rs => {
           if (rs) {
           // this.addToUndoList(rs.data, 'edit')
-            this.$refs.toolBar.setStatusText()
+            this.$refs.toolBar?.setStatusText()
           }
         })
         this.isEditing = null
@@ -2109,7 +2158,7 @@ export default {
       }
     },
     hideTextToolGroup() {
-      this.$refs.textToolGroup.HideTextToolGroup()
+      this.$refs.textToolGroup?.HideTextToolGroup()
     },
     getHighlightByCommentId(commentId) {
       return document.querySelector("[data-pdf-annotate-id='" + commentId + "']")
@@ -2140,7 +2189,7 @@ export default {
       return false
     },
     async submitReview() {
-      this.rubricCriteria = this.$refs.tabRubric.getRubricData()
+      this.rubricCriteria = this.$refs.tabRubric?.getRubricData()
       if (!this.rubricCriteria) {
         this.$notify.error({
           title: 'Field Required',
@@ -2235,10 +2284,10 @@ export default {
       }
     },
     calculateStylePaddingScroll() {
-      this.$refs.tabQuestion.calculateStylePaddingScroll()
+      this.$refs.tabQuestion?.calculateStylePaddingScroll()
     },
     setStatusText() {
-      this.$refs.toolBar.setStatusText()
+      this.$refs.toolBar?.setStatusText()
     },
 
     async hideQuestion(e) {
@@ -2246,7 +2295,7 @@ export default {
       await this.handleCommentPositionsRestore()
       this.calculateContainerHeight()
       this.hideDeleteToolBar()
-      this.$refs.toolBar.insertExpandMenu()
+      this.$refs.toolBar?.insertExpandMenu()
     },
     async documentWidthCal() {
       var docWidth = document.getElementById('pageContainer1').offsetWidth
@@ -2281,7 +2330,7 @@ export default {
       this.hideTextToolBar()
       this.hideTextToolGroup()
 
-      this.$refs.toolBar.insertExpandMenu()
+      this.$refs.toolBar?.insertExpandMenu()
     },
 
     async reRenderPages() {
@@ -2292,7 +2341,7 @@ export default {
     },
     expandColorPickerToggle(e) {
       this.expandColorPicker = e
-      this.$refs.toolBar.expandColor(e)
+      this.$refs.toolBar?.expandColor(e)
     },
     async undoAnnotation() {
       this.isUndo = true
@@ -2507,6 +2556,18 @@ export default {
         this.deleteCommentCard(e.uuid)
         this.removeElementById(e.annotation.uuid)
       }).catch(() => {
+        if (e.class === 'Comment') {
+          PDFJSAnnotate.getStoreAdapter().addAnnotation(e.annotation.documentId, e.annotation.page, e.annotation, true)
+            .then((r) => {
+              appendChild(this.svg, r)
+              PDFJSAnnotate.getStoreAdapter().addComment(
+                e.annotation.documentId,
+                e.annotation,
+                e.content,
+                e.text,
+                e.topPosition)
+            })
+        }
       })
     },
     keyupHandler(event) {
@@ -2622,14 +2683,14 @@ export default {
       await PDFJSAnnotate.getStoreAdapter().updateComments(this.documentId, cmts)
     },
     updateRedoList() {
-      this.$refs.toolBar.updateRedoList(this.redoHistory)
+      this.$refs.toolBar?.updateRedoList(this.redoHistory)
     },
     updateUndoList() {
-      this.$refs.toolBar.updateToolbarUndoList(this.undoHistory)
+      this.$refs.toolBar?.updateToolbarUndoList(this.undoHistory)
     },
     disableToolbarSubmit() {
-      this.$refs.toolBar.disableSubmit()
-      this.$refs.tabRubric.disableRubric()
+      this.$refs.toolBar?.disableSubmit()
+      this.$refs.tabRubric?.disableRubric()
     },
     isInShowMoreList(e) {
       if (this.showMoreList.filter(r => { return r.id == e }).length > 0 && this.isEditing != e) {
@@ -2700,7 +2761,7 @@ export default {
     },
     disableToolbarButtons() {
       this.activeButton = 'cursor'
-      this.$refs.toolBar.disableButtons()
+      this.$refs.toolBar?.disableButtons()
     },
     async loadRate() {
       await reviewService.getById(this.$route.params.reviewId).then(async rs => {
@@ -2708,11 +2769,11 @@ export default {
           if (rs.review.status === REVIEW_REQUEST_STATUS.COMPLETED) {
             this.isView = true
           }
-          this.$refs.toolBar.loadReviewData(rs)
+          this.$refs.toolBar?.loadReviewData(rs)
         }
 
-        if (rs.review.status.includes(REVIEW_REQUEST_STATUS.COMPLETED)) {
-          this.isSubmit = true
+        if (rs.submission?.status.trim() === SubmissionStatus.REVIEWED) {
+          this.selectedTab = 'rubric'
         }
 
         if (rs.review && this.currentUser.id === rs.review.reviewerId) {
@@ -2726,7 +2787,7 @@ export default {
             if (r) {
               this.isRated = true
               this.selectedTab = 'rate'
-              this.$refs.tabRate.updateData({ value: r.rate, comment: r.comment, rated: true })
+              this.$refs.tabRate?.updateData({ value: r.rate, comment: r.comment, rated: true })
               this.isView = true
             } else if (this.isReviewAuth) {
               // this.$refs.tabRate.updateData({ value: 0, comment: 'Please wait for reviewee!', rated: true })
@@ -2744,7 +2805,7 @@ export default {
     onSubmitRevise() {
       this.$refs['formNote'].validate((valid) => {
         if (valid) {
-          this.$refs.toolBar.rejectTraining(this.form.noteRevision)
+          this.$refs.toolBar?.rejectTraining(this.form.noteRevision)
         }
       })
     },
@@ -2753,6 +2814,20 @@ export default {
         return this.loadedAnnotation.reviewer.firstName + this.loadedAnnotation.reviewer.lastName
       }
       return this.currentUser.firstName + this.currentUser.lastName
+    },
+    openDisputeDialog() {
+      this.disputeDialogVisible = true
+      this.disputeForm.questionId = this.questionId
+      this.disputeForm.name = `Question:${this.questionId}, Document: ${this.documentId}, Review:${this.reviewId}`
+      this.disputeForm.reviewUrl = `/review/${this.questionId}/${this.documentId}/${this.reviewId}`
+      this.disputeForm.reviewId = this.reviewId
+    },
+    submitDispute() {
+      this.$refs['formDispute'].validate((valid) => {
+        if (valid) {
+          this.$refs.toolBar?.submitDispute(this.disputeForm)
+        }
+      })
     }
     // End migration
   }
