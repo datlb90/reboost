@@ -43,6 +43,7 @@ namespace Reboost.DataAccess
         public virtual DbSet<Annotations> Annotations { get; set; }
         public virtual DbSet<UserStripeAccounts> UserStripeAccounts { get; set; }
         public virtual DbSet<RequestAssignment> RequestAssignments { get; set; }
+        public virtual DbSet<Disputes> Disputes { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
             : base(options)

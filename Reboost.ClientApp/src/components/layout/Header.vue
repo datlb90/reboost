@@ -63,7 +63,10 @@
             <ul v-if="role == 'Admin'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
 
               <li class="nav-item">
-                <router-link to="/admin/raters" class="nav-link active">Raters</router-link>
+                <router-link to="/admin/raters" class="nav-link">Raters</router-link>
+              </li>
+              <li class="nav-item">
+                <router-link to="/admin/disputes" class="nav-link">Disputes</router-link>
               </li>
               <!-- <li class="nav-item">
                 <router-link to="/admin/rubric" class="nav-link">Rubric</router-link>

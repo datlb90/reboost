@@ -52,6 +52,10 @@ namespace Reboost.Service.Services
         Task<int> IsProRequestCheckAsync(int reviewId);
         Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId);
         Task<Raters> ReAssignRaterToAssignment(int requestId);
+        Task<Disputes> CreateDisputeAsync(Disputes disputes);
+        Task<List<Disputes>> GetAllDisputesAsync();
+        Task<Disputes> GetDisputeByReviewIdAsync(int id);
+        Task<Disputes> ChangeDisputeStatusAsync(int id, string status);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -222,7 +226,16 @@ namespace Reboost.Service.Services
         }
         public async Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request)
         {
-            return await _unitOfWork.Review.ReRequestProRequestAsync(request);
+            var rs = await _unitOfWork.Review.ReRequestProRequestAsync(request);
+            // Send mail to rater with confirm link
+            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
+
+            // ReAssign to another rater if request not accepted after 10 minutes
+            BackgroundJob.Schedule(
+                () => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10)
+                );
+
+            return rs;
         }
         public async Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId)
         {
@@ -239,6 +252,37 @@ namespace Reboost.Service.Services
         public async Task<Raters> ReAssignRaterToAssignment(int requestId)
         {
             return await _unitOfWork.Review.ReAssignRaterToAssignment(requestId);
+        }
+        public async Task<Disputes> CreateDisputeAsync(Disputes disputes)
+        {
+            return await _unitOfWork.Review.CreateDisputeAsync(disputes);
+        }
+        public async Task<List<Disputes>> GetAllDisputesAsync()
+        {
+            return await _unitOfWork.Review.GetAllDisputesAsync();
+        }
+        public async Task<Disputes> GetDisputeByReviewIdAsync(int id)
+        {
+            return await _unitOfWork.Review.GetDisputeByReviewIdAsync(id);
+        }
+
+        public async Task<Disputes> ChangeDisputeStatusAsync(int id, string status)
+        {
+            var rs = await _unitOfWork.Review.ChangeDisputeStatusAsync(id, status);
+            var reviewRequest = await GetOrCreateReviewByProRequestId(rs.Review.RequestId, rs.UserId);
+            if (reviewRequest.ReviewRequest != null)
+            {
+                if(status == DisputeStatus.ACCEPTED)
+                {
+                    await ReRequestProRequestAsync(reviewRequest.ReviewRequest);
+                }
+            }
+            else
+            {
+                await _unitOfWork.Review.ChangeDisputeStatusAsync(id, DisputeStatus.WAITING);
+            }
+
+            return rs;
         }
     }
 }

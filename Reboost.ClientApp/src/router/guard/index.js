@@ -114,6 +114,7 @@ export default async(router) => {
       if (currentUser.role === UserRole.RATER) {
         reviewService.getLinkToReviewByProRequestId(to.params.id).then(rs => {
           next({ path: `/review/${rs.submission.questionId}/${rs.submission.docId}/${rs.review.id}` })
+          return
         })
       } else {
         next({ name: PageName.NOT_FOUND })

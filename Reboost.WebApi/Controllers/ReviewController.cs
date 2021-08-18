@@ -425,13 +425,13 @@ namespace Reboost.WebApi.Controllers
                 // Get rater and update requested time of queue
                 var rs = await _service.ReRequestProRequestAsync(exist);
 
-                // Send mail to rater with confirm link
-                await _mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
+                //// Send mail to rater with confirm link
+                //await _mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
 
-                // ReAssign to another rater if request not accepted after 10 minutes
-                BackgroundJob.Schedule(
-                    () => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10)
-                    );
+                //// ReAssign to another rater if request not accepted after 10 minutes
+                //BackgroundJob.Schedule(
+                //    () => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10)
+                //    );
 
                 return Ok(rs.Request);
             }
@@ -476,6 +476,46 @@ namespace Reboost.WebApi.Controllers
         public async Task<IActionResult> GetRaterTrainingAsync(int id)
         {
             var rs = await _service.GetRaterTrainingsAsync(id);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpPost("dispute")]
+        public async Task<IActionResult> CreateDisputeAsync([FromBody] Disputes dispute)
+        {
+            // Get current user info
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            dispute.UserId = currentUser.Id;
+            dispute.Status = DisputeStatus.WAITING;
+
+            var rs = await _service.CreateDisputeAsync(dispute);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("dispute")]
+        public async Task<IActionResult> GetAllDisputesAsync()
+        {
+            var rs = await _service.GetAllDisputesAsync();
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("dispute/{id}")]
+        public async Task<IActionResult> GetByReviewIdAsync(int id)
+        {
+            var rs = await _service.GetDisputeByReviewIdAsync(id);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("dispute/{id}/{status}")]
+        public async Task<IActionResult> DisputeAcceptedAsync(int id, string status)
+        {
+            var rs = await _service.ChangeDisputeStatusAsync(id, status);
             return Ok(rs);
         }
 

@@ -2,7 +2,7 @@
   <div style="margin-top:25px;" :style="{visibility: loadCompleted?'visible':'hidden'}">
     <el-row class="row-flex">
       <el-col :span="15" class="col-border">
-        <el-steps :active="status === RATER_STATUS.APPLIED ? 1 : 2" align-center>
+        <el-steps :active="activeStep" align-center>
           <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
           <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
           <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning" />
@@ -350,6 +350,19 @@ export default {
     },
     currentUser() {
       return this.$store.getters['auth/getUser']
+    },
+    activeStep() {
+      switch (this.status) {
+        case RATER_STATUS.APPLIED:
+        case RATER_STATUS.DOCUMENT_REQUESTED:
+        case RATER_STATUS.DOCUMENT_SUBMITTED:
+          return 1
+        case RATER_STATUS.APPROVED:
+          return 3
+
+        default:
+          return 2
+      }
     }
   },
   mounted() {
@@ -383,13 +396,12 @@ export default {
       raterService.getById(id).then(rs => {
         this.formRegister = mapUtil.map(rs, this.formRegister)
         this.loadCompleted = true
-        console.log('result load detail', rs)
+
         rs.applyTo.forEach(e => {
           this.applyToList.push(e)
         })
 
         this.status = rs.status
-        console.log('status', this.status)
 
         this.note = rs.note
 

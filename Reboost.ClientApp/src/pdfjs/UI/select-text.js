@@ -30,8 +30,8 @@ export function enableTextSelection(parent) {
             that.hideColorPickerTool()
           } else {
             if (!isEnabling()) {
-              that.$refs.toolBar.showTextTool()
-              that.$refs.textToolGroup.showTextToolGroup(rects, e)
+              that.$refs.toolBar?.showTextTool()
+              that.$refs.textToolGroup?.showTextToolGroup(rects, e)
 
               that.rects = rects
               that.svg = findSVGAtPoint(rects[0].left, rects[0].top)
@@ -44,12 +44,12 @@ export function enableTextSelection(parent) {
         } else {
           that.hideTextToolBar()
           that.hideTextToolGroup()
-          that.$refs.toolBar.handleAnnotationClicked(null)
+          that.$refs.toolBar?.handleAnnotationClicked(null)
         }
       } else {
         that.hideTextToolBar()
         that.hideTextToolGroup()
-        that.$refs.toolBar.handleAnnotationClicked(null)
+        that.$refs.toolBar?.handleAnnotationClicked(null)
       }
     }
   }

@@ -118,11 +118,15 @@ export default ({
       })
     },
     getLocaleStorageData() {
-      var retrievedComment = localStorage.getItem('reviewComment')
-      var retrievedScore = localStorage.getItem('reviewScore')
+      var retrievedComment = localStorage.getItem('reviewRubricComment')
+      var retrievedScore = localStorage.getItem('reviewRubricScore')
 
       retrievedComment = JSON.parse(retrievedComment)
       retrievedScore = JSON.parse(retrievedScore)
+
+      console.log('comment', retrievedComment)
+      console.log('score', retrievedScore)
+
       if (retrievedComment) {
         retrievedComment.forEach(rc => {
           this.rubricCriteria.map(criteria => {
@@ -133,7 +137,7 @@ export default ({
           )
         })
       }
-      retrievedScore.forEach(rc => {
+      retrievedScore?.forEach(rc => {
         this.rubricCriteria.map(criteria => {
           if (criteria.id == rc.id && rc.documentId == this.documentId && rc.reviewid == this.reviewid) {
             criteria.mark = rc.content
@@ -146,14 +150,15 @@ export default ({
         clearTimeout(this.rubicCommentDelay)
       }
       this.rubicCommentDelay = setTimeout(() => {
-        var retrievedObject = localStorage.getItem('reviewScore')
+        var retrievedObject = localStorage.getItem('reviewRubricScore')
         if (!retrievedObject) {
           var t = []
-          localStorage.setItem('reviewScore', JSON.stringify(t))
+          localStorage.setItem('reviewRubricScore', JSON.stringify(t))
+          retrievedObject = []
         }
 
         retrievedObject = JSON.parse(retrievedObject)
-        var temp = retrievedObject.filter(r => r.id == id && r.documentId == this.documentId && r.reviewid == this.reviewid)
+        var temp = retrievedObject?.filter(r => r.id == id && r.documentId == this.documentId && r.reviewid == this.reviewid)
         if (temp.length > 0) {
           retrievedObject.map(r => {
             if (r.id == id) {
@@ -167,20 +172,21 @@ export default ({
           var cmt = { id: id, content: mileStone, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
           retrievedObject.push(cmt)
         }
-        localStorage.setItem('reviewScore', JSON.stringify(retrievedObject))
+        localStorage.setItem('reviewRubricScore', JSON.stringify(retrievedObject))
 
         this.setStatusText('Saved')
-      }, 200)
+      }, 20)
     },
     reviewCommentChange(e, criteriaId) {
       if (this.rubicCommentDelay) {
         clearTimeout(this.rubicCommentDelay)
       }
       this.rubicCommentDelay = setTimeout(() => {
-        var retrievedObject = localStorage.getItem('reviewComment')
+        var retrievedObject = localStorage.getItem('reviewRubricComment')
         if (!retrievedObject) {
           var t = []
-          localStorage.setItem('reviewComment', JSON.stringify(t))
+          localStorage.setItem('reviewRubricComment', JSON.stringify(t))
+          retrievedObject = []
         }
 
         retrievedObject = JSON.parse(retrievedObject)
@@ -198,10 +204,10 @@ export default ({
           var cmt = { id: criteriaId, content: e, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
           retrievedObject.push(cmt)
         }
-        localStorage.setItem('reviewComment', JSON.stringify(retrievedObject))
+        localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedObject))
 
         this.setStatusText('Saved')
-      }, 50)
+      }, 20)
     },
     setStatusText(label) {
       this.$emit('setStatusText')
