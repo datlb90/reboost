@@ -30,7 +30,9 @@
               <li class="nav-item">
                 <router-link to="/reviews" class="nav-link">Reviews</router-link>
               </li>
-
+              <li class="nav-item">
+                <router-link to="/disputes" class="nav-link">Disputes</router-link>
+              </li>
               <!-- <li class="nav-item">
                 <router-link to="/revision" class="nav-link">Revision</router-link>
               </li>
@@ -68,6 +70,9 @@
               <li class="nav-item">
                 <router-link to="/admin/disputes" class="nav-link">Disputes</router-link>
               </li>
+              <li class="nav-item">
+                <router-link to="/admin/questions" class="nav-link">Questions</router-link>
+              </li>
               <!-- <li class="nav-item">
                 <router-link to="/admin/rubric" class="nav-link">Rubric</router-link>
               </li>
@@ -103,12 +108,15 @@
                 <el-dropdown-item>Action 3</el-dropdown-item>
                 <el-dropdown-item disabled>Action 4</el-dropdown-item> -->
                 <el-dropdown-item command="selectTest" divided>Selected test {{ testsToText() }}</el-dropdown-item>
+                <el-dropdown-item command="addQuestion">Contribute a question</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
             <!-- <a href="#" class="btn btn-primary">Login</a> -->
           </div>
         </nav>
+
+        <add-edit-question ref="questionDialog" />
       </div>
     </div>
   </header>
@@ -119,9 +127,13 @@
 import raterService from '../../services/rater.service'
 import reviewService from '../../services/review.service'
 import { RATER_STATUS } from '../../app.constant'
+import AddEditQuestion from '../../components/controls/AddEditQuestion.vue'
 
 export default {
   name: 'HeaderTwo',
+  components: {
+    'add-edit-question': AddEditQuestion
+  },
   data() {
     return {
       role: this.$store.state.auth.user.role,
@@ -182,6 +194,8 @@ export default {
         })
       } else if (action === 'selectTest') {
         this.$router.push('/SelectYourTest')
+      } else if (action === 'addQuestion') {
+        this.openAddQuestionDialog()
       }
     },
     toFix(number) {
@@ -206,6 +220,9 @@ export default {
           }
         })
       }
+    },
+    openAddQuestionDialog() {
+      this.$refs.questionDialog?.openDialog()
     }
   }
 }

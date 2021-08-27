@@ -220,7 +220,6 @@ export default {
       return row[property] === value
     },
     handleSizeChange(val) {
-      console.log(`${val} items per page`)
       this.pageSize = val
       this.loadTable()
     },

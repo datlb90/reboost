@@ -388,23 +388,6 @@ namespace Reboost.WebApi.Controllers
             return Ok(rs);
         }
 
-        [Authorize]
-        [HttpPost("submitRate")]
-        public async Task<IActionResult> SubmitReviewRating([FromBody] ReviewRatings data)
-        {
-            var currentUserClaim = HttpContext.User;
-            var email = currentUserClaim.FindFirst("Email");
-            var currentUser = await _userService.GetByEmailAsync(email.Value);
-
-            var rs = await _service.SubmitReviewRatingAsync(data, currentUser.Id);
-
-            if(rs == null)
-            {
-                return Ok(await Task.FromResult(new { code = 400, messages = "Review not found" }));
-            }
-
-            return Ok(rs);
-        }
 
         [Authorize]
         [HttpPost("request/pro")]
@@ -433,6 +416,11 @@ namespace Reboost.WebApi.Controllers
                 //    () => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10)
                 //    );
 
+                if (rs == null)
+                {
+                    return BadRequest(new { message = "No rater available!" });
+                }
+
                 return Ok(rs.Request);
             }
             else
@@ -447,6 +435,11 @@ namespace Reboost.WebApi.Controllers
                 //BackgroundJob.Schedule(
                 //    () => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10)
                 //    );
+
+                if (rs == null)
+                {
+                    return BadRequest(new { message = "No rater available!" });
+                }
 
                 return Ok(rs.Request);
             }
@@ -489,7 +482,7 @@ namespace Reboost.WebApi.Controllers
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
             dispute.UserId = currentUser.Id;
-            dispute.Status = DisputeStatus.WAITING;
+            dispute.Status = DisputeStatus.OPEN;
 
             var rs = await _service.CreateDisputeAsync(dispute);
             return Ok(rs);
@@ -512,10 +505,24 @@ namespace Reboost.WebApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("dispute/{id}/{status}")]
-        public async Task<IActionResult> DisputeAcceptedAsync(int id, string status)
+        [HttpPost("dispute/update")]
+        public async Task<IActionResult> UpdateDisputeAsync([FromBody] Disputes dispute)
         {
-            var rs = await _service.ChangeDisputeStatusAsync(id, status);
+            var rs = await _service.UpdateDisputeAsync(dispute);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("dispute/learner")]
+        public async Task<IActionResult> GetAllLearnerDisputes()
+        {
+            // Get current user info
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.GetAllLearnerDisputesAsync(currentUser.Id);
+
             return Ok(rs);
         }
 

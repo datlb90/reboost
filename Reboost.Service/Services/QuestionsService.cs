@@ -1,5 +1,6 @@
 ﻿using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
+using Reboost.DataAccess.Models;
 using Reboost.Shared;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,11 @@ namespace Reboost.Service.Services
         Task<List<int>> GetQuestionCompletedIdByUser(string UserId);
         Task<List<SampleForQuestion>> GetSamplesForQuestion(int questionId);
         Task<List<SubmissionsModel>> GetAllSubmissionByUserId(string userId);
+        Task<QuestionDataModel> GetAllDataForAddOrEditQuestion();
+        Task<QuestionRequestModel> CreateQuestionAsync(Questions q, QuestionRequestModel model);
+        Task<QuestionRequestModel> UpdateQuestionAsync(Questions q, QuestionRequestModel model);
+        Task<Questions> PublishQuestionAsync(int id);
+        Task<Questions> ApproveQuestionAsync(int id);
 
     }
     public class QuestionsService : BaseService, IQuestionsService
@@ -105,6 +111,31 @@ namespace Reboost.Service.Services
         public async Task<List<SubmissionsModel>> GetAllSubmissionByUserId(string userId)
         {
             return await _unitOfWork.Questions.GetAllSubmissionByUserIdAsync(userId);
+        }
+
+        public async Task<QuestionDataModel> GetAllDataForAddOrEditQuestion()
+        {
+            return await _unitOfWork.Questions.GetAllDataForAddOrEditQuestion();
+        }
+
+        public async Task<QuestionRequestModel> CreateQuestionAsync(Questions q, QuestionRequestModel model)
+        {
+            return await _unitOfWork.Questions.CreateQuestionAsync(q, model);
+        }
+
+        public async Task<QuestionRequestModel> UpdateQuestionAsync(Questions q, QuestionRequestModel model)
+        {
+            return await _unitOfWork.Questions.UpdateQuestionAsync(q, model);
+        }
+
+        public async Task<Questions> PublishQuestionAsync(int id)
+        {
+            return await _unitOfWork.Questions.PublishQuestionAsync(id);
+        }
+
+        public async Task<Questions> ApproveQuestionAsync(int id)
+        {
+            return await _unitOfWork.Questions.ApproveQuestionAsync(id);
         }
     }
 }

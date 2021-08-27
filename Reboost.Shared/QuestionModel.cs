@@ -9,7 +9,9 @@ namespace Reboost.Shared
         public int Id { get; set; }
         public string Title { get; set; }
         public string Section { get; set; }
+        public int TaskId { get; set; }
         public string Test { get; set; }
+        public int TestId { get; set;}
         public string Time { get; set; }
         public string Type { get; set; }
         public bool Sample { get; set; }
@@ -20,6 +22,8 @@ namespace Reboost.Shared
         public string Status { get; set; }
         public string Direction { get; set; }
         public string UserId { get; set; }
+        public string CreatedBy { get; set; }
+        public DateTime AddedDate { get; set; }
 
         public List<QuestionPartModel> QuestionsPart { get; set; }
 

@@ -85,9 +85,6 @@ const reviewService = {
   getReviewRequestBySubmissionId(submissionId) {
     return http.get(`/review/getRequest/${submissionId}`).then(rs => rs.data)
   },
-  submitRate(data) {
-    return http.post('/review/submitRate', data).then(rs => rs.data)
-  },
   createProReviewRequest(request) {
     return http.post('/review/request/pro', request).then(rs => rs.data)
   },
@@ -100,14 +97,17 @@ const reviewService = {
   getAllDisputes() {
     return http.get('/review/dispute').then(rs => rs.data)
   },
+  getAllLearnerDisputes() {
+    return http.get('/review/dispute/learner').then(rs => rs.data)
+  },
   createDisputes(data) {
     return http.post('/review/dispute', data).then(rs => rs.data)
   },
   getDisputeByReviewId(id) {
     return http.get(`/review/dispute/${id}`).then(rs => rs.data)
   },
-  changeDisputeStatus(id, status) {
-    return http.get(`/review/dispute/${id}/${status}`).then(rs => rs.data)
+  updateDispute(data) {
+    return http.post(`/review/dispute/update`, data).then(rs => rs.data)
   }
 }
 

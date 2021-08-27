@@ -11,8 +11,8 @@ const state = {
 }
 
 const actions = {
-  loadAllQuestionByUser({ commit }, uesrId) {
-    return questionService.getAllByUser(uesrId).then(result => {
+  loadAllQuestionByUser({ commit }, userId) {
+    return questionService.getAllByUser(userId).then(result => {
       commit('SET_QUESTIONS', result)
     })
   },
@@ -28,31 +28,26 @@ const actions = {
   },
   loadCountQuestionsByTasks({ commit }) {
     return questionService.getCountQuestionByTasks().then(result => {
-      console.log('Action load count questions', result)
       commit('SET_COUNT_QUESTIONS', result)
     })
   },
   loadSummaryByUser({ commit }, id) {
     return questionService.getCountQuestionsByUser(id).then(result => {
-      console.log('Action load count question by user', result)
       commit('SET_COUNT_QUESTION_BY_USER', result)
     })
   },
   loadTestByUser({ commit }, id) {
     return questionService.getTestByUser(id).then(result => {
-      console.log('Action load test by user', result)
       commit('SET_TEST_BY_USER', result)
     })
   },
   loadStatusQuestion({ commit }, id) {
     return questionService.getStatusQuestion(id).then(result => {
-      console.log('Action load status question', result)
       commit('SET_STATUS_QUESTION', result)
     })
   },
   loadSampleByQuestion({ commit }, id) {
     return questionService.getSampleByQuestion(id).then(result => {
-      console.log('Action load sample by question', result)
       commit('SET_SAMPLE_QUESTION', result)
     })
   }

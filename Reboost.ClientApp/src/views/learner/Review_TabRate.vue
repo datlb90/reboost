@@ -69,22 +69,6 @@ export default ({
           })
         }
       })
-    },
-    submitRate() {
-      reviewService.submitRate({
-        ReviewId: +this.$route.params.reviewId,
-        Rate: parseFloat(this.rateValue),
-        Comment: this.rateComment
-      }).then(rs => {
-        if (rs) {
-          this.$notify.success({
-            title: 'Success',
-            message: 'Submit successfully',
-            type: 'success',
-            duration: 1500
-          })
-        }
-      })
     }
   }
 })
