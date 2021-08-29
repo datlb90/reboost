@@ -3,7 +3,8 @@
     id="addEditQuestionDialog"
     :title="title"
     :visible.sync="dialogVisible"
-    width="80%"
+    :before-close="handleClose"
+    width="800px"
   >
     <div id="addQuestionDialog" class="dialog-content">
       <el-form
@@ -14,29 +15,35 @@
         <el-form-item prop="name" :rules="[{ required: true }]" size="mini" label="Name">
           <el-input
             v-model="form.name"
-            style="width:80%"
             type="textinput"
             placeholder="Please input question name"
           />
         </el-form-item>
+        <div style="display:flex">
+          <el-form-item prop="test" :rules="[{ required: true }]" size="mini" label="Test">
+            <el-select v-model="form.test" placeholder="Test" @change="testChange()">
+              <el-option v-for="item in tests" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
 
-        <el-form-item prop="test" :rules="[{ required: true }]" size="mini" label="Test">
-          <el-select v-model="form.test" placeholder="Test" @change="testChange()">
-            <el-option v-for="item in tests" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
+          <el-form-item prop="task" :rules="[{ required: true }]" size="mini" label="Task">
+            <el-select v-model="form.task" placeholder="Task">
+              <el-option v-for="item in tasksList" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="type" :rules="[{ required: true }]" size="mini" label="Type">
+            <el-select v-model="form.type" placeholder="Type">
+              <el-option v-for="item in types" :key="item" :label="item" :value="item" />
+            </el-select>
+          </el-form-item>
+        </div>
 
-        <el-form-item prop="task" :rules="[{ required: true }]" size="mini" label="Task">
-          <el-select v-model="form.task" placeholder="Task">
-            <el-option v-for="item in tasksList" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item prop="type" :rules="[{ required: true }]" size="mini" label="Type">
-          <el-select v-model="form.type" placeholder="Type">
-            <el-option v-for="item in types" :key="item" :label="item" :value="item" />
-          </el-select>
-        </el-form-item>
-        <el-form-item prop="content" :rules="[{ required: true }]" size="mini" label="Content">
+        <!-- <div class="el-dialog__header" style="padding:0 0 20px 0;">
+          <span class="el-dialog__title">
+            Question
+          </span>
+        </div> -->
+        <el-form-item prop="content" :rules="[{ required: true }]" size="mini" label="Question">
           <el-tiptap
             v-model="form.content"
             lang="en"
@@ -45,12 +52,12 @@
             :char-counter-count="false"
           />
         </el-form-item>
-        <el-form-item prop="part" size="mini" label="Parts">
-          <div v-if="form.test && (form.task!==2 && form.task!==3)">No part.
+
+        <el-form-item id="questionPart" prop="part" size="mini" label="">
+          <div v-if="form.test && (form.task!==2 && form.task!==3)" style="margin-left:120px">No part.
           </div>
           <div v-if="form.test && form.task===2">
-            <div>
-              Reading:
+            <el-form-item prop="" size="mini" label="Reading">
               <el-tiptap
                 v-model="toeflReading"
                 lang="en"
@@ -58,10 +65,9 @@
                 :extensions="extensions"
                 :char-counter-count="false"
               />
-            </div>
-            <br>
-            <div>
-              Listening:
+            </el-form-item>
+
+            <el-form-item prop="" size="mini" label="Listening">
               <el-upload
                 action=""
                 :on-preview="handlePreview"
@@ -76,10 +82,9 @@
                 <el-button size="small" type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">mp3/mp4 files with a size less than 10mb.</div>
               </el-upload>
-            </div>
-            <br>
-            <div>
-              Transcript:
+            </el-form-item>
+
+            <el-form-item prop="" size="mini" label="Transcript">
               <el-tiptap
                 v-model="toeflTranscript"
                 lang="en"
@@ -87,10 +92,10 @@
                 :extensions="extensions"
                 :char-counter-count="false"
               />
-            </div>
+            </el-form-item>
           </div>
           <div v-if="form.test && form.task===3">
-            <div>
+            <el-form-item prop="" size="mini" label="Chart">
               <el-upload
                 action=""
                 :on-preview="handlePreview"
@@ -105,7 +110,7 @@
                 <el-button size="small" type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">png/jpeg files with a size less than 3mb.</div>
               </el-upload>
-            </div>
+            </el-form-item>
           </div>
         </el-form-item>
       </el-form>
@@ -128,7 +133,10 @@ import {
   Bold,
   Underline,
   Italic,
-  Strike
+  Strike,
+  ListItem,
+  BulletList, // use with ListItem
+  OrderedList // use with ListItem
 } from 'element-tiptap'
 import questionService from '../../services/question.service'
 import * as stringUtil from '@/utils/string'
@@ -153,12 +161,21 @@ export default {
         test: null,
         task: null,
         type: null,
-        content: `<p>Content here...</p>`,
+        content: `<p>Content here...</p>
+        <p></p>`,
         part: null
       },
-      toeflReading: null,
+      toeflReading: `<p>Reading content here...</p>
+        <p></p>
+        <p></p>
+        <p></p>
+        <p></p>`,
       toeflListening: null,
-      toeflTranscript: null,
+      toeflTranscript: `<p>Transcipt content here...</p>
+        <p></p>
+        <p></p>
+        <p></p>
+        <p></p>`,
       ieltsChart: null,
       LISTENING_FILE_MAX_SIZE: 10000000,
       CHART_FILE_MAX_SIZE: 3000000,
@@ -172,7 +189,10 @@ export default {
         new Bold(),
         new Underline(),
         new Italic(),
-        new Strike()
+        new Strike(),
+        new ListItem(),
+        new BulletList(),
+        new OrderedList()
       ],
       fileList: [],
       isLearnerContributed: false,
@@ -193,21 +213,18 @@ export default {
       this.tasks = rs.tasks
       this.tests = rs.tests
       this.types = rs.types
-      console.log('question data:', rs)
     })
   },
   methods: {
     openDialog() {
+      this.resetData()
       this.isEdit = false
       this.dialogVisible = true
-      setTimeout(function() {
-        const t = document.getElementsByClassName('v-modal')
-        if (t && t[0]) {
-          t[0].click()
-        }
-      }, 10)
     },
     openEditDialog(question) {
+      this.fileList = []
+      this.chartFileList = []
+
       questionService.getById(question.id).then(rs => {
         this.form.id = rs.id
         this.form.test = rs.testId
@@ -227,6 +244,25 @@ export default {
         this.isEdit = true
         this.dialogVisible = true
         console.log('----', this.questionExist)
+
+        let file
+        var fileListenName = this.questionExist.questionsPart.filter(r => r.name === 'Listening')[0]
+        if (fileListenName) {
+          file = {
+            name: fileListenName.content,
+            url: 'http://localhost:6990/audio/' + this.questionExist.id + '.' + fileListenName.content
+          }
+          this.fileList = [file]
+        }
+
+        var fileChartName = this.questionExist.questionsPart.filter(r => r.name === 'Chart')[0]
+        if (fileChartName) {
+          file = {
+            name: fileChartName.content,
+            url: 'http://localhost:6990/audio/' + this.questionExist.id + '.' + fileChartName.content
+          }
+          this.chartFileList = [file]
+        }
       })
     },
     testChange() {
@@ -276,13 +312,15 @@ export default {
                 formData.set(`QuestionParts[${count}][Content]`, this.form.part[p].raw.name)
                 formData.set(`QuestionParts[${count}][FileName]`, this.form.part[p].raw.name)
                 formData.set(`QuestionParts[${count}][FileExtension]`, stringUtil.getFileExtension(this.form.part[p]?.name))
-                if (this.isEdit) {
-                  formData.set(`QuestionParts[${count}][QuestionId]`, this.questionExist.id)
-                }
                 formData.set(`UploadedFile`, this.form.part[p]?.raw)
               } else {
                 formData.set(`QuestionParts[${count}][Content]`, this.form.part[p])
               }
+
+              if (this.isEdit) {
+                formData.set(`QuestionParts[${count}][QuestionId]`, this.questionExist.id)
+              }
+
               formData.set(`QuestionParts[${count}][Order]`, order)
               formData.set(`QuestionParts[${count}][Name]`, this.partNameFormat(p))
               order += 1
@@ -303,6 +341,7 @@ export default {
                   duration: 2000
                 })
                 this.$emit('refreshQuestion')
+                this.resetData()
                 this.dialogVisible = false
               }
             })
@@ -315,6 +354,7 @@ export default {
                   type: 'success',
                   duration: 2000
                 })
+                this.resetData()
                 this.dialogVisible = false
                 this.$emit('refreshQuestion')
               }
@@ -334,6 +374,7 @@ export default {
           })
           this.dialogVisible = false
           this.$emit('refreshQuestion')
+          this.resetData()
           this.isLearnerContributed = false
         }
       })
@@ -344,7 +385,7 @@ export default {
       this.fileList = fileList
     },
     handlePreview(file) {
-      console.log(file)
+      console.log('file', typeof (file), file)
     },
     handleExceed() {
       this.$message.warning(`The limit is 1 file.`)
@@ -383,39 +424,65 @@ export default {
     publishQuestion(e) {
       if (this.currentUser.role === UserRole.ADMIN) {
         questionService.publishQuestion(e.id).then(r => {
-          console.log('', r)
+          if (r) {
+            this.$notify.success({
+              title: 'Question published.',
+              message: 'Question published successfully.',
+              type: 'success',
+              duration: 2000
+            })
+            this.dialogVisible = false
+            this.$emit('refreshQuestion')
+            this.resetData()
+            this.isLearnerContributed = false
+          }
         })
       }
+    },
+    handleClose() {
+      this.$store.dispatch('question/clearSelectedQuestion')
+      this.dialogVisible = false
+    },
+    resetData() {
+      this.fileList = []
+      this.chartFileList = []
+      this.form.name = null
+      this.form.type = null
+      this.form.test = null
+      this.form.task = null
+      this.form.content = `<p>Content here...</p>
+        <p></p>`
+      this.form.part = null
+
+      this.toeflReading = `<p>Reading content here...</p>
+        <p></p>
+        <p></p>
+        <p></p>
+        <p></p>`
+      this.toeflListening = null
+      this.toeflTranscript = `<p>Transcipt content here...</p>
+        <p></p>
+        <p></p>
+        <p></p>
+        <p></p>`
     }
   }
 }
 </script>
 <style>
-#addQuestionDialog .el-tiptap-editor__menu-bar{
-    display: flex;
-    justify-content: space-around;
-    border: 1px solid #ebeef5;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+#addEditQuestionDialog .el-dialog__header {
+  text-align: center;
 }
-#addQuestionDialog .el-tiptap-editor__content{
-    border: 1px solid #ebeef5;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
+
+#addEditQuestionDialog .el-tiptap-editor__menu-bar{
+  background: #f0f8ff;
 }
-#addQuestionDialog .ProseMirror{
-  word-break: break-word;
-  outline: none;
-  padding: 3px;
+
+#addEditQuestionDialog .el-tiptap-editor>.el-tiptap-editor__content {
+  border-bottom: 1px solid #ebeef5;
 }
-#addQuestionDialog .ProseMirror p{
-    margin:0
-}
-#addQuestionDialog .ProseMirror p:first-child{
-    margin-top:5px
-}
-#addQuestionDialog .ProseMirror p:last-child{
-    margin-bottom:5px
+#questionPart>.el-form-item__content{
+  margin-left:0!important;
 }
 </style>
 

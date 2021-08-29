@@ -21,6 +21,7 @@ import VueCarousel from 'vue-carousel'
 import Toasted from 'vue-toasted'
 
 import './assets/style/custom.scss'
+import 'element-tiptap/lib/index.css'
 
 Vue.use(VueMeta)
 Vue.use(BootstrapVue)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -121,18 +122,9 @@ namespace Reboost.WebApi.Controllers
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
             model.UserId = currentUser.Id;
-            model.AddedDate = DateTime.Now;
-            model.LastActivityDate = DateTime.Now;
-            model.AverageScore = "0.0";
-            model.HasSample = false;
-            model.SubmissionCount = 0;
-            model.ViewCount = 0;
-            model.LikeCount = 0;
-            model.DisLikeCount = 0;
-
             var _question = _mapper.Map<Questions>(model);
             var result = await _service.CreateQuestionAsync(_question, model);
-
+            
             return Ok(result);
         }
 

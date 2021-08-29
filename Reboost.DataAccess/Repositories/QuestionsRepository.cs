@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Reboost.Shared;
 using Reboost.DataAccess.Models;
+using System.IO;
 
 namespace Reboost.DataAccess.Repositories
 {
@@ -375,7 +376,39 @@ namespace Reboost.DataAccess.Repositories
             await ReboostDbContext.Questions.AddAsync(q);
             await ReboostDbContext.SaveChangesAsync();
 
-            foreach(var p in model.QuestionParts)
+            if (model.UploadedFile!=null && model.UploadedFile.Count > 0)
+            {
+                foreach (var item in model.UploadedFile)
+                {
+                    if (item.ContentType == "video/mp4" || item.ContentType == "audio/mpeg")
+                    {
+                        var extensionPath = Path.GetExtension(item.FileName);
+                        var fileName = model.Id + extensionPath;
+                        var audioDirectory = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\audio");
+                        if (!Directory.Exists(audioDirectory))
+                        {
+                            Directory.CreateDirectory(audioDirectory);
+                        }
+                        var filePath = Path.Combine(audioDirectory, fileName);
+                        
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await item.CopyToAsync(fileStream);
+                        }
+
+                        foreach (var p in model.QuestionParts)
+                        {
+                            if (p.Name == "Listening")
+                            {
+                                p.Content = fileName;
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            foreach (var p in model.QuestionParts)
             {
                 p.QuestionId = q.Id;
             }
@@ -403,6 +436,40 @@ namespace Reboost.DataAccess.Repositories
             var parts = await ReboostDbContext.QuestionParts.Where(p => p.QuestionId == q.Id).ToListAsync();
             ReboostDbContext.QuestionParts.RemoveRange(parts);
 
+            if (model.UploadedFile != null && model.UploadedFile.Count > 0)
+            {                
+                foreach (var item in model.UploadedFile)
+                {
+                    if (item.ContentType == "video/mp4" || item.ContentType == "audio/mpeg")
+                    {
+                        var extensionPath = Path.GetExtension(item.FileName);
+                        var fileName = model.Id + extensionPath;
+                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\audio", fileName);
+
+                        FileInfo file = new FileInfo(filePath);
+
+                        if(file != null)
+                        {
+                           file.Delete();
+                        }
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await item.CopyToAsync(fileStream);
+                        }
+
+                        foreach (var p in model.QuestionParts)
+                        {
+                            if (p.Name == "Listening")
+                            {
+                                p.Content = fileName;
+                            }
+
+                        }
+                    }
+                }
+            }
+
             await ReboostDbContext.QuestionParts.AddRangeAsync(model.QuestionParts);
             await ReboostDbContext.SaveChangesAsync();
 
@@ -412,11 +479,11 @@ namespace Reboost.DataAccess.Repositories
         public async Task<Questions> PublishQuestionAsync(int id)
         {
             var question = await ReboostDbContext.Questions.FindAsync(id);
-
-            question.Status = QuestionStatus.ACTIVE;
-
-            await ReboostDbContext.SaveChangesAsync();
-
+            if (question != null)
+            {
+                question.Status = QuestionStatus.ACTIVE;
+                await ReboostDbContext.SaveChangesAsync();
+            }
             return question;
         }
 

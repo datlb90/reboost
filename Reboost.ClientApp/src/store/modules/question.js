@@ -50,6 +50,9 @@ const actions = {
     return questionService.getSampleByQuestion(id).then(result => {
       commit('SET_SAMPLE_QUESTION', result)
     })
+  },
+  clearSelectedQuestion({ commit }) {
+    commit('CLEAR_SELECTED_QUESTION')
   }
 }
 
@@ -74,6 +77,9 @@ const mutations = {
   },
   SET_SAMPLE_QUESTION: (state, sampleByQuestion) => {
     state.sampleByQuestion = sampleByQuestion
+  },
+  CLEAR_SELECTED_QUESTION: (state) => {
+    state.selectedQuestion = {}
   }
 }
 

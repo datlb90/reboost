@@ -2,6 +2,7 @@
   <el-dialog
     id="previewQuestionDialog"
     title="Preview Question"
+    :before-close="handleClose"
     :visible.sync="dialogVisible"
     width="60%"
   >
@@ -35,9 +36,10 @@
       <div style="flex-grow: 1;position: relative;">
         <div class="par-content default">
           <el-row style="margin-bottom: 8px;">
-            <el-col :span="24" class="question-con">
-              <div>
-                <pre style="font-size: 13px;display:flex"><span style="font-weight: 600;word-break: keep-all;">Question: </span><div id="questionContent" v-html="getQuestion.content" /></pre>
+            <el-col class="question-con">
+              <div style="font-size: 13px;">
+                <span style="font-weight: 600;word-break: keep-all;">Question: </span>
+                <div id="questionContent" v-html="getQuestion.content" />
               </div>
             </el-col>
           </el-row>
@@ -77,7 +79,7 @@
                 <hr style="margin:0; margin-bottom: 8px; ">
                 <div>
                   <audio v-if="getListening != ''" controls style="width: 100%; height: 35px; margin-bottom: 3px;">
-                    <source :src="'/audio/'+getListening.content" type="audio/mpeg">
+                    <source :src="'http://localhost:6990/audio/'+getListening" type="audio/mpeg">
                   </audio>
                   <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
                     <div style="flex-grow: 1;">
@@ -154,7 +156,7 @@ export default {
     getListening() {
       if (typeof (this.getDataQuestionParts) != 'undefined') {
         if (this.getDataQuestionParts.find(u => u.name == 'Listening')) {
-          return this.getDataQuestionParts.find(u => u.name == 'Listening')
+          return this.getDataQuestionParts.find(u => u.name == 'Listening').content
         }
         return 'audio_sample.mp3'
       }
@@ -191,7 +193,6 @@ export default {
 
   },
   destroyed() {
-    clearInterval(this.setIntervalForScroll)
   },
   methods: {
     showDialog(question) {
@@ -227,6 +228,20 @@ export default {
     backClick() {
       this.isShowListeningTab = false
       this.isShowReading = true
+    },
+    handleClose() {
+      this.$store.dispatch('question/clearSelectedQuestion')
+      this.isShowQuestion = true
+      this.isShowListeningTab = false
+      this.isShowChart = false
+      this.isShowScript = false
+      this.dialogVisible = false
+      this.loadCompleted = false
+      this.hideDirection = 'Hide'
+      this.isShowTimer = false
+      this.closeTimer = false
+      this.isShowReading = true
+      this.dialogVisible = false
     }
   }
 }

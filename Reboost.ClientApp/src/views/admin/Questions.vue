@@ -275,7 +275,7 @@ export default {
       this.loadTable()
     },
     openAddQuestionDialog() {
-      this.$refs.questionDialog?.openDialog()
+      this.$refs.questionDialog?.openDialog(false)
     },
     handleEdit(e) {
       this.$refs.questionDialog?.openEditDialog(e)

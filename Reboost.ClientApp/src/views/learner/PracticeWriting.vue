@@ -44,7 +44,10 @@
                   <el-row style="margin-bottom: 8px;">
                     <el-col :span="24" class="question-con">
                       <div>
-                        <pre style="font-size: 13px;display:flex"><span style="font-weight: 600;">Question: </span><div id="questionContent" v-html="getQuestion.content" /></pre>
+                        <div style="font-size: 13px;">
+                          <span style="font-weight: 600;word-break: keep-all;">Question: </span>
+                          <div id="questionContent" v-html="getQuestion.content" />
+                        </div>
                       </div>
                     </el-col>
                   </el-row>
