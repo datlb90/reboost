@@ -5,6 +5,7 @@ import router from './router'
 import store from './store'
 import 'element-ui/lib/theme-chalk/index.css'
 import Element from 'element-ui'
+import ElementTiptapPlugin from 'element-tiptap'
 import locale from 'element-ui/lib/locale/lang/en'
 import '@fortawesome/fontawesome-free/css/all.css'
 import '@fortawesome/fontawesome-free/js/all.js'
@@ -20,6 +21,7 @@ import VueCarousel from 'vue-carousel'
 import Toasted from 'vue-toasted'
 
 import './assets/style/custom.scss'
+import 'element-tiptap/lib/index.css'
 
 Vue.use(VueMeta)
 Vue.use(BootstrapVue)
@@ -33,6 +35,9 @@ Vue.use(FBSignInButton)
 Vue.use(GSignInButton)
 
 Vue.use(Element, { locale })
+Vue.use(ElementTiptapPlugin, {
+  lang: 'en'
+})
 Vue.config.productionTip = false
 
 new Vue({

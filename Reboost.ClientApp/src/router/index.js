@@ -70,12 +70,15 @@ import Subscribe from '../views/rater/Subscribe.vue'
 import StartRating from '../views/rater/StartRating.vue'
 import Payout from '../views/rater/Payout.vue'
 import Reviews from '../views/learner/Reviews.vue'
-import Disputes from '../views/learner/Disputes.vue'
 import PaymentInfo from '../views/rater/PaymentInfo.vue'
 import Submissions from '../views/learner/Submissions.vue'
+import Disputes from '../views/admin/Disputes.vue'
+import LearnerDisputes from '../views/learner/Disputes.vue'
+import AdminQuestions from '../views/admin/Questions.vue'
+
 // import PageNotFound from '../views/PageNotFound.vue'
 import protect from './guard'
-import { PageName, Role, UserRole } from '@/app.constant'
+import { PageName, UserRole } from '@/app.constant'
 
 // Guard
 import { userReviewAuthentication } from './guard/UserReviewValidation'
@@ -283,7 +286,7 @@ const router = new VueRouter({
       name: PageName.RATERS,
       meta: {
         loginRequired: true,
-        role: Role.ADMIN
+        role: UserRole.ADMIN
       },
       component: ManageRaters
     },
@@ -397,6 +400,24 @@ const router = new VueRouter({
       meta: {
         loginRequired: true,
         role: UserRole.LEARNER
+      }
+    },
+    {
+      path: '/disputes',
+      component: LearnerDisputes,
+      name: PageName.LEARNER_DISPUTES,
+      meta: {
+        loginRequired: true,
+        role: UserRole.LEARNER
+      }
+    },
+    {
+      path: '/admin/questions',
+      component: AdminQuestions,
+      name: PageName.ADMIN_QUESTIONS,
+      meta: {
+        loginRequired: true,
+        role: UserRole.ADMIN
       }
     },
     // { path: '/notfound', name: PageName.PageNotFound, component: PageNotFound },

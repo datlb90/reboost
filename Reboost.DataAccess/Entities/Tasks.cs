@@ -12,5 +12,6 @@ namespace Reboost.DataAccess.Entities
         public string Focus { get; set; }
         public string Time { get; set; }
         public string Direction { get; set; }
+        public virtual TestSections Section { get; set; }
     }
 }

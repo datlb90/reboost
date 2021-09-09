@@ -22,11 +22,12 @@ namespace Reboost.Shared
         public const string REVIEW_REQUESTED = "Review Requested";
         public const string REVIEWED = "Reviewed";
         public const string COMPLETED = "Completed";
+        public const string DISPUTE_REQUESTED = "Dispute Requested";
     }
     public static class ReviewRequestStatus
     {
         public const string COMPLETED = "Completed";
-        public const string REVIEW_REQUETED = "Review Requested";
+        public const string REVIEW_REQUESTED = "Review Requested";
         public const string RATED = "Rated";
         public const string WAITING = "Waiting";
     }
@@ -40,7 +41,7 @@ namespace Reboost.Shared
         public const string APPROVED = "Approved";
         public const string IN_PROGRESS = "In Progress";
         public const string COMPLETED = "Completed";
-        public const string REVISION_REQUEST = "Revision Requested";
+        public const string REVISION_REQUESTED = "Revision Requested";
         public const string REVISION_COMPLETED = "Revision Completed";
     }
     public static class ReviewStatus
@@ -60,8 +61,15 @@ namespace Reboost.Shared
     }
     public static class DisputeStatus
     {
-        public const string WAITING = "Waiting";
+        public const string OPEN = "OPEN";
         public const string ACCEPTED = "Accepted";
         public const string DENIED = "Denied";
+        public const string REFUNDED = "Refunded";
+    }
+    public static class QuestionStatus
+    {
+        public const string ACTIVE = "Active";
+        public const string CONTRIBUTED = "Contributed";
+        public const string APPROVED = "Approved";
     }
 }

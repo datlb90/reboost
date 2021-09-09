@@ -44,7 +44,10 @@
                   <el-row style="margin-bottom: 8px;">
                     <el-col :span="24" class="question-con">
                       <div>
-                        <pre style="font-size: 13px;"><span style="font-weight: 600;">Question: </span>{{ getQuestion.content }}</pre>
+                        <div style="font-size: 13px;">
+                          <span style="font-weight: 600;word-break: keep-all;">Question: </span>
+                          <div id="questionContent" v-html="getQuestion.content" />
+                        </div>
                       </div>
                     </el-col>
                   </el-row>
@@ -101,10 +104,10 @@
                     </el-col>
                   </el-row>
                   <div v-if="isShowQuestion && getReading != '' && !isShowListeningTab && isShowReading" style="margin: 0;">
-                    <pre> {{ getReading.content }}</pre>
+                    <pre id="readingContent" v-html="getReading.content" />
                   </div>
                   <div v-if="isShowQuestion && isShowScript && isShowListeningTab" class="body-transcript" style="margin: 0;">
-                    <pre> {{ getTranscript.content }}</pre>
+                    <pre id="transcriptContent" v-html="getTranscript.content" />
                   </div>
                   <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))">
                     <img src="../../assets/chart/1.png" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
@@ -662,6 +665,26 @@ export default {
   padding: 0 !important;
 }
 
+#questionContent p {
+  color: black;
+  line-height: 1.5;
+}
+#readingContent p {
+  font-size: 14px;
+  text-align: justify;
+  white-space: break-spaces;
+  font-family: inherit !important;
+  margin-bottom: 0 !important;
+  color: black;
+}
+#transcriptContent p {
+  font-size: 14px;
+  text-align: justify;
+  white-space: break-spaces;
+  font-family: inherit !important;
+  margin-bottom: 0 !important;
+  color: black;
+}
 </style>
 <style scoped>
 
@@ -821,4 +844,5 @@ pre {
 .submited-message {
   width: calc(100% - 210px);
 }
+
 </style>

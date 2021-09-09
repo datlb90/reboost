@@ -9,7 +9,23 @@
           <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
           <el-button size="mini" @click="notShowDirection">Never show this again</el-button>
         </div>
-        <div v-if="currentUser && trainingNote" class="tip note" transition="fade" style="margin-bottom: 10px;">
+        <div v-if="dispute && currentUser.role === UserRole.ADMIN" class="content-con" style="margin-bottom: 10px;">
+          <p style="width: 98%;">
+            Dispute
+            <el-input
+              v-model="dispute.reasons"
+              :disabled="true"
+            />
+          </p>
+
+          <div>
+            <el-button size="mini" type="primary" @click="showNoteDialog(DISPUTE_STATUS.ACCEPTED)">Accepted</el-button>
+            <el-button size="mini" type="danger" @click="showNoteDialog(DISPUTE_STATUS.DENIED)">Denied</el-button>
+            <el-button size="mini" type="success" @click="showNoteDialog(DISPUTE_STATUS.REFUNDED)">Refunded</el-button>
+          </div>
+        </div>
+
+        <div v-if="userInfo && trainingNote" class="tip note" transition="fade" style="margin-bottom: 10px;">
           <p style="width: 98%;">
             Note: {{ trainingNote }}
           </p>
@@ -55,7 +71,7 @@
 <script>
 import raterService from '@/services/rater.service'
 import reviewService from '@/services/review.service.js'
-import { RATER_STATUS, RATER_TRAINING_STATUS } from '../../app.constant'
+import { RATER_STATUS, RATER_TRAINING_STATUS, UserRole, DISPUTE_STATUS } from '../../app.constant'
 export default ({
   name: 'TabQuestion',
   components: {
@@ -69,9 +85,13 @@ export default ({
     return {
       showDirection: true,
       isShowScript: false,
-      currentUser: null,
+      userInfo: null,
       RATER_STATUS: RATER_STATUS,
-      trainingNote: null
+      trainingNote: null,
+      dispute: null,
+      UserRole: UserRole,
+      DISPUTE_STATUS: DISPUTE_STATUS,
+      updateStatus: null
     }
   },
   computed: {
@@ -115,11 +135,14 @@ export default ({
         }
       }
       return ''
+    },
+    currentUser() {
+      return this.$store.getters['auth/getUser']
     }
   },
   async mounted() {
     await raterService.getByCurrentUser().then(rs => {
-      this.currentUser = rs
+      this.userInfo = rs
       if (rs.status === RATER_STATUS.REVISION_REQUESTED) {
         // Load rater's training
         reviewService.getRaterTrainings(rs.id).then(r => {
@@ -130,8 +153,6 @@ export default ({
         })
       }
     })
-
-    console.log('this.getDataQuestionParts', this.getDataQuestionParts)
 
     if (localStorage.getItem('showQuestionDirection')) {
       this.showDirection = false
@@ -161,6 +182,52 @@ export default ({
         // document.getElementById('child-scroll').style.paddingRight = '0'
       } else {
         // document.getElementById('child-scroll').style.paddingRight = '10px'
+      }
+    },
+    getDisputeData(data) {
+      this.dispute = data
+    },
+    showNoteDialog(e) {
+      this.updateStatus = e
+      this.$emit('openDisputeNote')
+    },
+    updateDispute(data) {
+      if (this.dispute) {
+        const postData = {
+          Id: this.dispute.id,
+          Status: this.updateStatus,
+          AdminNote: data.note
+        }
+
+        reviewService.updateDispute(postData).then(rs => {
+          if (rs) {
+            this.dispute = rs
+            if (rs.status === DISPUTE_STATUS.ACCEPTED) {
+              this.$notify.success({
+                title: 'Dispute accepted.',
+                message: 'Dispute accepted.',
+                type: 'success',
+                duration: 2000
+              })
+            } else if (rs.status === DISPUTE_STATUS.DENIED) {
+              this.$notify.error({
+                title: 'Dispute denied.',
+                message: 'Dispute denied',
+                type: 'error',
+                duration: 2000
+              })
+            } else {
+              this.$notify.success({
+                title: 'Dispute refunded.',
+                message: 'Dispute refunded.',
+                type: 'success',
+                duration: 2000
+              })
+            }
+          }
+        })
+
+        this.$emit('closeDisputeNote')
       }
     }
   }

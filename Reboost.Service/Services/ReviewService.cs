@@ -45,7 +45,6 @@ namespace Reboost.Service.Services
         Task<GetReviewsModel> CreateReviewFromQueue(string userId);
         Task<IEnumerable<Reviews>> GetUnRatedReviewsAsync(string userId);
         Task<GetReviewsModel> GetPendingReviewAsync(string userId);
-        Task<ReviewRatings> SubmitReviewRatingAsync(ReviewRatings data, string userId);
         Task<CreatedProRequestModel> CreateProRequestAsync(ReviewRequests request);
         Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request);
         Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId);
@@ -55,7 +54,8 @@ namespace Reboost.Service.Services
         Task<Disputes> CreateDisputeAsync(Disputes disputes);
         Task<List<Disputes>> GetAllDisputesAsync();
         Task<Disputes> GetDisputeByReviewIdAsync(int id);
-        Task<Disputes> ChangeDisputeStatusAsync(int id, string status);
+        Task<Disputes> UpdateDisputeAsync(Disputes dispute);
+        Task<List<Disputes>> GetAllLearnerDisputesAsync(string userId);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -200,13 +200,14 @@ namespace Reboost.Service.Services
             return await _unitOfWork.Review.GetReviewByIdAsync(id);
         }
 
-        public async Task<ReviewRatings> SubmitReviewRatingAsync(ReviewRatings data, string userId)
-        {
-            return await _unitOfWork.Review.SubmitReviewRatingAsync(data, userId);
-        }
         public async Task<CreatedProRequestModel> CreateProRequestAsync(ReviewRequests request)
         {
             var rs = await _unitOfWork.Review.CreateProRequestAsync(request);
+
+            if (rs == null)
+            {
+                return null;
+            }
 
             await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
 
@@ -227,6 +228,11 @@ namespace Reboost.Service.Services
         public async Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request)
         {
             var rs = await _unitOfWork.Review.ReRequestProRequestAsync(request);
+
+            if(rs == null)
+            {
+                return rs;
+            }
             // Send mail to rater with confirm link
             await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
 
@@ -266,23 +272,29 @@ namespace Reboost.Service.Services
             return await _unitOfWork.Review.GetDisputeByReviewIdAsync(id);
         }
 
-        public async Task<Disputes> ChangeDisputeStatusAsync(int id, string status)
+        public async Task<Disputes> UpdateDisputeAsync(Disputes dispute)
         {
-            var rs = await _unitOfWork.Review.ChangeDisputeStatusAsync(id, status);
+            var rs = await _unitOfWork.Review.UpdateDisputeAsync(dispute);
             var reviewRequest = await GetOrCreateReviewByProRequestId(rs.Review.RequestId, rs.UserId);
+
             if (reviewRequest.ReviewRequest != null)
             {
-                if(status == DisputeStatus.ACCEPTED)
+                if(rs.Status == DisputeStatus.ACCEPTED)
                 {
                     await ReRequestProRequestAsync(reviewRequest.ReviewRequest);
                 }
             }
             else
             {
-                await _unitOfWork.Review.ChangeDisputeStatusAsync(id, DisputeStatus.WAITING);
+                dispute.Status = DisputeStatus.OPEN;
+                await _unitOfWork.Review.UpdateDisputeAsync(dispute);
             }
 
             return rs;
+        }
+        public async Task<List<Disputes>> GetAllLearnerDisputesAsync(string userId)
+        {
+            return await _unitOfWork.Review.GetAllLearnerDisputesAsync(userId);
         }
     }
 }

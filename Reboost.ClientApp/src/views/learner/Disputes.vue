@@ -1,7 +1,7 @@
 <template>
   <div id="disputes" style="margin-top:25px;">
     <el-row class="row-flex">
-      <el-col :span="15">
+      <el-col :span="18">
         <div style="display: flex; justify-content:space-between">
           <h3>Disputes</h3>
         </div>
@@ -24,18 +24,27 @@
               align="center"
             />
             <el-table-column
-              prop="reasons"
-              label="Reasons"
+              label="Status"
               align="center"
-            />
-            <el-table-column align="center" label="Actions">
+            >
               <template slot-scope="scope">
-                <el-button size="mini" @click="navigateToReview(scope.row)">
-                  View
-                </el-button>
+                <el-tag
+                  size="mini"
+                  :type="scope.row.status === DISPUTE_STATUS.OPEN
+                    ? 'primary' : scope.row.status === DISPUTE_STATUS.ACCEPTED
+                      ? 'success': scope.row.status === DISPUTE_STATUS.DENIED ? 'danger' : 'info'"
+                >
+                  {{ scope.row.status }}
+                </el-tag>
               </template>
             </el-table-column>
+            <el-table-column
+              prop="adminNote"
+              label="Admin Note"
+              align="center"
+            />
           </el-table>
+
           <div class="pagination">
             <el-pagination
               background
@@ -52,7 +61,7 @@
 </template>
 <script>
 import reviewService from '../../services/review.service'
-
+import { DISPUTE_STATUS } from '../../app.constant'
 export default {
   name: 'Disputes',
   components: {},
@@ -63,7 +72,8 @@ export default {
       listDisputesPerPage: [],
       pageSize: 15,
       total: 0,
-      page: 1
+      page: 1,
+      DISPUTE_STATUS: DISPUTE_STATUS
     }
   },
   computed: {
@@ -76,7 +86,7 @@ export default {
   },
   methods: {
     onLoad() {
-      reviewService.getAllDisputes().then(r => {
+      reviewService.getAllLearnerDisputes().then(r => {
         if (r) {
           this.disputesList = r
           this.disputesListCached = [...this.disputesList]

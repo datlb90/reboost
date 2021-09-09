@@ -27,6 +27,21 @@ const questionService = {
   },
   getSubmissionsByUserId(userId) {
     return http.get(`/questions/submission/${userId}`).then(rs => { return rs ? rs.data : [] })
+  },
+  getAddEditQuestionData() {
+    return http.get('/questions/add-edit/data').then(rs => rs.data)
+  },
+  createQuestion(data) {
+    return http.post('/questions', data).then(rs => rs.data)
+  },
+  updateQuestion(data) {
+    return http.post('/questions/update', data).then(rs => rs.data)
+  },
+  publishQuestion(id) {
+    return http.get(`/questions/publish/${id}`).then(rs => rs.data)
+  },
+  approveQuestion(id) {
+    return http.get(`/questions/approve/${id}`).then(rs => rs.data)
   }
 }
 

@@ -5,7 +5,13 @@
       <div id="left-panel" :class="{'hideQuestion': !showQuestion}">
         <el-tabs v-model="selectedTab" type="border-card">
           <el-tab-pane name="question" label="Question">
-            <tabQuestion ref="tabQuestion" :questionid="questionId" :reviewid="reviewId" />
+            <tabQuestion
+              ref="tabQuestion"
+              :questionid="questionId"
+              :reviewid="reviewId"
+              @openDisputeNote="disputeNoteDialogVisible=true"
+              @closeDisputeNote="disputeNoteDialogVisible=false"
+            />
           </el-tab-pane>
           <el-tab-pane name="rubric" label="Rubric">
             <tabRubric ref="tabRubric" :current-user="currentUser" :questionid="questionId" :reviewid="reviewId" @setStatusText="setStatusText" />
@@ -195,7 +201,7 @@
       </span>
     </el-dialog>
 
-    <!-- dispute dialog -->
+    <!-- dispute create dialog -->
     <el-dialog
       title="Dispute Review"
       :visible.sync="disputeDialogVisible"
@@ -229,6 +235,29 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="disputeDialogVisible = false">Cancel</el-button>
         <el-button type="primary" @click="submitDispute">Submit</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- dispute note dialog -->
+    <el-dialog
+      title="Dispute Note"
+      :visible.sync="disputeNoteDialogVisible"
+      width="30%"
+      center
+    >
+      <el-form ref="formDisputeNote" :model="disputeNote">
+        <el-form-item prop="note" :rules="[{ required: true }]">
+          <el-input
+            v-model="disputeNote.note"
+            type="textarea"
+            :rows="4"
+            placeholder="Please input note for dispute"
+          />
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="disputeNoteDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submitDisputeNote">Submit</el-button>
       </span>
     </el-dialog>
   </div>
@@ -367,7 +396,11 @@ export default {
       isRated: false,
       statusRater: '',
       isSubmit: false,
-      disputeDialogVisible: false
+      disputeDialogVisible: false,
+      disputeNote: {
+        note: null
+      },
+      disputeNoteDialogVisible: false
     }
   },
   computed: {
@@ -424,7 +457,7 @@ export default {
       }
     })
 
-    await this.loadRate()
+    this.loadRate()
 
     if (this.currentUser.role === 'Admin' || this.isView || this.isRate) {
       document.getElementById('viewerContainer').style.userSelect = 'none'
@@ -2763,12 +2796,27 @@ export default {
       this.activeButton = 'cursor'
       this.$refs.toolBar?.disableButtons()
     },
-    async loadRate() {
-      await reviewService.getById(this.$route.params.reviewId).then(async rs => {
+    loadRate() {
+      reviewService.getById(this.$route.params.reviewId).then(async rs => {
+        console.log('get review', this.currentUser.id)
+
         if (rs.review) {
           if (rs.review.status === REVIEW_REQUEST_STATUS.COMPLETED) {
             this.isView = true
           }
+
+          if (rs.review.status === 'Completed' && this.currentUser.role === UserRole.ADMIN) {
+            reviewService.getDisputeByReviewId(rs.review.id).then(rs => {
+              if (rs) {
+                this.$refs.toolBar?.loadDisputeData(rs)
+                this.$refs.tabQuestion?.getDisputeData(rs)
+                if (rs.adminNote) {
+                  this.disputeNote.note = rs.adminNote
+                }
+              }
+            })
+          }
+
           this.$refs.toolBar?.loadReviewData(rs)
         }
 
@@ -2783,7 +2831,7 @@ export default {
         if (rs.review && (this.currentUser.id === rs.review.reviewerId || this.currentUser.id === rs.review.revieweeId) && rs.review.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED) {
           this.isRate = true
 
-          await reviewService.getReviewRating(this.$route.params.reviewId).then(r => {
+          reviewService.getReviewRating(this.$route.params.reviewId).then(r => {
             if (r) {
               this.isRated = true
               this.selectedTab = 'rate'
@@ -2826,6 +2874,13 @@ export default {
       this.$refs['formDispute'].validate((valid) => {
         if (valid) {
           this.$refs.toolBar?.submitDispute(this.disputeForm)
+        }
+      })
+    },
+    submitDisputeNote() {
+      this.$refs['formDisputeNote'].validate((valid) => {
+        if (valid) {
+          this.$refs.tabQuestion?.updateDispute(this.disputeNote)
         }
       })
     }

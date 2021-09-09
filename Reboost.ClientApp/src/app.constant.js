@@ -59,16 +59,17 @@ export const PageName = {
   REVIEWS: 'Reviews',
   DISPUTES: 'Disputes',
   SUBMISSIONS: 'Submissions',
+  LEARNER_DISPUTES: 'LearnerDisputes',
+  ADMIN_QUESTIONS: 'AdminQuestions',
   NOT_FOUND: 'PageNotFound'
 }
-export const Role = {
-  ADMIN: 'Admin'
-}
+
 export const UserRole = {
   ADMIN: 'Admin',
   LEARNER: 'Learner',
   RATER: 'Rater'
 }
+
 export const SubmissionStatus = {
   PENDING: 'Pending',
   SUBMITTED: 'Submitted',
@@ -83,8 +84,15 @@ export const RATER_TRAINING_STATUS = {
   REVISION_REQUEST: 'Revision Requested',
   REVISION_COMPLETED: 'Revision Completed'
 }
-export const DISPUTESTATUS = {
-  WAITING: 'Waiting',
+export const DISPUTE_STATUS = {
+  OPEN: 'Open',
   ACCEPTED: 'Accepted',
-  DENIED: 'Denied'
+  DENIED: 'Denied',
+  REFUNDED: 'Refunded'
+}
+
+export const QUESTION_STATUS = {
+  ACTIVE: 'Active',
+  CONTRIBUTED: 'Contributed',
+  APPROVED: 'Approved'
 }

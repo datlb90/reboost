@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Reboost.DataAccess.Entities;
+using Reboost.DataAccess.Models;
 using Reboost.Service.Services;
 using Reboost.Shared;
 
@@ -17,10 +19,12 @@ namespace Reboost.WebApi.Controllers
     public class QuestionsController : BaseController<IQuestionsService>
     {
         private readonly IMapper _mapper;
+        private IUserService _userService;
 
-        public QuestionsController(IQuestionsService service, IMapper mapper) : base(service)
+        public QuestionsController(IQuestionsService service, IMapper mapper, IUserService userService) : base(service)
         {
             _mapper = mapper;
+            _userService = userService;
         }
         [Authorize]
         [HttpGet]
@@ -98,6 +102,60 @@ namespace Reboost.WebApi.Controllers
         public async Task<List<SubmissionsModel>> GetAllSubmissionsByUserId([FromRoute] string userId)
         {
             return await _service.GetAllSubmissionByUserId(userId);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("add-edit/data")]
+        public async Task<QuestionDataModel> GetDataForAddOrEditQuestionAsync()
+        {
+            return await _service.GetAllDataForAddOrEditQuestion();
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("")]
+        public async Task<IActionResult> CreateNewQuestionAsync([FromForm] QuestionRequestModel model)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            model.UserId = currentUser.Id;
+            var _question = _mapper.Map<Questions>(model);
+            var result = await _service.CreateQuestionAsync(_question, model);
+            
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("update")]
+        public async Task<IActionResult> UpdateQuestionAsync([FromForm] QuestionRequestModel model)
+        {
+            model.LastActivityDate = DateTime.Now;
+            var _question = _mapper.Map<Questions>(model);
+            var result = await _service.UpdateQuestionAsync(_question, model);
+
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("publish/{id}")]
+        public async Task<IActionResult> PublishQuestionAsync([FromRoute] int id)
+        {
+            var rs = await _service.PublishQuestionAsync(id);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("approve/{id}")]
+        public async Task<IActionResult> ApproveQuestionAsync([FromRoute] int id)
+        {
+            var rs = await _service.ApproveQuestionAsync(id);
+            return Ok(rs);
         }
     }
 }
