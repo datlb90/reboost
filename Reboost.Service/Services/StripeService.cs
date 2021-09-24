@@ -5,6 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using PayPal.Api;
+using System.Net;
+using System.IO;
+using Newtonsoft.Json.Linq;
+using System.Dynamic;
+using Newtonsoft.Json;
 
 namespace Reboost.Service.Services
 {
@@ -19,7 +25,7 @@ namespace Reboost.Service.Services
         Task<Subscription> CreateSubcription(string userId, string priceId, string methodId);
         Task<PaymentMethod> AttachMethodAsync(string userId, string methodId);
         Task<AccountLink> CreateAccountAsync(string UserId);
-        Task<Payout> CreatePayoutAsync(decimal amount, string customerId);
+        //Task<Payout> CreatePayoutAsync(decimal amount, string customerId);
         Task<StripeList<Account>> GetAllBankAccountAsync(string customerId);
         Task<Transfer> CreateTransferAsync(decimal amount, string accountId);
         Task<Account> GetAccount(string userId);
@@ -34,6 +40,7 @@ namespace Reboost.Service.Services
     {
         public StripeService(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
+
         }
         public async Task<Customer> CreateCustomerAsync(User user) {
             var options = new CustomerCreateOptions
@@ -158,19 +165,19 @@ namespace Reboost.Service.Services
             return await service.ListAsync();
         }
 
-        public async Task<Payout> CreatePayoutAsync(decimal amount, string customerId)
-        {
-            var options = new PayoutCreateOptions
-            {
-                Amount = (long)amount,
-                Currency = "usd",
-                //Method = "instant"
-                StatementDescriptor = "Reboost"
-            };
-            var requestOptions = new RequestOptions();
-            requestOptions.StripeAccount = customerId;
-            return await new PayoutService().CreateAsync(options, requestOptions);
-        }
+        //public async Task<Payout> CreatePayoutAsync(decimal amount, string customerId)
+        //{
+        //    var options = new PayoutCreateOptions
+        //    {
+        //        Amount = (long)amount,
+        //        Currency = "usd",
+        //        //Method = "instant"
+        //        StatementDescriptor = "Reboost"
+        //    };
+        //    var requestOptions = new RequestOptions();
+        //    requestOptions.StripeAccount = customerId;
+        //    return await new PayoutService().CreateAsync(options, requestOptions);
+        //}
 
         public async Task<Transfer> CreateTransferAsync(decimal amount, string destination)
         {
@@ -255,6 +262,6 @@ namespace Reboost.Service.Services
             await service.UpdateAsync(customerId, options);
             return true;
         }
+        
     }
-
 }

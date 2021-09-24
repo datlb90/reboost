@@ -170,7 +170,13 @@
       </pane>
     </splitpanes>
     <div>
-      <checkout :visible="checkoutVisible" @closed="checkoutVisible=false" />
+      <checkout
+        :visible="checkoutVisible"
+        :submission-id="+submissionId"
+        :question-id="+questionId"
+        @proReviewRequested="isProRequested=true"
+        @closed="checkoutVisible=false"
+      />
     </div>
     <el-dialog
       title="Time Out"

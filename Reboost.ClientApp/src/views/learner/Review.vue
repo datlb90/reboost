@@ -16,7 +16,7 @@
           <el-tab-pane name="rubric" label="Rubric">
             <tabRubric ref="tabRubric" :current-user="currentUser" :questionid="questionId" :reviewid="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
-          <el-tab-pane v-if="isRate" name="rate" label="Rate">
+          <el-tab-pane v-if="isRate && !isDisputed" name="rate" label="Rate">
             <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" />
           </el-tab-pane>
         </el-tabs>
@@ -400,7 +400,8 @@ export default {
       disputeNote: {
         note: null
       },
-      disputeNoteDialogVisible: false
+      disputeNoteDialogVisible: false,
+      isDisputed: false
     }
   },
   computed: {
@@ -457,16 +458,16 @@ export default {
       }
     })
 
-    this.loadRate()
-
-    if (this.currentUser.role === 'Admin' || this.isView || this.isRate) {
-      document.getElementById('viewerContainer').style.userSelect = 'none'
+    this.loadReview().then(rs => {
+      if (this.currentUser.role === 'Admin' || this.isView || this.isRate) {
+        document.getElementById('viewerContainer').style.userSelect = 'none'
       this.$refs.toolBar?.disableAnnotationCreate()
       this.disableToolbarSubmit()
       disableEdit()
-    } else {
-      enableEdit()
-    }
+      } else {
+        enableEdit()
+      }
+    })
   },
   beforeCreate: function() {
     document.body.style = 'overflow: hidden'
@@ -2796,18 +2797,18 @@ export default {
       this.activeButton = 'cursor'
       this.$refs.toolBar?.disableButtons()
     },
-    loadRate() {
-      reviewService.getById(this.$route.params.reviewId).then(async rs => {
-        console.log('get review', this.currentUser.id)
-
+    async loadReview() {
+      const result = await reviewService.getById(this.$route.params.reviewId).then(async rs => {
         if (rs.review) {
           if (rs.review.status === REVIEW_REQUEST_STATUS.COMPLETED) {
             this.isView = true
+            this.isSubmit = true
           }
 
-          if (rs.review.status === 'Completed' && this.currentUser.role === UserRole.ADMIN) {
+          if (rs.review.status === 'Completed' && (this.currentUser.role === UserRole.ADMIN || this.currentUser.id == rs.review.revieweeId)) {
             reviewService.getDisputeByReviewId(rs.review.id).then(rs => {
               if (rs) {
+                this.isDisputed = true
                 this.$refs.toolBar?.loadDisputeData(rs)
                 this.$refs.tabQuestion?.getDisputeData(rs)
                 if (rs.adminNote) {
@@ -2846,6 +2847,7 @@ export default {
           this.isView = true
         }
       })
+      return result
     },
     rateReview() {
       this.selectedTab = 'rate'

@@ -77,7 +77,13 @@
       </el-col>
     </el-row>
     <div>
-      <checkout :visible="checkoutVisible" @closed="checkoutVisible=false" />
+      <checkout
+        :visible="checkoutVisible"
+        :question-id="+selectedQuestionId"
+        :submission-id="+selectedSubId"
+        @proReviewRequested="proReviewRequest"
+        @closed="checkoutVisible=false"
+      />
     </div>
   </div>
 </template>
@@ -102,7 +108,9 @@ export default {
       total: 0,
       page: 1,
       checkoutVisible: false,
-      unRatedList: []
+      unRatedList: [],
+      selectedSubId: null,
+      selectedQuestionId: null
     }
   },
   computed: {
@@ -166,6 +174,8 @@ export default {
       console.log(this.listSubmissionsPerPage)
     },
     actionClick(action, e) {
+      this.selectedSubId = e.id
+
       if (action.trim() === 'Request Review') {
         reviewService.createReviewRequest({
           UserId: this.currentUser.id,
@@ -207,28 +217,37 @@ export default {
           this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}`)
         })
       } else if (action == 'Request Pro Review') {
-        // this.checkoutVisible = true
+        this.selectedQuestionId = e.questionId
+        this.checkoutVisible = true
 
-        reviewService.createProReviewRequest({
-          UserId: this.currentUser.id,
-          SubmissionId: e.id,
-          FeedbackType: 'Pro',
-          Status: REVIEW_REQUEST_STATUS.WAITING
-        }).then(rs => {
-          this.$notify.success({
-            title: 'Submission Requested',
-            message: 'Requested!',
-            type: 'success',
-            duration: 1500
-          })
-          this.submissionsListCached.forEach(r => {
-            if (r.id === e.id) {
-              r.status = 'Review Requested'
-              r.action = 'View Submission'
-            }
-          })
-        })
+        // reviewService.createProReviewRequest({
+        //   UserId: this.currentUser.id,
+        //   SubmissionId: e.id,
+        //   FeedbackType: 'Pro',
+        //   Status: REVIEW_REQUEST_STATUS.WAITING
+        // }).then(rs => {
+        //   this.$notify.success({
+        //     title: 'Submission Requested',
+        //     message: 'Requested!',
+        //     type: 'success',
+        //     duration: 1500
+        //   })
+        //   this.submissionsListCached.forEach(r => {
+        //     if (r.id === e.id) {
+        //       r.status = 'Review Requested'
+        //       r.action = 'View Submission'
+        //     }
+        //   })
+        // })
       }
+    },
+    proReviewRequest() {
+      this.submissionsListCached.forEach(r => {
+        if (r.id === this.selectedSubId) {
+          r.status = 'Review Requested'
+          r.action = 'View Submission'
+        }
+      })
     }
   }
 }

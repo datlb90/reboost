@@ -18,10 +18,18 @@
             />
           </p>
 
-          <div>
+          <div v-if="dispute.status === DISPUTE_STATUS.OPEN">
             <el-button size="mini" type="primary" @click="showNoteDialog(DISPUTE_STATUS.ACCEPTED)">Accepted</el-button>
             <el-button size="mini" type="danger" @click="showNoteDialog(DISPUTE_STATUS.DENIED)">Denied</el-button>
             <el-button size="mini" type="success" @click="showNoteDialog(DISPUTE_STATUS.REFUNDED)">Refunded</el-button>
+          </div>
+          <div v-if="dispute.status !== DISPUTE_STATUS.OPEN">
+            <el-tag
+              :type="dispute.status === DISPUTE_STATUS.ACCEPTED ? 'success'
+                : dispute.status === DISPUTE_STATUS.DENIED ? 'danger' :'info'"
+            >
+              {{ dispute.status }}
+            </el-tag>
           </div>
         </div>
 

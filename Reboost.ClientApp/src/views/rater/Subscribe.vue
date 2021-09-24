@@ -21,11 +21,11 @@
         <el-col v-for="item in currentProducts" :key="item.id" class="row">
           <div class="plan-selection col-md-12">
             <div style="width:80%">
-              <div class="price-panel" :class="currentPrices.filter(r => r.product == item.id)[0].recurring.interval.toLowerCase() == 'year' ? 'yearly' : 'monthly'">
+              <div class="price-panel" :class="item.name === 'year' ? 'yearly' : 'monthly'">
                 <div class="header">
                   <p class="title">{{ item.name }}</p>
                   <p class="sub-title">Subscription</p>
-                  <p class="price">${{ formatPrice(item.id) }}
+                  <p class="price">${{ item.price }}
                     <span class="text">/{{ formatInterval(item.id) }}</span>
                   </p>
                 </div>  <!-- End of header -->
@@ -36,7 +36,7 @@
                   <small class="currency-notice">(prices are marked in USD)</small>
                 </div>  <!-- End of body -->
                 <div class="footer">
-                  <button v-if="!subscribedPlans.find(p => p.product == item.id)" type="button" class="button button-default subscribe-button" @click="planSelected(item.id)">Subscribe</button>
+                  <button v-if="!subscribedPlans.find(p => p.product == item.id)" type="button" class="button button-default subscribe-button" @click="planSelected(item)">Subscribe</button>
                   <button v-else type="button" class="button button-default subscribe-button" disabled="true">Subscribed</button>
                 </div>  <!-- End of footer -->
               </div>
@@ -67,49 +67,46 @@ export default {
       productsList: [],
       pricesList: [],
       checkoutVisible: false,
-      priceId: '',
-      subscribedPlans: []
+      priceId: null,
+      subscribedPlans: [],
+      currentProducts: [{
+        id: 1,
+        pId: 'P-6N9586386D9350704MFFTCIQ',
+        name: 'year',
+        price: 159.00,
+        description: 'Our most popular plan previously sold for $299 and is now only $13/month. This plan saves you over 60% in comparison to the monthly plan.'
+      }, {
+        id: 2,
+        pId: 'P-2XC42867D76575918MFFP53Q',
+        name: 'month',
+        price: 35.00,
+        description: 'Down from $39/month. Our monthly plan grants access to all premium features, the best plan for short-term subscribers.'
+      }]
     }
   },
   computed: {
     currentUser() {
       return this.$store.getters['auth/getUser']
-    },
-    currentProducts() {
-      return this.$store.getters['payment/getAllProducts']
-    },
-    currentPrices() {
-      return this.$store.getters['payment/getAllPrices']
     }
   },
   watch: {
 
   },
   async mounted() {
-    this.$store.dispatch('payment/loadProducts')
-    this.$store.dispatch('payment/loadPrices')
-
-    paymentService.getCustomerSubscriptions(this.currentUser.stripeCustomerId).then(rs => {
-      this.subscribedPlans = rs.data.map(s => s.items.data[0].plan)
+    paymentService.getLearnerSubscriptions().then(rs => {
+      console.log('subcribed: ', rs)
     })
   },
   methods: {
-    formatPrice(id) {
-      var value = this.currentPrices.filter(r => r.product == id)[0].unit_amount / 100
-      const val = (value / 1).toFixed(2).replace('.', ',')
-      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-    },
     formatInterval(id) {
-      var value = this.currentPrices.filter(r => r.product == id)[0].recurring.interval.toLowerCase()
+      var value = this.currentProducts.filter(r => r.id == id)[0].name
       return value == 'year' ? 'yr' : 'mo'
     },
-    planSelected(id) {
-      console.log(this.currentPrices.filter(r => r.product == id)[0].id)
-      this.priceId = this.currentPrices.filter(r => r.product == id)[0].id
+    planSelected(item) {
+      this.priceId = item
       this.checkoutVisible = true
     },
     subcribe(e) {
-      console.log('subcribe:', e)
       paymentService.subscribe({ methodId: e.id, priceId: this.priceId }).then(s => {
         this.priceId = ''
         if (s.error) {

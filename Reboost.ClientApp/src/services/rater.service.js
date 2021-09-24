@@ -27,6 +27,12 @@ const raterService = {
   },
   getRaterRating() {
     return http.get('/rater/rating').then(rs => rs.data)
+  },
+  getRaterPaypalAccount() {
+    return http.get('/rater/paypal/account').then(rs => rs.data)
+  },
+  updateRaterPaypalAccount(email) {
+    return http.put(`/rater/paypal/account`, { email: email }).then(rs => rs.data)
   }
 }
 

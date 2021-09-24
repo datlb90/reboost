@@ -36,7 +36,7 @@ namespace Reboost.DataAccess.Repositories
         Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
         Task<ReviewRequests> GetReviewRequestBySubmissionId(int submissionId, string userId);
         Task<int> CheckReviewValidationAsync(string role, User user, int reviewId);
-        Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId);
+        Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string userId);
         Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId);
         Task<RequestQueue> AddRequestQueue(RequestQueue data, string userID);
         Task<GetReviewsModel> CreateReviewFromQueue(string userID);
@@ -47,7 +47,7 @@ namespace Reboost.DataAccess.Repositories
         Task<CreatedProRequestModel> CreateProRequestAsync(ReviewRequests request);
         Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request);
         Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId);
-        Task<int> IsProRequestCheckAsync(int reviewId);
+        Task<int> IsProRequestCheckAsync(int reviewId, string userId);
         Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId);
         Task<Raters> ReAssignRaterToAssignment(int requestId);
         Task<Disputes> CreateDisputeAsync(Disputes disputes);
@@ -138,7 +138,13 @@ namespace Reboost.DataAccess.Repositories
 
             // Check if review is a training, then change rater status to 'Training Completed' if his/her have finished all training that applied to
             Raters rater = await db.Raters.Where(r => r.UserId == review.ReviewerId).FirstOrDefaultAsync();
-            if(rater != null && rater.Status != RaterStatus.APPROVED)
+
+            if(rater == null)
+            {
+                return null;
+            }
+
+            if(rater.Status != RaterStatus.APPROVED)
             {
                 RaterTraining training = await db.RaterTraining.Where(t => t.ReviewId == reviewId).FirstOrDefaultAsync();
 
@@ -179,6 +185,19 @@ namespace Reboost.DataAccess.Repositories
 
                     request.Status = ReviewRequestStatus.COMPLETED;
                     request.CompletedDateTime = DateTime.Now;
+
+                    //if(request.FeedbackType == ReviewRequestType.PRO)
+                    //{
+                    //    RaterBalances balances = new RaterBalances
+                    //    {
+                    //        CompletedDate = DateTime.Now,
+                    //        RaterId = rater.Id,
+                    //        ReviewId = reviewId,
+                    //        Status = RaterBalanceStatus.AVAILABLE,
+                    //        Total = 1
+                    //    };
+                    //    await db.RaterBalances.AddAsync(balances);
+                    //}
                 }
             }
 
@@ -416,6 +435,7 @@ namespace Reboost.DataAccess.Repositories
             var exist = await (from r in db.Reviews
                                where ((r.RevieweeId == user.Id || r.ReviewerId == user.Id) && r.Id == reviewId)
                                select r).FirstOrDefaultAsync();
+
             if(role == "Admin")
             {
                 return 2;
@@ -430,10 +450,27 @@ namespace Reboost.DataAccess.Repositories
             }
             return 0;
         }
-        public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId)
+        public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string userId)
         {
-            var review = db.Reviews.Where(r => r.Id == data.ReviewId).FirstOrDefault();
-            review.Status = ReviewRequestStatus.COMPLETED;
+            var review = await db.Reviews.Where(r => r.Id == data.ReviewId).FirstOrDefaultAsync();
+
+            //Get rater balance if a pro review
+            var _request = await db.ReviewRequests.Where(r => r.Id == review.RequestId).FirstOrDefaultAsync();
+            if(_request!=null && _request.FeedbackType == ReviewRequestType.PRO)
+            {
+                var rater = await db.Raters.Where(ra => ra.UserId == review.ReviewerId).FirstOrDefaultAsync();
+
+                RaterBalances balances = new RaterBalances
+                {
+                    CreatedDate = DateTime.Now,
+                    RaterId = rater.Id,
+                    ReviewId = review.Id,
+                    Status = RaterBalanceStatus.AVAILABLE,
+                    Total = 1
+                };
+                await db.RaterBalances.AddAsync(balances);
+                await db.SaveChangesAsync();
+            }
 
             data.UserId = review.ReviewerId; //Assign ratee id
 
@@ -475,10 +512,10 @@ namespace Reboost.DataAccess.Repositories
             IList<Submissions> _pendingSubmissions = null;
 
             //If there is no un-rated reviews left, change all Pending submission to Submitted
-            var unratedReviews = await GetUnRatedReviewOfUser(raterId);
+            var unratedReviews = await GetUnRatedReviewOfUser(userId);
             if (unratedReviews.Count() == 0)
             {
-                var pendingSubmissions = db.Submissions.Where(s => s.UserId == raterId && s.Status == SubmissionStatus.PENDING);
+                var pendingSubmissions = db.Submissions.Where(s => s.UserId == userId && s.Status == SubmissionStatus.PENDING);
                 foreach (var sub in pendingSubmissions)
                 {
                     sub.Status = SubmissionStatus.SUBMITTED;
@@ -492,7 +529,7 @@ namespace Reboost.DataAccess.Repositories
             {
                 foreach (var sub in _pendingSubmissions)
                 {
-                    await AddQueueAfterSubmittedPendingReview(sub.Id, raterId);
+                    await AddQueueAfterSubmittedPendingReview(sub.Id, userId);
                 }
             }
 
@@ -697,17 +734,19 @@ namespace Reboost.DataAccess.Repositories
             }
 
             // Get current assignment and change rater's Id
-            var assignment = await db.RequestAssignments.Where(a => a.RequestId == request.Id && a.Status == RequestAssigmentStatus.ASSIGNED).FirstOrDefaultAsync();
-            if(assignment != null)
+            var assignment = await db.RequestAssignments.Where(a => a.RequestId == request.Id).FirstOrDefaultAsync();
+            if(assignment == null)
             {
-                assignment.RaterId = rater.Id;
-                assignment.CreateDate = DateTime.Now;
+                RequestAssignment newAssignment = new RequestAssignment { CreateDate = DateTime.Now, RaterId = rater.Id, RequestId = request.Id, Status = RequestAssigmentStatus.ASSIGNED };
+                await db.RequestAssignments.AddAsync(newAssignment);
             }
             else
             {
-                RequestAssignment newAssignment = new RequestAssignment { CreateDate = DateTime.Now, RaterId = rater.Id, RequestId = request.Id, Status = RequestAssigmentStatus.ASSIGNED };
-                await db.RequestAssignments.AddAsync(newAssignment);                
+                assignment.Status = RequestAssigmentStatus.ASSIGNED;
+                assignment.RaterId = rater.Id;
+                assignment.CreateDate = DateTime.Now;
             }
+
             await db.SaveChangesAsync();
 
             return new CreatedProRequestModel { Rater = rater, Request = request };
@@ -817,9 +856,15 @@ namespace Reboost.DataAccess.Repositories
             var rater = await db.Raters.Where(r => r.UserId == currentUserId).FirstOrDefaultAsync();
             var assignment = await db.RequestAssignments.Where(a => a.RequestId == requestId).FirstOrDefaultAsync();
 
-            if (assignment.Status == RequestAssigmentStatus.ASSIGNED && (DateTime.Now.Subtract(assignment.CreateDate).TotalSeconds > 600 || rater.Id != assignment.RaterId))
+            if(rater != null && assignment.RaterId != rater.Id)
             {
-                result.Error = "Assignment's timeout has ended or you do NOT have permission for this request!";
+                result.Error = "You do not have permission to this review!";
+                return result;
+            }
+
+            if (assignment.Status == RequestAssigmentStatus.ASSIGNED && DateTime.Now.Subtract(assignment.CreateDate).TotalSeconds > 600)
+            {
+                result.Error = "Assignment's timeout has ended!";
                 return result;
             }
 
@@ -853,9 +898,16 @@ namespace Reboost.DataAccess.Repositories
             return result;
         }
 
-        public async Task<int> IsProRequestCheckAsync(int reviewId)
+        public async Task<int> IsProRequestCheckAsync(int reviewId, string userId)
         {
             Reviews review = await db.Reviews.FindAsync(reviewId);
+
+            var rater = await db.Raters.Where(r => r.UserId == userId).FirstOrDefaultAsync();
+            if(rater == null)
+            {
+                // Return 2 if rater's permission denied
+                return 2;
+            }
 
             // Check if is a pro review
             ReviewRequests isProRequest = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId && rq.FeedbackType == ReviewRequestType.PRO).FirstOrDefaultAsync();
@@ -864,14 +916,20 @@ namespace Reboost.DataAccess.Repositories
             if (isProRequest != null)
             {
                 RequestAssignment assignment = await db.RequestAssignments.Where(a => a.RequestId == isProRequest.Id).FirstOrDefaultAsync();
+                
+                if(assignment.RaterId != rater.Id)
+                {
+                    // Return 2 if rater's permission denied
+                    return 2;
+                }
 
                 if (DateTime.Now.Subtract(assignment.CreateDate).TotalSeconds > (3 * 60 * 60))
                 {
-                    // Return 0 if review's timeout end
+                    // Return 0 if review's timeout has ended
                     return 0;
                 }
 
-                // Return 1 if it is a pro request
+                // Return 1 if it is a pro request and timeout has not ended
                 return 1;
             }
 
@@ -918,6 +976,7 @@ namespace Reboost.DataAccess.Repositories
                 return null;
             }
 
+            // Change submission's status
             var submission = await db.Submissions.FindAsync(request.SubmissionId);
 
             if (submission == null)
@@ -926,6 +985,14 @@ namespace Reboost.DataAccess.Repositories
             }
 
             submission.Status = SubmissionStatus.DISPUTE_REQUESTED;
+
+            // Change rater's balance status
+            if(request.FeedbackType == ReviewRequestType.PRO)
+            {
+                var balance = await db.RaterBalances.Where(b => b.ReviewId == disputes.ReviewId).FirstOrDefaultAsync();
+
+                balance.Status = RaterBalanceStatus.DISPUTING;
+            }
 
             await db.SaveChangesAsync();
             return disputes;
@@ -949,7 +1016,7 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<Disputes> UpdateDisputeAsync(Disputes dispute)
         {
-            var exist = await db.Disputes.Include("Review").Where(d => d.Id == dispute.Id).FirstOrDefaultAsync();
+            var exist = await db.Disputes.Include("Review").Include("User").Where(d => d.Id == dispute.Id).FirstOrDefaultAsync();
 
             exist.Status = dispute.Status;
             exist.AdminNote = dispute.AdminNote;
@@ -970,7 +1037,14 @@ namespace Reboost.DataAccess.Repositories
 
             submission.Status = dispute.Status == DisputeStatus.DENIED ?
                 SubmissionStatus.COMPLETED : dispute.Status == DisputeStatus.ACCEPTED ?
-                SubmissionStatus.REVIEW_REQUESTED : SubmissionStatus.SUBMITTED;            
+                SubmissionStatus.REVIEW_REQUESTED : SubmissionStatus.SUBMITTED;
+
+            // Change rater's balance status to available if dispute denied
+            if (dispute.Status == DisputeStatus.DENIED)
+            {
+                var balance = await db.RaterBalances.Where(b => b.ReviewId == exist.ReviewId).FirstOrDefaultAsync();
+                balance.Status = RaterBalanceStatus.AVAILABLE;
+            }
 
             await db.SaveChangesAsync();
 

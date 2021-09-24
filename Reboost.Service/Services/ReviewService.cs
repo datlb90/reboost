@@ -39,7 +39,7 @@ namespace Reboost.Service.Services
         Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
         Task<int> CheckReviewValidationAsync(string role, User user, int reviewId);
         Task<ReviewRequests> GetReviewRequestBySubmissionId(int submissionId, string userId);
-        Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId);
+        Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string userId);
         Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId);
         Task<RequestQueue> AddRequestQueue(RequestQueue data, string userId);
         Task<GetReviewsModel> CreateReviewFromQueue(string userId);
@@ -48,7 +48,7 @@ namespace Reboost.Service.Services
         Task<CreatedProRequestModel> CreateProRequestAsync(ReviewRequests request);
         Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request);
         Task<GetReviewsModel> GetOrCreateReviewByProRequestId(int requestId, string currentUserId);
-        Task<int> IsProRequestCheckAsync(int reviewId);
+        Task<int> IsProRequestCheckAsync(int reviewId, string userId);
         Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId);
         Task<Raters> ReAssignRaterToAssignment(int requestId);
         Task<Disputes> CreateDisputeAsync(Disputes disputes);
@@ -61,9 +61,11 @@ namespace Reboost.Service.Services
     public class ReviewService : BaseService, IReviewService
     {
         IMailService mailService;
-        public ReviewService(IUnitOfWork unitOfWork, IMailService _mailService) : base(unitOfWork)
+        IPaymentService paymentService;
+        public ReviewService(IUnitOfWork unitOfWork, IMailService _mailService, IPaymentService _paymentService) : base(unitOfWork)
         {
             mailService = _mailService;
+            paymentService = _paymentService;
         }
         public async Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId)
         {
@@ -98,7 +100,14 @@ namespace Reboost.Service.Services
         }
         public async Task<Reviews> SaveFeedback(int reviewId, List<ReviewData> data)
         { 
-            return await _unitOfWork.Review.SaveFeedback(reviewId, data);
+            var rs = await _unitOfWork.Review.SaveFeedback(reviewId, data);
+
+            if(rs == null) 
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "Review or Rater not existed");
+            }
+
+            return rs;
         }
         public async Task<List<ReviewData>> LoadFeedback(int reviewId)
         {
@@ -176,9 +185,9 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.CheckReviewValidationAsync(role, user, reviewId);
         }
-        public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string raterId)
+        public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string userId)
         {
-            return await _unitOfWork.Review.CreateReviewRatingAsync(data, raterId);
+            return await _unitOfWork.Review.CreateReviewRatingAsync(data, userId);
         }
         public async Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId)
         {
@@ -231,8 +240,9 @@ namespace Reboost.Service.Services
 
             if(rs == null)
             {
-                return rs;
+                throw new AppException(ErrorCode.InvalidArgument, "No rater available!");
             }
+
             // Send mail to rater with confirm link
             await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
 
@@ -247,9 +257,9 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.GetOrCreateReviewByProRequestId(requestId, currentUserId);
         }
-        public async Task<int> IsProRequestCheckAsync(int reviewId)
+        public async Task<int> IsProRequestCheckAsync(int reviewId, string userId)
         {
-            return await _unitOfWork.Review.IsProRequestCheckAsync(reviewId);
+            return await _unitOfWork.Review.IsProRequestCheckAsync(reviewId, userId);
         }
         public async Task<List<RaterTraining>> GetRaterTrainingsAsync(int raterId)
         {
@@ -261,7 +271,14 @@ namespace Reboost.Service.Services
         }
         public async Task<Disputes> CreateDisputeAsync(Disputes disputes)
         {
-            return await _unitOfWork.Review.CreateDisputeAsync(disputes);
+            var rs = await _unitOfWork.Review.CreateDisputeAsync(disputes);
+
+            if (rs == null)
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "Review or Submission not existed");
+            }
+
+            return rs;
         }
         public async Task<List<Disputes>> GetAllDisputesAsync()
         {
@@ -275,12 +292,19 @@ namespace Reboost.Service.Services
         public async Task<Disputes> UpdateDisputeAsync(Disputes dispute)
         {
             var rs = await _unitOfWork.Review.UpdateDisputeAsync(dispute);
+
+            if(rs == null)
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "Dispute not existed");
+            }
+
             var reviewRequest = await GetOrCreateReviewByProRequestId(rs.Review.RequestId, rs.UserId);
 
             if (reviewRequest.ReviewRequest != null)
             {
                 if(rs.Status == DisputeStatus.ACCEPTED)
                 {
+                    await paymentService.LearnerRefund(rs.UserId, rs.User.Email);
                     await ReRequestProRequestAsync(reviewRequest.ReviewRequest);
                 }
             }

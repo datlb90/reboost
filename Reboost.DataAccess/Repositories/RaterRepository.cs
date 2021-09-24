@@ -22,6 +22,8 @@ namespace Reboost.DataAccess.Repositories
         Task<List<string>> GetApplyTo(int raterId);
         Task<Raters> UpdateWithCredentialAsync(Raters rater);
         Task<decimal> GetRaterRatingAsync(string UserID);
+        Task<Raters> GetRaterPaypalAccountAsync(string userId);
+        Task<Raters> UpdateRaterPaypalAccountAsync(string userId, string paypalAccount);
     }
     public class RaterRepository : BaseRepository<Raters>, IRaterRepository
     {
@@ -103,6 +105,26 @@ namespace Reboost.DataAccess.Repositories
                 return rs.AverageReviewRate;
             }
             return 0;
+        }
+
+        public async Task<Raters> GetRaterPaypalAccountAsync(string userId)
+        {
+            return await ReboostDbContext.Raters.Where(r => r.UserId == userId).FirstOrDefaultAsync();
+        }
+
+        public async Task<Raters> UpdateRaterPaypalAccountAsync(string userId, string paypalAccount)
+        {
+            var currentRater = await ReboostDbContext.Raters.Where(r => r.UserId == userId).FirstOrDefaultAsync();
+
+            if (currentRater == null)
+            {
+                return null;
+            }
+            currentRater.PaypalAccount = paypalAccount;
+
+            await ReboostDbContext.SaveChangesAsync();
+
+            return currentRater;
         }
     }
 }
