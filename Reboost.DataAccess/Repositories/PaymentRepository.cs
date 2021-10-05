@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
+using Reboost.Shared;
 
 namespace Reboost.DataAccess.Repositories
 {
@@ -20,6 +21,12 @@ namespace Reboost.DataAccess.Repositories
         //Task<IEnumerable<Payments>> GetPaymentByUser(string userId);
         //Task<List<PaymentHistory>> GetAllPaymentHistory();
         //Task<PaymentHistory> CreateNewPaymentHistory(PaymentHistory ph);
+        Task<List<RaterBalances>> GetAllRaterBalanceAsync(string userId);
+        Task<List<RaterBalances>> GetRaterPayableBalanceAsync(string userId);
+        Task<List<RaterBalances>> UpdatePaidBalancesAsync(string userId);
+        Task<LearnerPaymentsHistory> CreatePaymentHistoryAsync(LearnerPaymentsHistory data);
+        Task<LearnerSubscriptions> CreateUpdateSubscriptionAsync(LearnerSubscriptions data);
+        Task<LearnerSubscriptions> GetLearnerSubscriptions(string userId);
     }
     public class PaymentRepository : BaseRepository<Payments>, IPaymentRepository
     {
@@ -70,5 +77,74 @@ namespace Reboost.DataAccess.Repositories
         //    await ReboostDbContext.SaveChangesAsync();
         //    return ph;
         //}
+
+        public async Task<List<RaterBalances>> GetAllRaterBalanceAsync(string userId)
+        {
+            var rater = await ReboostDbContext.Raters.Where(r => r.UserId == userId).FirstOrDefaultAsync();
+
+            var listBalances = await ReboostDbContext.RaterBalances.Where(b => b.RaterId == rater.Id).ToListAsync();
+
+            return listBalances;
+        }
+
+        public async Task<List<RaterBalances>> GetRaterPayableBalanceAsync(string userId)
+        {
+            var rater = await ReboostDbContext.Raters.Where(r => r.UserId == userId).FirstOrDefaultAsync();
+
+            var listBalances = await ReboostDbContext.RaterBalances.Where(b => b.RaterId == rater.Id && b.Status == RaterBalanceStatus.AVAILABLE).ToListAsync();
+
+            return listBalances;
+        }
+
+        public async Task<List<RaterBalances>> UpdatePaidBalancesAsync(string userId)
+        {
+            var rater = await ReboostDbContext.Raters.Where(r => r.UserId == userId).FirstOrDefaultAsync();
+
+            var listBalances = await ReboostDbContext.RaterBalances.Where(b => b.RaterId == rater.Id && b.Status == RaterBalanceStatus.AVAILABLE).ToListAsync();
+
+            foreach (var b in listBalances)
+            {
+                    b.Status = RaterBalanceStatus.PAID;
+            }
+            await ReboostDbContext.SaveChangesAsync();
+
+            return listBalances;
+        }
+
+        public async Task<LearnerPaymentsHistory> CreatePaymentHistoryAsync(LearnerPaymentsHistory data)
+        {
+            await ReboostDbContext.LearnerPaymentsHistory.AddAsync(data);
+            await ReboostDbContext.SaveChangesAsync();
+            return data;
+        }
+        public async Task<LearnerSubscriptions> CreateUpdateSubscriptionAsync(LearnerSubscriptions data)
+        {
+            var existed = await ReboostDbContext.LearnerSubscriptions.Where(s => s.UserId == data.UserId).FirstOrDefaultAsync();
+
+            if (existed != null)
+            {
+                existed.MonthSubs = data.MonthSubs != null ? data.MonthSubs : existed.MonthSubs;
+                existed.YearSubs = data.YearSubs != null ? data.YearSubs : existed.YearSubs;
+
+                await ReboostDbContext.SaveChangesAsync();
+                return existed;
+            }
+
+            LearnerSubscriptions newSubs = new LearnerSubscriptions
+            {
+                UserId = data.UserId,
+                MonthSubs = data.MonthSubs,
+                YearSubs = data.YearSubs,
+            };
+
+            await ReboostDbContext.LearnerSubscriptions.AddAsync(newSubs);
+            await ReboostDbContext.SaveChangesAsync();
+            return newSubs;
+        }
+
+        public async Task<LearnerSubscriptions> GetLearnerSubscriptions(string userId)
+        {
+            return await ReboostDbContext.LearnerSubscriptions.Where(s => s.UserId == userId).FirstOrDefaultAsync();
+        }
     }
 }

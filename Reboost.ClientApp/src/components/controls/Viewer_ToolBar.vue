@@ -160,7 +160,7 @@
     <div id="submit-container" class="submit-button" style="align-items: center;">
       <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
       <el-button v-if="isAuthor" :disabled="readOnly||isRate||isSubmit" type="primary" size="mini" @click="submitReview()">Submit</el-button>
-      <el-button v-if="isRate && !isAuthor && !isRated" type="primary" size="mini" @click="rateReview()">Rate Review</el-button>
+      <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="primary" size="mini" @click="rateReview()">Rate Review</el-button>
       <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="danger" size="mini" @click="disputeReview()">Dispute</el-button>
     </div>
   </div>
@@ -556,6 +556,7 @@ export default ({
       this.reviewData = rs
     },
     loadDisputeData(data) {
+      console.log('dispute data', data)
       this.dispute = data
     },
     rejectTraining(note) {

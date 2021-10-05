@@ -24,6 +24,8 @@ namespace Reboost.Service.Services
         Task<Raters> DeleteAsync(int id);
         Task<List<string>> GetApplyTo(int raterId);
         Task<decimal> GetRaterRatingAsync(string UserID);
+        Task<Raters> GetRaterPaypalAccountAsync(string userId);
+        Task<Raters> UpdateRaterPaypalAccountAsync(string userId, string paypalAccount);
     }
 
     public class RaterService : BaseService, IRaterService
@@ -170,6 +172,23 @@ namespace Reboost.Service.Services
         public async Task<decimal> GetRaterRatingAsync(string UserID)
         {
             return await _unitOfWork.Raters.GetRaterRatingAsync(UserID);
+        }
+
+        public async Task<Raters> GetRaterPaypalAccountAsync(string userId)
+        {
+            return await _unitOfWork.Raters.GetRaterPaypalAccountAsync(userId);
+        }
+
+        public async Task<Raters> UpdateRaterPaypalAccountAsync(string userId, string paypalAccount)
+        {
+            var rs = await _unitOfWork.Raters.UpdateRaterPaypalAccountAsync(userId, paypalAccount);
+
+            if (rs == null)
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "Rater not exists!");
+            }
+
+            return rs;
         }
     }
 }

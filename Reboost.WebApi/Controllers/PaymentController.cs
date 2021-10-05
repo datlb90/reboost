@@ -100,13 +100,14 @@ namespace Reboost.WebApi.Controllers
             return Ok(account);
         }
 
-        [Authorize]
-        [HttpPost("payout")]
-        public async Task<IActionResult> CreatePayout([FromBody] TransferModel model)
-        {
-            Payout rs = await _stripeService.CreatePayoutAsync(model.Amount, model.Destination);
-            return Ok(rs);
-        }
+        //[Authorize]
+        //[HttpPost("payout")]
+        //public async Task<IActionResult> CreatePayout([FromBody] TransferModel model)
+        //{
+        //    Payout rs = await _stripeService.CreatePayoutAsync(model.Amount, model.Destination);
+        //    return Ok(rs);
+        //}
+
         [Authorize]
         [HttpPost("transfer")]
         public async Task<IActionResult> CreateTranfer([FromBody] TransferModel model)
@@ -236,6 +237,89 @@ namespace Reboost.WebApi.Controllers
         public async Task<IActionResult> GetUserCustomerId()
         {
             var rs = await GetCustomerId();
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpPost("paypal/payout")]
+        public async Task<IActionResult> HandlePaypalPayout()
+        {
+            var currentUserClaim = HttpContext.User;
+            var userEmail = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(userEmail.Value);
+
+            var rs = await _service.RaterPayout(currentUser.Id);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("balance/available")]
+        public async Task<IActionResult> GetAvailableBalance()
+        {
+            var currentUserClaim = HttpContext.User;
+            var userEmail = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(userEmail.Value);
+
+            var rs = await _service.GetRaterPayableBalanceAsync(currentUser.Id);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("balance")]
+        public async Task<IActionResult> GetAllRaterBalance()
+        {
+            var currentUserClaim = HttpContext.User;
+            var userEmail = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(userEmail.Value);
+
+            var rs = await _service.GetAllRaterBalanceAsync(currentUser.Id);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("paypal/connect/{mail}")]
+        public async Task<IActionResult> ConnectToPaypalAccount([FromRoute] string mail)
+        {
+            var currentUserClaim = HttpContext.User;
+            var userEmail = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(userEmail.Value);
+
+            return Ok(currentUser);
+        }
+
+        [Authorize]
+        [HttpPost("paypal/paymentHistory")]
+        public async Task<IActionResult> CreatePaymentHistoryAsync([FromBody] LearnerPaymentsHistory data)
+        {
+            data.CreatedDate = DateTime.Now;
+
+            var rs = await _service.CreatePaymentHistoryAsync(data);
+            return Ok(rs);
+        }
+
+
+        [Authorize]
+        [HttpPost("paypal/subscribe")]
+        public async Task<IActionResult> CreateUpdateSubscriptionAsync([FromBody] LearnerSubscriptions data)
+        {
+            var currentUserClaim = HttpContext.User;
+            var userEmail = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(userEmail.Value);
+            data.UserId = currentUser.Id;
+
+            var rs = await _service.CreateUpdateSubscriptionAsync(data);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("paypal/subscribe")]
+        public async Task<IActionResult> GetSubscriptionAsync()
+        {
+            var currentUserClaim = HttpContext.User;
+            var userEmail = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(userEmail.Value);
+
+            var rs = await _service.GetLearnerSubscriptions(currentUser.Id);
             return Ok(rs);
         }
     }

@@ -122,8 +122,18 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("feedback/{id}")]
         public async Task<IActionResult> ReviewFeedback([FromRoute] int id, [FromBody] List<ReviewData> data)
         {
-            // Check if it is a pro request, return 1 if is a pro request, -1 if it not a pro request, 0 if review's timeout end
-            var isProRequest = await _service.IsProRequestCheckAsync(id);
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            // Check if it is a pro request, return 1 if is a pro request, -1 if it not a pro request, 0 if review's timeout end, 2 if current rater does not have permission to this review
+            var isProRequest = await _service.IsProRequestCheckAsync(id, currentUser.Id);
+
+            // Check rater's permission
+            if (isProRequest == 2)
+            {
+                return BadRequest(new { message = "You don't have permission to this review request!" });
+            }
 
             // Check if pro review's timeout end
             if (isProRequest == 0)
@@ -314,7 +324,7 @@ namespace Reboost.WebApi.Controllers
         }
 
         [Authorize]
-        [HttpPost("reviewRating")]
+        [HttpPost("rate")]
         public async Task<IActionResult> CreateReviewRatingAsync([FromBody] ReviewRatings data)
         {
             var currentUserClaim = HttpContext.User;
@@ -325,7 +335,7 @@ namespace Reboost.WebApi.Controllers
             return Ok(rs);
         }
         [Authorize]
-        [HttpGet("reviewRating/{reviewId}")]
+        [HttpGet("rate/{reviewId}")]
         public async Task<IActionResult> GetReviewRatingByReviewIdAsync([FromRoute] int reviewId)
         {
             var rs = await _service.GetReviewRatingsByReviewIdAsync(reviewId);
@@ -408,33 +418,12 @@ namespace Reboost.WebApi.Controllers
                 // Get rater and update requested time of queue
                 var rs = await _service.ReRequestProRequestAsync(exist);
 
-                //// Send mail to rater with confirm link
-                //await _mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
-
-                //// ReAssign to another rater if request not accepted after 10 minutes
-                //BackgroundJob.Schedule(
-                //    () => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10)
-                //    );
-
-                if (rs == null)
-                {
-                    return BadRequest(new { message = "No rater available!" });
-                }
-
                 return Ok(rs.Request);
             }
             else
             {
                 // Add request then return the rater that applied to this request
                 var rs = await _service.CreateProRequestAsync(request);
-
-                //// Send mail to rater with confirm link
-                //await _mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
-
-                //// ReAssign to another rater if request not accepted after 10 minutes
-                //BackgroundJob.Schedule(
-                //    () => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10)
-                //    );
 
                 if (rs == null)
                 {
@@ -524,17 +513,6 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.GetAllLearnerDisputesAsync(currentUser.Id);
 
             return Ok(rs);
-        }
-
-        public async Task<IActionResult> ReAssignRater(int requestId)
-        {
-            var rater = await _service.ReAssignRaterToAssignment(requestId);
-            if(rater!= null)
-            {
-                // Send mail to rater with confirm link
-                await _mailService.SendEmailAsync(rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + requestId);
-            }
-            return Ok();
         }
     }
 }

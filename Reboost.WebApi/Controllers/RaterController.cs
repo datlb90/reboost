@@ -113,5 +113,31 @@ namespace Reboost.WebApi.Controllers
 
             return await _service.GetRaterRatingAsync(currentUser.Id);
         }
+
+        [Authorize]
+        [HttpGet("paypal/account")]
+        public async Task<IActionResult> GetRaterPaypalAccountAsync()
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.GetRaterPaypalAccountAsync(currentUser.Id);
+
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpPut("paypal/account")]
+        public async Task<IActionResult> UpdateRaterPaypalAccountAsync([FromBody] UpdateRaterPaypalAccountModel model)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.UpdateRaterPaypalAccountAsync(currentUser.Id, model.email);
+
+            return Ok(rs);
+        }
     }
 }

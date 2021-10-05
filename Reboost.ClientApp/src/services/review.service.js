@@ -68,10 +68,10 @@ const reviewService = {
     return http.get(`/review/submission/${id}`).then(rs => rs.data)
   },
   createReviewRating(data) {
-    return http.post(`/review/reviewRating`, data).then(rs => rs.data)
+    return http.post(`/review/rate`, data).then(rs => rs.data)
   },
   getReviewRating(reviewId) {
-    return http.get(`/review/reviewRating/${reviewId}`).then(rs => rs.data)
+    return http.get(`/review/rate/${reviewId}`).then(rs => rs.data)
   },
   newRequest() {
     return http.get(`/review/new-review`).then(rs => rs.data)

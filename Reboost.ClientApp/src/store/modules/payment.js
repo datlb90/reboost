@@ -7,6 +7,7 @@ const state = {
   prices: [],
   histories: [],
   balance: {},
+  allBalances: [],
   defaultPaymentMethod: null
 }
 
@@ -46,15 +47,14 @@ const actions = {
       commit('SET_TRANSFER_HISTORIES', rs)
     })
   },
-  loadBalance({ commit }, customerId) {
-    if (!customerId) {
-      console.log('user do not have a customerId')
-      commit('SET_BALANCEMETHOD', null)
-      return null
-    }
-    return paymentService.balance(customerId).then(rs => {
-      console.log('Action load balance methods: ', rs)
-      commit('SET_BALANCEMETHOD', rs)
+  loadBalance({ commit }) {
+    return paymentService.getRaterAvailableBalances().then(rs => {
+      commit('SET_BALANCES', rs)
+    })
+  },
+  loadAllBalance({ commit }) {
+    return paymentService.getAllBalances().then(r => {
+      commit('SET_ALL_BALANCES', r)
     })
   },
   loadDefaultPaymentMethod({ commit }, id) {
@@ -86,11 +86,14 @@ const mutations = {
   SET_TRANSFER_HISTORIES: (state, transfers) => {
     state.histories = transfers
   },
-  SET_BALANCEMETHOD: (state, balance) => {
+  SET_BALANCES: (state, balance) => {
     state.balance = balance
   },
   SET_DEFAULTPAYMENTMETHOD: (state, defaultPaymentMethod) => {
     state.defaultPaymentMethod = defaultPaymentMethod
+  },
+  SET_ALL_BALANCES: (state, balances) => {
+    state.allBalances = balances
   }
 }
 
@@ -101,6 +104,7 @@ const getters = {
   getAllPrices: state => state.prices,
   getAllTransferHistories: state => state.histories,
   getBalance: state => state.balance,
+  getAllBalances: state => state.allBalances,
   getDefaultPaymentMethod: state => state.defaultPaymentMethod
 }
 

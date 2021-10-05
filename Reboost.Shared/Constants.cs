@@ -61,7 +61,7 @@ namespace Reboost.Shared
     }
     public static class DisputeStatus
     {
-        public const string OPEN = "OPEN";
+        public const string OPEN = "Open";
         public const string ACCEPTED = "Accepted";
         public const string DENIED = "Denied";
         public const string REFUNDED = "Refunded";
@@ -71,5 +71,17 @@ namespace Reboost.Shared
         public const string ACTIVE = "Active";
         public const string CONTRIBUTED = "Contributed";
         public const string APPROVED = "Approved";
+    }
+    public static class RaterBalanceStatus
+    {
+        public const string PENDING = "Pending";
+        public const string DISPUTING = "Disputing";
+        public const string AVAILABLE = "Available";
+        public const string REFUND = "Refund";
+        public const string PAID = "Paid";
+    }
+    public static class PaidAmount 
+    {
+        public const double VALUE = 1.0;
     }
 }

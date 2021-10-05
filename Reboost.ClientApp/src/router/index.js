@@ -380,7 +380,8 @@ const router = new VueRouter({
       component: Payout,
       name: 'Payout',
       meta: {
-        loginRequired: true
+        loginRequired: true,
+        role: UserRole.RATER
       }
     },
 

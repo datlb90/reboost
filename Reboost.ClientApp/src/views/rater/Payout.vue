@@ -9,21 +9,14 @@
                 <div class="con-user-profile__photo" />
                 <p>Rater until {{ dateFormat(currentUser.expireDate) }}</p>
                 <h1>{{ currentUser.username }}</h1>
-                <h2>
-                  <a :href="loginUrl">View Stripe account</a>
-                </h2>
               </div>
               <div class="con-user-available block">
                 <p>Your balance</p>
-                <h1>${{ parseFloat(balance.available[0].amount/10).toFixed(2) }}</h1>
-                <h2> ${{ parseFloat(balance.available[0].amount/10).toFixed(2) }} available</h2>
+                {{ total }} $
               </div>
               <div class="con-user-payout block">
-                <button class="btn-payout" @click="payout">Pay out now</button>
-                <button class="con-history__reviews__button btn-payout" @click="getPayment">Add Test Review</button>
-                <!-- <p>
-                  <a href="">View payouts on Stripe</a>
-                </p> -->
+                <button v-if="paypalAccount" class="btn-payout" @click="payout"> Pay out now </button>
+                <span v-if="!paypalAccount" id="paypal--connect__btn" />
               </div>
             </div>
             <div class="con-history">
@@ -31,25 +24,38 @@
                 <div class="con-history__reviews__label">
                   Recent reviews
                 </div>
-
               </div>
               <el-table
-                :data="listTransfer"
+                :data="allBalances"
                 style="width: 100%"
               >
                 <el-table-column
-                  prop="name"
-                  label="Name"
-                  width="300"
+                  prop="id"
+                  label="#"
+                  width="100"
                 />
                 <el-table-column
-                  prop="paymentDate"
-                  label="Created Date "
-                  width="300"
+                  prop="reviewId"
+                  label="Review Id"
+                  width="200"
                 />
                 <el-table-column
-                  prop="amount"
+                  prop="createdDate"
+                  label="Created Date"
+                  width="300"
+                >
+                  <template slot-scope="scope">
+                    <span class="title-row cursor" style="word-break: break-word">{{ getTimeFromDateCreateToNow(scope.row.createdDate) }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  prop="total"
                   label="Amount"
+                />
+                <el-table-column
+                  prop="status"
+                  label="Status"
+                  width="200"
                 />
               </el-table>
             </div>
@@ -61,8 +67,8 @@
 </template>
 <script>
 import paymentService from '../../services/payment.service'
-import accountService from '../../services/account.service'
 import moment from 'moment'
+import raterService from '../../services/rater.service'
 export default {
   name: 'StartRating',
   data() {
@@ -71,87 +77,103 @@ export default {
       text: '',
       accountId: null,
       destination: null,
-      loginUrl: '#'
+      loginUrl: '#',
+      email: null,
+      paypalAccount: null
     }
   },
   computed: {
     currentUser() {
       return this.$store.getters['auth/getUser']
     },
-    listTransfer() {
-      var listTransfer = this.$store.getters['payment/getAllTransferHistories']
-      for (const i in listTransfer) {
-        listTransfer[i].name = 'Review ' + (+i + 1).toString()
-        listTransfer[i].paymentDate = moment(listTransfer[i].paymentDate).format('yyyy-MM-DD')
-      }
-      return listTransfer
-    },
     balance() {
       return this.$store.getters['payment/getBalance']
+    },
+    allBalances() {
+      return this.$store.getters['payment/getAllBalances']
+    },
+    total() {
+      var total = this.balance.reduce((previousValue, currentValue) => previousValue + currentValue.total, 0)
+      return total
     }
   },
   mounted() {
-    // console.log('Test', this.currentUser)
-    this.onLoad()
-    this.$store.dispatch('payment/loadPaymentHistories')
+    this.loadPaypalBtn()
+  },
+  beforeMount() {
+    const papyaplScript = document.createElement('script')
+    papyaplScript.src = 'https://www.paypalobjects.com/js/external/api.js'
+    document.body.appendChild(papyaplScript)
+
+    if (this.$router.currentRoute.query?.code) {
+      this.connectPaypalAccountToRater(this.$router.currentRoute.query?.code).then(rs => {
+        this.$router.push('/rater/payout')
+        this.loadRaterPaypalAccount()
+      })
+    } else {
+      this.onLoad()
+    }
   },
   methods: {
     onLoad() {
+      this.$store.dispatch('payment/loadBalance')
+      this.$store.dispatch('payment/loadAllBalance').then(rs => {
+      })
+
       if (this.$route.params.accountId) {
         this.accountId = this.$route.params.accountId
-        this.$store.dispatch('payment/loadBalance', this.accountId)
         this.$store.dispatch('payment/loadPaymentHistories', this.currentUser.id)
         paymentService.loginLink(this.accountId).then(rs => {
           this.loginUrl = rs.data.url
         })
       }
-      paymentService.getStripeAccount(this.currentUser.id).then(rs => {
-        if (!rs) {
-          console.log('KHONG TON TAI ACCOUNT')
-          this.$router.push({ path: '/rater/startRating' })
-          return
-        }
-        accountService.isCompleteOnboard(this.currentUser.id).then(result => {
-          console.log('IS USER COMLETED ONBOARD...', result)
-          if (!result) {
-            this.$router.push({ path: '/rater/startRating' })
-            return
-          }
-        })
-        this.accountId = rs.id
-        this.$store.dispatch('payment/loadBalance', this.accountId)
-        this.$store.dispatch('payment/loadPaymentHistories', this.currentUser.id)
-        paymentService.loginLink(this.accountId).then(rs => {
-          this.loginUrl = rs.data.url
-        })
+      this.loadRaterPaypalAccount()
+    },
+    loadRaterPaypalAccount() {
+      raterService.getRaterPaypalAccount().then(rs => {
+        this.paypalAccount = rs.paypalAccount
       })
+    },
+    loadPaypalBtn() {
+      setTimeout(() => {
+        window.paypal.use(['login'], function(login) {
+          login.render({
+            'appid': 'AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F',
+            'authend': 'sandbox',
+            'scopes': 'openid',
+            'containerid': 'paypal--connect__btn',
+            'responseType': 'code',
+            'locale': 'en-us',
+            'buttonType': 'LWP',
+            'buttonShape': 'pill',
+            'buttonSize': 'lg',
+            'fullPage': 'true',
+            'returnurl': 'https://reboost.azurewebsites.net/rater/payout'
+          })
+        })
+      }, 500)
     },
     dateFormat(time) {
       return moment(new Date(time)).format('yyyy-MM-DD')
     },
-    getPayment() {
-      paymentService.transferMoney({
-        userId: this.currentUser.id,
-        paymentId: 'this_paymentId',
-        type: 'OUT',
-        destination: this.accountId,
-        description: 'No Description',
-        amount: 50,
-        currency: 'usd',
-        status: 'success',
-        paymentDate: new Date(),
-        itemId: ''
-      }).then(rs => {
-        // console.log('transfer', rs)
-        this.$store.dispatch('payment/loadPaymentHistories', this.currentUser.id)
-        this.$store.dispatch('payment/loadBalance', this.accountId)
+    payout() {
+      paymentService.paypalPayout('sb-wytlo7507601@personal.example.com').then(r => {
+        console.log('result payout: ', r)
       })
     },
-    payout() {
-      paymentService.payout({ amount: this.balance.available[0].amount, destination: this.accountId }).then(rs => {
-        // console.log('payout', rs)
-        this.$store.dispatch('payment/loadBalance', this.accountId)
+    getTimeFromDateCreateToNow(time) {
+      return moment(new Date(time)).format('MMMM Do YYYY, hh:mm:ss a')
+    },
+    async connectPaypalAccountToRater(e) {
+      const rs = await paymentService.getUserPaypalInfo(e).then(rs => {
+        if (rs.data.emails.length > 0) {
+          const email = rs.data.emails[0].value
+          raterService.updateRaterPaypalAccount(email).then(r => {
+            console.log('paypal account:', r)
+          })
+        }
       })
+      return rs
     }
   }
 
