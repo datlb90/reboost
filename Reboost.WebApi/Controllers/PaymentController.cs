@@ -322,5 +322,13 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.GetLearnerSubscriptions(currentUser.Id);
             return Ok(rs);
         }
+
+        [Authorize]
+        [HttpGet("paypal/auth/basicToken")]
+        public async Task<IActionResult> GetPaypalBasicAuthToken()
+        {
+            var rs = _service.GetBasicTokenAsync();
+            return Ok(rs);
+        }
     }
 }

@@ -19,9 +19,14 @@ import VueFeather from 'vue-feather'
 import vWow from 'v-wow'
 import VueCarousel from 'vue-carousel'
 import Toasted from 'vue-toasted'
+import MultiLanguage from './plugins/index'
 
 import './assets/style/custom.scss'
 import 'element-tiptap/lib/index.css'
+import './plugins/multilanguage'
+// import VueI18n from 'vue-i18n'
+
+// Vue.use(VueI18n)
 
 Vue.use(VueMeta)
 Vue.use(BootstrapVue)
@@ -38,6 +43,7 @@ Vue.use(Element, { locale })
 Vue.use(ElementTiptapPlugin, {
   lang: 'en'
 })
+Vue.use(MultiLanguage)
 Vue.config.productionTip = false
 
 new Vue({

@@ -20,11 +20,13 @@ namespace Reboost.WebApi.Controllers
     {
         private readonly IMapper _mapper;
         private IUserService _userService;
+        private ISampleService _sampleService;
 
-        public QuestionsController(IQuestionsService service, IMapper mapper, IUserService userService) : base(service)
+        public QuestionsController(IQuestionsService service, IMapper mapper, IUserService userService, ISampleService sampleService) : base(service)
         {
             _mapper = mapper;
             _userService = userService;
+            _sampleService = sampleService;
         }
         [Authorize]
         [HttpGet]
@@ -155,6 +157,33 @@ namespace Reboost.WebApi.Controllers
         public async Task<IActionResult> ApproveQuestionAsync([FromRoute] int id)
         {
             var rs = await _service.ApproveQuestionAsync(id);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("sample")]
+        public async Task<IActionResult> CreateSampleAsync([FromBody] Samples data)
+        {
+            var rs = await _sampleService.CreateAsync(data);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("sample")]
+        public async Task<IActionResult> GetAllSamplesAsync()
+        {
+            var rs = await _sampleService.GetAllAsync();
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("sample/approve/{id}")]
+        public async Task<IActionResult> ApproveSampleAsync([FromRoute] int id)
+        {
+            var rs = await _sampleService.ApproveSampleByIdAsync(id);
             return Ok(rs);
         }
     }

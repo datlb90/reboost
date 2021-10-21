@@ -590,6 +590,7 @@ export default {
       }).then(rs => {
         this.loadComments()
         this.contentComment = ''
+        this.countComments += 1
       })
     },
     onPostCommentChild(e) {
@@ -606,6 +607,7 @@ export default {
       }).then(rs => {
         this.loadCommentsReplied(e)
         this.contentCommentChild = ''
+        this.countComments += 1
       })
     },
     handleCurrentChange(val) {

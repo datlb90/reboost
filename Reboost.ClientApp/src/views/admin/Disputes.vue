@@ -3,7 +3,7 @@
     <el-row class="row-flex">
       <el-col :span="18">
         <div style="display: flex; justify-content:space-between">
-          <h2>Disputes</h2>
+          <h2>{{ messageTranslates('disputes', 'disputes') }}</h2>
         </div>
         <el-table
           :data="disputesList"
@@ -14,16 +14,16 @@
         >
           <el-table-column
             prop="name"
-            label="Name"
+            :label="messageTranslates('disputes', 'name')"
             align="center"
           />
           <el-table-column
             prop="questionId"
-            label="Question Id"
+            :label="messageTranslates('disputes', 'questionId')"
             align="center"
           />
           <el-table-column
-            label="Status"
+            :label="messageTranslates('disputes', 'status')"
             align="center"
           >
             <template slot-scope="scope">
@@ -33,33 +33,33 @@
                   ? 'primary' : scope.row.status === DISPUTE_STATUS.ACCEPTED
                     ? 'success': scope.row.status === DISPUTE_STATUS.DENIED ? 'danger' : 'info'"
               >
-                {{ scope.row.status }}
+                {{ constantTranslate('DISPUTE_STATUS', scope.row.status) }}
               </el-tag>
             </template>
           </el-table-column>
           <el-table-column
             prop="user.email"
-            label="Email"
+            :label="messageTranslates('disputes', 'email')"
             align="center"
           />
           <el-table-column
-            label="Name"
+            :label="messageTranslates('disputes', 'userName')"
             align="center"
           >
             <template slot-scope="scope">
               {{ scope.row.user.firstName }} {{ scope.row.user.lastName }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="Actions">
+          <el-table-column align="center" :label="messageTranslates('disputes', 'actions')">
             <template slot-scope="scope">
               <el-button size="mini" @click="navigateToReview(scope.row)">
-                View
+                {{ messageTranslates('disputes', 'view') }}
               </el-button>
             </template>
           </el-table-column>
           <el-table-column
             prop="adminNote"
-            label="Admin Note"
+            :label="messageTranslates('disputes', 'adminNote')"
             align="center"
           />
         </el-table>

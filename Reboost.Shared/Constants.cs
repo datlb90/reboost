@@ -48,6 +48,8 @@ namespace Reboost.Shared
     {
         public const string IN_PROGRESS = "In Progress";
         public const string COMPLETED = "Completed";
+        public const string RATED = "Rated";
+        public const string DISPUTED = "Disputed";
     }
     public static class ReviewRequestType
     {
@@ -83,5 +85,11 @@ namespace Reboost.Shared
     public static class PaidAmount 
     {
         public const double VALUE = 1.0;
+    }
+
+    public static class SampleStatus
+    {
+        public const string CONTRIBUTED = "Contributed";
+        public const string APPROVED = "Approved";
     }
 }

@@ -116,12 +116,12 @@
               ]"
             >
               <el-row :span="24" style="display: flex; flex-wrap: wrap;">
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.writing" :rules="[ { required: true, message: 'Required' } ]">
                   <el-input id="scoresSelector">
-                    <el-select slot="append" v-model="formRegister.ieltsTestScore.writting" placeholder="...">
+                    <el-select slot="append" v-model="formRegister.ieltsTestScore.writing" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writing</label>
                   </el-input>
                 </el-form-item>
                 <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
@@ -173,12 +173,12 @@
               ]"
             >
               <el-row :span="24" style="display: flex; flex-wrap: wrap;">
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.writing" :rules="[ { required: true, message: 'Required' } ]">
                   <el-input id="scoresSelector">
-                    <el-select slot="append" v-model="formRegister.toeflTestScore.writting" placeholder="...">
+                    <el-select slot="append" v-model="formRegister.toeflTestScore.writing" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writing</label>
                   </el-input>
                 </el-form-item>
                 <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
@@ -316,13 +316,13 @@ export default {
         firstLanguage: '',
         applyTo: [],
         ieltsTestScore: {
-          writting: null,
+          writing: null,
           reading: null,
           listening: null,
           speaking: null
         },
         toeflTestScore: {
-          writting: null,
+          writing: null,
           reading: null,
           listening: null,
           speaking: null
@@ -422,13 +422,13 @@ export default {
             this.formRegister.ieltsTestScore.listening = rs.user.userScores.find(s => s.sectionId == 5).score
             this.formRegister.ieltsTestScore.reading = rs.user.userScores.find(s => s.sectionId == 6).score
             this.formRegister.ieltsTestScore.speaking = rs.user.userScores.find(s => s.sectionId == 7).score
-            this.formRegister.ieltsTestScore.writting = rs.user.userScores.find(s => s.sectionId == 8).score
+            this.formRegister.ieltsTestScore.writing = rs.user.userScores.find(s => s.sectionId == 8).score
           }
           if (this.getApplyTo('TOEFL')) {
             this.formRegister.toeflTestScore.listening = rs.user.userScores.find(s => s.sectionId == 1).score
             this.formRegister.toeflTestScore.reading = rs.user.userScores.find(s => s.sectionId == 2).score
             this.formRegister.toeflTestScore.speaking = rs.user.userScores.find(s => s.sectionId == 3).score
-            this.formRegister.toeflTestScore.writting = rs.user.userScores.find(s => s.sectionId == 4).score
+            this.formRegister.toeflTestScore.writing = rs.user.userScores.find(s => s.sectionId == 4).score
           }
         }
 
@@ -513,7 +513,7 @@ export default {
             scores.push(...[
               { sectionId: 5, score: this.formRegister.ieltsTestScore.listening, updatedDate: moment().format('yyyy-MM-DD') },
               { sectionId: 6, score: this.formRegister.ieltsTestScore.reading, updatedDate: moment().format('yyyy-MM-DD') },
-              { sectionId: 8, score: this.formRegister.ieltsTestScore.writting, updatedDate: moment().format('yyyy-MM-DD') },
+              { sectionId: 8, score: this.formRegister.ieltsTestScore.writing, updatedDate: moment().format('yyyy-MM-DD') },
               { sectionId: 7, score: this.formRegister.ieltsTestScore.speaking, updatedDate: moment().format('yyyy-MM-DD') }
             ])
           }
@@ -521,7 +521,7 @@ export default {
             scores.push(...[
               { sectionId: 1, score: this.formRegister.toeflTestScore.listening, updatedDate: moment().format('yyyy-MM-DD') },
               { sectionId: 2, score: this.formRegister.toeflTestScore.reading, updatedDate: moment().format('yyyy-MM-DD') },
-              { sectionId: 4, score: this.formRegister.toeflTestScore.writting, updatedDate: moment().format('yyyy-MM-DD') },
+              { sectionId: 4, score: this.formRegister.toeflTestScore.writing, updatedDate: moment().format('yyyy-MM-DD') },
               { sectionId: 3, score: this.formRegister.toeflTestScore.speaking, updatedDate: moment().format('yyyy-MM-DD') }
             ])
           }

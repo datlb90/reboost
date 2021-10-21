@@ -26,13 +26,15 @@ namespace Reboost.Service.Services
         Task<decimal> GetRaterRatingAsync(string UserID);
         Task<Raters> GetRaterPaypalAccountAsync(string userId);
         Task<Raters> UpdateRaterPaypalAccountAsync(string userId, string paypalAccount);
+        Task<ContactRequestModel> SendContactRequestAsync(string userName, ContactRequestModel model);
     }
 
     public class RaterService : BaseService, IRaterService
     {
-        public RaterService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public IMailService mailService;
+        public RaterService(IUnitOfWork unitOfWork, IMailService _mailService) : base(unitOfWork)
         {
-
+            mailService = _mailService;
         }
         public async Task<Raters> CreateAsync(Raters rater, List<IFormFile> uploadFiles)
         {
@@ -119,6 +121,11 @@ namespace Reboost.Service.Services
                 await _unitOfWork.Users.UpdateAsync(user);
             }
             
+            if(rater.Note == "null")
+            {
+                rater.Note = null;
+            }
+
             // Update user's score
             await _unitOfWork.Users.UpdateScoreAsync(rater.UserId, rater.User.UserScores.ToList());
 
@@ -189,6 +196,46 @@ namespace Reboost.Service.Services
             }
 
             return rs;
+        }
+
+        public async Task<ContactRequestModel> SendContactRequestAsync(string userName, ContactRequestModel model)
+        {
+            List<string> listPaths = new List<string>();
+
+            if(model.UploadedFiles != null && model.UploadedFiles.Count > 0)
+            {
+                foreach(var item in model.UploadedFiles)
+                {
+                    var extensionPath = Path.GetExtension(item.FileName);
+                    var fileName = userName + "_" + Path.GetFileName(item.FileName);
+
+                    var directory = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\contact");
+                    var filePath = Path.Combine(directory, fileName);
+
+                    FileInfo file = new FileInfo(filePath);
+
+                    if (file != null)
+                    {
+                        file.Delete();
+                    }
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await item.CopyToAsync(fileStream);
+                        listPaths.Add(filePath);
+                    }
+                }
+            }
+
+            var content = @"<strong>Fullname: </strong>" + model.Fullname + @"<br>
+                            <strong>Email: </strong> " + model.Email + @"<br>
+                            <strong>Reason: </strong>" + model.Reason + @"<br>
+                            <strong>Role: </strong>" + model.Role + @"<br>
+                            <strong>Message: </strong>" + model.Message;
+
+            await mailService.SendContactEmail(model.Email, model.Fullname, "Support DL", content, listPaths);
+
+            return model;
         }
     }
 }

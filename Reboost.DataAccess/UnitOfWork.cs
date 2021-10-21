@@ -20,6 +20,7 @@ namespace Reboost.DataAccess
         IDiscussionRepository Discussion { get; }
         IPaymentRepository Payment { get; }
         IReviewRepository Review { get; }
+        IArticlesRepository Articles { get; }
         Task<int> CommitAsync();
     }
 
@@ -40,6 +41,7 @@ namespace Reboost.DataAccess
         private DiscussionRepository _discussionRepository;
         private PaymentRepository _paymentRepository;
         private ReviewRepository _reviewRepository;
+        private ArticlesRepository _articlesRepository;
         public UnitOfWork(ReboostDbContext context)
         {
             _context = context;
@@ -59,6 +61,7 @@ namespace Reboost.DataAccess
         public IDiscussionRepository Discussion => _discussionRepository = _discussionRepository ?? new DiscussionRepository(_context);
         public IPaymentRepository Payment => _paymentRepository = _paymentRepository ?? new PaymentRepository(_context);
         public IReviewRepository Review => _reviewRepository = _reviewRepository ?? new ReviewRepository(_context);
+        public IArticlesRepository Articles => _articlesRepository = _articlesRepository ?? new ArticlesRepository(_context);
 
         public async Task<int> CommitAsync()
         {

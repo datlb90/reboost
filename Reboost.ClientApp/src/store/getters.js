@@ -19,7 +19,8 @@ const getters = {
   rubric: state => state.rubric,
   discussions: state => state.discussions,
   payments: state => state.payments,
-  review: state => state.review
+  review: state => state.review,
+  articles: state => state.articles
 }
 
 export default getters

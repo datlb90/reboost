@@ -7,7 +7,8 @@ const state = {
   countQuestionsByUser: {},
   testByUser: {},
   statusQuestion: {},
-  sampleByQuestion: []
+  sampleByQuestion: [],
+  samples: []
 }
 
 const actions = {
@@ -53,6 +54,11 @@ const actions = {
   },
   clearSelectedQuestion({ commit }) {
     commit('CLEAR_SELECTED_QUESTION')
+  },
+  loadAllSamples({ commit }) {
+    return questionService.getAllSamples().then(rs => {
+      commit('SET_ALL_SAMPLE', rs)
+    })
   }
 }
 
@@ -80,6 +86,9 @@ const mutations = {
   },
   CLEAR_SELECTED_QUESTION: (state) => {
     state.selectedQuestion = {}
+  },
+  SET_ALL_SAMPLE: (state, samples) => {
+    state.samples = samples
   }
 }
 
@@ -90,7 +99,8 @@ const getters = {
   getSummaryByUser: state => state.countQuestionsByUser,
   getTestByUser: state => state.testByUser,
   getStatusQuestion: state => state.statusQuestion,
-  getSampleByQuestion: state => state.sampleByQuestion
+  getSampleByQuestion: state => state.sampleByQuestion,
+  getAllSample: state => state.samples
   // getSelected: state => state.selectedRater
 }
 

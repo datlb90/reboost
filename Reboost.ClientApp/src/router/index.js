@@ -75,6 +75,8 @@ import Submissions from '../views/learner/Submissions.vue'
 import Disputes from '../views/admin/Disputes.vue'
 import LearnerDisputes from '../views/learner/Disputes.vue'
 import AdminQuestions from '../views/admin/Questions.vue'
+import Samples from '../views/admin/Samples.vue'
+import Articles from '../views/admin/Articles.vue'
 
 // import PageNotFound from '../views/PageNotFound.vue'
 import protect from './guard'
@@ -416,6 +418,24 @@ const router = new VueRouter({
       path: '/admin/questions',
       component: AdminQuestions,
       name: PageName.ADMIN_QUESTIONS,
+      meta: {
+        loginRequired: true,
+        role: UserRole.ADMIN
+      }
+    },
+    {
+      path: '/admin/samples',
+      component: Samples,
+      name: PageName.SAMPLES,
+      meta: {
+        loginRequired: true,
+        role: UserRole.ADMIN
+      }
+    },
+    {
+      path: '/admin/articles',
+      component: Articles,
+      name: PageName.ARTICLES,
       meta: {
         loginRequired: true,
         role: UserRole.ADMIN

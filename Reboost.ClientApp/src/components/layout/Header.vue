@@ -34,6 +34,9 @@
                 <li class="nav-item">
                   <router-link to="/disputes" class="nav-link">Disputes</router-link>
                 </li>
+                <li class="nav-item">
+                  <a href="/questions" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
+                </li>
               <!-- <li class="nav-item">
                 <router-link to="/revision" class="nav-link">Revision</router-link>
               </li>
@@ -55,6 +58,12 @@
                 <li v-if="isApprovedRater" class="nav-item">
                   <router-link to="/reviews" class="nav-link">Review</router-link>
                 </li>
+                <li v-if="isApprovedRater" class="nav-item">
+                  <router-link to="/rater/payout" class="nav-link">Balance</router-link>
+                </li>
+                <li class="nav-item">
+                  <a href="/" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
+                </li>
               <!-- <li class="nav-item">
                 <router-link to="/rater/evaluate" class="nav-link" style="pointer-events: none; color: #b7b7b7;">Evaluate</router-link>
               </li>
@@ -73,6 +82,12 @@
                 </li>
                 <li class="nav-item">
                   <router-link to="/admin/questions" class="nav-link">Questions</router-link>
+                </li>
+                <li class="nav-item">
+                  <router-link to="/admin/samples" class="nav-link">Samples</router-link>
+                </li>
+                <li class="nav-item">
+                  <router-link to="/admin/articles" class="nav-link">Articles</router-link>
                 </li>
               <!-- <li class="nav-item">
                 <router-link to="/admin/rubric" class="nav-link">Rubric</router-link>
@@ -93,6 +108,16 @@
             </b-collapse>
 
             <div class="others-option">
+              <el-dropdown style="margin-right: 20px" @command="onChangeLanguage">
+                <el-button type="primary">
+                  {{ lang }}
+                  <i class="el-icon-arrow-down el-icon--right" />
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="english">English</el-dropdown-item>
+                  <el-dropdown-item command="vietnamese">Vietnamese</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
               <el-dropdown @command="handleCommand">
                 <span class="el-dropdown-link">
                   <i class="far fa-user-circle" style="font-size: 24px;" />
@@ -121,6 +146,7 @@
       </div>
     </header>
     <add-edit-question ref="questionDialog" />
+    <contact-dialog ref="contactDialog" />
   </div>
   <!-- End Navbar Area -->
 </template>
@@ -130,11 +156,13 @@ import raterService from '../../services/rater.service'
 import reviewService from '../../services/review.service'
 import { RATER_STATUS } from '../../app.constant'
 import AddEditQuestion from '../../components/controls/AddEditQuestion.vue'
+import ContactDialog from '../../components/controls/ContactDialog.vue'
 
 export default {
   name: 'HeaderTwo',
   components: {
-    'add-edit-question': AddEditQuestion
+    'add-edit-question': AddEditQuestion,
+    'contact-dialog': ContactDialog
   },
   data() {
     return {
@@ -142,7 +170,8 @@ export default {
       isSticky: false,
       appInProgress: true,
       raterRating: 0,
-      isApprovedRater: false
+      isApprovedRater: false,
+      lang: ''
     }
   },
 
@@ -184,9 +213,17 @@ export default {
     if (!this.currentUser.stripeCustomerId) {
       this.$store.dispatch('auth/loadCustomerId')
     }
+    var _lang = localStorage.getItem('language')
+    if (_lang) {
+      this.lang = _lang.charAt(0).toUpperCase() + _lang.slice(1)
+    } else {
+      this.lang = 'English'
+    }
   },
   created() {
     console.log(this.role)
+    const t = process.env.VUE_APP_BASE_URL
+    console.log('vue_app_const: ', t)
   },
   methods: {
     handleCommand(action) {
@@ -225,6 +262,14 @@ export default {
     },
     openAddQuestionDialog() {
       this.$refs.questionDialog?.openDialog(true)
+    },
+    openContactDialog(e) {
+      this.$refs.contactDialog?.openDialog()
+    },
+    onChangeLanguage(e) {
+      this.lang = e.charAt(0).toUpperCase() + e.slice(1)
+      localStorage.setItem('language', e)
+      this.$ml.change(e)
     }
   }
 }

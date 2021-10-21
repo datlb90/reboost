@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     id="previewQuestionDialog"
-    title="Preview Question"
+    :title="messageTranslates('questionPreview', 'title')"
     :before-close="handleClose"
     :visible.sync="dialogVisible"
     width="60%"
@@ -38,7 +38,7 @@
           <el-row style="margin-bottom: 8px;">
             <el-col class="question-con">
               <div style="font-size: 13px;">
-                <span style="font-weight: 600;word-break: keep-all;">Question: </span>
+                <span style="font-weight: 600;word-break: keep-all;">{{ messageTranslates('questionPreview', 'question') }}: </span>
                 <div id="questionContent" v-html="getQuestion.content" />
               </div>
             </el-col>
@@ -47,16 +47,16 @@
             <div v-if="!isShowListeningTab && getReading != ''">
               <div class="header-practice" style="margin-bottom: 8px; display: flex;">
                 <div style="flex-grow: 1; display: flex; align-items: center;">
-                  Reading Passage
+                  {{ messageTranslates('questionPreview', 'readingPassage') }}
                 </div>
                 <div v-if="!isShowTimer">
-                  <el-button size="mini" @click="toggleBtnShowTab()">Go to listening</el-button>
+                  <el-button size="mini" @click="toggleBtnShowTab()">{{ messageTranslates('questionPreview', 'goToListening') }}</el-button>
                 </div>
               </div>
               <div v-if="!closeTimer" class="body-practice" style="margin-bottom: 8px;">
                 <div class="tip" style="display: flex; align-items: center; justify-content: space-between;">
                   <div style="flex-grow: 1;">
-                    <pre style="font-size: 13px; color: #6084a4;"> <span style="font-weight: 600;">Direction: </span>Give yourseft 3 minutes to read the passage.</pre>
+                    <pre style="font-size: 13px; color: #6084a4;"> <span style="font-weight: 600;">{{ messageTranslates('questionPreview', 'direction') }}: </span>{{ messageTranslates('questionPreview', 'directionSub') }}</pre>
                   </div>
                   <div v-if="getListening != ''" style="margin-left: 14px;">
                     <div v-if="isShowTimer && !closeTimer">
@@ -70,10 +70,10 @@
               <div v-if="isShowListeningTab" style="width: 100%;">
                 <div class="header-practice" style="display:flex; justify-content: space-between;margin-bottom: 8px; ">
                   <div style="display: flex; align-items: center;">
-                    LISTEN TO PART OF LECTURE ON THE SAME TOPIC
+                    {{ messageTranslates('questionPreview', 'headerPractice') }}
                   </div>
                   <div v-if="getReading != ''">
-                    <el-button size="mini" @click="backClick()">Back</el-button>
+                    <el-button size="mini" @click="backClick()">{{ messageTranslates('questionPreview', 'back') }}</el-button>
                   </div>
                 </div>
                 <hr style="margin:0; margin-bottom: 8px; ">
@@ -84,7 +84,7 @@
                   <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
                     <div style="flex-grow: 1;">
                       <i class="el-icon-document-copy" />
-                      Audio Script
+                      {{ messageTranslates('questionPreview', 'audioScript') }}
                     </div>
                     <div :class="{'rotate-icon' : isShowScript}">
                       <i class="fas fa-caret-down" />

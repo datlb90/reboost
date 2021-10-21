@@ -26,7 +26,7 @@ namespace Reboost.DataAccess.Repositories
         Task<List<RaterBalances>> UpdatePaidBalancesAsync(string userId);
         Task<LearnerPaymentsHistory> CreatePaymentHistoryAsync(LearnerPaymentsHistory data);
         Task<LearnerSubscriptions> CreateUpdateSubscriptionAsync(LearnerSubscriptions data);
-        Task<LearnerSubscriptions> GetLearnerSubscriptions(string userId);
+        Task<GetSubscriptionsModel> GetLearnerSubscriptions(string userId);
     }
     public class PaymentRepository : BaseRepository<Payments>, IPaymentRepository
     {
@@ -142,9 +142,25 @@ namespace Reboost.DataAccess.Repositories
             return newSubs;
         }
 
-        public async Task<LearnerSubscriptions> GetLearnerSubscriptions(string userId)
+        public async Task<GetSubscriptionsModel> GetLearnerSubscriptions(string userId)
         {
-            return await ReboostDbContext.LearnerSubscriptions.Where(s => s.UserId == userId).FirstOrDefaultAsync();
+            var userSubs = await ReboostDbContext.LearnerSubscriptions.Where(s => s.UserId == userId).FirstOrDefaultAsync();
+
+
+            GetSubscriptionsModel rs = new GetSubscriptionsModel();
+            if (userSubs.YearSubs != null)
+            {
+                rs.YearSub = userSubs.YearSubs;
+                rs.IsYearExpired = false;
+            }
+            
+            if (userSubs.MonthSubs != null)
+            {
+                rs.MonthSub = userSubs.MonthSubs;
+                rs.IsMonthExpired = false;
+            }
+
+            return rs;
         }
     }
 }

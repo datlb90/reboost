@@ -1,0 +1,18 @@
+export const AddEditQuestion = {
+  title: 'Add New Question',
+  name: 'Name',
+  placeholderName: 'Please input question name',
+  test: 'Test',
+  task: 'Task',
+  type: 'Type',
+  question: 'Question',
+  placeholderQuestion: 'Content here...',
+  noPart: 'No part.',
+  reading: 'Reading',
+  listening: 'Listening',
+  transcript: 'Transcript',
+  chart: 'Chart',
+  uploadButton: 'Click to upload',
+  validateUpload: 'mp3/mp4 files with a size less than 10mb.',
+  validateImgUpload: 'png/jpeg files with a size less than 3mb.'
+}

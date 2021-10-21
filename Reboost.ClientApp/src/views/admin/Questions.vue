@@ -1,20 +1,20 @@
 <template>
   <div class="container">
     <div class="title">
-      <h2>All Questions</h2>
+      <h2>{{ messageTranslates('adminQuestions', 'allQuestion') }}</h2>
     </div>
 
     <el-row :gutter="20">
       <el-col :md="6" class="filter-container">
         <div>
-          <el-input v-model="textSearch" size="mini" placeholder="Type to search by name" @input="search()" />
+          <el-input v-model="textSearch" size="mini" :placeholder="messageTranslates('adminQuestions', 'typeToSearch')" @input="search()" />
         </div>
       </el-col>
       <el-col :md="12" class="filter-container">
         <div class="filter-toolbar">
-          <dropdown-menu v-model="filterSection" style="margin-right: 20px" :tittle="'Test Section'" @confirm="search()" @reset="resetFilterSection()" />
-          <dropdown-menu v-model="filterType" style="margin-right: 20px" :tittle="'Type'" @confirm="search()" @reset="resetFilterType()" />
-          <dropdown-menu v-model="filterStatus" :tittle="'Status'" @confirm="search()" @reset="resetFilterStatus()" />
+          <dropdown-menu v-model="filterSection" style="margin-right: 20px" :tittle="messageTranslates('adminQuestions', 'testSection')" @confirm="search()" @reset="resetFilterSection()" />
+          <dropdown-menu v-model="filterType" style="margin-right: 20px" :tittle="messageTranslates('adminQuestions', 'type')" @confirm="search()" @reset="resetFilterType()" />
+          <dropdown-menu v-model="filterStatus" :tittle="messageTranslates('adminQuestions', 'status')" @confirm="search()" @reset="resetFilterStatus()" />
         </div>
 
         <div class="tag-selection">
@@ -35,40 +35,40 @@
 
       <el-col :md="6" class="filter-container">
         <div style="text-align: right;">
-          <el-button size="mini" @click="clearFilter">Reset all filters</el-button>
+          <el-button size="mini" @click="clearFilter">{{ messageTranslates('adminQuestions', 'resetFilter') }}</el-button>
         </div>
       </el-col>
     </el-row>
     <el-row style="margin:10px 0px;">
       <el-col class="filter-container">
         <div style="text-align: right;">
-          <el-button size="mini" @click="openAddQuestionDialog">Add new question</el-button>
+          <el-button size="mini" @click="openAddQuestionDialog">{{ messageTranslates('adminQuestions', 'addQuestion') }}</el-button>
         </div>
       </el-col>
     </el-row>
     <el-table ref="filterTable" :data="questions" stripe style="width: 100%;">
       <el-table-column prop="id" sortable label="#" width="60" />
-      <el-table-column prop="title" sortable label="Question Name">
+      <el-table-column prop="title" sortable :label="messageTranslates('adminQuestions', 'questionName')">
         <template slot-scope="scope">
           <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.title }}</span>
         </template>
       </el-table-column>
       <el-table-column
-        label="Test Section"
+        :label="messageTranslates('adminQuestions', 'testSection')"
       >
         <template slot-scope="scope">
           <span style="word-break: break-word">{{ scope.row.test }} {{ scope.row.section }}</span>
         </template>
       </el-table-column>
       <el-table-column
-        label="Question Type"
+        :label="messageTranslates('adminQuestions', 'questionType')"
       >
         <template slot-scope="scope">
           <span style="word-break: break-word">{{ scope.row.type }}</span>
         </template>
       </el-table-column>
       <el-table-column
-        label="Created by"
+        :label="messageTranslates('adminQuestions', 'createdBy')"
         width="120"
       >
         <template slot-scope="scope">
@@ -76,7 +76,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="Status" prop="status" width="110">
+      <el-table-column :label="messageTranslates('adminQuestions', 'status')" prop="status" width="110">
         <template slot-scope="scope">
           <!-- <i v-if="scope.row.status == 'Completed'" class="el-icon-check check" /> -->
           <el-tag
@@ -86,7 +86,7 @@
             size="mini"
             effect="dark"
           >
-            {{ scope.row.status }}
+            {{ constantTranslate('QUESTION_STATUS', scope.row.status) }}
           </el-tag>
           <el-tag
             v-else
@@ -94,13 +94,13 @@
             size="mini"
             effect="dark"
           >
-            {{ scope.row.status }}
+            {{ constantTranslate('QUESTION_STATUS', scope.row.status) }}
           </el-tag>
         </template>
       </el-table-column>
 
       <el-table-column
-        label="Added Date"
+        :label="messageTranslates('adminQuestions', 'addedDate')"
         sortable
         prop="addedDate"
       >
@@ -109,13 +109,15 @@
         </template>
       </el-table-column>
       <el-table-column
-        label="Action"
+        :label="messageTranslates('adminQuestions', 'action')"
+        width="180"
       >
         <template slot-scope="scope">
           <div style="display: flex; flex-direction: column;">
-            <el-button style="margin-left:10px;" class="action-button" size="mini" @click="publishQuestion(scope.row)">Publish</el-button>
-            <el-button class="action-button" size="mini" @click="handleEdit(scope.row)">Edit</el-button>
-            <el-button class="action-button" size="mini" @click="previewQuestion(scope.row)">Preview</el-button>
+            <el-button style="margin-left:10px;" class="action-button" size="mini" @click="publishQuestion(scope.row)">{{ messageTranslates('adminQuestions', 'publish') }}</el-button>
+            <el-button class="action-button" size="mini" @click="handleEdit(scope.row)">{{ messageTranslates('adminQuestions', 'edit') }}</el-button>
+            <el-button class="action-button" size="mini" @click="previewQuestion(scope.row)">{{ messageTranslates('adminQuestions', 'preview') }}</el-button>
+            <el-button class="action-button" size="mini" @click="openAddNewSampleDialog(scope.row)">{{ messageTranslates('adminQuestions', 'addNewSample') }}</el-button>
           </div>
         </template>
       </el-table-column>
@@ -134,6 +136,7 @@
     <div>
       <add-edit-question ref="questionDialog" @refreshQuestion="getQuestionsData" />
       <question-preview ref="questionPreviewDialog" />
+      <add-sample ref="sampleDialog" />
     </div>
   </div>
 </template>
@@ -143,12 +146,14 @@ import DropdownMenu from '../../components/controls/DropdownMenu'
 import moment from 'moment'
 import AddEditQuestion from '../../components/controls/AddEditQuestion.vue'
 import QuestionPreview from '../../components/controls/QuestionPreview.vue'
+import AddQuestionSample from '../../components/controls/AddQuestionSampleDialog.vue'
 export default {
   name: 'AdminQuestions',
   components: {
     'dropdown-menu': DropdownMenu,
     'add-edit-question': AddEditQuestion,
-    'question-preview': QuestionPreview
+    'question-preview': QuestionPreview,
+    'add-sample': AddQuestionSample
   },
   data() {
     return {
@@ -187,6 +192,7 @@ export default {
         this.filterStatus = Object.keys(_.groupBy(this.questionCached, 'status')).map(k => ({ text: k }))
 
         this.loadTable()
+        console.log('1', this.selectionTag, this.filterStatus, this.filterSection, this.filterType)
       })
     },
     loadTable() {
@@ -285,6 +291,9 @@ export default {
     },
     previewQuestion(e) {
       this.$refs.questionPreviewDialog?.showDialog(e)
+    },
+    openAddNewSampleDialog(e) {
+      this.$refs.sampleDialog?.openDialog(e.id)
     }
   }
 }

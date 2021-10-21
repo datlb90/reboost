@@ -42,6 +42,15 @@ const questionService = {
   },
   approveQuestion(id) {
     return http.get(`/questions/approve/${id}`).then(rs => rs.data)
+  },
+  createQuestionSample(data) {
+    return http.post('/questions/sample', data).then(rs => rs.data)
+  },
+  getAllSamples() {
+    return http.get('/questions/sample').then(rs => rs.data)
+  },
+  approveSampleById(id) {
+    return http.get(`/questions/sample/approve/${id}`).then(rs => rs.data)
   }
 }
 

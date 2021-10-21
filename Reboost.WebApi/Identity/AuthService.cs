@@ -323,6 +323,15 @@ namespace Reboost.WebApi.Identity
                     IsSuccess = false,
                 };
 
+            if(user.EmailConfirmed == false)
+            {
+                return new UserManagerResponse
+                {
+                    Message = "Please confirm your Email address.",
+                    IsSuccess = false,
+                };
+            }
+
             var roles = await _userManger.GetRolesAsync(user);
 
             var claims = new[]

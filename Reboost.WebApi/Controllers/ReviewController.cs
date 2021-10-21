@@ -219,12 +219,12 @@ namespace Reboost.WebApi.Controllers
         public async Task<IActionResult> ChangeReviewStatusAsync([FromBody] UpdateStatusModel model, [FromRoute] int id)
         {
             var rs = await _service.ChangeStatusAsync(id, model);
-            if (rs.SendEmail)
+            if (rs != null && rs.SendEmail != null)
             {
                 await _mailService.SendEmailAsync(rs.RaterEmail, rs.EmailSubject, rs.EmailContent);
             }
             
-            return Ok(rs.Reviews);
+            return Ok(rs);
         }
         [Authorize]
         [HttpGet("getById")]

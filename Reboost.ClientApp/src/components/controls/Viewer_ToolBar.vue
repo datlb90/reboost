@@ -115,8 +115,8 @@
       <el-dropdown size="mini" split-button style="margin-left: 10px;min-width:95px" @command="handleScale">
         {{ scaleText }}
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="fitWidth" icon="fas fa-expand-arrows-alt"> Fit to width</el-dropdown-item>
-          <el-dropdown-item command="fitPage" icon="fas fa-expand-alt"> Fit to page</el-dropdown-item>
+          <el-dropdown-item command="fitWidth" icon="fas fa-expand-arrows-alt">{{ messageTranslates('viewerToolBar', 'fitToWidth') }}</el-dropdown-item>
+          <el-dropdown-item command="fitPage" icon="fas fa-expand-alt">{{ messageTranslates('viewerToolBar', 'fitToPage') }}</el-dropdown-item>
           <el-dropdown-item command="0.5" divided> 50% </el-dropdown-item>
           <el-dropdown-item command="1">100%</el-dropdown-item>
           <el-dropdown-item command="1.25">125%</el-dropdown-item>
@@ -153,15 +153,15 @@
       </button>
     </div>
     <div v-if="isReviewSample()" class="submit-button">
-      <el-button type="success" size="mini" @click="approveTraining()">Approve</el-button>
-      <el-button type="danger" size="mini" @click="openDialogRevise()">Revise</el-button>
+      <el-button type="success" size="mini" @click="approveTraining()">{{ constantTranslate('DISPUTE_STATUS', 'approve') }}</el-button>
+      <el-button type="danger" size="mini" @click="openDialogRevise()">{{ constantTranslate('DISPUTE_STATUS', 'revise') }}</el-button>
     </div>
     <!-- Submit button -->
     <div id="submit-container" class="submit-button" style="align-items: center;">
       <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
-      <el-button v-if="isAuthor" :disabled="readOnly||isRate||isSubmit" type="primary" size="mini" @click="submitReview()">Submit</el-button>
-      <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="primary" size="mini" @click="rateReview()">Rate Review</el-button>
-      <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="danger" size="mini" @click="disputeReview()">Dispute</el-button>
+      <el-button v-if="isAuthor" :disabled="readOnly||isRate||isSubmit" type="primary" size="mini" @click="submitReview()">{{ constantTranslate('DISPUTE_STATUS', 'submit') }}</el-button>
+      <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="primary" size="mini" @click="rateReview()">{{ constantTranslate('DISPUTE_STATUS', 'rateReview') }}</el-button>
+      <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="danger" size="mini" @click="disputeReview()">{{ constantTranslate('DISPUTE_STATUS', 'dispute') }}</el-button>
     </div>
   </div>
 </template>
@@ -219,8 +219,6 @@ export default ({
     selectedRater() {
       return this.$store.getters['rater/getSelected']
     }
-  },
-  watch: {
   },
   async mounted() {
     this.initTextSizeTool()
@@ -563,12 +561,13 @@ export default ({
       reviewService.changeTrainingStatus(this.reviewData.review.id, { status: RATER_TRAINING_STATUS.REVISION_REQUEST, note: note }).then(rs => {
         this.$emit('closeDialogRevise')
         if (rs) {
-          this.$notify.error({
-            title: RATER_STATUS.REVISION,
+          this.$notify.success({
+            title: 'Revision Requested',
             message: 'Submitted Training Revision Requested!',
             type: 'error',
             duration: 2000
           })
+          this.$router.push(`/admin/raters/application/${rs.rater.id}`)
         } else {
           this.$notify.error({
             title: RATER_STATUS.REVISION,
@@ -588,6 +587,7 @@ export default ({
             type: 'success',
             duration: 2000
           })
+          this.$router.push(`/admin/raters/application/${rs.rater.id}`)
         } else {
           this.$notify.error({
             title: RATER_STATUS.REVISION,
@@ -623,6 +623,7 @@ export default ({
             duration: 2000
           })
           this.$emit('closeDisputeDialog')
+          this.$emit('disputed')
         } else {
           this.$notify.error({
             title: 'Error',

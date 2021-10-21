@@ -1,0 +1,18 @@
+export const AddEditQuestion = {
+  title: 'Thêm câu hỏi mới',
+  name: 'Tên',
+  placeholderName: 'Vui lòng nhập tên câu hỏi',
+  test: 'Test',
+  task: 'Nhiệm vụ',
+  type: 'Loại',
+  question: 'Câu hỏi',
+  placeholderQuestion: 'Nhập nội dung tại đây',
+  noPart: 'Không có phần nào.',
+  reading: 'Đọc',
+  listening: 'Nghe',
+  transcript: 'Bảng điểm',
+  chart: 'Biểu đồ',
+  uploadButton: 'Nhấn để tải lên',
+  validateUpload: 'Tệp mp3 / mp4 có kích thước nhỏ hơn 10mb.',
+  validateImgUpload: 'Tệp png / jpeg có kích thước nhỏ hơn 3mb.'
+}
