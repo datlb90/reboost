@@ -139,5 +139,23 @@ namespace Reboost.WebApi.Controllers
 
             return Ok(rs);
         }
+
+        [HttpPost("contact")]
+        public async Task<IActionResult> SendContactRequestAsync([FromForm] ContactRequestModel model)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+
+            var userName = "Quest";
+            if(email != null)
+            {
+                var user = await _userService.GetByEmailAsync(email.Value);
+                userName = user.Username;
+            }
+
+            var rs = await _service.SendContactRequestAsync(userName, model);
+
+            return Ok(rs);
+        }
     }
 }

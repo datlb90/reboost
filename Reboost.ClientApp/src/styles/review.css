@@ -5,8 +5,8 @@
   border-left: 5px solid #50bfff;
 }
 .tip.note{
-  background-color: #f1f1f1;
-  border-left: 5px solid #929292;
+  background-color: #ffffff;
+  border-left: 5px solid #e0e0e0;
 }
 pre {
   font-size: 14px;
@@ -242,4 +242,8 @@ button[disabled='disabled'] .toolbar-icon{
     top: 0px; 
     height: 100%;
   }
+}
+
+.el-dialog .el-dialog__header{
+  text-align: center;
 }

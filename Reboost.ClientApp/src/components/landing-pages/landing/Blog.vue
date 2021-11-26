@@ -3,9 +3,9 @@
   <section id="blogs" class="blog-area ptb-80">
     <div class="container">
       <div class="section-title">
-        <h2>The News from Our Blog</h2>
+        <h2>{{ messageTranslates('blog', 'title') }}</h2>
         <div class="bar" />
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <p>{{ messageTranslates('blog', 'description') }}</p>
       </div>
 
       <div class="row">

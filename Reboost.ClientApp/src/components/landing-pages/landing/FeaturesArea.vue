@@ -5,9 +5,9 @@
       <div class="row h-100 justify-content-center align-items-center">
         <div class="col-lg-4 col-md-12 services-content">
           <div class="section-title">
-            <h2>Thoughfully Designed Practice Center</h2>
+            <h2>{{ messageTranslates('featuresArea', 'title') }}</h2>
             <div class="bar" />
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p>{{ messageTranslates('featuresArea', 'description') }}</p>
           </div>
         </div>
 

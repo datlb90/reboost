@@ -138,17 +138,17 @@
       <pane v-if="!tabDisCussionShowed">
         <div style="height: 100%; display: flex; flex-direction: column;">
           <div class="header-passage" style="display:flex; justify-content: space-between; border: 1px solid #e2e2e2; padding: 5px;">
-            <div v-if="getQuestion != '' && !writtingSubmitted">
+            <div v-if="getQuestion != '' && !writingSubmitted">
               <el-button size="mini" @click="toggleShowCount()">Hide Word Count</el-button>
               <span v-if="isShowCountWord && countWord != 0" style="margin-left: 15px;">Words: {{ countWord }}</span>
             </div>
-            <div v-if="writtingSubmitted" class="submited-message">
+            <div v-if="writingSubmitted" class="submited-message">
               <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'" style="white-space: normal; height: 100%;">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;"> Reviews.</a> </el-tag>
             </div>
             <div v-if="getQuestion != ''">
-              <el-dropdown v-if="writtingSubmitted || hasSubmitionForThisQuestion " size="mini" @command="checkoutVisibles">
+              <el-dropdown v-if="writingSubmitted || hasSubmitionForThisQuestion " size="mini" @command="checkoutVisibles">
                 <el-button size="mini">
-                  Get Writting Review
+                  Get Writing Review
                 </el-button>
                 <el-dropdown-menu slot="dropdown" size="mini">
                   <el-dropdown-item :disabled="isProRequested||isFreeRequested || unRatedList.length > 0" command="free">Free Peer Review</el-dropdown-item>
@@ -157,7 +157,7 @@
                 </el-dropdown-menu>
               </el-dropdown>
 
-              <el-button v-if="!writtingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit</el-button>
+              <el-button v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit</el-button>
               <el-button v-if="isEdit" style="margin-left:5px" size="mini" @click="isEdit=false">Edit</el-button>
               <el-button v-if="hasSubmitionForThisQuestion&& !isEdit" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit</el-button>
 
@@ -183,7 +183,7 @@
       :visible.sync="dialogVisible"
       width="30%"
     >
-      <span>Your test time is over. Do you want to submit your current writting?</span>
+      <span>Your test time is over. Do you want to submit your current writing?</span>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">Cancel</el-button>
         <el-button type="primary" @click="submit">Submit</el-button>
@@ -240,7 +240,7 @@ export default {
       isShowCountWord: true,
       hideDirection: 'Hide',
       tabDisCussionShowed: false,
-      writtingSubmitted: false,
+      writingSubmitted: false,
       checkoutVisible: false,
       hasSubmitionForThisQuestion: false,
       timeSpent: 0,
@@ -253,7 +253,7 @@ export default {
       showStartTestButton: false,
       isTesting: false,
       dialogVisible: false,
-      submittedMessage: 'Your writting has been successfully submitted. You can request a review now.',
+      submittedMessage: 'Your writing has been successfully submitted. You can request a review now.',
       isStart: false,
       timeStart: null,
       idSubmissionStorage: null,
@@ -461,7 +461,7 @@ export default {
         this.submittedMessage = this.unRatedList.length > 0 ? 'Your submission is currently pending, please rate all of your unrated.' : this.submittedMessage
         documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
-            this.writtingSubmitted = true
+            this.writingSubmitted = true
             this.$notify.success({
               title: 'Success',
               message: 'Updated successfully',
@@ -482,7 +482,7 @@ export default {
                 duration: 2000
               })
               this.submittedMessage = 'Your submission is currently pending, please rate all of your unrated.'
-              this.writtingSubmitted = true
+              this.writingSubmitted = true
               this.hasSubmitionForThisQuestion = true
               this.submissionId = rs.submissions[0]?.id
             }
@@ -497,7 +497,7 @@ export default {
                 type: 'success',
                 duration: 2000
               })
-              this.writtingSubmitted = true
+              this.writingSubmitted = true
               this.hasSubmitionForThisQuestion = true
               this.submissionId = rs.submissions[0]?.id
             }
@@ -599,22 +599,31 @@ export default {
       console.log(e)
     },
     createReview() {
-      reviewService.createReviewRequest({
-        UserId: this.currentUser.id,
-        SubmissionId: this.submissionId,
-        FeedbackType: 'Free',
-        Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
-      }).then(rs => {
-        if (rs) {
-          this.$notify.success({
-            title: 'Submission Requested',
-            message: 'Requested!',
-            duration: 1500
-          })
-          this.isFreeRequested = true
-        }
-        console.log('requested', rs)
-      })
+      if (this.unRatedList.length > 0) {
+        this.$notify.error({
+          title: 'Rate request',
+          message: 'Please rate all of your un-rate review before making a free review request.',
+          type: 'error',
+          duration: 1500
+        })
+      } else {
+        reviewService.createReviewRequest({
+          UserId: this.currentUser.id,
+          SubmissionId: this.submissionId,
+          FeedbackType: 'Free',
+          Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
+        }).then(rs => {
+          if (rs) {
+            this.$notify.success({
+              title: 'Submission Requested',
+              message: 'Requested!',
+              duration: 1500
+            })
+            this.isFreeRequested = true
+          }
+          console.log('requested', rs)
+        })
+      }
     },
     startTest() {
       const time = +this.getDataQuestion.time.slice(0, 2)

@@ -15,6 +15,7 @@ namespace Reboost.Service.Services
         Task<Samples> CreateAsync(Samples entity);
         Task<Samples> UpdateAsync(Samples entity);
         Task<Samples> DeleteAsync(int id);
+        Task<Samples> ApproveSampleByIdAsync(int id);
 
     }
     public class SampleService : BaseService, ISampleService
@@ -25,6 +26,7 @@ namespace Reboost.Service.Services
         }
         public async Task<Samples> CreateAsync(Samples entity)
         {
+            entity.LastActivityDate = DateTime.Now;
             return await _unitOfWork.Samples.Create(entity);
         }
 
@@ -46,6 +48,11 @@ namespace Reboost.Service.Services
         public async Task<Samples> UpdateAsync(Samples entity)
         {
             return await _unitOfWork.Samples.Update(entity);
+        }
+
+        public async Task<Samples> ApproveSampleByIdAsync(int id)
+        {
+            return await _unitOfWork.Samples.ApproveSampleByIdAsync(id);
         }
     }
 

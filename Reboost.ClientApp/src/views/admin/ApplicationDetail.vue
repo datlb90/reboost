@@ -3,10 +3,10 @@
     <el-row class="row-flex">
       <el-col :span="15" class="col-border">
         <el-steps :active="formRegister.status === RATER_STATUS.APPLIED ? 1 : formRegister.status === RATER_STATUS.APPROVED ? 3 : 2" align-center>
-          <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
-          <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
-          <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning" />
-          <el-step title="Step 4" icon="el-icon-edit-outline" description="Start rating" />
+          <el-step title="Step 1" icon="el-icon-user" :description="messageTranslates('appDetail', 'createAnAccount')" />
+          <el-step title="Step 2" icon="el-icon-upload" :description="messageTranslates('appDetail', 'uploadCredential')" />
+          <el-step title="Step 3" icon="el-icon-circle-check" :description="messageTranslates('appDetail', 'completeTraining')" />
+          <el-step title="Step 4" icon="el-icon-edit-outline" :description="messageTranslates('appDetail', 'startRating')" />
         </el-steps>
       </el-col>
     </el-row>
@@ -14,7 +14,7 @@
       <el-col :span="15" class="col-border">
         <el-form ref="formRegister" :model="formRegister" label-width="180px" style="width:90%;">
 
-          <el-form-item v-if="raterId" size="mini" label="Current Status">
+          <el-form-item v-if="raterId" size="mini" :label="messageTranslates('appDetail', 'currentStatus')">
             <el-tag
               :type="
                 formRegister.status === RATER_STATUS.APPROVED || formRegister.status === RATER_STATUS.TRAINING || formRegister.status === RATER_STATUS.TRAINING_COMPLETED
@@ -26,10 +26,10 @@
                       : 'warning'
               "
               disable-transitions
-            >{{ formRegister.status }}</el-tag>
+            >{{ constantTranslate('RATER_STATUS', formRegister.status) }}</el-tag>
           </el-form-item>
 
-          <el-form-item v-if="raterId" size="mini" label="Applied Date" prop="appliedDate">
+          <el-form-item v-if="raterId" size="mini" :label="messageTranslates('appDetail', 'appliedDate')" prop="appliedDate">
             <el-input
               v-model="formRegister.appliedDate"
               :disabled="true"
@@ -38,20 +38,20 @@
 
           <el-form-item
             size="mini"
-            label="First Name"
+            :label="messageTranslates('appDetail', 'firstName')"
             prop="firstName"
             :rules="[
-              { required: true, message: 'First name is required'}
+              { required: true, message: messageTranslates('appDetail', 'firstNameRequired')}
             ]"
           >
             <el-input v-model="formRegister.firstName" type="text" />
           </el-form-item>
           <el-form-item
             size="mini"
-            label="Last Name"
+            :label="messageTranslates('appDetail', 'lastName')"
             prop="lastName"
             :rules="[
-              { required: true, message: 'Last name is required'}
+              { required: true, message: messageTranslates('appDetail', 'lastNameRequired')}
             ]"
           >
             <el-input v-model="formRegister.lastName" type="text" />
@@ -66,35 +66,35 @@
 
           <el-form-item
             size="mini"
-            label="Gender"
+            :label="messageTranslates('appDetail', 'gender')"
             prop="gender"
             :rules="[
-              { required: true, message: 'Gender is required'}
+              { required: true, message: messageTranslates('appDetail', 'genderRequired')}
             ]"
           >
-            <el-select v-model="formRegister.gender" placeholder="Please select your gender" style="width: 100%;">
+            <el-select v-model="formRegister.gender" :placeholder="messageTranslates('appDetail', 'pleaseSelectGender')" style="width: 100%;">
               <el-option v-for="item in gender" :key="item.id" :label="item.name" :value="item.name" />
             </el-select>
           </el-form-item>
           <el-form-item
             size="mini"
-            label="Occupation"
+            :label="messageTranslates('appDetail', 'occupation')"
             prop="occupation"
             :rules="[
-              { required: true, message: 'Occupation is required'}
+              { required: true, message: messageTranslates('appDetail', 'occupationRequired')}
             ]"
           >
-            <el-input v-model="formRegister.occupation" placeholder="Please input your occupation" />
+            <el-input v-model="formRegister.occupation" :placeholder="messageTranslates('appDetail', 'pleaseSelectOccupation')" />
           </el-form-item>
           <el-form-item
             size="mini"
-            label="First Language"
+            :label="messageTranslates('appDetail', 'firstLanguage')"
             prop="firstLanguage"
             :rules="[
-              { required: true, message: 'First Language is required'}
+              { required: true, message: messageTranslates('appDetail', 'firstLanguageRequired')}
             ]"
           >
-            <el-select v-model="formRegister.firstLanguage" style="width:40%" filterable placeholder="Please select your first language">
+            <el-select v-model="formRegister.firstLanguage" style="width:40%" filterable :placeholder="messageTranslates('appDetail', 'pleaseSelectFirstLanguage')">
               <el-option
                 v-for="item in firstLanguage"
                 :key="item.id"
@@ -103,7 +103,7 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item size="mini" label="Apply to Become" prop="applyTo" :rules="[{ type: 'array', required: true, message: 'Apply to is required' }]">
+          <el-form-item size="mini" :label="messageTranslates('appDetail', 'applyTo')" prop="applyTo" :rules="[{ type: 'array', required: true, message: messageTranslates('appDetail', 'applyToRequired') }]">
             <div style="transform:translateY(5px)">
               <el-checkbox-group v-model="formRegister.applyTo">
                 <el-checkbox label="IELTS Rater" name="applyTo" />
@@ -114,52 +114,52 @@
           <div v-if="applyToIELTSChecked">
             <el-form-item
               size="mini"
-              label="IELTS Test Scores"
+              :label="messageTranslates('appDetail', 'ieltsTestScores')"
               :rules="[
-                { required: true, message: 'IELTS Test Scores is required'}
+                { required: true, message: messageTranslates('appDetail', 'ieltsTestScoresRequired')}
               ]"
             >
               <el-row :span="24" style="display: flex; flex-wrap: wrap;">
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.writing" :rules="[ { required: true, message: messageTranslates('appDetail', 'required') } ]">
                   <el-input id="scoresSelector">
-                    <el-select slot="append" v-model="formRegister.ieltsTestScore.writting" placeholder="...">
+                    <el-select slot="append" v-model="formRegister.ieltsTestScore.writing" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">{{ messageTranslates('appDetail', 'writing') }}</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.reading" :rules="[ { required: true, message: messageTranslates('appDetail', 'required') } ]">
                   <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.ieltsTestScore.reading" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Reading</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">{{ messageTranslates('appDetail', 'reading') }}</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.listening" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.listening" :rules="[ { required: true, message: messageTranslates('appDetail', 'required') } ]">
                   <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.ieltsTestScore.listening" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Listening</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">{{ messageTranslates('appDetail', 'listening') }}</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.speaking" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.speaking" :rules="[ { required: true, message: messageTranslates('appDetail', 'required') } ]">
                   <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.ieltsTestScore.speaking" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Speaking</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">{{ messageTranslates('appDetail', 'speaking') }}</label>
                   </el-input>
                 </el-form-item>
               </el-row>
             </el-form-item>
             <el-form-item
               size="mini"
-              label="IELTS Credentials"
+              :label="messageTranslates('appDetail', 'ieltsCredentials')"
               prop="iELTSCertificatePhotos"
               :rules="[
-                { required: true, message: 'IELTS Credentials Photos is required'}]"
+                { required: true, message: messageTranslates('appDetail', 'ieltsCredentialsRequired')}]"
             >
               <el-upload
                 class="upload-demo"
@@ -171,9 +171,9 @@
                 :auto-upload="false"
                 list-type="picture"
               >
-                <el-button type="primary">Click to upload</el-button>
+                <el-button type="primary">{{ messageTranslates('appDetail', 'clickUpload') }}</el-button>
                 <div slot="tip" class="el-upload__tip">
-                  <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                  <p>{{ messageTranslates('appDetail', 'ieltsUploadTips') }}</p>
                 </div>
               </el-upload>
             </el-form-item>
@@ -181,52 +181,52 @@
           <div v-if="applyToTOEFLChecked">
             <el-form-item
               size="mini"
-              label="TOEFL Test Scores"
+              :label="messageTranslates('appDetail', 'toeflTestScores')"
               :rules="[
-                { required: true, message: 'TOEFL Test Scores is required'}
+                { required: true, message: messageTranslates('appDetail', 'toeflTestScoresRequired')}
               ]"
             >
               <el-row :span="24" style="display: flex; flex-wrap: wrap;">
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.writing" :rules="[ { required: true, message: messageTranslates('appDetail', 'required') } ]">
                   <el-input id="scoresSelector">
-                    <el-select slot="append" v-model="formRegister.toeflTestScore.writting" placeholder="...">
+                    <el-select slot="append" v-model="formRegister.toeflTestScore.writing" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">{{ messageTranslates('appDetail', 'writing') }}</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.reading" :rules="[ { required: true, message: messageTranslates('appDetail', 'required') } ]">
                   <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.toeflTestScore.reading" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Reading</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">{{ messageTranslates('appDetail', 'reading') }}</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.listening" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.listening" :rules="[ { required: true, message: messageTranslates('appDetail', 'required') } ]">
                   <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.toeflTestScore.listening" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Listening</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">{{ messageTranslates('appDetail', 'listening') }}</label>
                   </el-input>
                 </el-form-item>
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.speaking" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.speaking" :rules="[ { required: true, message: messageTranslates('appDetail', 'required') } ]">
                   <el-input id="scoresSelector">
                     <el-select slot="append" v-model="formRegister.toeflTestScore.speaking" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Speaking</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">{{ messageTranslates('appDetail', 'speaking') }}</label>
                   </el-input>
                 </el-form-item>
               </el-row>
             </el-form-item>
             <el-form-item
               size="mini"
-              label="TOEFL Credentials"
+              :label="messageTranslates('appDetail', 'toeflCredentials')"
               prop="tOEFLCertificatePhotos"
               :rules="[
-                { required: true, message: 'TOEFL Credentials Photos is required'}]"
+                { required: true, message: messageTranslates('appDetail', 'toeflCredentialsRequired')}]"
             >
               <el-upload
                 class="upload-demo"
@@ -238,9 +238,9 @@
                 :auto-upload="false"
                 list-type="picture"
               >
-                <el-button type="primary">Click to upload</el-button>
+                <el-button type="primary">{{ messageTranslates('appDetail', 'clickUpload') }}</el-button>
                 <div slot="tip" class="el-upload__tip">
-                  <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                  <p>{{ messageTranslates('appDetail', 'toeflUploadTips') }}</p>
                 </div>
               </el-upload>
             </el-form-item>
@@ -248,10 +248,10 @@
 
           <el-form-item
             size="mini"
-            label="Photo ID"
+            :label="messageTranslates('appDetail', 'photoId')"
             prop="iDCardPhotos"
             :rules="[
-              { required: true, message: 'IDPhotos is required'}]"
+              { required: true, message: messageTranslates('appDetail', 'photoIdRequired')}]"
           >
             <el-upload
               class="upload-demo"
@@ -263,31 +263,31 @@
               :auto-upload="false"
               list-type="picture"
             >
-              <el-button type="primary">Click to upload</el-button>
+              <el-button type="primary">{{ messageTranslates('appDetail', 'clickUpload') }}</el-button>
               <div slot="tip" class="el-upload__tip">
-                <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.</p>
+                <p>{{ messageTranslates('appDetail', 'photoIdUploadTips') }}</p>
               </div>
             </el-upload>
           </el-form-item>
           <el-form-item
             size="mini"
-            label="Biography"
+            :label="messageTranslates('appDetail', 'biography')"
           >
-            <el-input v-model="formRegister.biography" type="textarea" :rows="5" placeholder="Tell us a little bit about yourself and the reason why you apply to become our rater" />
+            <el-input v-model="formRegister.biography" type="textarea" :rows="5" :placeholder="messageTranslates('appDetail', 'biographyPlaceholder')" />
           </el-form-item>
-          <el-form-item v-if="raterId" size="mini" label="Note">
-            <el-input v-model="formRegister.note" type="textarea" :rows="5" placeholder="Note" />
+          <el-form-item v-if="raterId" size="mini" :label="messageTranslates('appDetail', 'note')">
+            <el-input v-model="formRegister.note" type="textarea" :rows="5" :placeholder="messageTranslates('appDetail', 'notePlaceholder')" />
           </el-form-item>
           <el-form-item v-if="raterId && formRegister.status !== RATER_STATUS.REJECTED" size="mini" style="margin: 0;">
-            <el-button v-if="!raterId" type="primary" size="mini" @click="onSubmit('formRegister', 'create')">Create</el-button>
-            <el-button v-if="!raterId" size="mini">Cancel</el-button>
-            <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
-            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">Approve for training</el-button>
+            <el-button v-if="!raterId" type="primary" size="mini" @click="onSubmit('formRegister', 'create')">{{ messageTranslates('appDetail', 'create') }}</el-button>
+            <el-button v-if="!raterId" size="mini">{{ messageTranslates('appDetail', 'cancel') }}</el-button>
+            <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">{{ messageTranslates('appDetail', 'save') }}</el-button>
+            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.TRAINING)">{{ messageTranslates('appDetail', 'approveTraining') }}</el-button>
             <!-- <el-button v-if="raterId && formRegister.status !== RATER_STATUS.APPLIED && formRegister.status !== RATER_STATUS.APPROVED && formRegister.status !== RATER_STATUS.TRAINING && (formRegister.status === RATER_STATUS.TRAINING_COMPLETED)" class="button" size="mini" type="success" @click="updateStatus(RATER_STATUS.APPROVED)">Approve</el-button> -->
-            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED || formRegister.status === RATER_STATUS.TRAINING_COMPLETED) " class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">Reject</el-button>
-            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" :disabled="!formRegister.note" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">Document Request</el-button>
-            <el-button v-if="completedTraining('IELTS') && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="redirectToTraining('IELTS')">View IELTS Training</el-button>
-            <el-button v-if="completedTraining('TOEFL') && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="redirectToTraining('TOEFL')">View TOEFL Training</el-button>
+            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED || formRegister.status === RATER_STATUS.TRAINING_COMPLETED) " class="button" size="mini" type="danger" @click="updateStatus(RATER_STATUS.REJECTED)">{{ messageTranslates('appDetail', 'reject') }}</el-button>
+            <el-button v-if="raterId && (formRegister.status === RATER_STATUS.APPLIED || formRegister.status === RATER_STATUS.DOCUMENT_SUBMITTED)" class="button" size="mini" type="primary" @click="updateStatus(RATER_STATUS.DOCUMENT_REQUESTED)">{{ messageTranslates('appDetail', 'documentRequest') }}</el-button>
+            <el-button v-if="completedTraining('IELTS') && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="redirectToTraining('IELTS')">{{ messageTranslates('appDetail', 'viewIELTSTraining') }}</el-button>
+            <el-button v-if="completedTraining('TOEFL') && formRegister.status !== RATER_STATUS.APPROVED" class="button" size="mini" type="primary" @click="redirectToTraining('TOEFL')">{{ messageTranslates('appDetail', 'viewTOEFLTraining') }}</el-button>
             <!-- <el-dropdown v-if="completedTraining(formRegister,'IELTS') && formRegister.status !== RATER_STATUS.APPROVED" style="margin: 0 10px 0" size="mini" split-button type="primary" @click="redirectToTraining('IELTS')" @command="trainingDropdownClick">
               IELTS
               <el-dropdown-menu slot="dropdown">
@@ -307,7 +307,10 @@
       </el-col>
     </el-row>
     <div :class="{ 'isActive': toggleImagePopup }" class="image-container-preview" @click="closeImg($event)">
-      <img id="previewImg" ref="previewImg" :src="popUpImageUrl" class="image-fit" alt="">
+      <img v-if="popUpImageUrl.type==='images'" id="previewImg" ref="previewImg" :src="popUpImageUrl.url" class="image-fit" alt="">
+      <video v-if="popUpImageUrl.type==='videos'" controls>
+        <source :src="popUpImageUrl.url">
+      </video>
       <div class="close-icon" @click="toggleImagePopup=!toggleImagePopup">
         <i class="el-icon-close" style="font-size: 1.5rem;" />
       </div>
@@ -340,13 +343,13 @@ export default {
         firstLanguage: '',
         applyTo: [],
         ieltsTestScore: {
-          writting: null,
+          writing: null,
           reading: null,
           listening: null,
           speaking: null
         },
         toeflTestScore: {
-          writting: null,
+          writing: null,
           reading: null,
           listening: null,
           speaking: null
@@ -355,7 +358,7 @@ export default {
         iELTSCertificatePhotos: [],
         tOEFLCertificatePhotos: [],
         biography: '',
-        note: '',
+        note: null,
         appliedDate: new Date()
       },
       ieltsScores: [],
@@ -367,7 +370,10 @@ export default {
       toeflScoresIsNUll: true,
       ieltsScoresIsNUll: true,
       toggleImagePopup: false,
-      popUpImageUrl: null,
+      popUpImageUrl: {
+        type: null,
+        url: null
+      },
       portraitImg: true,
       RATER_STATUS: RATER_STATUS,
       cloneFormDetail: null,
@@ -410,13 +416,11 @@ export default {
       // });
 
       if (this.$route.params.id) {
-        console.log('ID', this.$route.params.id)
         this.raterId = this.$route.params.id
         this.loadDetail(this.$route.params.id)
       }
     },
     loadDetail(id) {
-      console.log('load detail', mapUtil)
       raterService.getById(id).then(rs => {
         console.log('result load detail', rs)
         this.$store.dispatch('rater/setSelectedRater', rs)
@@ -427,11 +431,11 @@ export default {
         if (rs.raterCredentials) {
           for (const f of rs.raterCredentials) {
             if (f.credentialType == 'IDPhoto') {
-              this.formRegister.iDCardPhotos.push({ name: f.fileName, url: 'data:image/png;base64,' + f.data })
+              this.formRegister.iDCardPhotos.push({ name: f.fileName, url: `data:${this.isImage(f.fileName) ? 'image' : 'video'}/${this.getExtension(f.fileName)};base64,` + f.data })
             } else if (f.credentialType == 'TOEFLPhoto') {
-              this.formRegister.tOEFLCertificatePhotos.push({ name: f.fileName, url: 'data:image/png;base64,' + f.data })
+              this.formRegister.tOEFLCertificatePhotos.push({ name: f.fileName, url: `data:${this.isImage(f.fileName) ? 'image' : 'video'}/${this.getExtension(f.fileName)};base64,` + f.data })
             } else if (f.credentialType == 'IELTSPhoto') {
-              this.formRegister.iELTSCertificatePhotos.push({ name: f.fileName, url: 'data:image/png;base64,' + f.data })
+              this.formRegister.iELTSCertificatePhotos.push({ name: f.fileName, url: `data:${this.isImage(f.fileName) ? 'image' : 'video'}/${this.getExtension(f.fileName)};base64,` + f.data })
             }
           }
         }
@@ -442,13 +446,13 @@ export default {
             this.formRegister.ieltsTestScore.listening = rs.user.userScores.find(s => s.sectionId == 5).score
             this.formRegister.ieltsTestScore.reading = rs.user.userScores.find(s => s.sectionId == 6).score
             this.formRegister.ieltsTestScore.speaking = rs.user.userScores.find(s => s.sectionId == 7).score
-            this.formRegister.ieltsTestScore.writting = rs.user.userScores.find(s => s.sectionId == 8).score
+            this.formRegister.ieltsTestScore.writing = rs.user.userScores.find(s => s.sectionId == 8).score
           }
           if (this.getApplyTo('TOEFL')) {
             this.formRegister.toeflTestScore.listening = rs.user.userScores.find(s => s.sectionId == 1).score
             this.formRegister.toeflTestScore.reading = rs.user.userScores.find(s => s.sectionId == 2).score
             this.formRegister.toeflTestScore.speaking = rs.user.userScores.find(s => s.sectionId == 3).score
-            this.formRegister.toeflTestScore.writting = rs.user.userScores.find(s => s.sectionId == 4).score
+            this.formRegister.toeflTestScore.writing = rs.user.userScores.find(s => s.sectionId == 4).score
           }
         }
 
@@ -473,8 +477,6 @@ export default {
       })
     },
     async onSubmit(formName, createOrUpdate, hideSaveNotify) {
-      console.log('submit ')
-
       // Get changed fields
       var changedFieldsName = []
       for (var e in this.formRegister) {
@@ -553,7 +555,7 @@ export default {
               scores.push(...[
                 { sectionId: 5, score: this.formRegister.ieltsTestScore.listening, updatedDate: moment().format('yyyy-MM-DD') },
                 { sectionId: 6, score: this.formRegister.ieltsTestScore.reading, updatedDate: moment().format('yyyy-MM-DD') },
-                { sectionId: 8, score: this.formRegister.ieltsTestScore.writting, updatedDate: moment().format('yyyy-MM-DD') },
+                { sectionId: 8, score: this.formRegister.ieltsTestScore.writing, updatedDate: moment().format('yyyy-MM-DD') },
                 { sectionId: 7, score: this.formRegister.ieltsTestScore.speaking, updatedDate: moment().format('yyyy-MM-DD') }
               ])
             }
@@ -561,7 +563,7 @@ export default {
               scores.push(...[
                 { sectionId: 1, score: this.formRegister.toeflTestScore.listening, updatedDate: moment().format('yyyy-MM-DD') },
                 { sectionId: 2, score: this.formRegister.toeflTestScore.reading, updatedDate: moment().format('yyyy-MM-DD') },
-                { sectionId: 4, score: this.formRegister.toeflTestScore.writting, updatedDate: moment().format('yyyy-MM-DD') },
+                { sectionId: 4, score: this.formRegister.toeflTestScore.writing, updatedDate: moment().format('yyyy-MM-DD') },
                 { sectionId: 3, score: this.formRegister.toeflTestScore.speaking, updatedDate: moment().format('yyyy-MM-DD') }
               ])
             }
@@ -595,7 +597,6 @@ export default {
               }
 
               raterService.update(formData).then(rs => {
-                console.log('updated', rs)
                 if (typeof (hideSaveNotify) == 'undefined') {
                   this.$notify.success({
                     title: 'Success',
@@ -621,6 +622,16 @@ export default {
       })
     },
     async updateStatus(status) {
+      if (status === RATER_STATUS.DOCUMENT_REQUESTED && (!this.formRegister.note || this.formRegister.note?.trim().length === 0)) {
+        this.$notify.error({
+          title: 'Note Required!',
+          message: 'Please input a note for rater.',
+          type: 'error',
+          duration: 2000
+        })
+        return
+      }
+
       await this.onSubmit('formRegister', 'update', true).then(r => {
         raterService.updateStatus(this.raterId, status).then(rs => {
           this.formRegister.status = status
@@ -667,16 +678,28 @@ export default {
       this.formRegister.iDCardPhotos = fileList
     },
     handleChangeIdPhoto(file, fileList) {
-      this.formRegister.iDCardPhotos = fileList
+      if (this.isImage(file.name) || this.isVideo(file.name)) {
+        this.formRegister.iDCardPhotos = fileList
+      } else {
+        fileList.pop()
+      }
     },
     handleChangeIELTS(file, fileList) {
-      this.formRegister.iELTSCertificatePhotos = fileList
+      if (this.isImage(file.name) || this.isVideo(file.name)) {
+        this.formRegister.iELTSCertificatePhotos = fileList
+      } else {
+        fileList.pop()
+      }
     },
     handleRemoveIELTS(file, fileList) {
       this.formRegister.iELTSCertificatePhotos = fileList
     },
     handleChangeTOEFL(file, fileList) {
-      this.formRegister.tOEFLCertificatePhotos = fileList
+      if (this.isImage(file.name) || this.isVideo(file.name)) {
+        this.formRegister.tOEFLCertificatePhotos = fileList
+      } else {
+        fileList.pop()
+      }
     },
     handleRemoveTOEFL(file, fileList) {
       this.formRegister.tOEFLCertificatePhotos = fileList
@@ -685,9 +708,15 @@ export default {
       return this.formRegister.applyTo.find(a => a.indexOf(testName) >= 0) != undefined
     },
     previewImage(e) {
-      this.popUpImageUrl = e.url
+      if (this.isImage(e.name)) {
+        this.popUpImageUrl.type = 'images'
+      }
+      if (this.isVideo(e.name)) {
+        this.popUpImageUrl.type = 'videos'
+      }
+      this.popUpImageUrl.url = e.url
       this.toggleImagePopup = !this.toggleImagePopup
-      console.log(this.$refs.previewImg)
+      console.log(e, this.isImage(e.name), this.isVideo(e.name))
     },
     closeImg(e) {
       if (e.target.firstChild != null) {
@@ -695,7 +724,7 @@ export default {
       }
     },
     completedTraining(type) {
-      var t = this.raterTraining.filter(r => r.test.trim() == type.trim() && (r.status == RATER_TRAINING_STATUS.COMPLETED || r.status == RATER_TRAINING_STATUS.REVISION_COMPLETED))[0]
+      var t = this.raterTraining?.filter(r => r.test.trim() == type.trim() && (r.status == RATER_TRAINING_STATUS.COMPLETED || r.status == RATER_TRAINING_STATUS.REVISION_COMPLETED))[0]
       if (t) {
         return true
       }
@@ -733,6 +762,34 @@ export default {
       var redirectlink = type === 'IELTS' ? '/review/9/220/' : '/review/12/219/'
       redirectlink += t?.reviewId
       this.$router.push(redirectlink)
+    },
+    getExtension(filename) {
+      var parts = filename.split('.')
+      return parts[parts.length - 1]
+    },
+    isImage(filename) {
+      var ext = this.getExtension(filename)
+      switch (ext.toLowerCase()) {
+        case 'jpg':
+        case 'jpeg':
+        case 'gif':
+        case 'png':
+          // etc
+          return true
+      }
+      return false
+    },
+    isVideo(filename) {
+      var ext = this.getExtension(filename)
+      switch (ext.toLowerCase()) {
+        case 'm4v':
+        case 'avi':
+        case 'mpg':
+        case 'mp4':
+          // etc
+          return true
+      }
+      return false
     }
   }
 }

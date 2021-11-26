@@ -10,7 +10,6 @@
       </el-tooltip>
     </div>
     <el-popover popper-class="popover-color-picker" placement="bottom" @show="updatePositionColorPicker">
-      <!-- <template> -->
       <div id="colorPickerCollapse" class="color-picker-collapse">
         <el-tooltip v-for="item in listColor" :key="item.name" class="item" placement="none">
           <button class="toolbar-btn" data-tooltype="rectangle" type="button" @click="changeToolbarButtonColor(item.name)">
@@ -20,23 +19,10 @@
           </button>
         </el-tooltip>
       </div>
-      <!-- </template> -->
       <div slot="reference" @click="expandColorPicker = !expandColorPicker">
         <i id="colorPickerExpandIcon" style="margin-right:10px" :class="[expandColorPicker ? 'el-icon-caret-bottom' :'el-icon-caret-top']" />
       </div>
     </el-popover>
-    <!-- <div @click="expandColorPickerToggle">
-      <i id="colorPickerExpandIcon" style="margin-right:10px" :class="[expandColorPicker ? 'el-icon-caret-bottom' :'el-icon-caret-top']" />
-    </div>
-    <div id="colorPickerCollapse" class="color-picker-collapse">
-      <el-tooltip v-for="item in listColor" :key="item.name" class="item" placement="none">
-        <button class="toolbar-btn" data-tooltype="rectangle" type="button" @click="changeToolbarButtonColor(item.name)">
-          <div :style="{'color': item.name}" :class="[colorChosen == item.name ? 'button-color-chosen':'']">
-            <button :style="{'background-color': item.name, height:18+'px',width:18+'px', margin:'5px 5px 5px 5px', 'border-radius':'50%','outline': 'none'}" />
-          </div>
-        </button>
-      </el-tooltip> -->
-    <!-- </div> -->
   </div>
 
 </template>

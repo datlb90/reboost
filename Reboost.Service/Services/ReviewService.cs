@@ -1,8 +1,5 @@
 ﻿using Hangfire;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Configuration;
 using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
@@ -10,7 +7,6 @@ using Reboost.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Reboost.Service.Services
@@ -62,10 +58,18 @@ namespace Reboost.Service.Services
     {
         IMailService mailService;
         IPaymentService paymentService;
-        public ReviewService(IUnitOfWork unitOfWork, IMailService _mailService, IPaymentService _paymentService) : base(unitOfWork)
+        IUserService userService;
+        IConfiguration configuration;
+        public ReviewService(IUnitOfWork unitOfWork, 
+            IMailService _mailService, 
+            IPaymentService _paymentService, 
+            IUserService _userService,
+            IConfiguration _configuration) : base(unitOfWork)
         {
             mailService = _mailService;
             paymentService = _paymentService;
+            userService = _userService;
+            configuration = _configuration;
         }
         public async Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId)
         {
@@ -187,7 +191,19 @@ namespace Reboost.Service.Services
         }
         public async Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string userId)
         {
-            return await _unitOfWork.Review.CreateReviewRatingAsync(data, userId);
+            var rs = await _unitOfWork.Review.CreateReviewRatingAsync(data, userId);
+
+            var review = await _unitOfWork.Review.GetReviewByIdAsync(rs.ReviewId);
+            
+            if (review != null)
+            {
+                var user = await userService.GetByIdAsync(review.Rater.UserId);
+                string url = $"{configuration["ClientUrl"]}/{review.Submission.QuestionId}/{review.Submission.DocId}/{review.ReviewId}";
+                await mailService.SendEmailAsync(user.Email, "Review Rated!", $"Your review is rated. Link at: <a href='{url}'>Clicking here</a>");
+
+            }
+
+            return rs;
         }
         public async Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId)
         {
@@ -218,7 +234,9 @@ namespace Reboost.Service.Services
                 return null;
             }
 
-            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
+            string url = $"{configuration["ClientUrl"]}/review/pro/" + rs.Request.Id;
+
+            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", $"You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: <a href='{url}'>Clicking here</a>");
 
             // ReAssign to another rater if request not accepted after 10 minutes
             BackgroundJob.Schedule(() => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10));
@@ -230,8 +248,9 @@ namespace Reboost.Service.Services
             var rater = await ReAssignRaterToAssignment(requestId);
             if (rater != null)
             {
+                string url = $"{configuration["ClientUrl"]}/review/pro/" + requestId;
                 // Send mail to rater with confirm link
-                await mailService.SendEmailAsync(rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + requestId);
+                await mailService.SendEmailAsync(rater.User.Email, "New Review Request!", $"You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: <a href='{url}'>Clicking here</a>");
             }
         }
         public async Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request)
@@ -243,8 +262,9 @@ namespace Reboost.Service.Services
                 throw new AppException(ErrorCode.InvalidArgument, "No rater available!");
             }
 
+            string url = $"{configuration["ClientUrl"]}/review/pro/" + rs.Request.Id;
             // Send mail to rater with confirm link
-            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", "You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: localhost:3011/review/pro/" + rs.Request.Id);
+            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", $"You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: <a href='{url}'>Clicking here</a>");
 
             // ReAssign to another rater if request not accepted after 10 minutes
             BackgroundJob.Schedule(
@@ -278,6 +298,16 @@ namespace Reboost.Service.Services
                 throw new AppException(ErrorCode.InvalidArgument, "Review or Submission not existed");
             }
 
+            var review = await _unitOfWork.Review.GetReviewByIdAsync(rs.ReviewId);
+
+            if(review.Rater != null)
+            {
+                var user = await userService.GetByIdAsync(review.Rater.UserId);
+
+                string url = $"{configuration["ClientUrl"]}" + rs.ReviewUrl;
+                await mailService.SendEmailAsync(user.Email, "Dispute Created!", $"Your review is disputed. Link at: <a href='{url}'>Clicking here</a>");
+            }
+
             return rs;
         }
         public async Task<List<Disputes>> GetAllDisputesAsync()
@@ -302,10 +332,15 @@ namespace Reboost.Service.Services
 
             if (reviewRequest.ReviewRequest != null)
             {
-                if(rs.Status == DisputeStatus.ACCEPTED)
+                if(rs.Status == DisputeStatus.ACCEPTED && reviewRequest.ReviewRequest.FeedbackType == ReviewRequestType.PRO)
                 {
                     await paymentService.LearnerRefund(rs.UserId, rs.User.Email);
                     await ReRequestProRequestAsync(reviewRequest.ReviewRequest);
+                }
+
+                if(reviewRequest.ReviewRequest.FeedbackType == ReviewRequestType.FREE)
+                {
+                    throw new AppException(ErrorCode.InvalidArgument, "Can not refunded because this is an FREE request. Dispute's status change to ACCEPTED instead!");
                 }
             }
             else

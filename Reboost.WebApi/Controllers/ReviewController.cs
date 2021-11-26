@@ -126,7 +126,7 @@ namespace Reboost.WebApi.Controllers
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
-            // Check if it is a pro request, return 1 if is a pro request, -1 if it not a pro request, 0 if review's timeout end, 2 if current rater does not have permission to this review
+            // Check if it is a pro request, return 1 if is a pro request, -1 if it not a pro request, 0 if review's timeout end
             var isProRequest = await _service.IsProRequestCheckAsync(id, currentUser.Id);
 
             // Check rater's permission
@@ -219,12 +219,12 @@ namespace Reboost.WebApi.Controllers
         public async Task<IActionResult> ChangeReviewStatusAsync([FromBody] UpdateStatusModel model, [FromRoute] int id)
         {
             var rs = await _service.ChangeStatusAsync(id, model);
-            if (rs.SendEmail)
+            if (rs != null && rs.SendEmail != null)
             {
                 await _mailService.SendEmailAsync(rs.RaterEmail, rs.EmailSubject, rs.EmailContent);
             }
             
-            return Ok(rs.Reviews);
+            return Ok(rs);
         }
         [Authorize]
         [HttpGet("getById")]

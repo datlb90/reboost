@@ -9,17 +9,17 @@
                 <img src="@/assets/logo/green_logo.png" alt="logo" style="width: 140px;">
               </router-link>
             </div>
-            <el-form-item style="text-align: left;" prop="firstName" :rules="[{ required: true, message: 'First name is required'}]">
-              <el-input id="firstName" v-model="form.firstName" type="text" placeholder="First Name" />
+            <el-form-item style="text-align: left;" prop="firstName" :rules="[{ required: true, message: messageTranslates('register', 'firstNameRequired')}]">
+              <el-input id="firstName" v-model="form.firstName" type="text" :placeholder="messageTranslates('register', 'firstName')" />
             </el-form-item>
-            <el-form-item style="text-align: left;" prop="lastName" :rules="[{ required: true, message: 'Last name is required'}]">
-              <el-input id="lastName" v-model="form.lastName" type="text" placeholder="Last Name" />
+            <el-form-item style="text-align: left;" prop="lastName" :rules="[{ required: true, message: messageTranslates('register', 'lastNameRequired')}]">
+              <el-input id="lastName" v-model="form.lastName" type="text" :placeholder="messageTranslates('register', 'lastName')" />
             </el-form-item>
-            <el-form-item style="text-align: left;" prop="username" :rules="[{ required: true, message: 'Username or email is required'}]">
-              <el-input id="email" v-model="form.username" type="text" placeholder="Username or email" />
+            <el-form-item style="text-align: left;" prop="username" :rules="[{ required: true, message: messageTranslates('register', 'usernameRequired')}]">
+              <el-input id="email" v-model="form.username" type="text" :placeholder="messageTranslates('register', 'usernameEmail')" />
             </el-form-item>
-            <el-form-item style="text-align: left;" prop="password" :rules="[{ required: true, message: 'Password is required'}]">
-              <el-input id="password" v-model="form.password" type="password" autocomplete="off" placeholder="Password" />
+            <el-form-item style="text-align: left;" prop="password" :rules="[{ required: true, message: messageTranslates('register', 'passwordRequired')}]">
+              <el-input id="password" v-model="form.password" type="password" autocomplete="off" :placeholder="messageTranslates('register', 'password')" />
             </el-form-item>
             <el-form-item>
               <el-button
@@ -28,22 +28,21 @@
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
                 @click="signUp()"
               >
-                Sign Up
+                {{ messageTranslates('register', 'createAccount') }}
               </el-button>
             </el-form-item>
 
             <el-form-item style="text-align: center;">
               <p href="/forgot/password" style="color: black; text-decoration: none;">
-                Already have an account?  <a href="/login" style="color: rgb(101 139 179); text-decoration: none;">
-                  Sign In Now
+                {{ messageTranslates('register', 'alreadyHave') }}  <a href="/login" style="color: rgb(101 139 179); text-decoration: none;">
+                  {{ messageTranslates('register', 'signInNow') }}
                 </a>
               </p>
-
             </el-form-item>
 
             <hr>
             <div style="font-size: 14px; text-align: center; padding-bottom: 10px;">
-              Or you can sign in with
+              {{ messageTranslates('register', 'orSignInWith') }}
             </div>
 
             <el-form-item>
@@ -59,12 +58,12 @@
               </form>
             </el-form-item>
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
-              By logging in, I agree to the
+              {{ messageTranslates('register', 'byLoggingIn') }}
               <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
-                terms
-              </a> and
+                {{ messageTranslates('register', 'terms') }}
+              </a> {{ messageTranslates('register', 'and') }}
               <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
-                policies
+                {{ messageTranslates('register', 'policies') }}
               </a>
             </div>
 

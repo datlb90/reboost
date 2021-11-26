@@ -1,0 +1,20 @@
+export const Banner = {
+  bannerContentTitle: 'A New Way to Learn',
+  bannerContentDescription: 'Reboost is the best platform to help you boost your language writing test scores. No matter which test you take, we will get you fully prepared and guarantee your score improvement by offering:',
+  content1: 'Unlimited practice tests',
+  content2: 'Active community that encourages you to practice more',
+  content3: 'Opportunity to learn by providing feedback',
+  content4: 'Useful and constructive feedback to help you improve',
+  emailAddress: 'Email address',
+  placeholderEmail: 'Enter email address',
+  password: 'Password',
+  placeholderPassword: 'Create a password',
+  signIn: 'Sign In',
+  signInOther: 'Or you can sign in with',
+  and: 'and',
+  byLogging: 'By logging in, I agree to the',
+  terms: 'terms',
+  policies: 'policies',
+  dontAccount: "Don't have an account?",
+  signUp: 'Sign Up'
+}

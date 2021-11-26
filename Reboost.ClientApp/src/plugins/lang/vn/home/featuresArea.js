@@ -1,0 +1,4 @@
+export const FeaturesArea = {
+  title: 'Trung tâm thực hành được thiết kế trang nhã',
+  description: 'Bản thân nỗi đau có thể là đau rất nhiều, nhưng lý do chính là đau, nhưng tôi cho nó thời gian để rơi vào đó như một nỗi đau và nỗi đau lớn nào đó.'
+}

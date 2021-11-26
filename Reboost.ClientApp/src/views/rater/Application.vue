@@ -116,12 +116,12 @@
               ]"
             >
               <el-row :span="24" style="display: flex; flex-wrap: wrap;">
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.writing" :rules="[ { required: true, message: 'Required' } ]">
                   <el-input id="scoresSelector">
-                    <el-select slot="append" v-model="formRegister.ieltsTestScore.writting" placeholder="...">
+                    <el-select slot="append" v-model="formRegister.ieltsTestScore.writing" placeholder="...">
                       <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writing</label>
                   </el-input>
                 </el-form-item>
                 <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
@@ -159,7 +159,7 @@
               <el-upload class="upload-demo" action="" :on-preview="previewImage" :file-list="formRegister.iELTSCertificatePhotos" :on-change="handleChangeIELTS" :on-remove="handleRemoveIELTS" :auto-upload="false" list-type="picture">
                 <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
-                  <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                  <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.  Accept: jpp/jpeg, gif, png, m4v, mp4, avi, mpg</p>
                 </div>
               </el-upload>
             </el-form-item>
@@ -173,12 +173,12 @@
               ]"
             >
               <el-row :span="24" style="display: flex; flex-wrap: wrap;">
-                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.writting" :rules="[ { required: true, message: 'Required' } ]">
+                <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.writing" :rules="[ { required: true, message: 'Required' } ]">
                   <el-input id="scoresSelector">
-                    <el-select slot="append" v-model="formRegister.toeflTestScore.writting" placeholder="...">
+                    <el-select slot="append" v-model="formRegister.toeflTestScore.writing" placeholder="...">
                       <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                     </el-select>
-                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                    <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writing</label>
                   </el-input>
                 </el-form-item>
                 <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.reading" :rules="[ { required: true, message: 'Required' } ]">
@@ -226,7 +226,7 @@
               >
                 <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
-                  <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                  <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.  Accept: jpp/jpeg, gif, png, m4v, mp4, avi, mpg</p>
                 </div>
               </el-upload>
             </el-form-item>
@@ -251,7 +251,7 @@
             >
               <el-button type="primary">Click to upload</el-button>
               <div slot="tip" class="el-upload__tip">
-                <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.</p>
+                <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.  Accept: jpp/jpeg, gif, png, m4v, mp4, avi, mpg.</p>
               </div>
             </el-upload>
           </el-form-item>
@@ -275,7 +275,10 @@
       </el-col>
     </el-row>
     <div :class="{ 'isActive': toggleImagePopup }" class="image-container-preview" @click="closeImg($event)">
-      <img id="previewImg" ref="previewImg" :src="popUpImageUrl" class="image-fit" alt="">
+      <img v-if="popUpImageUrl.type==='images'" id="previewImg" ref="previewImg" :src="popUpImageUrl.url" class="image-fit" alt="">
+      <video v-if="popUpImageUrl.type==='videos'" controls>
+        <source :src="popUpImageUrl.url">
+      </video>
       <div class="close-icon" @click="toggleImagePopup=!toggleImagePopup">
         <i class="el-icon-close" style="font-size: 1.5rem;" />
       </div>
@@ -316,13 +319,13 @@ export default {
         firstLanguage: '',
         applyTo: [],
         ieltsTestScore: {
-          writting: null,
+          writing: null,
           reading: null,
           listening: null,
           speaking: null
         },
         toeflTestScore: {
-          writting: null,
+          writing: null,
           reading: null,
           listening: null,
           speaking: null
@@ -343,7 +346,10 @@ export default {
       toeflScoresIsNUll: true,
       ieltsScoresIsNUll: true,
       toggleImagePopup: false,
-      popUpImageUrl: null,
+      popUpImageUrl: {
+        type: null,
+        url: null
+      },
       portraitImg: true
     }
   },
@@ -407,11 +413,11 @@ export default {
         if (rs.raterCredentials) {
           for (const f of rs.raterCredentials) {
             if (f.credentialType == 'IDPhoto') {
-              this.formRegister.iDCardPhotos.push({ name: f.fileName, url: 'data:image/png;base64,' + f.data })
+              this.formRegister.iDCardPhotos.push({ name: f.fileName, url: `data:${this.isImage(f.fileName) ? 'image' : 'video'}/${this.getExtension(f.fileName)};base64,` + f.data })
             } else if (f.credentialType == 'TOEFLPhoto') {
-              this.formRegister.tOEFLCertificatePhotos.push({ name: f.fileName, url: 'data:image/png;base64,' + f.data })
+              this.formRegister.tOEFLCertificatePhotos.push({ name: f.fileName, url: `data:${this.isImage(f.fileName) ? 'image' : 'video'}/${this.getExtension(f.fileName)};base64,` + f.data })
             } else if (f.credentialType == 'IELTSPhoto') {
-              this.formRegister.iELTSCertificatePhotos.push({ name: f.fileName, url: 'data:image/png;base64,' + f.data })
+              this.formRegister.iELTSCertificatePhotos.push({ name: f.fileName, url: `data:${this.isImage(f.fileName) ? 'image' : 'video'}/${this.getExtension(f.fileName)};base64,` + f.data })
             }
           }
         }
@@ -422,13 +428,13 @@ export default {
             this.formRegister.ieltsTestScore.listening = rs.user.userScores.find(s => s.sectionId == 5).score
             this.formRegister.ieltsTestScore.reading = rs.user.userScores.find(s => s.sectionId == 6).score
             this.formRegister.ieltsTestScore.speaking = rs.user.userScores.find(s => s.sectionId == 7).score
-            this.formRegister.ieltsTestScore.writting = rs.user.userScores.find(s => s.sectionId == 8).score
+            this.formRegister.ieltsTestScore.writing = rs.user.userScores.find(s => s.sectionId == 8).score
           }
           if (this.getApplyTo('TOEFL')) {
             this.formRegister.toeflTestScore.listening = rs.user.userScores.find(s => s.sectionId == 1).score
             this.formRegister.toeflTestScore.reading = rs.user.userScores.find(s => s.sectionId == 2).score
             this.formRegister.toeflTestScore.speaking = rs.user.userScores.find(s => s.sectionId == 3).score
-            this.formRegister.toeflTestScore.writting = rs.user.userScores.find(s => s.sectionId == 4).score
+            this.formRegister.toeflTestScore.writing = rs.user.userScores.find(s => s.sectionId == 4).score
           }
         }
 
@@ -513,7 +519,7 @@ export default {
             scores.push(...[
               { sectionId: 5, score: this.formRegister.ieltsTestScore.listening, updatedDate: moment().format('yyyy-MM-DD') },
               { sectionId: 6, score: this.formRegister.ieltsTestScore.reading, updatedDate: moment().format('yyyy-MM-DD') },
-              { sectionId: 8, score: this.formRegister.ieltsTestScore.writting, updatedDate: moment().format('yyyy-MM-DD') },
+              { sectionId: 8, score: this.formRegister.ieltsTestScore.writing, updatedDate: moment().format('yyyy-MM-DD') },
               { sectionId: 7, score: this.formRegister.ieltsTestScore.speaking, updatedDate: moment().format('yyyy-MM-DD') }
             ])
           }
@@ -521,7 +527,7 @@ export default {
             scores.push(...[
               { sectionId: 1, score: this.formRegister.toeflTestScore.listening, updatedDate: moment().format('yyyy-MM-DD') },
               { sectionId: 2, score: this.formRegister.toeflTestScore.reading, updatedDate: moment().format('yyyy-MM-DD') },
-              { sectionId: 4, score: this.formRegister.toeflTestScore.writting, updatedDate: moment().format('yyyy-MM-DD') },
+              { sectionId: 4, score: this.formRegister.toeflTestScore.writing, updatedDate: moment().format('yyyy-MM-DD') },
               { sectionId: 3, score: this.formRegister.toeflTestScore.speaking, updatedDate: moment().format('yyyy-MM-DD') }
             ])
           }
@@ -581,16 +587,28 @@ export default {
       this.formRegister.iDCardPhotos = fileList
     },
     handleChangeIdPhoto(file, fileList) {
-      this.formRegister.iDCardPhotos = fileList
+      if (this.isImage(file.name) || this.isVideo(file.name)) {
+        this.formRegister.iDCardPhotos = fileList
+      } else {
+        fileList.pop()
+      }
     },
     handleChangeIELTS(file, fileList) {
-      this.formRegister.iELTSCertificatePhotos = fileList
+      if (this.isImage(file.name) || this.isVideo(file.name)) {
+        this.formRegister.iELTSCertificatePhotos = fileList
+      } else {
+        fileList.pop()
+      }
     },
     handleRemoveIELTS(file, fileList) {
       this.formRegister.iELTSCertificatePhotos = fileList
     },
     handleChangeTOEFL(file, fileList) {
-      this.formRegister.tOEFLCertificatePhotos = fileList
+      if (this.isImage(file.name) || this.isVideo(file.name)) {
+        this.formRegister.tOEFLCertificatePhotos = fileList
+      } else {
+        fileList.pop()
+      }
     },
     handleRemoveTOEFL(file, fileList) {
       this.formRegister.tOEFLCertificatePhotos = fileList
@@ -599,7 +617,13 @@ export default {
       return this.formRegister.applyTo.find(a => a.indexOf(testName) >= 0) != undefined
     },
     previewImage(e) {
-      this.popUpImageUrl = e.url
+      if (this.isImage(e.name)) {
+        this.popUpImageUrl.type = 'images'
+      }
+      if (this.isVideo(e.name)) {
+        this.popUpImageUrl.type = 'videos'
+      }
+      this.popUpImageUrl.url = e.url
       this.toggleImagePopup = !this.toggleImagePopup
       console.log(this.$refs.previewImg)
     },
@@ -607,6 +631,34 @@ export default {
       if (e.target.firstChild != null) {
         this.toggleImagePopup = !this.toggleImagePopup
       }
+    },
+    getExtension(filename) {
+      var parts = filename.split('.')
+      return parts[parts.length - 1]
+    },
+    isImage(filename) {
+      var ext = this.getExtension(filename)
+      switch (ext.toLowerCase()) {
+        case 'jpg':
+        case 'jpeg':
+        case 'gif':
+        case 'png':
+          // etc
+          return true
+      }
+      return false
+    },
+    isVideo(filename) {
+      var ext = this.getExtension(filename)
+      switch (ext.toLowerCase()) {
+        case 'm4v':
+        case 'avi':
+        case 'mpg':
+        case 'mp4':
+          // etc
+          return true
+      }
+      return false
     }
   }
 }

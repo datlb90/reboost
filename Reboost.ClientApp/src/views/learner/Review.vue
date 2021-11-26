@@ -9,7 +9,7 @@
               ref="tabQuestion"
               :questionid="questionId"
               :reviewid="reviewId"
-              @openDisputeNote="disputeNoteDialogVisible=true"
+              @openDisputeNote="onOpenDisputeNote"
               @closeDisputeNote="disputeNoteDialogVisible=false"
             />
           </el-tab-pane>
@@ -17,7 +17,7 @@
             <tabRubric ref="tabRubric" :current-user="currentUser" :questionid="questionId" :reviewid="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
           <el-tab-pane v-if="isRate && !isDisputed" name="rate" label="Rate">
-            <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" />
+            <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -46,6 +46,7 @@
           @openDialogRevise="reviseDialogVisible = true"
           @closeDialogRevise="reviseDialogVisible = false"
           @dispute="openDisputeDialog"
+          @disputed="isDisputed=true"
           @closeDisputeDialog="disputeDialogVisible = false"
         />
         <div id="viewerContainer">
@@ -218,6 +219,7 @@
         </el-form-item>
         <el-form-item prop="questionId" :rules="[{ required: true }]">
           <el-input
+            v-if="false"
             v-model="disputeForm.questionId"
             :disabled="true"
             type="text"
@@ -460,16 +462,13 @@ export default {
 
     this.loadReview().then(rs => {
       if (this.currentUser.role === 'Admin' || this.isView || this.isRate) {
-        document.getElementById('viewerContainer').style.userSelect = 'none'
-      this.$refs.toolBar?.disableAnnotationCreate()
-      this.disableToolbarSubmit()
-      disableEdit()
+        this.disableToolbarSubmit()
       } else {
         enableEdit()
       }
     })
   },
-  beforeCreate: function() {
+  beforeCreate() {
     document.body.style = 'overflow: hidden'
   },
   created() {
@@ -2264,7 +2263,7 @@ export default {
             })
 
             if (this.currentUser?.role == UserRole.RATER && this.statusRater === RATER_STATUS.APPROVED) {
-              this.$router.push('/reviews')
+              // this.$router.push('/reviews')
             } else {
               this.$store.dispatch('review/loadReviewsById')
               this.$router.push('/rater/application')
@@ -2725,6 +2724,10 @@ export default {
     disableToolbarSubmit() {
       this.$refs.toolBar?.disableSubmit()
       this.$refs.tabRubric?.disableRubric()
+      document.getElementById('viewerContainer').style.userSelect = 'none'
+      this.$refs.toolBar?.disableAnnotationCreate()
+      disableEdit()
+      this.isView = true
     },
     isInShowMoreList(e) {
       if (this.showMoreList.filter(r => { return r.id == e }).length > 0 && this.isEditing != e) {
@@ -2799,6 +2802,10 @@ export default {
     },
     async loadReview() {
       const result = await reviewService.getById(this.$route.params.reviewId).then(async rs => {
+        if (this.currentUser.role === UserRole.ADMIN) {
+          this.$store.dispatch('rater/setSelectedRater', rs.rater)
+        }
+
         if (rs.review) {
           if (rs.review.status === REVIEW_REQUEST_STATUS.COMPLETED) {
             this.isView = true
@@ -2811,9 +2818,9 @@ export default {
                 this.isDisputed = true
                 this.$refs.toolBar?.loadDisputeData(rs)
                 this.$refs.tabQuestion?.getDisputeData(rs)
-                if (rs.adminNote) {
-                  this.disputeNote.note = rs.adminNote
-                }
+                // if (rs.adminNote) {
+                //   this.disputeNote.note = rs.adminNote
+                // }
               }
             })
           }
@@ -2885,6 +2892,10 @@ export default {
           this.$refs.tabQuestion?.updateDispute(this.disputeNote)
         }
       })
+    },
+    onOpenDisputeNote() {
+      this.disputeNoteDialogVisible = true
+      this.$refs['formDisputeNote'].resetFields()
     }
     // End migration
   }

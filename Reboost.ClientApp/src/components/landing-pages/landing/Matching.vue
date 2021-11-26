@@ -10,9 +10,9 @@
 
         <div class="col-lg-4 col-md-12 services-content">
           <div class="section-title">
-            <h2>State-of-the-art Matching Algorithm</h2>
+            <h2>{{ messageTranslates('matching', 'title') }}</h2>
             <div class="bar" />
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p>{{ messageTranslates('matching', 'description') }}</p>
           </div>
         </div>
       </div>

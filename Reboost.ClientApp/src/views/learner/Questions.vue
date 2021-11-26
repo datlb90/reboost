@@ -1,14 +1,15 @@
 <template>
   <div class="newcontainer">
     <div class="title">
-      <h2>All Writing Topics</h2>
+      <!-- <h2>All Writing Topics</h2> -->
+      <h2>{{ messageTranslates('question', 'title') }}</h2>
     </div>
     <div>
       <hr>
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div class="left-content">
           <div class="completed">
-            <span> {{ taskCompleted }} /{{ questionsCount }} Completed</span>
+            <span> {{ taskCompleted }} /{{ questionsCount }} {{ messageTranslates('question', 'completed') }}</span>
           </div>
           <div><span style="margin: 0 5px;">-</span></div>
           <div v-for="item in summary" :key="item.section">
@@ -16,7 +17,7 @@
           </div>
         </div>
         <div class="btnPickOne">
-          <el-button size="mini" @click="clickPickOne">Pick One
+          <el-button size="mini" @click="clickPickOne">{{ messageTranslates('question', 'pickOne') }}
             <i class="fas fa-random" />
           </el-button>
         </div>
@@ -27,15 +28,15 @@
     <el-row :gutter="40">
       <el-col :md="6" class="filter-container">
         <div>
-          <el-input v-model="textSearch" size="mini" placeholder="Type to search" @input="search()" />
+          <el-input v-model="textSearch" size="mini" :placeholder="messageTranslates('question', 'placeholderSearch')" @input="search()" />
         </div>
       </el-col>
       <el-col :md="12" class="filter-container">
         <div class="filter-toolbar">
           <i class="el-icon-document" style="margin-right: 15px; cursor: pointer;" @click="filterSample" />
-          <dropdown-menu id="ddFilterSection" v-model="filterSection" style="margin-right: 20px" :tittle="'Test Section'" @confirm="search()" @reset="resetFilterSection()" />
-          <dropdown-menu v-model="filterType" style="margin-right: 20px" :tittle="'Type'" @confirm="search()" @reset="resetFilterType()" />
-          <dropdown-menu v-model="filterStatus" :tittle="'Status'" @confirm="search()" @reset="resetFilterStatus()" />
+          <dropdown-menu id="ddFilterSection" v-model="filterSection" style="margin-right: 20px" :tittle="messageTranslates('question', 'testSection')" @confirm="search()" @reset="resetFilterSection()" />
+          <dropdown-menu v-model="filterType" style="margin-right: 20px" :tittle="messageTranslates('question', 'type')" @confirm="search()" @reset="resetFilterType()" />
+          <dropdown-menu v-model="filterStatus" :tittle="messageTranslates('question', 'status')" @confirm="search()" @reset="resetFilterStatus()" />
         </div>
         <div class="tag-selection">
           <el-tag
@@ -55,7 +56,7 @@
 
       <el-col :md="6" class="filter-container">
         <div style="text-align: right;">
-          <el-button size="mini" @click="clearFilter">Reset all filters</el-button>
+          <el-button size="mini" @click="clearFilter">{{ messageTranslates('question', 'resetAll') }}</el-button>
         </div>
       </el-col>
 
@@ -63,20 +64,20 @@
 
     <el-table ref="filterTable" :data="questions" stripe style="width: 100%;">
       <el-table-column prop="id" label="#" width="50" />
-      <el-table-column label="Title">
+      <el-table-column :label="messageTranslates('question', 'titleTable')">
         <template slot-scope="scope">
           <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.title }}</span>
         </template>
       </el-table-column>
       <el-table-column
-        label="Test Section"
+        :label="messageTranslates('question', 'testSectionTable')"
       >
         <template slot-scope="scope">
           <span style="word-break: break-word">{{ scope.row.test }} {{ scope.row.section }}</span>
         </template>
       </el-table-column>
       <el-table-column
-        label="Type"
+        :label="messageTranslates('question', 'typeTable')"
       >
         <template slot-scope="scope">
           <span style="word-break: break-word">{{ scope.row.type }}</span>
@@ -84,7 +85,7 @@
       </el-table-column>
       <el-table-column
         width="80"
-        label="Sample"
+        :label="messageTranslates('question', 'sampleTable')"
       >
         <template slot-scope="scope">
           <div v-if="scope.row.sample" class="show-title">
@@ -94,7 +95,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="Status" prop="status" width="110">
+      <el-table-column :label="messageTranslates('question', 'statusTable')" prop="status" width="110">
         <template slot-scope="scope">
           <!-- <i v-if="scope.row.status == 'Completed'" class="el-icon-check check" /> -->
           <el-tag
