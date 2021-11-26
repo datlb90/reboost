@@ -9,19 +9,19 @@
                 <img src="@/assets/logo/green_logo.png" alt="logo" style="width: 140px;">
               </router-link>
             </div>
-            <el-form-item style="text-align: left;" prop="firstName" :rules="[{ required: true, message: 'First name is required'}]">
-              <el-input id="firstName" v-model="form.firstName" type="text" placeholder="First Name" />
+            <el-form-item style="text-align: left;" prop="firstName" :rules="[{ required: true, message: messageTranslates('raterRegister', 'firstNameRequired')}]">
+              <el-input id="firstName" v-model="form.firstName" type="text" :placeholder="messageTranslates('raterRegister', 'firstName')" />
             </el-form-item>
 
-            <el-form-item style="text-align: left;" prop="lastName" :rules="[{ required: true, message: 'Last name is required'}]">
-              <el-input id="lastName" v-model="form.lastName" type="text" placeholder="Last Name" />
+            <el-form-item style="text-align: left;" prop="lastName" :rules="[{ required: true, message: messageTranslates('raterRegister', 'lastNameRequired')}]">
+              <el-input id="lastName" v-model="form.lastName" type="text" :placeholder="messageTranslates('raterRegister', 'lastName')" />
             </el-form-item>
 
-            <el-form-item style="text-align: left;" prop="username" :rules="[{ required: true, message: 'Username or email is required'}]">
-              <el-input id="username" v-model="form.username" type="text" placeholder="Username or email" />
+            <el-form-item style="text-align: left;" prop="username" :rules="[{ required: true, message: messageTranslates('raterRegister', 'usernameRequired')}]">
+              <el-input id="username" v-model="form.username" type="text" :placeholder="messageTranslates('raterRegister', 'usernameEmail')" />
             </el-form-item>
-            <el-form-item style="text-align: left;" prop="password" :rules="[{ required: true, message: 'Password is required'}]">
-              <el-input id="password" v-model="form.password" type="password" autocomplete="off" placeholder="Password" />
+            <el-form-item style="text-align: left;" prop="password" :rules="[{ required: true, message: messageTranslates('raterRegister', 'passwordRequired')}]">
+              <el-input id="password" v-model="form.password" type="password" autocomplete="off" :placeholder="messageTranslates('raterRegister', 'password')" />
             </el-form-item>
             <el-form-item>
               <el-button
@@ -30,22 +30,21 @@
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
                 @click="signUp()"
               >
-                Create Rater Account
+                {{ messageTranslates('raterRegister', 'createAccount') }}
               </el-button>
             </el-form-item>
 
             <el-form-item style="text-align: center;">
               <p href="/forgot/password" style="color: black; text-decoration: none;">
-                Already have an account?  <a href="/rater/login" style="color: rgb(101 139 179); text-decoration: none;">
-                  Sign In Now
+                {{ messageTranslates('raterRegister', 'alreadyHave') }}&nbsp;<a href="/rater/login" style="color: rgb(101 139 179); text-decoration: none;">
+                  {{ messageTranslates('raterRegister', 'signInNow') }}
                 </a>
               </p>
-
             </el-form-item>
 
             <hr>
             <div style="font-size: 14px; text-align: center; padding-bottom: 10px;">
-              Or you can sign in with
+              {{ messageTranslates('raterRegister', 'orSignInWith') }}
             </div>
 
             <el-form-item>
@@ -61,15 +60,14 @@
               </form>
             </el-form-item>
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
-              By logging in, I agree to the
+              {{ messageTranslates('raterRegister', 'byLoggingIn') }}
               <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
-                terms
-              </a> and
+                {{ messageTranslates('raterRegister', 'terms') }}
+              </a> {{ messageTranslates('raterRegister', 'and') }}
               <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
-                policies
+                {{ messageTranslates('raterRegister', 'policies') }}
               </a>
             </div>
-
           </el-form>
         </div>
       </div>

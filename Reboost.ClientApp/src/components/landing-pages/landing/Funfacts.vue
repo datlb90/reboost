@@ -3,9 +3,9 @@
   <section id="features" class="funfacts-area ptb-80" style="padding-bottom: 20px;">
     <div class="container">
       <div class="section-title">
-        <h2>Experience The Best Features Ever</h2>
+        <h2>{{ messageTranslates('funfacts', 'title') }}</h2>
         <div class="bar" />
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <p>{{ messageTranslates('funfacts', 'description') }}</p>
       </div>
     </div>
   </section>

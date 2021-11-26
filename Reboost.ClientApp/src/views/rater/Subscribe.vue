@@ -36,7 +36,7 @@
                   <small class="currency-notice">(prices are marked in USD)</small>
                 </div>  <!-- End of body -->
                 <div class="footer">
-                  <button v-if="!subscribedPlans.find(p => p.product == item.id)" type="button" class="button button-default subscribe-button" @click="planSelected(item)">Subscribe</button>
+                  <button v-if="!subscribedPlans.find(p => p === item.name)" type="button" class="button button-default subscribe-button" @click="planSelected(item)">Subscribe</button>
                   <button v-else type="button" class="button button-default subscribe-button" disabled="true">Subscribed</button>
                 </div>  <!-- End of footer -->
               </div>
@@ -56,6 +56,7 @@
 // import { loadStripe } from '@stripe/stripe-js'
 import paymentService from '../../services/payment.service'
 import CheckOut from '../../components/controls/CheckOut.vue'
+import { SUBSCRIPTION_PLANS } from '../../app.constant'
 export default {
   name: 'Subscribe',
   components: {
@@ -69,19 +70,7 @@ export default {
       checkoutVisible: false,
       priceId: null,
       subscribedPlans: [],
-      currentProducts: [{
-        id: 1,
-        pId: 'P-6N9586386D9350704MFFTCIQ',
-        name: 'year',
-        price: 159.00,
-        description: 'Our most popular plan previously sold for $299 and is now only $13/month. This plan saves you over 60% in comparison to the monthly plan.'
-      }, {
-        id: 2,
-        pId: 'P-2XC42867D76575918MFFP53Q',
-        name: 'month',
-        price: 35.00,
-        description: 'Down from $39/month. Our monthly plan grants access to all premium features, the best plan for short-term subscribers.'
-      }]
+      currentProducts: SUBSCRIPTION_PLANS
     }
   },
   computed: {
@@ -94,7 +83,7 @@ export default {
   },
   async mounted() {
     paymentService.getLearnerSubscriptions().then(rs => {
-      console.log('subcribed: ', rs)
+      this.subscribedPlans = rs
     })
   },
   methods: {
@@ -110,7 +99,6 @@ export default {
       paymentService.subscribe({ methodId: e.id, priceId: this.priceId }).then(s => {
         this.priceId = ''
         if (s.error) {
-          console.error('Subscription errors: ', s)
           this.$notify.error({
             title: 'Error',
             message: s.error.message,

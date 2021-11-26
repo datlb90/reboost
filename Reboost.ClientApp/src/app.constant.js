@@ -61,7 +61,11 @@ export const PageName = {
   SUBMISSIONS: 'Submissions',
   LEARNER_DISPUTES: 'LearnerDisputes',
   ADMIN_QUESTIONS: 'AdminQuestions',
-  NOT_FOUND: 'PageNotFound'
+  NOT_FOUND: 'PageNotFound',
+  SAMPLES: 'Samples',
+  ARTICLES: 'Articles',
+  LEARNER_ARTICLES: 'LearnerArticles',
+  LEARNER_ARTICLE_DETAIL: 'LearnerArticleDetail'
 }
 
 export const UserRole = {
@@ -95,4 +99,40 @@ export const QUESTION_STATUS = {
   ACTIVE: 'Active',
   CONTRIBUTED: 'Contributed',
   APPROVED: 'Approved'
+}
+
+export const SUBSCRIPTION_PLANS = [
+  {
+    id: 1,
+    pId: 'P-6N9586386D9350704MFFTCIQ',
+    name: 'year',
+    price: 159.00,
+    description: 'Our most popular plan previously sold for $299 and is now only $13/month. This plan saves you over 60% in comparison to the monthly plan.'
+  },
+  {
+    id: 2,
+    pId: 'P-2XC42867D76575918MFFP53Q',
+    name: 'month',
+    price: 39.00,
+    description: 'Down from $39/month. Our monthly plan grants access to all premium features, the best plan for short-term subscribers.'
+  }
+]
+
+export const TEST_TYPES = {
+  IELTS: 'IELTS',
+  TOEFL: 'TOEFL'
+}
+
+export const SAMPLE_STATUS = {
+  CONTRIBUTED: 'Contributed',
+  APPROVED: 'Approved'
+}
+
+export const ARTICLE_CATEGORIES = {
+  IELTS_WRITINGS: 'IELTS Writings',
+  TOEFL_WRITINGS: 'TOEFL Writings',
+  TEST_PREPARATION: 'Test Preparation',
+  STUDY_GUIDE: 'Study Guide',
+  GENERAL_DISCUSSION: 'General Discussion',
+  SUPPORT_FEEDBACK: 'Support & Feedback'
 }

@@ -8,14 +8,14 @@
     @closed="dialogClosed"
   >
     <div slot="title">
-      <div style="padding: 5px 20px"><i class="el-icon-shopping-cart-1" />Checkout</div>
+      <div style="padding: 5px 20px; font-size: 18px; text-align:center;"><i class="el-icon-shopping-cart-1" />&nbsp;&nbsp;Checkout</div>
       <div class="divider--horizontal divider" />
     </div>
     <div class="dialog-body">
       <div class="co-header">
         <img style="width:50px; height:50px; margin: 0 10px;" src="@/assets/img/checkout-icon-premium.png" alt="">
         <div class="title-container">
-          <span>Writting preview</span>
+          <span>Writing preview</span>
           <span class="title-price">${{ total }}</span>
         </div>
       </div>
@@ -124,7 +124,7 @@
 // import http from '@/utils/axios'
 // import { loadStripe } from '@stripe/stripe-js'
 import paymentService from '../../services/payment.service'
-import { REVIEW_REQUEST_STATUS } from '../../app.constant'
+import { REVIEW_REQUEST_STATUS, SUBSCRIPTION_PLANS } from '../../app.constant'
 import reviewService from '../../services/review.service'
 import * as moment from 'moment'
 // import { configs } from '../../app.constant'
@@ -151,7 +151,7 @@ export default {
       checkoutDisable: true,
       newMethod: false,
       selectedMethod: null,
-      amount: 3500,
+      amount: 3.50,
       paymentIntent: null,
       total: null
     }
@@ -181,8 +181,15 @@ export default {
       }
     }
   },
-  async created() {
+  beforeCreate() {
+    const script = document.createElement('script')
+    script.src = 'https://www.paypalobjects.com/api/checkout.js'
+    document.body.appendChild(script)
 
+    const sub_script = document.createElement('script')
+    sub_script.src = 'https://www.paypal.com/sdk/js?client-id=AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F&vault=true&intent=subscription'
+    sub_script.setAttribute('data-namespace', 'paypal_sdk')
+    document.body.appendChild(sub_script)
   },
   async mounted() {
     this.email = this.currentUser.email
@@ -191,14 +198,6 @@ export default {
     } else {
       this.$store.dispatch('payment/loadPaymentMethods', null)
     }
-
-    const script = document.createElement('script')
-    script.src = 'https://www.paypalobjects.com/api/checkout.js'
-    document.body.appendChild(script)
-
-    const sub_script = document.createElement('script')
-    sub_script.src = 'https://www.paypal.com/sdk/js?client-id=AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F&vault=true&intent=subscription'
-    document.body.appendChild(sub_script)
   },
   methods: {
     async dialogOpened() {
@@ -416,7 +415,7 @@ export default {
           }, '#paypal-button')
         }
       }
-      if (this.subcribe?.name === 'month' || this.subcribe?.name === 'year') {
+      if (SUBSCRIPTION_PLANS.filter(r => r.name === this.subcribe?.name).length > 0) {
         const btnExisted = document.getElementById('paypal-subscribe-button-container')
 
         if (btnExisted.childNodes.length > 0) {
@@ -426,19 +425,16 @@ export default {
         }
 
         setTimeout(() => {
-          this.createSubcribePaypalBtn()
+          if (this.subcribe.id === 1) {
+            this.createYearSubcribePaypalBtn()
+          } else {
+            this.createMonthSubcribePaypalBtn()
+          }
         }, 50)
       }
     },
-    createSubcribePaypalBtn() {
-      console.log('plan id: ', this.subcribe?.pId)
-      window.paypal.Buttons({
-        createSubscription: function(data, actions) {
-          return actions.subscription.create({
-            'plan_id': this.subcribe?.pId
-          })
-        },
-
+    createYearSubcribePaypalBtn() {
+      window.paypal_sdk.Buttons({
         style: {
           shape: 'pill',
           color: 'gold',
@@ -446,38 +442,66 @@ export default {
           label: 'subscribe'
         },
 
-        onApprove: function(data, actions) {
-          if (this.subcribe.name === 'month') {
-            const data = {
-              MonthSubs: data.subscriptionID
-            }
-            paymentService.createUpdateLearnerSubscriptions(data).then(rs => {
-              console.log('sub to month: ', rs)
-              this.$notify.success({
-                title: 'Subcribe Successed!',
-                message: 'Successed!',
-                type: 'success',
-                duration: 1500
-              })
-            })
-          }
-          if (this.subcribe.name === 'year') {
-            const data = {
-              YearSubs: data.subscriptionID
-            }
-            paymentService.createUpdateLearnerSubscriptions(data).then(rs => {
-              console.log('sub to month: ', rs)
-              this.$notify.success({
-                title: 'Subcribe Successed!',
-                message: 'Successed!',
-                type: 'success',
-                duration: 1500
-              })
-            })
-          }
-        }
+        createSubscription: function(data, actions) {
+          return actions.subscription.create({
+            // Pass a const to plan_id, can not use variable
+            'plan_id': 'P-6N9586386D9350704MFFTCIQ'
+          })
+        },
 
+        onApprove: (data, actions) => {
+          this.subscribed(data)
+        }
       }).render('#paypal-subscribe-button-container')
+    },
+    createMonthSubcribePaypalBtn() {
+      window.paypal_sdk.Buttons({
+        style: {
+          shape: 'pill',
+          color: 'gold',
+          layout: 'horizontal',
+          label: 'subscribe'
+        },
+
+        createSubscription: function(data, actions) {
+          return actions.subscription.create({
+            // Pass a const to plan_id, can not use variable
+            'plan_id': 'P-2XC42867D76575918MFFP53Q'
+          })
+        },
+
+        onApprove: (data, actions) => {
+          this.subscribed(data)
+        }
+      }).render('#paypal-subscribe-button-container')
+    },
+    subscribed(data) {
+      if (this.subcribe.name === 'month') {
+        const postData = {
+          MonthSubs: data.subscriptionID
+        }
+        paymentService.createUpdateLearnerSubscriptions(postData).then(rs => {
+          this.$notify.success({
+            title: 'Subcribe Successed!',
+            message: 'Successed!',
+            type: 'success',
+            duration: 1500
+          })
+        })
+      }
+      if (this.subcribe.name === 'year') {
+        const postData = {
+          YearSubs: data.subscriptionID
+        }
+        paymentService.createUpdateLearnerSubscriptions(postData).then(rs => {
+          this.$notify.success({
+            title: 'Subcribe Successed!',
+            message: 'Successed!',
+            type: 'success',
+            duration: 1500
+          })
+        })
+      }
     },
     paymentSuccessed() {
       this.$notify.success({
@@ -496,7 +520,6 @@ export default {
         Status: REVIEW_REQUEST_STATUS.WAITING
       }).then(rs => {
         this.dialogClosed()
-
         this.$notify.success({
           title: 'Submission Requested',
           message: 'Requested!',
@@ -513,7 +536,6 @@ export default {
         PaypalInvoiceId: paymentId,
         Amount: '0.5'
       }
-
       paymentService.createPaymentHistory(data).then(rs => {
         console.log('payment history created: ', rs)
       })

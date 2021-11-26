@@ -3,12 +3,12 @@
     <el-row class="row-flex">
       <el-col :span="15">
         <div style="display: flex; justify-content:space-between">
-          <h3>My Reviews</h3>
+          <h3>{{ messageTranslates('review', 'title') }}</h3>
           <el-button v-if="!pendingReview" style="margin-right: 25px;" size="mini" @click="onNewRequestClick">
-            Make New Review
+            {{ messageTranslates('review', 'makeNew') }}
           </el-button>
           <el-button v-if="pendingReview" style="margin-right: 25px;" size="mini" @click="onPendingClick">
-            Complete Pending Review
+            {{ messageTranslates('review', 'completePending') }}
           </el-button>
         </div>
         <el-main>
@@ -21,17 +21,17 @@
           >
             <el-table-column
               prop="questionName"
-              label="Question"
+              :label="messageTranslates('review', 'questionTable')"
               align="center"
             />
             <el-table-column
               prop="testSection"
-              label="Test Section"
+              :label="messageTranslates('review', 'testSectionTable')"
               align="center"
             />
             <el-table-column
               prop="questionType"
-              label="Question Type"
+              :label="messageTranslates('review', 'questionTypeTable')"
               align="center"
             />
 
@@ -39,21 +39,21 @@
               width="110px"
               align="center"
               prop="reviewRequest.status"
-              label="Status"
+              :label="messageTranslates('review', 'statusTypeTable')"
             >
               <template slot-scope="scope">
                 <el-tag :type="getStatusVariant(scope.row.review.status)">{{ scope.row.review.status }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column
-              label="Last Activity Date"
+              :label="messageTranslates('review', 'lastActivityTable')"
               align="center"
             >
               <template slot-scope="scope">
                 <span>{{ getTimeFromDateCreateToNow(scope.row.review.lastActivityDate) }}</span>
               </template>
             </el-table-column>
-            <el-table-column align="center" label="Actions">
+            <el-table-column align="center" :label="messageTranslates('review', 'actionsTable')">
               <template slot-scope="scope">
                 <el-button size="mini" @click="navigateToReviewRequest(scope.row)">
                   View

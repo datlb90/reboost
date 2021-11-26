@@ -2,7 +2,7 @@
   <div id="submission" style="margin-top:25px;">
     <el-row class="row-flex">
       <el-col :span="15">
-        <h3>My Submissions</h3>
+        <h3>{{ messageTranslates('submission', 'title') }}</h3>
         <el-main>
           <el-tag
             v-if="unRatedList.length>0"
@@ -24,12 +24,12 @@
             />
             <el-table-column
               prop="question"
-              label="Question"
+              :label="messageTranslates('submission', 'questionTable')"
               align="center"
             />
             <el-table-column
               prop="status"
-              label="Status"
+              :label="messageTranslates('submission', 'statusTable')"
               align="center"
             >
               <template slot-scope="scope">
@@ -37,7 +37,7 @@
               </template>
             </el-table-column>
             <el-table-column
-              label="Time Submitted"
+              :label="messageTranslates('submission', 'timeSubmitTable')"
               align="center"
             >
               <template slot-scope="scope">
@@ -45,12 +45,12 @@
               </template>
             </el-table-column>
 
-            <el-table-column width="110px" prop="timeTaken" align="center" label="Time Taken">
+            <el-table-column width="110px" prop="timeTaken" align="center" :label="messageTranslates('submission', 'timeTakenTable')">
               <template slot-scope="scope">
                 <span>{{ getTimeTaken(scope.row.timeTaken) }}</span>
               </template>
             </el-table-column>
-            <el-table-column align="center" label="Actions">
+            <el-table-column align="center" :label="messageTranslates('submission', 'actionsTable')">
               <template slot-scope="scope">
                 <div class="action-column-cell">
                   <el-button size="mini" @click="actionClick(scope.row.action, scope.row)">{{ scope.row.action }}</el-button>
@@ -137,7 +137,6 @@ export default {
       return type
     },
     getStatusName(status) {
-      console.log(status, status.trim())
       if (status.trim() === 'Reviewed') return 'Review and Un-Rated'
       return status
     },
@@ -151,6 +150,7 @@ export default {
       })
 
       reviewService.getUnratedReview().then(rs => {
+        console.log('unrated: ', rs)
         if (rs.length > 0) {
           this.unRatedList = rs
         }
@@ -171,45 +171,52 @@ export default {
     loadList() {
       this.listSubmissionsPerPage = this.submissionsListCached.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
       this.total = this.submissionsListCached.length
-      console.log(this.listSubmissionsPerPage)
     },
     actionClick(action, e) {
       this.selectedSubId = e.id
 
       if (action.trim() === 'Request Review') {
-        reviewService.createReviewRequest({
-          UserId: this.currentUser.id,
-          SubmissionId: e.id,
-          FeedbackType: 'Free',
-          Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
-        }).then(rs => {
-          if (rs) {
-            this.$notify.success({
-              title: 'Submission Requested',
-              message: 'Requested!',
-              type: 'success',
-              duration: 1500
-            })
-            this.submissionsListCached.forEach(r => {
-              if (r.id === e.id) {
-                if (this.unRatedList.length > 0) {
-                  r.status = 'Pending'
-                } else {
-                  r.status = 'Review Requested'
-                  this.$notify.success({
-                    title: 'Submission Requested',
-                    message: 'Requested!',
-                    type: 'success',
-                    duration: 1500
-                  })
+        if (this.unRatedList.length > 0) {
+          this.$notify.error({
+            title: 'Rate request',
+            message: 'Please rate all of your un-rate review before making a free review request.',
+            type: 'error',
+            duration: 1500
+          })
+        } else {
+          reviewService.createReviewRequest({
+            UserId: this.currentUser.id,
+            SubmissionId: e.id,
+            FeedbackType: 'Free',
+            Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
+          }).then(rs => {
+            if (rs) {
+              this.$notify.success({
+                title: 'Submission Requested',
+                message: 'Requested!',
+                type: 'success',
+                duration: 1500
+              })
+              this.submissionsListCached.forEach(r => {
+                if (r.id === e.id) {
+                  if (this.unRatedList.length > 0) {
+                    r.status = 'Pending'
+                  } else {
+                    r.status = 'Review Requested'
+                    this.$notify.success({
+                      title: 'Submission Requested',
+                      message: 'Requested!',
+                      type: 'success',
+                      duration: 1500
+                    })
+                  }
+                  r.action = 'View Submission'
                 }
-                r.action = 'View Submission'
-              }
-            })
-          }
-          this.loadList()
-        })
-        // }
+              })
+            }
+            this.loadList()
+          })
+        }
       } else if (action == 'View Submission') {
         this.$router.push(`PracticeWriting/${e.questionId}/${e.id}`)
       } else if (action == 'View Review') {

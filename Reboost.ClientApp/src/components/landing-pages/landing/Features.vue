@@ -10,9 +10,9 @@
 
         <div class="col-lg-4 col-md-12 services-content">
           <div class="section-title">
-            <h2>Carefully Crafted Review Center</h2>
+            <h2>{{ messageTranslates('features', 'title') }}</h2>
             <div class="bar" />
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p>{{ messageTranslates('features', 'description') }}</p>
           </div>
         </div>
       </div>

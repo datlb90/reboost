@@ -20,11 +20,13 @@ namespace Reboost.WebApi.Controllers
     {
         private readonly IMapper _mapper;
         private IUserService _userService;
+        private ISampleService _sampleService;
 
-        public QuestionsController(IQuestionsService service, IMapper mapper, IUserService userService) : base(service)
+        public QuestionsController(IQuestionsService service, IMapper mapper, IUserService userService, ISampleService sampleService) : base(service)
         {
             _mapper = mapper;
             _userService = userService;
+            _sampleService = sampleService;
         }
         [Authorize]
         [HttpGet]
@@ -156,6 +158,16 @@ namespace Reboost.WebApi.Controllers
         {
             var rs = await _service.ApproveQuestionAsync(id);
             return Ok(rs);
+        }
+
+        [Authorize] 
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteQuestion([FromRoute] int id)
+        {
+            var rs = await _service.DeleteAsync(id);
+            return Ok(rs);
+
         }
     }
 }

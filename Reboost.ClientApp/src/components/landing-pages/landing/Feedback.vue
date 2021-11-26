@@ -3,9 +3,9 @@
   <section id="testimony" class="ml-feedback-area ptb-80">
     <div class="container">
       <div class="section-title">
-        <h2>What Users Saying</h2>
+        <h2>{{ messageTranslates('feedback', 'title') }}</h2>
         <div class="bar" />
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <p>{{ messageTranslates('feedback', 'description') }}</p>
       </div>
 
       <div class="ml-feedback-slides">

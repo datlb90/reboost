@@ -11,6 +11,16 @@
               </a>
             </div>
             <p>Quis ipsum suspendisse ultrices gravida. Risus commodo viverra maecenas accumsan lacus vel facilisis.</p>
+            <el-dropdown @command="onChangeLanguage">
+              <el-button type="primary">
+                {{ lang }}
+                <i class="el-icon-arrow-down el-icon--right" />
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="english">English</el-dropdown-item>
+                <el-dropdown-item command="vietnamese">Vietnamese</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </div>
         </div>
 
@@ -82,6 +92,26 @@
 import BackToTop from 'vue-backtotop'
 export default {
   name: 'Footer',
-  components: { BackToTop }
+  components: { BackToTop },
+  data() {
+    return {
+      lang: 'English'
+    }
+  },
+  mounted() {
+    var _lang = localStorage.getItem('language')
+    if (_lang) {
+      this.lang = _lang.charAt(0).toUpperCase() + _lang.slice(1)
+    } else {
+      this.lang = 'English'
+    }
+  },
+  methods: {
+    onChangeLanguage(e) {
+      this.lang = e.charAt(0).toUpperCase() + e.slice(1)
+      localStorage.setItem('language', e)
+      this.$ml.change(e)
+    }
+  }
 }
 </script>

@@ -44,7 +44,6 @@ export default {
     var rubricId = this.$route.params.id
     this.$store.dispatch('rubric/loadRubricByQuestionId', +rubricId).then(() => {
       this.tableData = this.$store.getters['rubric/getByQuestionId']
-      console.log(this.tableData)
     })
   },
   methods: {

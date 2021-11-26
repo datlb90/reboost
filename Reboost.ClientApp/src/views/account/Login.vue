@@ -10,11 +10,11 @@
               </router-link>
             </div>
             <el-form-item style="text-align: left;">
-              <el-input id="email" v-model="form.username" type="text" placeholder="Username or email" />
+              <el-input id="email" v-model="form.username" type="text" :placeholder="messageTranslates('login', 'usernameEmail')" />
             </el-form-item>
             <el-form-item style="text-align: left;">
 
-              <el-input id="password" v-model="form.password" type="password" autocomplete="off" placeholder="Password" />
+              <el-input id="password" v-model="form.password" type="password" autocomplete="off" :placeholder="messageTranslates('login', 'password')" />
             </el-form-item>
             <el-form-item>
               <el-button
@@ -23,21 +23,21 @@
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
                 @click="signIn()"
               >
-                Sign In
+                {{ messageTranslates('login', 'signIn') }}
               </el-button>
             </el-form-item>
 
             <el-form-item style="text-align: left;">
               <a href="/forgot/password" style="float: left; color: rgb(101 139 179); text-decoration: none;">
-                Forgot Password?
+                {{ messageTranslates('login', 'forgotPassword') }}
               </a>
               <a :href="linkToRegister" style="float: right; color: rgb(101 139 179); text-decoration: none;">
-                Sign Up
+                {{ messageTranslates('login', 'signUp') }}
               </a>
             </el-form-item>
 
             <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px;">
-              Or you can sign in with
+              {{ messageTranslates('login', 'orSignIn') }}
             </div>
 
             <el-form-item>
@@ -54,12 +54,12 @@
             </el-form-item>
 
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
-              By logging in, I agree to the
+              {{ messageTranslates('login', 'byLoggingIn') }}
               <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
-                terms
-              </a> and
+                {{ messageTranslates('login', 'terms') }}
+              </a> {{ messageTranslates('login', 'and') }}
               <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
-                policies
+                {{ messageTranslates('login', 'policies') }}
               </a>
             </div>
 

@@ -1,0 +1,20 @@
+export const Banner = {
+  bannerContentTitle: 'Một cách mới để học',
+  bannerContentDescription: 'Reboost là nền tảng tốt nhất để giúp bạn nâng cao điểm thi viết ngoại ngữ của mình. Bất kể bạn làm bài kiểm tra nào, chúng tôi sẽ giúp bạn chuẩn bị đầy đủ và đảm bảo cải thiện điểm số của bạn bằng cách cung cấp:',
+  content1: 'Bài kiểm tra thực hành không giới hạn',
+  content2: 'Cộng đồng năng động khuyến khích bạn luyện tập nhiều hơn',
+  content3: 'Cơ hội học hỏi bằng cách cung cấp phản hồi',
+  content4: 'Phản hồi hữu ích và mang tính xây dựng để giúp bạn cải thiện',
+  emailAddress: 'Địa chỉ email',
+  placeholderEmail: 'Nhập địa chỉ email',
+  password: 'Mật khẩu',
+  placeholderPassword: 'Tạo một mật khẩu',
+  signIn: 'Đăng nhập',
+  signInOther: 'Hoặc bạn có thể đăng nhập bằng',
+  and: 'và',
+  byLogging: 'Bằng cách đăng nhập, tôi đồng ý với',
+  terms: 'điều kiện',
+  policies: 'chính sách',
+  dontAccount: 'Không có tài khoản',
+  signUp: 'Đăng ký'
+}
