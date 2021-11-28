@@ -46,6 +46,7 @@ namespace Reboost.WebApi.Controllers
             }
             return customerId;
         }
+
         [Authorize]
         [HttpPost("intent")]
         public async Task<IActionResult> GetNewIntent([FromBody] CreateIntentModel amount)

@@ -107,8 +107,8 @@ export default {
     next()
   },
   async created() {
-    this.googleFormAction = 'api/auth/external/google/Learner/' + encodeURIComponent(this.returnUrl)
-    this.facebookFormAction = 'api/auth/external/facebook/Learner/' + encodeURIComponent(this.returnUrl)
+    this.googleFormAction = 'https://reboost.azurewebsites.net/api/auth/external/google/Learner/' + encodeURIComponent(this.returnUrl)
+    this.facebookFormAction = 'https://reboost.azurewebsites.net/api/auth/external/facebook/Learner/' + encodeURIComponent(this.returnUrl)
   },
   methods: {
     ...mapActions('auth', ['login']),
@@ -117,8 +117,8 @@ export default {
       authService.loginFacebook(encodeURIComponent(this.returnUrl)).then(rs => { console.log('login facebook', rs) })
     },
     submitGoohlrLoginForm() {
-      // this.$refs.googleLoginForm.submit()
-      authService.loginGoogle(encodeURIComponent(this.returnUrl))
+      this.$refs.googleLoginForm.submit()
+      // authService.loginGoogle(encodeURIComponent(this.returnUrl))
     },
     async signIn() {
       this.$store.dispatch('auth/logout')

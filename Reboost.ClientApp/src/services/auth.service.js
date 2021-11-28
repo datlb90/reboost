@@ -18,6 +18,9 @@ const authService = {
   loginGoogle(returnUrl) {
     return http.post('/auth/external/google/Learner/' + returnUrl)
   },
+  getExternalUser() {
+    return http.get('/auth/external/user')
+  },
   logout() {
     store.dispatch('auth/logout')
   },
@@ -37,7 +40,6 @@ const authService = {
   getCurrentUser() {
     return store.getters['auth/getUser']
   }
-
 }
 
 export default authService

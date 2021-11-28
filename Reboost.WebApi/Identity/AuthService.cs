@@ -205,9 +205,11 @@ namespace Reboost.WebApi.Identity
                     userId = user.Id;
                 }
                 var role = authResult.Properties.Items["role"];
+                var roles = await _userManger.GetRolesAsync(user);
+
                 var roleResult = await _userManger.AddToRoleAsync(user, role);
 
-                if (roleResult.Succeeded)
+                if (roleResult.Succeeded || roles.Contains(role))
                 {
                     var userClaims = new[]
                     {
@@ -225,8 +227,6 @@ namespace Reboost.WebApi.Identity
                         signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
                     string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
-
-                    var roles = await _userManger.GetRolesAsync(user);
                     if (roles == null)
                     {
                         return new UserManagerResponse

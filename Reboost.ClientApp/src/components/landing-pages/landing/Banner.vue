@@ -87,6 +87,7 @@
 <script>
 import { mapActions } from 'vuex'
 import { PageName } from '@/app.constant'
+// import authService from '@/services/auth.service'
 export default {
   name: 'Banner',
   data() {
@@ -113,9 +114,11 @@ export default {
     ...mapActions('auth', ['login']),
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
+      // authService.loginFacebook(encodeURIComponent(this.returnUrl)).then(rs => { console.log('login facebook', rs) })
     },
-    submitGoohlrLoginForm() {
+    submitGoogleLoginForm() {
       this.$refs.googleLoginForm.submit()
+      // authService.loginGoogle(encodeURIComponent(this.returnUrl))
     },
     async signIn() {
       this.$store.dispatch('auth/logout')

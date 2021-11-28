@@ -23,9 +23,11 @@ namespace Reboost.WebApi
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _currentEnvironment;
+        public Startup(IConfiguration configuration, IWebHostEnvironment currentEnvironment)
         {
             Configuration = configuration;
+            _currentEnvironment = currentEnvironment;
         }
 
         public IConfiguration Configuration { get; }
@@ -35,16 +37,31 @@ namespace Reboost.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options =>
+            if (_currentEnvironment.IsDevelopment())
             {
-                options.AddPolicy(name: MyAllowSpecificOrigins,
-                              builder =>
-                              {
-                                  builder.WithOrigins("http://localhost:3011")
-                                                        .AllowAnyHeader()
-                                                        .AllowAnyMethod();
-                              });
-            });
+                //services.AddCors(options =>
+                //{
+                //    options.AddPolicy(name: MyAllowSpecificOrigins,
+                //                  builder =>
+                //                  {
+                //                      builder.WithOrigins("http://localhost:3011")
+                //                                            .AllowAnyHeader()
+                //                                            .AllowAnyMethod();
+                //                  });
+                //});
+
+                services.AddCors(options =>
+                {
+                    options.AddPolicy(name: MyAllowSpecificOrigins,
+                                  builder =>
+                                  {
+                                      builder.WithOrigins("https://localhost:3011")
+                                                            .AllowAnyHeader()
+                                                            .AllowAnyMethod();
+                                  });
+                });
+            }
+            
 
             // Configure Entityframecore with SQL SErver
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -91,15 +108,18 @@ namespace Reboost.WebApi
                     opt.ClientSecret = googleAuth["ClientSecret"];
                     opt.SignInScheme = IdentityConstants.ExternalScheme;
                 });
+            
 
             services.AddAuthentication()
                 .AddFacebook("facebook", opt => {
                     var facebookAuth = Configuration.GetSection("Authentication:Facebook");
-
+                    if (_currentEnvironment.IsDevelopment())
+                        facebookAuth = Configuration.GetSection("Authentication:FacebookDev");
                     opt.AppId = facebookAuth["AppId"];
                     opt.AppSecret = facebookAuth["AppSecret"];
                     opt.SignInScheme = IdentityConstants.ExternalScheme;
                 });
+
 
             services.AddDbContext<ReboostDbContext>(options =>
             {

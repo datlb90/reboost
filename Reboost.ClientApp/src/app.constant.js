@@ -46,6 +46,7 @@ export const configs = {
 }
 export const PageName = {
   LOGIN: 'Login',
+  REDIRECT: 'Redirect',
   RATER_LOGIN: 'RaterLogin',
   AFTER_LOGIN: 'AfterLogin',
   REGISTER: 'Register',
