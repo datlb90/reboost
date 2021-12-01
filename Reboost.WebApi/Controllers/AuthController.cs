@@ -70,8 +70,8 @@ namespace Reboost.WebApi.Controllers
         }
 
         // /api/auth/external
-        [HttpPost("external/{provider}/{role}/{returnUrl}")]
-        public IActionResult ExternalLogin(string provider, string role, string returnUrl)
+        [HttpPost("external/{provider}/{role}")]
+        public IActionResult ExternalLogin(string provider, string role, [FromQueryAttribute] string returnUrl)
         {
             var props = new AuthenticationProperties
             {

@@ -101,14 +101,23 @@ export default {
       email: null,
       password: null,
       googleExternalLogin: null,
-      returnUrl: '/',
+      returnUrl: 'rater/application/status/88',
       googleFormAction: null,
       facebookFormAction: null
     }
   },
   async created() {
-    this.googleFormAction = 'api/auth/external/google/Learner/' + encodeURIComponent(this.returnUrl)
-    this.facebookFormAction = 'api/auth/external/facebook/Learner/' + encodeURIComponent(this.returnUrl)
+    // console.log(encodeURIComponent(this.returnUrl))
+    // this.googleFormAction = 'api/auth/external/google/Learner/' // + encodeURIComponent(this.returnUrl)
+    // this.facebookFormAction = 'api/auth/external/facebook/Learner/' // + encodeURIComponent(this.returnUrl)
+
+    if (this.$router.currentRoute.query?.returnUrl) {
+      this.googleFormAction = 'api/auth/external/google/Learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
+      this.facebookFormAction = 'api/auth/external/facebook/Learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
+    } else {
+      this.googleFormAction = 'api/auth/external/google/Learner?returnUrl=/'
+      this.facebookFormAction = 'api/auth/external/facebook/Learner?returnUrl=/'
+    }
   },
   methods: {
     ...mapActions('auth', ['login']),
