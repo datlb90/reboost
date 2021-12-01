@@ -9,8 +9,7 @@ var path = require('path')
 module.exports = {
   devServer: {
     port: port,
-    open: true,
-    https: true
+    open: true
   },
   outputDir: '../Reboost.WebApi/wwwroot',
   configureWebpack: config => {
