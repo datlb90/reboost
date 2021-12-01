@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Web;
 using System.Security.Claims;
 using Reboost.Service.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -69,8 +70,8 @@ namespace Reboost.WebApi.Controllers
         }
 
         // /api/auth/external
-        [HttpPost("external/{provider}/{role}/{returnUrl}")]
-        public IActionResult ExternalLogin(string provider, string role, string returnUrl)
+        [HttpPost("external/{provider}/{role}")]
+        public IActionResult ExternalLogin(string provider, string role, [FromQueryAttribute] string returnUrl)
         {
             var props = new AuthenticationProperties
             {
@@ -98,17 +99,22 @@ namespace Reboost.WebApi.Controllers
                 Response.Redirect("/auth/error");
             }
 
+            //return Redirect("/redirect?returnUrl=" + result.Properties.Items["returnUrl"]);
             var response = await _authService.LoginExternalAsync(result);
             if (response.IsSuccess)
             {
+                // Send user info to frontend using Cookies
+                HttpContext.Response.Cookies.Append("userId", response.user.Id, new CookieOptions { IsEssential = true });
+                HttpContext.Response.Cookies.Append("username", response.user.Username, new CookieOptions { IsEssential = true });
                 HttpContext.Response.Cookies.Append("email", response.user.Email, new CookieOptions { IsEssential = true });
+                HttpContext.Response.Cookies.Append("role", response.user.Role, new CookieOptions { IsEssential = true });
                 HttpContext.Response.Cookies.Append("token", response.Message, new CookieOptions { IsEssential = true });
                 HttpContext.Response.Cookies.Append("expireDate", response.user.ExpireDate.ToString(), new CookieOptions { IsEssential = true });
-
-                var returnUrl = HttpUtility.UrlDecode(result.Properties.Items["returnUrl"]) ?? "~/";
-                if (string.IsNullOrEmpty(returnUrl) || returnUrl == "~/")
+                var returnUrl = HttpUtility.UrlDecode(result.Properties.Items["returnUrl"]) ?? "";
+                HttpContext.Response.Cookies.Append("returnUrl", returnUrl, new CookieOptions { IsEssential = true });
+                if (string.IsNullOrEmpty(returnUrl))
                 {
-                    return Redirect("/");
+                    return Redirect("/after-login");
                 }
                 else if (Url.IsLocalUrl(returnUrl))
                 {
@@ -129,7 +135,16 @@ namespace Reboost.WebApi.Controllers
            
         }
 
-        
+        [HttpGet("external/user")]
+        public async Task<IActionResult> GetExternalUser()
+        {
+            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            var currentUserClaim = HttpContext.User;
+            var userEmail = currentUserClaim.FindFirst("Email");
+            //var currentUser = await _userService.GetByEmailAsync(userEmail.Value);
+            
+            return Ok();
+        }
 
         // /api/auth/confirm_email?userid&token
         [HttpGet("confirm_email")]

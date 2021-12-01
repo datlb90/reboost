@@ -87,6 +87,7 @@
 <script>
 import { mapActions } from 'vuex'
 import { PageName } from '@/app.constant'
+// import authService from '@/services/auth.service'
 export default {
   name: 'Banner',
   data() {
@@ -100,22 +101,33 @@ export default {
       email: null,
       password: null,
       googleExternalLogin: null,
-      returnUrl: '/',
+      returnUrl: 'rater/application/status/88',
       googleFormAction: null,
       facebookFormAction: null
     }
   },
   async created() {
-    this.googleFormAction = 'api/auth/external/google/Learner/' + encodeURIComponent(this.returnUrl)
-    this.facebookFormAction = 'api/auth/external/facebook/Learner/' + encodeURIComponent(this.returnUrl)
+    // console.log(encodeURIComponent(this.returnUrl))
+    // this.googleFormAction = 'api/auth/external/google/Learner/' // + encodeURIComponent(this.returnUrl)
+    // this.facebookFormAction = 'api/auth/external/facebook/Learner/' // + encodeURIComponent(this.returnUrl)
+
+    if (this.$router.currentRoute.query?.returnUrl) {
+      this.googleFormAction = 'api/auth/external/google/Learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
+      this.facebookFormAction = 'api/auth/external/facebook/Learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
+    } else {
+      this.googleFormAction = 'api/auth/external/google/Learner?returnUrl=/'
+      this.facebookFormAction = 'api/auth/external/facebook/Learner?returnUrl=/'
+    }
   },
   methods: {
     ...mapActions('auth', ['login']),
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
+      // authService.loginFacebook(encodeURIComponent(this.returnUrl)).then(rs => { console.log('login facebook', rs) })
     },
-    submitGoohlrLoginForm() {
+    submitGoogleLoginForm() {
       this.$refs.googleLoginForm.submit()
+      // authService.loginGoogle(encodeURIComponent(this.returnUrl))
     },
     async signIn() {
       this.$store.dispatch('auth/logout')

@@ -4,10 +4,51 @@ import { PageName, UserRole } from '@/app.constant'
 import store from '../../store'
 import { isApprovedRater, revieweeReviewAuthentication } from '../guard/UserReviewValidation'
 
+function getCookie(name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+function deleteCookie(name) {
+  document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+}
+
 export default async(router) => {
   router.beforeEach(async(to, from, next) => {
-    const currentUser = store.getters['auth/getUser']
+    // Check if the user has been externally authenticated
+    const externalUserId = decodeURIComponent(getCookie('userId'))
+    if (externalUserId != 'undefined') {
+      const user = {
+        id: decodeURIComponent(getCookie('userId')),
+        username: decodeURIComponent(getCookie('username')),
+        email: decodeURIComponent(getCookie('email')),
+        role: decodeURIComponent(getCookie('role')),
+        token: decodeURIComponent(getCookie('token')),
+        expireDate: decodeURIComponent(getCookie('expireDate'))
+      }
 
+      const returnUrl = decodeURIComponent(getCookie('returnUrl'))
+
+      store.dispatch('auth/setUser', user)
+      // Delete all cookies for external user
+      deleteCookie('userId')
+      deleteCookie('username')
+      deleteCookie('email')
+      deleteCookie('role')
+      deleteCookie('token')
+      deleteCookie('expireDate')
+      deleteCookie('returnUrl')
+      console.log(returnUrl)
+      if (returnUrl == 'undefined' || returnUrl == '' || returnUrl == '/') {
+        return next('/after-login')
+      } else {
+        return next(returnUrl)
+      }
+    }
+
+    const currentUser = store.getters['auth/getUser']
+    console.log(currentUser)
     if (to.name === PageName.NOT_FOUND) {
       next()
       return

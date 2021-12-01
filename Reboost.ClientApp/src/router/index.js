@@ -10,6 +10,8 @@ import Logout from '../views/account/Logout.vue'
 
 import Register from '../views/account/Register.vue'
 import RaterRegister from '../views/account/RaterRegister.vue'
+import Redirect from '../views/account/Redirect.vue'
+
 import AdminHome from '../views/admin/AdminHome.vue'
 import Review from '../views/learner/Review.vue'
 import ReviewTest from '../views/learner/ReviewTest.vue'
@@ -176,6 +178,15 @@ const router = new VueRouter({
       path: '/rater/register',
       name: PageName.REGISTER_RATER,
       component: RaterRegister,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
+      path: '/redirect',
+      name: PageName.REDIRECT,
+      component: Redirect,
       meta: {
         plainLayout: true,
         landingPage: false

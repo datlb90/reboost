@@ -13,7 +13,7 @@ export const getBaseURL = () => {
   const arr = url.split('/')
   const protocol = arr[0]
   // const protocol = process.env.NODE_ENV === 'production' ? 'https:' :'http:';
-  const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:6990'
+  const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:44348' // 'localhost:6990'
   return `${protocol}//${host}`
 }
 

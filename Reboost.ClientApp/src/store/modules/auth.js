@@ -77,6 +77,9 @@ const actions = {
     return paymentService.getCustomerId().then(rs => {
       commit('SET_CUSTOMER_ID', rs)
     })
+  },
+  setUser({ commit }, user) {
+    commit('SET_USER', user)
   }
 }
 
