@@ -29,6 +29,7 @@ import { Questions } from './admin/questions'
 import { Samples } from './admin/samples'
 import { AdminArticles } from './admin/articles'
 import { AddArticle } from './admin/addArticle'
+import { LandingHeader } from './home/landingHeader'
 
 const langVN = {
   question: Question,
@@ -61,7 +62,8 @@ const langVN = {
   adminQuestions: Questions,
   adminSamples: Samples,
   adminArticles: AdminArticles,
-  addArticle: AddArticle
+  addArticle: AddArticle,
+  landingHeader: LandingHeader
 }
 
 export default langVN

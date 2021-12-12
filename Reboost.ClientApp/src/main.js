@@ -20,6 +20,7 @@ import vWow from 'v-wow'
 import VueCarousel from 'vue-carousel'
 import Toasted from 'vue-toasted'
 import MultiLanguage from './plugins/index'
+import FlagIcon from 'vue-flag-icon'
 
 import './assets/style/custom.scss'
 import 'element-tiptap/lib/index.css'
@@ -38,6 +39,7 @@ Vue.use(Toasted)
 Vue.use(VueCookies)
 Vue.use(FBSignInButton)
 Vue.use(GSignInButton)
+Vue.use(FlagIcon)
 
 Vue.use(Element, { locale })
 Vue.use(ElementTiptapPlugin, {

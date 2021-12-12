@@ -111,7 +111,7 @@
             </b-collapse>
 
             <div class="others-option">
-              <el-dropdown style="margin-right: 20px" @command="onChangeLanguage">
+              <!-- <el-dropdown style="margin-right: 20px" @command="onChangeLanguage">
                 <el-button type="primary">
                   {{ lang }}
                   <i class="el-icon-arrow-down el-icon--right" />
@@ -120,8 +120,18 @@
                   <el-dropdown-item command="english">English</el-dropdown-item>
                   <el-dropdown-item command="vietnamese">Vietnamese</el-dropdown-item>
                 </el-dropdown-menu>
+              </el-dropdown> -->
+
+              <el-dropdown class="lang-dropdown" style="margin-right: 20px; float: left;" placement="bottom" @command="onChangeLanguage">
+                <flag v-if="lang == 'English'" iso="gb" style="border-radius: 2px;" />
+                <flag v-else iso="vn" style="border-radius: 2px;" />
+                <el-dropdown-menu slot="dropdown" class="lang-dropdown-menu">
+                  <el-dropdown-item command="vietnamese"><flag iso="vn" style="border-radius: 2px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
+                  <el-dropdown-item command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
+                </el-dropdown-menu>
               </el-dropdown>
-              <el-dropdown @command="handleCommand">
+
+              <el-dropdown style="float: right;" @command="handleCommand">
                 <span class="el-dropdown-link">
                   <i class="far fa-user-circle" style="font-size: 24px;" />
                 </span>
@@ -277,3 +287,10 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+
+.lang-dropdown-menu{
+  z-index: 10000 !important;
+}
+</style>
