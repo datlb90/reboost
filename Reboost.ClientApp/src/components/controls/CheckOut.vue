@@ -2,7 +2,8 @@
   <el-dialog
     id="practiceWritingCheckoutContainer"
     :visible.sync="dlVisible"
-    width="30%"
+    width="90%"
+    height="820px"
     :before-close="handleClose"
     @opened="dialogOpened"
     @closed="dialogClosed"
@@ -20,14 +21,27 @@
         </div>
       </div>
       <div class="co-form" :class="{ active: activeStep == 1 }">
-        <div class="co-form__section" :class="{ inactive: activeStep == 2 }">
+        <div v-if="!epaySelected" class="co-form__section" :class="{ inactive: activeStep == 2 }">
           <div class="co-form__title" style="padding-top: 10px">
-            <!-- <span class="step-title" :class="{ active: activeStep == 1 }">1</span> -->
-            <span style="padding: 0 10px; font-weight: 600;">Payment Method</span>
+            <span style="padding: 0 10px; font-weight: 600;"> Select Payment Method</span>
             <el-button v-if="activeStep == 2" style="position: absolute;right: 1rem;" size="mini" type="primary" @click="editCheckOutInfo">Edit</el-button>
           </div>
 
           <div class="saperator" style="padding-top: 10px" />
+          <div
+            style="border: #999999 solid 1px;
+            padding: 5px 20px;
+            background: white;
+            border-radius: 50px;
+            margin: auto;
+            width: 350px;
+            margin-top: 15px;
+            cursor: pointer;
+            text-align: center;"
+            @click="epaySelected = true"
+          >
+            <img class="logo" src="http://vnptepay.com.vn/public/theme/images/logo_new_1.png" alt="" width="200px">
+          </div>
 
           <div v-if="!subcribe" id="paypal-button" class="paypal-icon__btn" />
           <div style="display:flex; justify-content:center">
@@ -75,6 +89,60 @@
             <div>{{ firstName }} {{ lastName }}</div>
             <div>{{ credit }} </div>
           </div> -->
+        </div>
+
+        <div v-else class="co-form__section" :class="{ inactive: activeStep == 2 }" style="height: 700px;">
+          <div class="co-form__title">
+            <div
+              style="border: #999999 solid 1px;
+            padding: 5px 20px;
+            background: white;
+            border-radius: 50px;
+            margin: auto;
+            width: 350px;
+            margin-top: 15px;
+            cursor: pointer;
+            text-align: center;"
+              @click="epaySelected = true"
+            >
+              <img class="logo" src="http://vnptepay.com.vn/public/theme/images/logo_new_1.png" alt="" width="200px">
+
+            </div>
+          </div>
+
+          VNPT EPAY
+
+          <div style="padding-bottom: 40px;">
+            <form id="megapayForm" name="megapayForm" method="POST">
+              <input id="merId" type="hidden" name="merId" :value="merId">
+              <input id="currency" type="hidden" name="currency" value="VND">
+              <input id="amount" type="hidden" name="amount" :value="amountVND">
+              <input id="invoiceNo" type="hidden" name="invoiceNo" value="reboost0001">
+              <input id="goodsNm" type="hidden" name="goodsNm" value="Reboost Pro Review">
+              <input id="payType" type="hidden" name="payType" value="IC">
+              <!-- <label for="payType">Payment Type:</label>
+              <select id="payType" name="payType">
+                <option value="IC">Thẻ tín dụng (Visa/master/JCB…)</option>
+                <option value="DC">Thẻ ATM nội địa</option>
+                <option value="VA">Tài khoản chuyên dụng</option>
+                <option value="EW">Ví điện tử (Zalopay, Momo, Moca)</option>
+                <option value="IS">Thanh toán trả góp</option>
+                <option value="NO">Chưa xác định</option>
+              </select> -->
+              <input id="callBackUrl" type="hidden" name="callBackUrl" value="http://localhost:6990/api/payment/epay/callback">
+              <input id="notiUrl" type="hidden" name="notiUrl" value="http://localhost:6990/api/payment/epay/noti">
+              <input id="reqDomain" type="hidden" name="reqDomain" value="http://localhost:6990/">
+              <input id="description" type="hidden" name="description" value="Payment for Reboost Pro Review">
+              <input id="merchantToken" type="hidden" name="merchantToken" :value="merchantToken">
+              <input id="userLanguage" type="hidden" name="userLanguage" value="VN">
+              <input id="timeStamp" type="hidden" name="timeStamp" :value="timeStamp">
+              <input id="merTrxId" type="hidden" name="merTrxId" :value="merTrxId">
+              <input id="windowColor" type="hidden" name="windowColor" value="#ef5459">
+              <input id="windowType" type="hidden" name="windowType" value="0">
+              <div @click="submitForm()">Pay Now </div>
+            </form>
+          </div>
+
         </div>
         <div v-if="activeStep == 1" class="saperator" style="padding-bottom: 10px" />
         <!-- <div class="co-form__section" :class="{ active: activeStep == 2, inactive: activeStep ==1 }">
@@ -127,6 +195,7 @@ import paymentService from '../../services/payment.service'
 import { REVIEW_REQUEST_STATUS, SUBSCRIPTION_PLANS } from '../../app.constant'
 import reviewService from '../../services/review.service'
 import * as moment from 'moment'
+import { openPayment } from '../../assets/epay/js/paymentClient'
 // import { configs } from '../../app.constant'
 export default {
   name: 'Checkout',
@@ -153,7 +222,15 @@ export default {
       selectedMethod: null,
       amount: 3.50,
       paymentIntent: null,
-      total: null
+      total: null,
+      epaySelected: false,
+      domain: 'https://sandbox.megapay.vn:2810',
+      timeStamp: '20211209150000',
+      merTrxId: 'EPAY000001301190',
+      merId: 'EPAY000001',
+      amountVND: '200000',
+      encodeKey: 'rf8whwaejNhJiQG2bsFubSzccfRc/iRYyGUn6SPmT6y/L7A2XABbu9y4GvCoSTOTpvJykFi6b1G0crU8et2O0Q==',
+      merchantToken: ''
     }
   },
   computed: {
@@ -182,9 +259,17 @@ export default {
     }
   },
   beforeCreate() {
+    const jquery = document.createElement('script')
+    jquery.src = 'https://code.jquery.com/jquery-3.6.0.min.js'
+    document.head.appendChild(jquery)
+
     const script = document.createElement('script')
     script.src = 'https://www.paypalobjects.com/api/checkout.js'
     document.body.appendChild(script)
+
+    const epayScript = document.createElement('script')
+    epayScript.src = 'https://sandbox.megapay.vn:2810/pg_was/js/payment/layer/paymentClient.js'
+    document.head.appendChild(epayScript)
 
     const sub_script = document.createElement('script')
     sub_script.src = 'https://www.paypal.com/sdk/js?client-id=AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F&vault=true&intent=subscription'
@@ -199,7 +284,133 @@ export default {
       this.$store.dispatch('payment/loadPaymentMethods', null)
     }
   },
+  async created() {
+    this.merchantToken = this.sha256(this.timeStamp + this.merTrxId + this.merId + this.amountVND + this.encodeKey)
+    console.log(this.merchantToken)
+  },
   methods: {
+    submitForm() {
+      openPayment(1, this.domain)
+    },
+    sha256(s) {
+      var chrsz = 8
+      var hexcase = 0
+
+      function safe_add(x, y) {
+        var lsw = (x & 0xFFFF) + (y & 0xFFFF)
+        var msw = (x >> 16) + (y >> 16) + (lsw >> 16)
+        return (msw << 16) | (lsw & 0xFFFF)
+      }
+
+      function S(X, n) { return (X >>> n) | (X << (32 - n)) }
+      function R(X, n) { return (X >>> n) }
+      function Ch(x, y, z) { return ((x & y) ^ ((~x) & z)) }
+      function Maj(x, y, z) { return ((x & y) ^ (x & z) ^ (y & z)) }
+      function Sigma0256(x) { return (S(x, 2) ^ S(x, 13) ^ S(x, 22)) }
+      function Sigma1256(x) { return (S(x, 6) ^ S(x, 11) ^ S(x, 25)) }
+      function Gamma0256(x) { return (S(x, 7) ^ S(x, 18) ^ R(x, 3)) }
+      function Gamma1256(x) { return (S(x, 17) ^ S(x, 19) ^ R(x, 10)) }
+
+      function core_sha256(m, l) {
+        var K = [0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5, 0xD807AA98,
+          0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174, 0xE49B69C1, 0xEFBE4786, 0xFC19DC6,
+          0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA, 0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3,
+          0xD5A79147, 0x6CA6351, 0x14292967, 0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13, 0x650A7354, 0x766A0ABB, 0x81C2C92E,
+          0x92722C85, 0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3, 0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070, 0x19A4C116,
+          0x1E376C08, 0x2748774C, 0x34B0BCB5, 0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3, 0x748F82EE, 0x78A5636F, 0x84C87814,
+          0x8CC70208, 0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2]
+        var HASH = [0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19]
+        var W = new Array(64)
+        var a, b, c, d, e, f, g, h //, i, j
+        var T1, T2
+
+        m[l >> 5] |= 0x80 << (24 - l % 32)
+        m[((l + 64 >> 9) << 4) + 15] = l
+
+        for (var x = 0; x < m.length; x += 16) {
+          a = HASH[0]
+          b = HASH[1]
+          c = HASH[2]
+          d = HASH[3]
+          e = HASH[4]
+          f = HASH[5]
+          g = HASH[6]
+          h = HASH[7]
+
+          for (var y = 0; y < 64; y++) {
+            if (y < 16) W[y] = m[y + x]
+            else W[y] = safe_add(safe_add(safe_add(Gamma1256(W[y - 2]), W[y - 7]), Gamma0256(W[y - 15])), W[y - 16])
+
+            T1 = safe_add(safe_add(safe_add(safe_add(h, Sigma1256(e)), Ch(e, f, g)), K[y]), W[y])
+            T2 = safe_add(Sigma0256(a), Maj(a, b, c))
+
+            h = g
+            g = f
+            f = e
+            e = safe_add(d, T1)
+            d = c
+            c = b
+            b = a
+            a = safe_add(T1, T2)
+          }
+
+          HASH[0] = safe_add(a, HASH[0])
+          HASH[1] = safe_add(b, HASH[1])
+          HASH[2] = safe_add(c, HASH[2])
+          HASH[3] = safe_add(d, HASH[3])
+          HASH[4] = safe_add(e, HASH[4])
+          HASH[5] = safe_add(f, HASH[5])
+          HASH[6] = safe_add(g, HASH[6])
+          HASH[7] = safe_add(h, HASH[7])
+        }
+        return HASH
+      }
+
+      function str2binb(str) {
+        var bin = []
+        var mask = (1 << chrsz) - 1
+        for (var i = 0; i < str.length * chrsz; i += chrsz) {
+          bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << (24 - i % 32)
+        }
+        return bin
+      }
+
+      function Utf8Encode(string) {
+        string = string.replace(/\r\n/g, '\n')
+        var utftext = ''
+
+        for (var n = 0; n < string.length; n++) {
+          var c = string.charCodeAt(n)
+
+          if (c < 128) {
+            utftext += String.fromCharCode(c)
+          } else if ((c > 127) && (c < 2048)) {
+            utftext += String.fromCharCode((c >> 6) | 192)
+            utftext += String.fromCharCode((c & 63) | 128)
+          } else {
+            utftext += String.fromCharCode((c >> 12) | 224)
+            utftext += String.fromCharCode(((c >> 6) & 63) | 128)
+            utftext += String.fromCharCode((c & 63) | 128)
+          }
+        }
+
+        return utftext
+      }
+
+      function binb2hex(binarray) {
+        var hex_tab = hexcase ? '0123456789ABCDEF' : '0123456789abcdef'
+        var str = ''
+        for (var i = 0; i < binarray.length * 4; i++) {
+          str += hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) +
+ hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8)) & 0xF)
+        }
+        return str
+      }
+
+      s = Utf8Encode(s)
+      return binb2hex(core_sha256(str2binb(s), s.length * chrsz))
+    },
+
     async dialogOpened() {
       if (this.subcribe) {
         this.amount = this.subcribe.price
@@ -543,6 +754,10 @@ export default {
   }
 }
 </script>
+
+<style scoped src="@/assets/epay/css/paymentClient.css">
+</style>
+
 <style scoped>
 .hidden{
     display: none;

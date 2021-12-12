@@ -39,27 +39,27 @@ namespace Reboost.WebApi
         {
             if (_currentEnvironment.IsDevelopment())
             {
-                //services.AddCors(options =>
-                //{
-                //    options.AddPolicy(name: MyAllowSpecificOrigins,
-                //                  builder =>
-                //                  {
-                //                      builder.WithOrigins("http://localhost:3011")
-                //                                            .AllowAnyHeader()
-                //                                            .AllowAnyMethod();
-                //                  });
-                //});
-
                 services.AddCors(options =>
                 {
                     options.AddPolicy(name: MyAllowSpecificOrigins,
                                   builder =>
                                   {
-                                      builder.WithOrigins("https://localhost:3011")
+                                      builder.WithOrigins("http://localhost:3011")
                                                             .AllowAnyHeader()
                                                             .AllowAnyMethod();
                                   });
                 });
+
+                //services.AddCors(options =>
+                //{
+                //    options.AddPolicy(name: MyAllowSpecificOrigins,
+                //                  builder =>
+                //                  {
+                //                      builder.WithOrigins("https://localhost:3011")
+                //                                            .AllowAnyHeader()
+                //                                            .AllowAnyMethod();
+                //                  });
+                //});
             }
             
 
