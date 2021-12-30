@@ -211,6 +211,24 @@ const router = new VueRouter({
       }
     },
     {
+      path: '/review-plain/:questionId/:docId/:reviewId',
+      name: PageName.REVIEW,
+      component: Review,
+      beforeEnter: async(to, from, next) => {
+        const check = await userReviewAuthentication(to.params.reviewId)
+        if (check) {
+          next({ name: PageName.NOT_FOUND })
+        } else {
+          next()
+        }
+      },
+      meta: {
+        plainLayout: true,
+        landingPage: false,
+        loginRequired: true
+      }
+    },
+    {
       path: '/review/:questionId/:docId/:reviewId/:isViewOrRate',
       name: PageName.REVIEW,
       component: Review,

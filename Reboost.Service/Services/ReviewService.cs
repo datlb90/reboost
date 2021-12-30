@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Reboost.Shared.Extensions;
 
 namespace Reboost.Service.Services
 {
@@ -52,6 +53,7 @@ namespace Reboost.Service.Services
         Task<Disputes> GetDisputeByReviewIdAsync(int id);
         Task<Disputes> UpdateDisputeAsync(Disputes dispute);
         Task<List<Disputes>> GetAllLearnerDisputesAsync(string userId);
+        Task<Reviews> Create(dynamic data);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -354,6 +356,15 @@ namespace Reboost.Service.Services
         public async Task<List<Disputes>> GetAllLearnerDisputesAsync(string userId)
         {
             return await _unitOfWork.Review.GetAllLearnerDisputesAsync(userId);
+        }
+        public async Task<Reviews> Create(object data) {
+            var newReview = new Reviews { 
+                RevieweeId = (string)data.GetProp("revieweeId"),
+                SubmissionId = (int)data.GetProp("submissionId"),
+                Status = "Submitted",
+                LastActivityDate = DateTime.Now
+            };
+            return await _unitOfWork.Review.Create(newReview);
         }
     }
 }

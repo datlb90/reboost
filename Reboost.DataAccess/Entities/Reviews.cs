@@ -15,6 +15,7 @@ namespace Reboost.DataAccess.Entities
         public int RequestId { get; set; }
         public string ReviewerId { get; set; }
         public string RevieweeId { get; set; }
+        public int SubmissionId { get; set; }
         public Nullable<decimal> FinalScore { get; set; }
         public string Status { get; set; }
         public int TimeSpentInSeconds { get; set; }

@@ -6,6 +6,7 @@ using Reboost.DataAccess.Models;
 using Reboost.Shared;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -55,13 +56,14 @@ namespace Reboost.DataAccess.Repositories
         Task<Disputes> GetDisputeByReviewIdAsync(int id);
         Task<Disputes> UpdateDisputeAsync(Disputes dispute);
         Task<List<Disputes>> GetAllLearnerDisputesAsync(string userId);
+        Task<Reviews> Create(Reviews data);
     }
 
-    public class ReviewRepository : IReviewRepository
+    public class ReviewRepository : BaseRepository<Reviews>, IReviewRepository
     {
         ReboostDbContext db;
               
-        public ReviewRepository(ReboostDbContext context)
+        public ReviewRepository(ReboostDbContext context):base(context)
         {
             db = context;
         }
@@ -375,10 +377,11 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId)
         {
-            var query = await (from rr in db.ReviewRequests
-                               join rv in db.Reviews on rr.Id equals rv.RequestId
-                               join q in db.Questions on rr.Submission.QuestionId equals q.Id
+            var rs = await (from rv in db.Reviews
+                               join rr in db.ReviewRequests on rv.RequestId equals rr.Id
                                join s in db.Submissions on rr.SubmissionId equals s.Id
+                               join q in db.Questions on s.QuestionId equals q.Id
+                               join t in db.Tasks on q.TaskId equals t.Id
                                join ts in db.TestSections on q.Task.SectionId equals ts.Id
                                orderby rv.LastActivityDate descending
                                where rv.ReviewerId == userId
@@ -386,14 +389,31 @@ namespace Reboost.DataAccess.Repositories
                                {
                                    ReviewRequest = rr,
                                    Submission = s,
-                                   Review =rv,
+                                   Review = rv,
                                    ReviewId = rv.Id,
                                    QuestionName = q.Title,
                                    QuestionType = q.Type,
                                    TestSection = ts.Name
                                }).ToListAsync();
 
-            return await Task.FromResult(query);
+            //var query = ExecRawSelect(@"select rv.Id as ReviewId, * from Reviews rv"
+            //    + " JOIN ReviewRequests rr ON rr.Id = rv.RequestId"
+            //    + " JOIN Submissions s ON s.Id = rr.SubmissionId"
+            //    + " JOIN Questions q ON q.Id = s.QuestionId"
+            //    + " JOIN Tasks task ON task.Id = q.TaskId"
+            //    + " JOIN TestSections test ON test.Id = task.SectionId");
+
+            //var rs = new List<GetReviewsModel>();
+
+            //foreach (DataRow row in query.Rows)
+            //{
+            //    rs.Add(new GetReviewsModel { 
+            //        ReviewId = row.Field<int>("ReviewId")
+            //    });
+            //}
+
+
+            return await Task.FromResult(rs);
         }
 
         public async Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId)
@@ -641,11 +661,11 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<GetReviewsModel> GetPendingReviewAsync(string userId)
         {
-            var pending = await (from r in db.Reviews
+            var pending = (from r in db.Reviews
                                  join request in db.ReviewRequests on r.RequestId equals request.Id
                                  join queue in db.RequestQueue on request.Id equals queue.RequestId
                                  where r.ReviewerId == userId && request.Status != ReviewRequestStatus.COMPLETED && request.Status != ReviewRequestStatus.RATED && queue.Status==1
-                                 select r).FirstOrDefaultAsync();
+                                 select r).FirstOrDefault();
             if (pending != null)
             {
                 var review = await GetOrCreateReviewByReviewRequestAsync(pending.RequestId, userId);
@@ -1095,6 +1115,11 @@ namespace Reboost.DataAccess.Repositories
             await db.SaveChangesAsync();
 
             return exist;
+        }
+        public async Task<Reviews> Create(Reviews newReview) {
+            db.Reviews.Add(newReview);
+            await db.SaveChangesAsync();
+            return newReview;
         }
     }
 }

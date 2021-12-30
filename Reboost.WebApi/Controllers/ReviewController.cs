@@ -371,6 +371,12 @@ namespace Reboost.WebApi.Controllers
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
             var pending = await _service.GetPendingReviewAsync(currentUser.Id);
+
+            if(pending == null)
+            {
+                return Ok();
+            }
+
             return Ok(pending);
         }
 
@@ -514,5 +520,11 @@ namespace Reboost.WebApi.Controllers
 
             return Ok(rs);
         }
+
+        //[Authorize]
+        //[HttpPost("createSubmissionReview")]
+        //public async Task<IActionResult> CreateSubmissionReview() {
+        //    _service.CreateSubmissionReview()
+        //}
     }
 }
