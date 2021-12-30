@@ -5,14 +5,13 @@
       <div class="row">
         <div class="col-lg-6 col-md-12">
           <div class="ml-banner-content" style="margin-top: 50px;">
-            <h1>A New Way to Learn</h1>
-            <p>Reboost is the best platform to help you boost your language writing test scores.
-              No matter which test you take, we will get you fully prepared and guarantee your score improvement by offering:</p>
+            <h1>{{ messageTranslates('banner', 'bannerContentTitle') }}</h1>
+            <p>{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
             <ul>
-              <li>Unlimited practice tests</li>
-              <li>Active community that encourages you to practice more</li>
-              <li>Opportunity to learn by providing feedback</li>
-              <li>Useful and constructive feedback to help you improve</li>
+              <li>{{ messageTranslates('banner', 'content1') }}</li>
+              <li>{{ messageTranslates('banner', 'content2') }}</li>
+              <li>{{ messageTranslates('banner', 'content3') }}</li>
+              <li>{{ messageTranslates('banner', 'content4') }}</li>
             </ul>
           </div>
         </div>
@@ -21,13 +20,13 @@
           <div class="banner-form ml-3">
             <form>
               <div class="form-group">
-                <label>Email address</label>
-                <input v-model="email" type="text" class="form-control" placeholder="Enter email address">
+                <label>{{ messageTranslates('banner', 'emailAddress') }}</label>
+                <input v-model="email" type="text" class="form-control" :placeholder="messageTranslates('banner', 'placeholderEmail')">
               </div>
 
               <div class="form-group">
-                <label>Password</label>
-                <input v-model="password" type="password" class="form-control" placeholder="Create a password">
+                <label>{{ messageTranslates('banner', 'password') }}</label>
+                <input v-model="password" type="password" class="form-control" :placeholder="messageTranslates('banner', 'placeholderPassword')">
               </div>
 
               <!-- <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" @click="signUp()">Sign Up</button> -->
@@ -37,10 +36,10 @@
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
                 @click="signIn()"
               >
-                Sign In
+                {{ messageTranslates('banner', 'signIn') }}
               </el-button>
               <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
-                Or you can sign in with
+                {{ messageTranslates('banner', 'signInOther') }}
               </div>
 
               <div style="padding-bottom: 40px;">
@@ -57,18 +56,18 @@
               </div>
 
               <div style="font-size: 14px; text-align: center; padding-top: 20px; height: 10px;">
-                By logging in, I agree to the
+                {{ messageTranslates('banner', 'byLogging') }}
                 <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
-                  terms
-                </a> and
+                  {{ messageTranslates('banner', 'terms') }}
+                </a> {{ messageTranslates('banner', 'and') }}
                 <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
-                  policies
+                  {{ messageTranslates('banner', 'policies') }}
                 </a>
               </div>
             </form>
           </div>
           <div class="banner-form ml-3 mt-3" style="padding: 30px">
-            Don't have an account? <a style="color: rgb(101 139 179); text-decoration: none;" href="/register">Sign up</a>
+            {{ messageTranslates('banner', 'dontAccount') }} <a style="color: rgb(101 139 179); text-decoration: none;" href="/register">{{ messageTranslates('banner', 'signUp') }}</a>
           </div>
         </div>
 

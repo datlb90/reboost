@@ -5,8 +5,8 @@
   border-left: 5px solid #50bfff;
 }
 .tip.note{
-  background-color: #f1f1f1;
-  border-left: 5px solid #929292;
+  background-color: #ffffff;
+  border-left: 5px solid #e0e0e0;
 }
 pre {
   font-size: 14px;
@@ -227,10 +227,10 @@ button[disabled='disabled'] .toolbar-icon{
   height: 100%;
 }
 #right-panel{
-  float: left; 
-  position: absolute; 
+  /* float: left; 
+  position: absolute;  */
   margin-left: max(425px, 30.5%); 
-  width: 68.5%;
+  /* width: 68.5%; */
   height:100%; 
   background: rgb(248, 249, 250);
 }
@@ -242,4 +242,8 @@ button[disabled='disabled'] .toolbar-icon{
     top: 0px; 
     height: 100%;
   }
+}
+
+.el-dialog .el-dialog__header{
+  text-align: center;
 }

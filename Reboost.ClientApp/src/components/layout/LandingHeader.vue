@@ -36,6 +36,9 @@
               <li class="nav-item">
                 <a href="faq" class="nav-link">FAQs</a>
               </li>
+              <li class="nav-item">
+                <a href="howItWorks" class="nav-link" @click.prevent="openContactDialog()">Help</a>
+              </li>
             </ul>
           </b-collapse>
 
@@ -46,13 +49,20 @@
         </nav>
       </div>
     </div>
+
+    <contact-dialog ref="contactDialog" />
   </header>
   <!-- End Navbar Area -->
 </template>
 
 <script>
+import ContactDialog from '../../components/controls/ContactDialog.vue'
+
 export default {
   name: 'LandingHeader',
+  components: {
+    'contact-dialog': ContactDialog
+  },
   data() {
     return {
       isSticky: false
@@ -70,6 +80,11 @@ export default {
         that.isSticky = false
       }
     })
+  },
+  methods: {
+    openContactDialog(e) {
+      this.$refs.contactDialog?.openDialog()
+    }
   }
 }
 </script>

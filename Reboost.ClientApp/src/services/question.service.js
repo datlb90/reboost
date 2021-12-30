@@ -42,6 +42,9 @@ const questionService = {
   },
   approveQuestion(id) {
     return http.get(`/questions/approve/${id}`).then(rs => rs.data)
+  },
+  deleteQuestion(id) {
+    return http.delete(`/questions/${id}`).then(rs => rs.data)
   }
 }
 

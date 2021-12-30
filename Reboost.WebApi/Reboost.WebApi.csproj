@@ -37,6 +37,7 @@
     <Folder Include="Email\" />
     <Folder Include="Data\" />
     <Folder Include="wwwroot\audio\" />
+    <Folder Include="wwwroot\contact\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Reboost.Service\Reboost.Service.csproj">

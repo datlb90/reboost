@@ -47,6 +47,9 @@ namespace Reboost.DataAccess
         public virtual DbSet<RaterBalances> RaterBalances { get; set; }
         public virtual DbSet<LearnerPaymentsHistory> LearnerPaymentsHistory { get; set; }
         public virtual DbSet<LearnerSubscriptions> LearnerSubscriptions { get; set; }
+        public virtual DbSet<Articles> Articles { get; set; }
+        public virtual DbSet<ArticleLabels> ArticleLabels { get; set; }
+        public virtual DbSet<ArticleRelations> ArticleRelations { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
             : base(options)

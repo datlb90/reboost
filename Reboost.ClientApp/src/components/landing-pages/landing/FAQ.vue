@@ -11,7 +11,7 @@
       </div> -->
 
       <div class="section-title">
-        <h2>Frequently Asked Questions</h2>
+        <h2>{{ messageTranslates('faq', 'title') }}</h2>
         <div class="bar" />
       </div>
 
@@ -36,7 +36,7 @@
         </div>
 
         <div class="faq-contact">
-          <h3>Ask Your Question</h3>
+          <h3>{{ messageTranslates('faq', 'titleContact') }}</h3>
           <form>
             <div class="row">
               <div class="col-lg-6 col-md-6">

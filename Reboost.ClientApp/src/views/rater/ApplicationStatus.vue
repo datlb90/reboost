@@ -115,7 +115,7 @@
               >
                 <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
-                  <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                  <p>Please upload your IELTS test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.  Accept: jpp/jpeg, gif, png, m4v, mp4, avi, mpg</p>
                 </div>
               </el-upload>
             </el-form-item>
@@ -139,7 +139,7 @@
               >
                 <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
-                  <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.</p>
+                  <p>Please upload your TOEFL test result, and any other supporting credidentials you may have. Files must be less than 500kb in size.  Accept: jpp/jpeg, gif, png, m4v, mp4, avi, mpg</p>
                 </div>
               </el-upload>
             </el-form-item>
@@ -162,7 +162,7 @@
               >
                 <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
-                  <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.</p>
+                  <p>Please upload a form of photo identification such as ID card, driver license, or passport. The file must be less than 500kb in size.  Accept: jpp/jpeg, gif, png, m4v, mp4, avi, mpg.</p>
                 </div>
               </el-upload>
             </el-form-item>
@@ -277,11 +277,11 @@
           </div>
           <div v-if="(status===RATER_STATUS.TRAINING || status === RATER_STATUS.REVISION_REQUESTED)" class="button-container">
             <el-tooltip :content="isApprove('TOEFL')?'You have passed this training':'Start your TOEFL Training'" placement="top">
-              <el-button :type="isApprove('TOEFL')?'success':'primary'" size="mini" @click="redirectToTraining('TOEFL')">Complete TOEFL Training</el-button>
+              <el-button v-if="!isApprove('TOEFL')" type="primary" size="mini" @click="redirectToTraining('TOEFL')">Complete TOEFL Training</el-button>
             </el-tooltip>
           </div>
           <div v-if="toeflTraining&&toeflTraining.status==RATER_TRAINING_STATUS.REVISION_REQUEST" class="button-container">
-            <div class="label-container mb-2" style="width: 155px">
+            <div class="label-container mb-2" style="width: 175px">
               Note for TOEFL Training
             </div>
             <el-input
@@ -345,9 +345,6 @@ export default {
     }
   },
   computed: {
-    getReviews() {
-      return this.$store.getters['review/getReviewsById']
-    },
     currentUser() {
       return this.$store.getters['auth/getUser']
     },
@@ -359,7 +356,6 @@ export default {
           return 1
         case RATER_STATUS.APPROVED:
           return 3
-
         default:
           return 2
       }
@@ -376,8 +372,6 @@ export default {
       }
     },
     loadDetail(id) {
-      console.log('load detail', mapUtil)
-
       // Load rater's training
       reviewService.getRaterTrainings(id).then(rs => {
         this.raterTraining = rs
@@ -421,16 +415,15 @@ export default {
     },
     redirectToTraining(e) {
       reviewService.createReviewTrainingSample(e.toLowerCase()).then(r => {
-        if (r != 'failed') {
+        if (r && r != 'failed') {
           var pushUrl = e.toLowerCase() == 'toefl' ? '/review/12/219/' + r : '/review/9/220/' + r
           this.$router.push(pushUrl)
         }
       })
     },
     isApprove(type) {
-      const list = this.getReviews
-      type += 'TrainingApproved'
-      if (list.filter(r => { return r.status == type }).length > 0) {
+      const list = this.raterTraining
+      if (list.filter(r => r.test === type && r.status === RATER_TRAINING_STATUS.APPROVED).length > 0) {
         return true
       }
       return false

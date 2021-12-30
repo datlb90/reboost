@@ -33,6 +33,9 @@ const raterService = {
   },
   updateRaterPaypalAccount(email) {
     return http.put(`/rater/paypal/account`, { email: email }).then(rs => rs.data)
+  },
+  contactRequest(data) {
+    return http.post('/rater/contact', data, { headers: { 'Content-Type': 'multipart/form-data' }}).then(rs => rs.data)
   }
 }
 

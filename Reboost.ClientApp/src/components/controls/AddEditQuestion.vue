@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     id="addEditQuestionDialog"
-    :title="title"
+    :title="messageTranslates('addEditQuestion', 'title')"
     :visible.sync="dialogVisible"
     :before-close="handleClose"
     width="800px"
@@ -12,27 +12,27 @@
         :model="form"
         label-width="120px"
       >
-        <el-form-item prop="name" :rules="[{ required: true }]" size="mini" label="Name">
+        <el-form-item prop="name" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'name')">
           <el-input
             v-model="form.name"
             type="textinput"
-            placeholder="Please input question name"
+            :placeholder="messageTranslates('addEditQuestion', 'placeholderName')"
           />
         </el-form-item>
         <div style="display:flex">
-          <el-form-item prop="test" :rules="[{ required: true }]" size="mini" label="Test">
-            <el-select v-model="form.test" placeholder="Test" @change="testChange()">
+          <el-form-item prop="test" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'test')">
+            <el-select v-model="form.test" :placeholder="messageTranslates('addEditQuestion', 'test')" @change="testChange()">
               <el-option v-for="item in tests" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
 
-          <el-form-item prop="task" :rules="[{ required: true }]" size="mini" label="Task">
-            <el-select v-model="form.task" placeholder="Task">
+          <el-form-item prop="task" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'task')">
+            <el-select v-model="form.task" :placeholder="messageTranslates('addEditQuestion', 'task')">
               <el-option v-for="item in tasksList" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
-          <el-form-item prop="type" :rules="[{ required: true }]" size="mini" label="Type">
-            <el-select v-model="form.type" placeholder="Type">
+          <el-form-item prop="type" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'type')">
+            <el-select v-model="form.type" :placeholder="messageTranslates('addEditQuestion', 'type')">
               <el-option v-for="item in types" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
@@ -43,7 +43,7 @@
             Question
           </span>
         </div> -->
-        <el-form-item prop="content" :rules="[{ required: true }]" size="mini" label="Question">
+        <el-form-item prop="content" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'question')">
           <el-tiptap
             v-model="form.content"
             lang="en"
@@ -54,10 +54,10 @@
         </el-form-item>
 
         <el-form-item id="questionPart" prop="part" size="mini" label="">
-          <div v-if="form.test && (form.task!==2 && form.task!==3)" style="margin-left:120px">No part.
+          <div v-if="form.test && (form.task!==2 && form.task!==3)" style="margin-left:120px">{{ messageTranslates('addEditQuestion', 'noPart') }}
           </div>
           <div v-if="form.test && form.task===2">
-            <el-form-item prop="" size="mini" label="Reading">
+            <el-form-item prop="" size="mini" :label="messageTranslates('addEditQuestion', 'reading')">
               <el-tiptap
                 v-model="toeflReading"
                 lang="en"
@@ -67,7 +67,7 @@
               />
             </el-form-item>
 
-            <el-form-item prop="" size="mini" label="Listening">
+            <el-form-item prop="" size="mini" :label="messageTranslates('addEditQuestion', 'listening')">
               <el-upload
                 action=""
                 :on-preview="handlePreview"
@@ -79,12 +79,12 @@
                 :on-exceed="handleExceed"
                 :file-list="fileList"
               >
-                <el-button size="small" type="primary">Click to upload</el-button>
-                <div slot="tip" class="el-upload__tip">mp3/mp4 files with a size less than 10mb.</div>
+                <el-button size="small" type="primary">{{ messageTranslates('addEditQuestion', 'uploadButton') }}</el-button>
+                <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateUpload') }}</div>
               </el-upload>
             </el-form-item>
 
-            <el-form-item prop="" size="mini" label="Transcript">
+            <el-form-item prop="" size="mini" :label="messageTranslates('addEditQuestion', 'transcript')">
               <el-tiptap
                 v-model="toeflTranscript"
                 lang="en"
@@ -95,7 +95,7 @@
             </el-form-item>
           </div>
           <div v-if="form.test && form.task===3">
-            <el-form-item prop="" size="mini" label="Chart">
+            <el-form-item prop="" size="mini" :label="messageTranslates('addEditQuestion', 'chart')" :rules="[{ required: true }]">
               <el-upload
                 action=""
                 :on-preview="handlePreview"
@@ -107,8 +107,8 @@
                 :on-exceed="handleExceed"
                 :file-list="chartFileList"
               >
-                <el-button size="small" type="primary">Click to upload</el-button>
-                <div slot="tip" class="el-upload__tip">png/jpeg files with a size less than 3mb.</div>
+                <el-button size="small" type="primary">{{ messageTranslates('addEditQuestion', 'uploadButton') }}</el-button>
+                <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateImgUpload') }}</div>
               </el-upload>
             </el-form-item>
           </div>
@@ -116,16 +116,15 @@
       </el-form>
     </div>
     <span slot="footer" class="dialog-footer">
-      <el-button size="mini" @click="dialogVisible = false">Cancel</el-button>
-      <el-button v-if="isLearnerContributed" type="success" size="mini" @click="approveQuestion">Approve</el-button>
-      <el-button size="mini" type="primary" @click="submit">Submit</el-button>
+      <el-button size="mini" @click="dialogVisible = false">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
+      <el-button v-if="isLearnerContributed" type="success" size="mini" @click="approveQuestion">{{ messageTranslates('addEditQuestion', 'approve') }}</el-button>
+      <el-button size="mini" type="primary" @click="submit">{{ messageTranslates('addEditQuestion', 'submit') }}</el-button>
     </span>
 
   </el-dialog>
 </template>
 <script>
 import {
-  // necessary extensions
   Doc,
   Text,
   Paragraph,
@@ -135,8 +134,8 @@ import {
   Italic,
   Strike,
   ListItem,
-  BulletList, // use with ListItem
-  OrderedList // use with ListItem
+  BulletList,
+  OrderedList
 } from 'element-tiptap'
 import questionService from '../../services/question.service'
 import * as stringUtil from '@/utils/string'
@@ -149,7 +148,6 @@ export default {
   },
   data() {
     return {
-      title: 'Add New Question',
       dialogVisible: false,
       isEdit: false,
       tests: null,
@@ -220,6 +218,7 @@ export default {
       this.resetData()
       this.isEdit = false
       this.dialogVisible = true
+      this.$refs['questionForm'].resetFields()
     },
     openEditDialog(question) {
       this.fileList = []
@@ -343,6 +342,7 @@ export default {
                 this.$emit('refreshQuestion')
                 this.resetData()
                 this.dialogVisible = false
+                this.$refs['questionForm'].resetFields()
               }
             })
           } else {
@@ -357,6 +357,7 @@ export default {
                 this.resetData()
                 this.dialogVisible = false
                 this.$emit('refreshQuestion')
+                this.$refs['questionForm'].resetFields()
               }
             })
           }

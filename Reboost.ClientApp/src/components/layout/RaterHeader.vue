@@ -28,6 +28,10 @@
               <li class="nav-item">
                 <a href="faq" class="nav-link">FAQs</a>
               </li>
+
+              <li class="nav-item">
+                <a href="/" class="nav-link" @click.prevent="openContactDialog()">Help</a>
+              </li>
             </ul>
           </b-collapse>
 
@@ -36,20 +40,24 @@
           </div>
         </nav>
       </div>
+      <contact-dialog ref="contactDialog" />
     </div>
   </header>
   <!-- End Navbar Area -->
 </template>
 
 <script>
+import ContactDialog from '../../components/controls/ContactDialog.vue'
 export default {
   name: 'RaterHeader',
+  components: {
+    'contact-dialog': ContactDialog
+  },
   data() {
     return {
       isSticky: false
     }
   },
-
   mounted() {
     const that = this
     window.addEventListener('scroll', () => {
@@ -61,6 +69,11 @@ export default {
         that.isSticky = false
       }
     })
+  },
+  methods: {
+    openContactDialog(e) {
+      this.$refs.contactDialog?.openDialog()
+    }
   }
 }
 </script>

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
+using Reboost.DataAccess.Models;
 using Reboost.Shared;
 using System;
 using System.Collections.Generic;
@@ -25,8 +26,8 @@ namespace Reboost.Service.Services
         Task<string> LearnerRefund(string userId, string email);
         Task<LearnerPaymentsHistory> CreatePaymentHistoryAsync(LearnerPaymentsHistory data);
         Task<LearnerSubscriptions> CreateUpdateSubscriptionAsync(LearnerSubscriptions data);
-        Task<LearnerSubscriptions> GetLearnerSubscriptions(string userId);
-
+        Task<List<string>> GetLearnerSubscriptions(string userId);
+        string GetBasicTokenAsync();
     }
     public class PaymentService :BaseService, IPaymentService
     {
@@ -90,12 +91,21 @@ namespace Reboost.Service.Services
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
             return System.Convert.ToBase64String(plainTextBytes);
         }
-        public string GetPaypalToken()
+
+        public string GetBasicTokenAsync()
+        {
+            var rs = Base64Encode("AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F:EOyXbN3RRGLv6S5y9PwMIiIpIsMjsBhH2FcO1kxpZH8PT69O8JtEza67L43XO19os0mNpjvFCzqCxVYV");
+            //var rs = Base64Encode("AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F");
+            //rs += ":" + Base64Encode("EOyXbN3RRGLv6S5y9PwMIiIpIsMjsBhH2FcO1kxpZH8PT69O8JtEza67L43XO19os0mNpjvFCzqCxVYV");
+            return rs;
+        }
+
+        public string GetPaypalBearerToken()
         {
             var client = new WebClient();
 
             // Encode client-id and secret to base64
-            string encodedKey = Base64Encode("AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F:EOyXbN3RRGLv6S5y9PwMIiIpIsMjsBhH2FcO1kxpZH8PT69O8JtEza67L43XO19os0mNpjvFCzqCxVYV");
+            string encodedKey = GetBasicTokenAsync();
 
             client.Headers.Add("authorization", "basic " + encodedKey);
             client.Headers.Add("content-type", "application/x-www-form-urlencoded");
@@ -129,9 +139,9 @@ namespace Reboost.Service.Services
         {
             var rater = await mRaterService.GetByUserIdAsync(userId);
 
-            if (rater == null)
+            if (rater == null || rater.PaypalAccount == null)
             {
-                throw new AppException(ErrorCode.InvalidArgument, "Rater not Exists!");
+                throw new AppException(ErrorCode.InvalidArgument, rater == null ? "Rater not Exists!" : "Rater's Paypal Account not existed!");
             }
 
             var balances = await GetRaterPayableBalanceAsync(userId);
@@ -144,7 +154,6 @@ namespace Reboost.Service.Services
                     totalBalances += b.Total;
                 }
             }
-
 
             if (totalBalances == 0)
             {
@@ -169,7 +178,7 @@ namespace Reboost.Service.Services
 
         public async Task<string> HandlePayout(string userId, string email, double paidAmount, string emailSub, string emailMess, bool isRefund)
         {
-            string currentToken = GetPaypalToken();
+            string currentToken = GetPaypalBearerToken();
 
             if (currentToken == null)
             {
@@ -236,9 +245,66 @@ namespace Reboost.Service.Services
             return await _unitOfWork.Payment.CreateUpdateSubscriptionAsync(data);
         }
 
-        public async Task<LearnerSubscriptions> GetLearnerSubscriptions(string userId)
+        public async Task<List<string>> GetLearnerSubscriptions(string userId)
         {
-            return await _unitOfWork.Payment.GetLearnerSubscriptions(userId);
+            GetSubscriptionsModel listSubs = await _unitOfWork.Payment.GetLearnerSubscriptions(userId);
+            List<string> rs = new List<string>();
+
+            if (listSubs.MonthSub != null)
+            {
+                listSubs.IsMonthExpired = await IsSubscriptionExpired(listSubs.MonthSub, "month");
+                if (!listSubs.IsMonthExpired)
+                {
+                    rs.Add("month");
+                }
+            }
+            if (listSubs.YearSub != null)
+            {
+                listSubs.IsYearExpired = await IsSubscriptionExpired(listSubs.YearSub, "year");
+                if (!listSubs.IsYearExpired)
+                {
+                    rs.Add("year");
+                }
+            }
+
+            return rs;
+        }
+
+        // Return FALSE if subscription has not been expired, TRUE if it is
+        public async Task<Boolean> IsSubscriptionExpired(string subsId, string subType)
+        {
+            string bearerToken = GetPaypalBearerToken();
+
+            if (bearerToken == null)
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "Token invalid!");
+            }
+
+            var url = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/"+subsId;
+
+            var httpRequest = (HttpWebRequest)WebRequest.Create(url);
+
+            httpRequest.ContentType = "application/json";
+            httpRequest.Headers["Authorization"] = "Bearer " + bearerToken;
+
+            var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
+            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            {
+                var result = streamReader.ReadToEnd();
+                if (httpResponse.StatusCode == HttpStatusCode.OK)
+                {
+                    var responseJson = JObject.Parse(result);
+                    var temp = responseJson["billing_info"];
+                    DateTime next_billing_time = temp["next_billing_time"].Value<DateTime>();
+
+                    if (next_billing_time >= DateTime.Now) {
+                        return false;
+                    }                 
+                }
+            }
+
+            Console.WriteLine(httpResponse.StatusCode);
+            return true;
         }
     }
 }

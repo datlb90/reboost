@@ -71,20 +71,35 @@ const paymentService = {
     return http.get(`/payment/balance`).then(rs => rs.data)
   },
 
+  async getCredential() {
+    return http.get('/payment/paypal/auth/basicToken').then(rs => rs.data)
+  },
+
   // Get user's paypal refresh token through authentication code from returnUrl
-  async getRefreshToken(authCode) {
+  async getRefreshToken(authCode, basicToken) {
+    // const result = await Axios({
+    //   url: 'https://api-m.sandbox.paypal.com/v1/oauth2/token',
+    //   method: 'post',
+    //   headers: {
+    //     'Authorization': 'Basic ' + basicToken
+    //   },
+    //   data: new URLSearchParams({
+    //     grant_type: 'refresh_token',
+    //     refresh_token: refresh_token
+    //   })
+    // })
+    // return result
+  },
+
+  // Get user's paypal access token (1 times using) through refresh token
+  async getAccessToken(basicToken, authCode) {
     const result = await Axios({
       url: 'https://api-m.sandbox.paypal.com/v1/oauth2/token',
       method: 'post',
       headers: {
-        'Content-Type': 'x-www-form-urlencoded'
+        'Content-Type': 'x-www-form-urlencoded',
+        'Authorization': 'Basic ' + basicToken
       },
-      // For Basic Authorization (curl -u), set via auth:
-      auth: {
-        username: 'AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F',
-        password: 'EOyXbN3RRGLv6S5y9PwMIiIpIsMjsBhH2FcO1kxpZH8PT69O8JtEza67L43XO19os0mNpjvFCzqCxVYV'
-      },
-      // This will urlencode the data correctly:
       data: new URLSearchParams({
         grant_type: 'authorization_code',
         code: authCode
@@ -93,27 +108,11 @@ const paymentService = {
     return result
   },
 
-  // Get user's paypal access token (1 times using) through refresh token
-  async getAccessToken(refresh_token) {
-    const result = await Axios({
-      url: 'https://api-m.sandbox.paypal.com/v1/oauth2/token',
-      method: 'post',
-      auth: {
-        username: 'AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F',
-        password: 'EOyXbN3RRGLv6S5y9PwMIiIpIsMjsBhH2FcO1kxpZH8PT69O8JtEza67L43XO19os0mNpjvFCzqCxVYV'
-      },
-      data: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refresh_token
-      })
-    })
-    return result
-  },
-
   // Get user's paypal account info base on authentication code from returnUrl after login or signUp success
   async getUserPaypalInfo(authCode) {
-    const refresh_token = await this.getRefreshToken(authCode)
-    const access_token = await this.getAccessToken(refresh_token.data.refresh_token)
+    const credential = await this.getCredential()
+    // const refresh_token = await this.getRefreshToken(authCode, credential)
+    const access_token = await this.getAccessToken(credential, authCode)
     const userInfo = await Axios({
       url: 'https://api-m.sandbox.paypal.com/v1/identity/oauth2/userinfo?schema=paypalv1.1',
       method: 'get',
@@ -129,27 +128,12 @@ const paymentService = {
     return http.post('/payment/paypal/paymentHistory', data).then(rs => rs.data)
   },
 
-  async getPaypalSubscribeInfo(subId) {
-    const result = await Axios({
-      url: `https://api-m.sandbox.paypal.com/v1/billing/plans/${subId}`,
-      method: 'get',
-      auth: {
-        username: 'AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F',
-        password: 'EOyXbN3RRGLv6S5y9PwMIiIpIsMjsBhH2FcO1kxpZH8PT69O8JtEza67L43XO19os0mNpjvFCzqCxVYV'
-      },
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-    return result
-  },
-
   getLearnerSubscriptions() {
     return http.get('/payment/paypal/subscribe').then(rs => rs.data)
   },
 
   createUpdateLearnerSubscriptions(data) {
-    return http.get('/payment/paypal/subscribe', data).then(rs => rs.data)
+    return http.post('/payment/paypal/subscribe', data).then(rs => rs.data)
   }
 
 }

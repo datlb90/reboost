@@ -5,9 +5,9 @@
       <div class="row align-items-center">
         <div class="col-lg-6 col-md-12">
           <div class="section-title">
-            <h2>Why Choose Us</h2>
+            <h2>{{ messageTranslates('whychooseUs', 'title') }}</h2>
             <div class="bar" />
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p>{{ messageTranslates('whychooseUs', 'description') }}</p>
           </div>
 
           <div class="why-choose-us-image" style="margin-top: 60px;">
@@ -25,8 +25,8 @@
                 <div class="icon">
                   <i class="flaticon-team" />
                 </div>
-                <h3>Unlimited Practice Tests</h3>
-                <p>Unlike other sites that asks you to pay for having access to practice tests, Reboost's test repository will always be available for you, for free.</p>
+                <h3>{{ messageTranslates('whychooseUs', 'titleBox1') }}</h3>
+                <p>{{ messageTranslates('whychooseUs', 'contentBox1') }}</p>
               </div>
             </div>
 
@@ -35,8 +35,8 @@
                 <div class="icon">
                   <i class="flaticon-rocket" />
                 </div>
-                <h3>Free Peer Evaluations</h3>
-                <p>At Reboost, requesting for peer review will always be free. We only ask that you give feedback to someone else's writing before making your request.</p>
+                <h3>{{ messageTranslates('whychooseUs', 'titleBox2') }}</h3>
+                <p>{{ messageTranslates('whychooseUs', 'contentBox2') }}</p>
               </div>
             </div>
 
@@ -45,8 +45,8 @@
                 <div class="icon">
                   <i class="flaticon-shield" />
                 </div>
-                <h3>Effective Study Methods</h3>
-                <p>With Reboost, you can learn from our collection of tips and guides, from feedback you receive or provide, and from revising your work.</p>
+                <h3>{{ messageTranslates('whychooseUs', 'titleBox3') }}</h3>
+                <p>{{ messageTranslates('whychooseUs', 'contentBox3') }}</p>
               </div>
             </div>
 
@@ -55,8 +55,8 @@
                 <div class="icon">
                   <i class="flaticon-diamond" />
                 </div>
-                <h3>Verified Pro Raters </h3>
-                <p>If you need quick, constructive feedback for your writing, our verified professional raters are always available to help.</p>
+                <h3>{{ messageTranslates('whychooseUs', 'titleBox4') }}</h3>
+                <p>{{ messageTranslates('whychooseUs', 'contentBox4') }}</p>
               </div>
             </div>
           </div>

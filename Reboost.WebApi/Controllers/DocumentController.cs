@@ -19,11 +19,13 @@ namespace Reboost.WebApi.Controllers
     {
         private readonly IDocumentService _docService;
         private readonly ISubmissionService _submissionService;
+        private readonly IReviewService _reviewService;
 
-        public DocumentController(IDocumentService docService, ISubmissionService submissionService)
+        public DocumentController(IDocumentService docService, ISubmissionService submissionService, IReviewService reviewService)
         {
             _docService = docService;
             _submissionService = submissionService;
+            _reviewService = reviewService;
         }
 
         [HttpPost]
@@ -31,7 +33,7 @@ namespace Reboost.WebApi.Controllers
         public async Task<Documents> Create(DocumentRequestModel model)
         {
             var newDoc = await _docService.Create(model);
-            await _submissionService.CreateAsync(new Submissions {
+            var newSub = await _submissionService.CreateAsync(new Submissions {
                 DocId = newDoc.Id,
                 UserId = model.UserId,
                 QuestionId = model.QuestionId,
@@ -41,6 +43,8 @@ namespace Reboost.WebApi.Controllers
                 Status = "Submitted",
                 UpdatedDate = DateTime.Now
             });
+
+            await _reviewService.Create(new { revieweeId = model.UserId, submissionId = newSub.Id });
 
             return newDoc;
         }

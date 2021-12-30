@@ -44,7 +44,7 @@
                         <el-select slot="append" v-model="formData.ieltsTestScore.WRITING" placeholder="...">
                           <el-option v-for="item in ieltsScores" :key="item" :label="item" :value="item" />
                         </el-select>
-                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writing</label>
                       </el-input>
                     </el-form-item>
                     <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="ieltsTestScore.READING" :rules="[ { required: true, message: 'Required' } ]">
@@ -111,7 +111,7 @@
                         <el-select slot="append" v-model="formData.toeflTestScore.WRITING" placeholder="...">
                           <el-option v-for="item in toeflScores" :key="item" :label="item" :value="item" />
                         </el-select>
-                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writting</label>
+                        <label slot="prepend" style="width: 35px; color: #909399; font-size: 12px; margin: 0;">Writing</label>
                       </el-input>
                     </el-form-item>
                     <el-form-item id="scoresSelection" style="margin-right: 10px;" size="mini" prop="toeflTestScore.READING" :rules="[ { required: true, message: 'Required' } ]">

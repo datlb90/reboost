@@ -9,6 +9,7 @@ namespace Reboost.DataAccess.Models
     public class GetReviewsModel
     {
         public ReviewRequests ReviewRequest { get; set; }
+        public Raters? Rater { get; set; }
         public Reviews Review { get; set; }
         public Submissions Submission { get; set; }
         public int ReviewId { get; set; }

@@ -178,33 +178,34 @@ export default ({
       }, 20)
     },
     reviewCommentChange(e, criteriaId) {
+      console.log('rubric comment changed')
       if (this.rubicCommentDelay) {
         clearTimeout(this.rubicCommentDelay)
       }
       this.rubicCommentDelay = setTimeout(() => {
-        var retrievedObject = localStorage.getItem('reviewRubricComment')
-        if (!retrievedObject) {
-          var t = []
-          localStorage.setItem('reviewRubricComment', JSON.stringify(t))
-          retrievedObject = []
-        }
+        // var retrievedObject = localStorage.getItem('reviewRubricComment')
+        // if (!retrievedObject) {
+        //   var t = []
+        //   localStorage.setItem('reviewRubricComment', JSON.stringify(t))
+        //   retrievedObject = []
+        // }
 
-        retrievedObject = JSON.parse(retrievedObject)
-        var temp = retrievedObject.filter(r => r.id == criteriaId && r.documentId == this.documentId && r.reviewid == this.reviewid)
-        if (temp.length > 0) {
-          retrievedObject.map(r => {
-            if (r.id == criteriaId) {
-              r.content = e
-              r.documentId = this.documentId
-              r.reviewid = this.reviewid
-              r.questionid = this.questionid
-            }
-          })
-        } else {
-          var cmt = { id: criteriaId, content: e, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
-          retrievedObject.push(cmt)
-        }
-        localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedObject))
+        // retrievedObject = JSON.parse(retrievedObject)
+        // var temp = retrievedObject.filter(r => r.id == criteriaId && r.documentId == this.documentId && r.reviewid == this.reviewid)
+        // if (temp.length > 0) {
+        //   retrievedObject.map(r => {
+        //     if (r.id == criteriaId) {
+        //       r.content = e
+        //       r.documentId = this.documentId
+        //       r.reviewid = this.reviewid
+        //       r.questionid = this.questionid
+        //     }
+        //   })
+        // } else {
+        //   var cmt = { id: criteriaId, content: e, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
+        //   retrievedObject.push(cmt)
+        // }
+        // localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedObject))
 
         this.setStatusText('Saved')
       }, 20)

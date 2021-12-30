@@ -217,8 +217,14 @@ export default {
             this.formPostDiscussion.topicTitle = ''
             this.formPostDiscussion.topicContent = ''
             this.loadDiscussions()
+            this.$notify.success({
+              title: 'Discussion added.',
+              message: 'Discussion added successfully.',
+              type: 'success',
+              duration: 2000
+            })
+            this.addDialogVisible = false
           })
-          this.addDialogVisible = false
         } else {
           return false
         }

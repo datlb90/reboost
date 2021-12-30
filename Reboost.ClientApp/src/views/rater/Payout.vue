@@ -100,23 +100,24 @@ export default {
   mounted() {
     this.loadPaypalBtn()
   },
-  beforeMount() {
+  beforeCreate() {
     const papyaplScript = document.createElement('script')
     papyaplScript.src = 'https://www.paypalobjects.com/js/external/api.js'
     document.body.appendChild(papyaplScript)
-
+  },
+  beforeMount() {
     if (this.$router.currentRoute.query?.code) {
       this.connectPaypalAccountToRater(this.$router.currentRoute.query?.code).then(rs => {
         this.$router.push('/rater/payout')
         this.loadRaterPaypalAccount()
       })
     } else {
+      this.$store.dispatch('payment/loadBalance')
       this.onLoad()
     }
   },
   methods: {
     onLoad() {
-      this.$store.dispatch('payment/loadBalance')
       this.$store.dispatch('payment/loadAllBalance').then(rs => {
       })
 
@@ -157,23 +158,30 @@ export default {
       return moment(new Date(time)).format('yyyy-MM-DD')
     },
     payout() {
-      paymentService.paypalPayout('sb-wytlo7507601@personal.example.com').then(r => {
-        console.log('result payout: ', r)
+      paymentService.paypalPayout().then(r => {
+        this.$notify.success({
+          title: 'Payout successed!',
+          message: 'Payout successed!',
+          type: 'success',
+          duration: 5000
+        })
+        this.$store.dispatch('payment/loadBalance')
       })
     },
     getTimeFromDateCreateToNow(time) {
       return moment(new Date(time)).format('MMMM Do YYYY, hh:mm:ss a')
     },
-    async connectPaypalAccountToRater(e) {
-      const rs = await paymentService.getUserPaypalInfo(e).then(rs => {
+    connectPaypalAccountToRater(e) {
+      return new Promise(async(resolve, reject) => {
+        const rs = await paymentService.getUserPaypalInfo(e)
         if (rs.data.emails.length > 0) {
           const email = rs.data.emails[0].value
-          raterService.updateRaterPaypalAccount(email).then(r => {
-            console.log('paypal account:', r)
-          })
+          await raterService.updateRaterPaypalAccount(email)
+          return resolve()
         }
+
+        reject()
       })
-      return rs
     }
   }
 

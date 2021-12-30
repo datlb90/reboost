@@ -52,6 +52,8 @@ namespace Reboost.Service.Services
 
         public async Task<Questions> DeleteAsync(int id)
         {
+            await _unitOfWork.Samples.DeleteByQuestionIdAsync(id);
+            await _unitOfWork.QuestionParts.DeleteByQuestionIdAsync(id);
             return await _unitOfWork.Questions.Delete(id);
         }
 

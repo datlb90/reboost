@@ -6,9 +6,7 @@ import { isApprovedRater, revieweeReviewAuthentication } from '../guard/UserRevi
 
 export default async(router) => {
   router.beforeEach(async(to, from, next) => {
-    console.log('router before each', to, from)
     const currentUser = store.getters['auth/getUser']
-    console.log('getUser', currentUser)
 
     if (to.name === PageName.NOT_FOUND) {
       next()
@@ -17,7 +15,7 @@ export default async(router) => {
 
     // Check logged in
     if (to.meta && to.meta.loginRequired) {
-      if (!authService.isAuthenticated()) {
+      if (!authService.isAuthenticated() || !currentUser?.id) {
         return next({ path: `/login?returnUrl=${to.path}` })
       }
     }
@@ -29,6 +27,11 @@ export default async(router) => {
         return next('/notfound')
       }
       next()
+    }
+
+    if (to.path == '/login' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register') {
+      next()
+      return
     }
 
     if (!currentUser || !currentUser.id) {
@@ -61,7 +64,7 @@ export default async(router) => {
     }
 
     // Navigate to appropriate page base on user role after login
-    if (currentUser && currentUser.role) {
+    if (currentUser.id && currentUser.role) {
       const role = currentUser.role
       if (to.name === PageName.AFTER_LOGIN) {
         if (role === UserRole.ADMIN) {

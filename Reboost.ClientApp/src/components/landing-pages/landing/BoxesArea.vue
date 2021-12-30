@@ -8,9 +8,8 @@
             <div class="icon">
               <i class="flaticon-money" />
             </div>
-            <h3>Unlimited Practice Test</h3>
-            <p>Our list of writing topics is getting bigger everyday with the help from our users all around the world.
-              With Reboost, you won't ever be worry about running our of practice test.</p>
+            <h3>{{ messageTranslates('boxesArea', 'title1') }}</h3>
+            <p>{{ messageTranslates('boxesArea', 'content1') }}</p>
           </div>
         </div>
 
@@ -19,10 +18,8 @@
             <div class="icon">
               <i class="flaticon-data-1" />
             </div>
-            <h3>An Active Community</h3>
-            <p>Lorem ipsum dolor sit amet elit, adipiscing, sed do eiusmod tempor incididunt ut labore dolore magna.
-              Lorem ipsum dolor sit amet elit, adipiscing, sed do eiusmod tempor incididunt.
-            </p>
+            <h3>{{ messageTranslates('boxesArea', 'title2') }}</h3>
+            <p>{{ messageTranslates('boxesArea', 'content2') }}</p>
           </div>
         </div>
 
@@ -31,10 +28,8 @@
             <div class="icon">
               <i class="flaticon-dashboard" />
             </div>
-            <h3>Learning by Reviewing</h3>
-            <p>Lorem ipsum dolor sit amet elit, adipiscing, sed do eiusmod tempor incididunt ut labore dolore magna.
-              Lorem ipsum dolor sit amet elit, adipiscing, sed do eiusmod tempor incididunt.
-            </p>
+            <h3>{{ messageTranslates('boxesArea', 'title3') }}</h3>
+            <p>{{ messageTranslates('boxesArea', 'content3') }}</p>
           </div>
         </div>
 
@@ -43,10 +38,8 @@
             <div class="icon">
               <i class="flaticon-support" />
             </div>
-            <h3>Constructive Feedback</h3>
-            <p>Lorem ipsum dolor sit amet elit, adipiscing, sed do eiusmod tempor incididunt ut labore dolore magna.
-              Lorem ipsum dolor sit amet elit, adipiscing, sed do eiusmod tempor incididunt.
-            </p>
+            <h3>{{ messageTranslates('boxesArea', 'title4') }}</h3>
+            <p>{{ messageTranslates('boxesArea', 'content4') }}</p>
           </div>
         </div>
       </div>

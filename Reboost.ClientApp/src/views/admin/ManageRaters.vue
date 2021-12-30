@@ -1,15 +1,15 @@
 <template>
   <div class="container">
     <div class="title">
-      <h2>Rater Applications</h2>
+      <h2>{{ messageTranslates('manageRaters', 'raterApplication') }}</h2>
     </div>
     <el-row :gutter="40">
       <el-col :md="6">
-        <el-input v-model="textSearch" size="mini" placeholder="Type to search" @input="search()" />
+        <el-input v-model="textSearch" size="mini" :placeholder="messageTranslates('manageRaters', 'typeToSearch')" @input="search()" />
       </el-col>
       <el-col :md="12" class="filter-container">
         <div class="filter-toolbar">
-          <dropdown-menu v-model="filterStatus" :tittle="'Status'" @confirm="search()" />
+          <dropdown-menu v-model="filterStatus" :tittle="messageTranslates('manageRaters', 'status')" @confirm="search()" />
         </div>
         <div class="tag-selection">
           <el-tag
@@ -23,24 +23,24 @@
             :disable-transitions="false"
             @close="handleClose(tag)"
           >
-            {{ tag }}
+            {{ constantTranslate('RATER_STATUS', tag) }}
           </el-tag>
         </div>
       </el-col>
       <el-col :md="6">
-        <el-button size="mini" @click="clearFilter">reset all filters</el-button>
+        <el-button size="mini" @click="clearFilter">{{ messageTranslates('manageRaters', 'resetFilters') }}</el-button>
       </el-col>
     </el-row>
     <el-table ref="filterTable" size="mini" :data="raters" style="width: 100%" @sort-change="changeTableSort">
-      <el-table-column prop="fullName" label="Application Name" width="160" />
-      <el-table-column prop="appliedDate" label="Application Date" sortable="custom" width="180" />
-      <el-table-column prop="occupation" label="Occupation" width="140" />
-      <el-table-column prop="firstLanguage" label="First Language" width="130" />
+      <el-table-column prop="fullName" :label="messageTranslates('manageRaters', 'applicationName')" width="160" />
+      <el-table-column prop="appliedDate" :label="messageTranslates('manageRaters', 'applicationDate')" sortable="custom" width="180" />
+      <el-table-column prop="occupation" :label="messageTranslates('manageRaters', 'occupation')" width="140" />
+      <el-table-column prop="firstLanguage" :label="messageTranslates('manageRaters', 'firstLanguage')" width="130" />
       <!-- <el-table-column prop="applyTo" label="Applied For" width="120">
       </el-table-column> -->
       <el-table-column
         prop="status"
-        label="Status"
+        :label="messageTranslates('manageRaters', 'status')"
         filter-placement="bottom-end"
       >
         <template slot-scope="scope">
@@ -57,13 +57,13 @@
                       ? 'warning'
                       : 'warning'"
             disable-transitions
-          >{{ scope.row.status }}
+          >{{ constantTranslate('RATER_STATUS', scope.row.status) }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Operations">
+      <el-table-column :label="messageTranslates('manageRaters', 'operations')">
         <template slot-scope="scope">
-          <el-button size="mini" @click="handleView(scope.$index, scope.row)">View</el-button>
+          <el-button size="mini" @click="handleView(scope.$index, scope.row)">{{ messageTranslates('manageRaters', 'view') }}</el-button>
           <!-- <el-button v-if="scope.row.status == RATER_STATUS.TRAINING_COMPLETED" size="mini" type="warning">Review</el-button> -->
         </template>
       </el-table-column>

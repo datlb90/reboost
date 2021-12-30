@@ -19,7 +19,7 @@
             />
           </div>
           <div style="margin: 10px 0 10px 5px;">
-            <el-button v-if="!isReviewAuth" :disabled="isRated" size="mini " type="primary" @click="rateReviewer()">
+            <el-button v-if="!isReviewAuth" :disabled="isRated" size="mini " type="primary" @click="rateReview()">
               Submit
             </el-button>
           </div>
@@ -53,7 +53,7 @@ export default ({
       this.rateComment = e.comment
       this.isRated = e.rated
     },
-    rateReviewer() {
+    rateReview() {
       reviewService.createReviewRating({
         ReviewId: +this.$route.params.reviewId,
         Rate: parseFloat(this.rateValue),
@@ -61,6 +61,7 @@ export default ({
       }).then(r => {
         if (r) {
           this.isRated = true
+          this.$emit('rated')
           this.$notify.success({
             title: 'Success',
             message: 'Rated successfully',
@@ -68,6 +69,7 @@ export default ({
             duration: 1500
           })
         }
+        this.$router.push('/submissions')
       })
     }
   }
