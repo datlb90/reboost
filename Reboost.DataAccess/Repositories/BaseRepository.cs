@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -626,6 +628,16 @@ namespace Reboost.DataAccess.Repositories
         //    throw new DbEntityValidationException(exceptionMessage, e.EntityValidationErrors);
         //}
 
+        public DataTable ExecRawSelect(string command)
+        {
+            var tb = new DataTable();
+            using (var con = new SqlConnection(context.Database.GetDbConnection().ConnectionString))
+            {
+                var a = new SqlDataAdapter(command, con);
+                a.Fill(tb);
+            }
 
+            return tb;
+        }
     }
 }

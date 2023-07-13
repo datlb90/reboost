@@ -48,7 +48,7 @@ export default async(router) => {
     }
 
     const currentUser = store.getters['auth/getUser']
-    console.log(currentUser)
+
     if (to.name === PageName.NOT_FOUND) {
       next()
       return
@@ -68,6 +68,11 @@ export default async(router) => {
         return next('/notfound')
       }
       next()
+    }
+
+    if (to.path == '/login' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register') {
+      next()
+      return
     }
 
     if (to.path == '/login' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register') {

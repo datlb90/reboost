@@ -43,6 +43,15 @@
           </b-collapse>
 
           <div class="others-option">
+            <el-dropdown class="lang-dropdown" style="margin-right: 20px" placement="bottom" @command="onChangeLanguage">
+              <flag v-if="lang == 'English'" iso="gb" style="border-radius: 2px;" />
+              <flag v-else iso="vn" style="border-radius: 2px;" />
+              <el-dropdown-menu slot="dropdown" class="lang-dropdown-menu">
+                <el-dropdown-item command="vietnamese"><flag iso="vn" style="border-radius: 2px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
+                <el-dropdown-item command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+
             <a href="/rater" class="btn btn-light">Become A Rater</a>
             <!-- <a href="/login" class="btn btn-primary">Sign In</a> -->
           </div>
@@ -65,7 +74,8 @@ export default {
   },
   data() {
     return {
-      isSticky: false
+      isSticky: false,
+      lang: ''
     }
   },
 
@@ -84,6 +94,12 @@ export default {
   methods: {
     openContactDialog(e) {
       this.$refs.contactDialog?.openDialog()
+    },
+    onChangeLanguage(e) {
+      this.lang = e.charAt(0).toUpperCase() + e.slice(1)
+      console.log(this.lang)
+      localStorage.setItem('language', e)
+      this.$ml.change(e)
     }
   }
 }
@@ -92,5 +108,9 @@ export default {
 <style scoped>
 .nav-item:active{
   color: #44ce6f;
+}
+
+.lang-dropdown-menu{
+  z-index: 10000 !important;
 }
 </style>
