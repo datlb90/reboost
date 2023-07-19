@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace Reboost.DataAccess.Entities
@@ -15,6 +17,7 @@ namespace Reboost.DataAccess.Entities
         public int RubricId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        [Column(TypeName = "decimal(4,1)")]
         public decimal MaxScore { get; set; }
         public Nullable<int> Weight { get; set; }
         public System.DateTime LastActivityDate { get; set; }

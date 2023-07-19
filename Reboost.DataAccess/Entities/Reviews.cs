@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace Reboost.DataAccess.Entities
@@ -16,6 +18,7 @@ namespace Reboost.DataAccess.Entities
         public string ReviewerId { get; set; }
         public string RevieweeId { get; set; }
         public int SubmissionId { get; set; }
+        [Column(TypeName = "decimal(4,1)")]
         public Nullable<decimal> FinalScore { get; set; }
         public string Status { get; set; }
         public int TimeSpentInSeconds { get; set; }

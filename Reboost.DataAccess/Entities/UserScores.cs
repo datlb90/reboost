@@ -9,9 +9,9 @@ namespace Reboost.DataAccess.Entities
     {
         public string UserId { get; set; }
         public int SectionId { get; set; }
-        public double Score { get; set; }
+        [Column(TypeName = "decimal(4,1)")]
+        public decimal Score { get; set; }
         public System.DateTime UpdatedDate { get; set; }
-
         public virtual TestSections Section { get; set; }
         public virtual User User { get; set; }
     }

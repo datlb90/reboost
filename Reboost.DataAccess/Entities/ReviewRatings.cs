@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace Reboost.DataAccess.Entities
@@ -13,6 +15,7 @@ namespace Reboost.DataAccess.Entities
         public int ReviewId { get; set; }
 
         [Required]
+        [Column(TypeName = "decimal(2,1)")]
         public decimal Rate { get; set; }
 
         [Required(ErrorMessage = "Comment is required")]
