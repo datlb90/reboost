@@ -39,15 +39,22 @@ function handleDocumentMouseup(e) {
   clientClickY = e.clientY
   let isToolBar = false
   let isColorPicker = false
-  Array.prototype.slice.call(e.path).forEach(r => {
-    if (r.tagName == 'DIV' && r.getAttribute('id') == 'tool-bar') {
-      isToolBar = true
-    }
-    if (r.tagName == 'DIV' && r.getAttribute('id') == 'colorPickerCollapse') {
-      isColorPicker = true
-    }
-  })
 
+  var path = e.composedPath ? e.composedPath() : e.path
+  if (path) {
+    // You got some path information
+    Array.prototype.slice.call(path).forEach(r => {
+      if (r.tagName == 'DIV' && r.getAttribute('id') == 'tool-bar') {
+        isToolBar = true
+      }
+      if (r.tagName == 'DIV' && r.getAttribute('id') == 'colorPickerCollapse') {
+        isColorPicker = true
+      }
+    })
+  } else {
+    // This browser doesn't supply path information
+    console.log('no support')
+  }
   if (input || !findSVGAtPoint(e.clientX, e.clientY) || isToolBar || isColorPicker) {
     return
   }

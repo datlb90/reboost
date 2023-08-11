@@ -74,6 +74,7 @@ export default {
     reviewId: { type: Number, default: null }
   },
   data: () => ({
+    rubricCriteria: [],
     tableData: []
   }),
   mounted() {

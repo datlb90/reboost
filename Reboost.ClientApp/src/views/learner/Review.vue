@@ -60,8 +60,91 @@
       </div>
 
     </div>
-    <rubric :question-id="questionId" :review-id="reviewId" />
-
+    <!-- <rubric :question-id="questionId" :review-id="reviewId" /> -->
+    <div id="comment-wrapper">
+      <el-card id="add-new-comment" class="box-card add-new-comment" style="width: 100%; display: none;">
+        <div slot="header" class="clearfix">
+          <div>
+            <div style="font-size: 15px; font-weight: bold; text-align: left;">
+              {{ commentUserName() }}
+            </div>
+          </div>
+        </div>
+        <div>
+          <el-input
+            id="comment-text-area"
+            v-model="newComment"
+            type="textarea"
+            autosize
+            placeholder="Add comment"
+          />
+          <div style="height: 20px; margin-top: 10px;">
+            <el-button type="primary" :disabled="newComment.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="addCommentText(true)">
+              Comment
+            </el-button>
+            <el-button style="float: right; padding: 5px;" @click="cancelCommentText()">
+              Cancel
+            </el-button>
+          </div>
+        </div>
+      </el-card>
+      <el-card
+        v-for="(comment, idx) in comments"
+        :key="comment.uuid"
+        class="box-card comment-card"
+        :highlight-id="comment.uuid"
+        :top-position="comment.topPosition"
+        :top="comment.annotation.top"
+        :left="comment.annotation.left"
+        :page-num="comment.annotation.page"
+        :page-height="comment.annotation.pageHeight"
+        :style="{top: comment.topPosition + 'px', width: '100%'}"
+      >
+        <div slot="header" class="clearfix">
+          <div>
+            <div style="font-size: 15px; font-weight: bold; text-align: left;">
+              {{ commentUserName() }}
+            </div>
+          </div>
+          <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
+            <i class="far fa-trash-alt" />
+          </el-button>
+          <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
+            <i class="far fa-edit" />
+          </el-button>
+        </div>
+        <div>
+          <div
+            v-show="!comment.isSelected "
+            :id="'comment-text-' + comment.uuid"
+            :style="{'-webkit-line-clamp': isInShowMoreList(comment.uuid).value==0 ? '3':'inherit'}"
+            style="text-align: left; overflow-wrap: break-word; white-space: pre-wrap; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
+          >
+            {{ comment.content }}
+          </div>
+          <div v-if="isInShowMoreList(comment.uuid)" class="show__more-container" @click="toggleShowMore(comment.uuid)">
+            {{ isInShowMoreList(comment.uuid).value==0 ? 'Show more':'Show less' }}
+          </div>
+          <el-input
+            v-show="comment.isSelected == true || comment.isSaved == false"
+            :id="'comment-input-' + comment.uuid"
+            :ref="'comment' + comment.uuid"
+            v-model="comment.content"
+            type="textarea"
+            resize="none"
+            autosize
+          />
+          <div v-show="comment.isSelected == true || comment.isSaved == false" style="height: 20px; margin-top: 10px;">
+            <el-button type="primary" :disabled="comment.content.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="editCommentCard(comment)">
+              Save
+            </el-button>
+            <el-button style="float: right; padding: 5px;" @click="cancelCommentText('edit',comment)">
+              Cancel
+            </el-button>
+          </div>
+        </div>
+      </el-card>
+    </div>
     <!-- Inline text tools -->
     <textToolGroup ref="textToolGroup" @highLightText="highlightEvent($event)" />
     <!-- /Inline text tools -->
@@ -222,7 +305,7 @@ import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
 import { RATER_STATUS, REVIEW_REQUEST_STATUS, UserRole, SubmissionStatus } from '../../app.constant'
 import moment from 'moment'
-import Rubric from '@/components/controls/Rubric'
+// import Rubric from '@/components/controls/Rubric'
 // import { highlightText } from '../../pdfjs/UI/highlight-text.js'
 
 export default {
@@ -232,8 +315,8 @@ export default {
     'tabQuestion': TabQuestion,
     'tabRubric': TabRubric,
     'textToolGroup': TextToolGroup,
-    'tabRate': TabRate,
-    'rubric': Rubric
+    'tabRate': TabRate
+    // 'rubric': Rubric
   },
   data() {
     return {

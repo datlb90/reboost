@@ -94,6 +94,7 @@ export default ({
   },
   methods: {
     loadRubric() {
+      console.log(this.reviewid)
       rubricService.getByQuestionId(this.questionid).then(rs => {
         // this.criteriaFeedback['id']
         this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, comment: '' }))

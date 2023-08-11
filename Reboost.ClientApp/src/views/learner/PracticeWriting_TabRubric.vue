@@ -59,7 +59,8 @@ export default {
 </script>
 <style>
   #rubricList .el-table .cell {
-      word-break: break-word !important;
+    white-space: pre-wrap;
+    word-break: break-word !important;
   }
 </style>
 <style scoped>

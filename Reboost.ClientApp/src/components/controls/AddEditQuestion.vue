@@ -32,7 +32,7 @@
             </el-select>
           </el-form-item>
           <el-form-item prop="type" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'type')">
-            <el-select v-model="form.type" :placeholder="messageTranslates('addEditQuestion', 'type')">
+            <el-select v-model="form.type" :placeholder="messageTranslates('addEditQuestion', 'type')" allow-create :filterable="true">
               <el-option v-for="item in types" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
@@ -451,21 +451,12 @@ export default {
       this.form.type = null
       this.form.test = null
       this.form.task = null
-      this.form.content = `<p>Content here...</p>
-        <p></p>`
+      this.form.content = ''
       this.form.part = null
 
-      this.toeflReading = `<p>Reading content here...</p>
-        <p></p>
-        <p></p>
-        <p></p>
-        <p></p>`
+      this.toeflReading = ''
       this.toeflListening = null
-      this.toeflTranscript = `<p>Transcipt content here...</p>
-        <p></p>
-        <p></p>
-        <p></p>
-        <p></p>`
+      this.toeflTranscript = ''
     }
   }
 }
