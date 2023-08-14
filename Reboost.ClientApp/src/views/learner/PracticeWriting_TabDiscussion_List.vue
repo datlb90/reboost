@@ -241,7 +241,7 @@ export default {
       }, 500)
     },
     getDiscussionDetailUrl(item) {
-      return '/PracticeWriting/' + this.currentQuestion.id + '/discuss/' + item['id']
+      return '/practice/' + this.currentQuestion.id + '/discuss/' + item['id']
     },
     getTimeFromDateCreateToNow(time) {
       return moment(new Date(time)).fromNow()

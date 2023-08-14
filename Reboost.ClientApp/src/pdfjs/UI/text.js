@@ -53,7 +53,7 @@ function handleDocumentMouseup(e) {
     })
   } else {
     // This browser doesn't supply path information
-    console.log('no support')
+    console.log('no browser support')
   }
   if (input || !findSVGAtPoint(e.clientX, e.clientY) || isToolBar || isColorPicker) {
     return

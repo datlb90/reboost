@@ -378,7 +378,7 @@ export default {
       })
     },
     onBack() {
-      this.$router.push('/PracticeWriting/' + this.selectedDiscussion.questionId + '/discuss')
+      this.$router.push('/pratice/' + this.selectedDiscussion.questionId + '/discuss')
       // this.discussion = !this.discussion
     },
     onUp() {

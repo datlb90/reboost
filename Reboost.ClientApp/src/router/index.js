@@ -357,7 +357,7 @@ const router = new VueRouter({
       }
     },
     {
-      path: '/PracticeWriting/:id',
+      path: '/practice/:id',
       component: PracticeWriting,
       name: 'PracticeWriting',
       children: [{
@@ -376,7 +376,7 @@ const router = new VueRouter({
       }
     },
     {
-      path: '/PracticeWriting/:id/:submissionId',
+      path: '/practice/:id/:submissionId',
       component: PracticeWriting,
       name: 'PracticeWriting',
       meta: {

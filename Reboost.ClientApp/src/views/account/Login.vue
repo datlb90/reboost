@@ -136,7 +136,7 @@ export default {
           if (this.$router.currentRoute.query?.returnUrl) {
             this.$router.push({ path: this.$router.currentRoute.query?.returnUrl })
           } else {
-            this.$router.push({ name: PageName.AFTER_LOGIN })
+            this.$router.push({ name: PageName.AFTER_LOGIN }).catch(() => {})
           }
         })
       }

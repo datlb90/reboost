@@ -138,7 +138,7 @@ export default {
       if (user) {
         // this.$router.push({ name: PageName.AFTER_LOGIN })
         this.$store.dispatch('auth/setSelectedTest').then(rs => {
-          this.$router.push({ name: PageName.AFTER_LOGIN })
+          this.$router.push({ name: PageName.AFTER_LOGIN }).catch(() => {})
         })
       }
     }

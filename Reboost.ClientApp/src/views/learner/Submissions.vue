@@ -218,7 +218,7 @@ export default {
           })
         }
       } else if (action == 'View Submission') {
-        this.$router.push(`PracticeWriting/${e.questionId}/${e.id}`)
+        this.$router.push(`practice/${e.questionId}/${e.id}`)
       } else if (action == 'View Review') {
         reviewService.getOrCreateReviewBySubmissionId(e.id).then(rs => {
           this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}`)

@@ -1,5 +1,5 @@
 export const Banner = {
-  bannerContentTitle: 'Một cách mới để học',
+  bannerContentTitle: 'Một Phương Pháp Học Mới',
   bannerContentDescription: 'Reboost là nền tảng tốt nhất để giúp bạn nâng cao điểm thi viết ngoại ngữ của mình. Bất kể bạn làm bài kiểm tra nào, chúng tôi sẽ giúp bạn chuẩn bị đầy đủ và đảm bảo cải thiện điểm số của bạn bằng cách cung cấp:',
   content1: 'Bài kiểm tra thực hành không giới hạn',
   content2: 'Cộng đồng năng động khuyến khích bạn luyện tập nhiều hơn',
