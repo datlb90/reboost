@@ -199,10 +199,17 @@ namespace Reboost.Service.Services
             
             if (review != null)
             {
-                var user = await userService.GetByIdAsync(review.Rater.UserId);
-                string url = $"{configuration["ClientUrl"]}/{review.Submission.QuestionId}/{review.Submission.DocId}/{review.ReviewId}";
-                await mailService.SendEmailAsync(user.Email, "Review Rated!", $"Your review is rated. Link at: <a href='{url}'>Clicking here</a>");
+                User user = null;
+                if (review.Rater != null)
+                    user = await userService.GetByIdAsync(review.Rater.UserId);
+                else
+                    user = await userService.GetByIdAsync(review.Review.ReviewerId);
 
+                if(user != null)
+                {
+                    string url = $"{configuration["ClientUrl"]}/{review.Submission.QuestionId}/{review.Submission.DocId}/{review.ReviewId}";
+                    await mailService.SendEmailAsync(user.Email, "Review Rated!", $"Your review is rated. Link at: <a href='{url}'>Clicking here</a>");
+                }
             }
 
             return rs;

@@ -31,9 +31,12 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<User> UpdateScoreAsync(string userId, List<UserScores> scores)
         {
-            var listScore = _context.UserScores.Where(sc => sc.UserId == userId);
-            _context.UserScores.RemoveRange(listScore);
-            await _context.SaveChangesAsync();
+            List<UserScores> listScore = await _context.UserScores.Where(sc => sc.UserId == userId).ToListAsync();
+            if(listScore != null)
+            {
+                _context.UserScores.RemoveRange(listScore);
+                await _context.SaveChangesAsync();
+            }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             user.UserScores = scores;

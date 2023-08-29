@@ -504,7 +504,7 @@ export default {
 
             let count = 0
             for (const p of this.formRegister.iDCardPhotos) {
-              formData.set(`RaterCredentials[${count}][TestId]`, '0')
+              formData.set(`RaterCredentials[${count}][TestId]`, '3')
               formData.set(`RaterCredentials[${count}][CredentialType]`, 'IDPhoto')
               formData.set(`RaterCredentials[${count}][FileName]`, p.name)
               formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))
@@ -576,6 +576,7 @@ export default {
               formData.set(`User[UserScores][${count}][UpdatedDate]`, s.updatedDate)
               count++
             }
+
             if (createOrUpdate == 'create') {
               raterService.insert(formData).then(rs => {
                 this.$notify.success({
@@ -759,7 +760,7 @@ export default {
     },
     redirectToTraining(type) {
       var t = this.raterTraining.filter(r => r.test.trim() == type.trim() && (r.status == RATER_TRAINING_STATUS.COMPLETED || r.status == RATER_TRAINING_STATUS.REVISION_COMPLETED))[0]
-      var redirectlink = type === 'IELTS' ? '/review/9/220/' : '/review/12/219/'
+      var redirectlink = type === 'IELTS' ? '/review/9/220/' : '/review/1/1/'
       redirectlink += t?.reviewId
       this.$router.push(redirectlink)
     },

@@ -40,7 +40,7 @@ const langVN = {
   raterRegister: RaterRegister,
   boxesArea: BoxesArea,
   howItWork2: HowItWork2,
-  whychooseUs: WhyChooseUs,
+  whyChooseUs: WhyChooseUs,
   funfacts: Funfacts,
   featuresArea: FeaturesArea,
   features: Features,

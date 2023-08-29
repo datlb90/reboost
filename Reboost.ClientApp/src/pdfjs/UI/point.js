@@ -18,11 +18,15 @@ let input
  */
 function handleDocumentMouseup(e) {
   var isToolBar = false
-  Array.prototype.slice.call(e.path).forEach(r => {
-    if (r.tagName == 'DIV' && r.getAttribute('id') == 'tool-bar') {
-      isToolBar = true
-    }
-  })
+
+  var path = e.composedPath ? e.composedPath() : e.path
+  if (path) {
+    Array.prototype.slice.call(path).forEach(r => {
+      if (r.tagName == 'DIV' && r.getAttribute('id') == 'tool-bar') {
+        isToolBar = true
+      }
+    })
+  }
 
   if (input || !findSVGAtPoint(e.clientX, e.clientY) || isToolBar) {
     return

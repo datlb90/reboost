@@ -66,7 +66,7 @@ export function enableTextSelection(parent) {
     if (isClientOnSelectedText(rects, e)) {
       window.getSelection().removeAllRanges()
       that.hideTextToolBar()
-      that.hideTextToolGroup()
+      // that.hideTextToolGroup()
       that.hideRectToolBar()
       that.hideColorPickerTool()
     }
@@ -93,6 +93,10 @@ export function enableTextSelection(parent) {
       if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
         const validTarget = that.hasAParentWithClass(e.target, 'add-new-comment')
         const comment = document.getElementById('comment-text-area').value
+        // if (this.annotationClicked && this.annotationClicked.getAttribute('data-pdf-annotate-type') == 'comment-area') {
+        //   this.annotationClicked.setAttribute('data-pdf-annotate-type', 'area')
+        // }
+        // if (!validTarget && comment.replace(/\s/g, '').length == 0) { that.cancelCommentText() }
         // if (this.annotationClicked.getAttribute('data-pdf-annotate-type') == 'comment-area') {
         //   this.annotationClicked.setAttribute('data-pdf-annotate-type', 'area')
         // }
@@ -104,6 +108,10 @@ export function enableTextSelection(parent) {
         }
       }
       // Unselect highlight comment
+      // if (!e.target.classList.contains('comment-highlight-selected') && !e.target.classList.contains('toolbar-btn')) {
+      //   const validTarget = that.hasAParentWithClass(e.target, 'comment-card-selected')
+      //   if (!validTarget) { that.unselectHighlightComment() }
+      // }
       if (!e.target.classList.contains('comment-highlight-selected') && !e.target.classList.contains('rectangle-selected') && !e.target.classList.contains('toolbar-btn')) {
         const validTarget = that.hasAParentWithClass(e.target, 'comment-card-selected')
         const validTargetRect = that.hasAParentWithClass(e.target, 'rectangle-selected')

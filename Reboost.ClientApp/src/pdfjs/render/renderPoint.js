@@ -45,15 +45,15 @@ export default function renderPoint(a) {
   setAttributes(rect, {
     width: SIZE,
     height: SIZE,
-    stroke: '#000',
-    fill: '#ff0'
+    // stroke: '#000',
+    fill: '#fff'
   })
 
   setAttributes(path, {
     d: D,
     strokeWidth: 50,
     stroke: '#000',
-    fill: '#fff'
+    fill: '#409EFF'
   })
 
   innerSVG.appendChild(path)

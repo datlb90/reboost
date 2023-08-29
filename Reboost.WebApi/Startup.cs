@@ -66,7 +66,12 @@ namespace Reboost.WebApi
             // Configure Entityframecore with SQL SErver
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("ReboostDbContext"));
+                options.UseSqlServer(Configuration.GetConnectionString("ReboostDbContext"),
+                    options => options.EnableRetryOnFailure(
+                     maxRetryCount: 5,
+                     maxRetryDelay: System.TimeSpan.FromSeconds(60),
+                     errorNumbersToAdd: null
+                    ));
             });
 
             services.AddIdentity<ApplicationUser, IdentityRole>()

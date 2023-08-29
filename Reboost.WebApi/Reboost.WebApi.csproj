@@ -37,6 +37,7 @@
     <Folder Include="Email\" />
     <Folder Include="Data\" />
     <Folder Include="wwwroot\contact\" />
+    <Folder Include="wwwroot\audio\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Reboost.Service\Reboost.Service.csproj">
@@ -48,6 +49,9 @@
     <ProjectReference Include="..\Reboost.DataAccess\Reboost.DataAccess.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="wwwroot\audio\" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 </Project>

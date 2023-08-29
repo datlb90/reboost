@@ -60,6 +60,20 @@ export default class LocalStoreAdapter extends StoreAdapter {
         })
       },
 
+      deleteLastAnnotation(documentId) {
+        return new Promise((resolve, reject) => {
+          const annotations = getAnnotations(documentId)
+          const index = annotations.length - 1
+          const rs = getAnnotations(documentId)[index]
+          if (index > -1) {
+            const annotations = getAnnotations(documentId)
+            annotations.splice(index, 1)
+            updateAnnotations(documentId, annotations)
+          }
+          resolve(rs)
+        })
+      },
+
       getComments(documentId) {
         return new Promise((resolve, reject) => {
           resolve(getAnnotations(documentId).filter((i) => {

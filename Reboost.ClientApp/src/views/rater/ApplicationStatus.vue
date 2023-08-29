@@ -416,7 +416,8 @@ export default {
     redirectToTraining(e) {
       reviewService.createReviewTrainingSample(e.toLowerCase()).then(r => {
         if (r && r != 'failed') {
-          var pushUrl = e.toLowerCase() == 'toefl' ? '/review/12/219/' + r : '/review/9/220/' + r
+          // [Need to refine]
+          var pushUrl = e.toLowerCase() == 'toefl' ? '/review/1/1/' + r : '/review/9/220/' + r
           this.$router.push(pushUrl)
         }
       })
@@ -471,7 +472,7 @@ export default {
           for (const p of this.formRegister.iDCardPhotos) {
             console.log('ID')
 
-            formData.set(`RaterCredentials[${count}][TestId]`, '0')
+            formData.set(`RaterCredentials[${count}][TestId]`, '3')
             formData.set(`RaterCredentials[${count}][CredentialType]`, 'IDPhoto')
             formData.set(`RaterCredentials[${count}][FileName]`, p.name)
             formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))

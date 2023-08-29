@@ -468,7 +468,7 @@ export default {
 
           let count = 0
           for (const p of this.formRegister.iDCardPhotos) {
-            formData.set(`RaterCredentials[${count}][TestId]`, '0')
+            formData.set(`RaterCredentials[${count}][TestId]`, '3')
             formData.set(`RaterCredentials[${count}][CredentialType]`, 'IDPhoto')
             formData.set(`RaterCredentials[${count}][FileName]`, p.name)
             formData.set(`RaterCredentials[${count}][FileExtension]`, stringUtil.getFileExtension(p.name))

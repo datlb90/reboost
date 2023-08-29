@@ -23,7 +23,6 @@ instance.interceptors.request.use(
   function(config) {
     store.dispatch('loading/startLoading')
     const accessToken = store.state.auth.user.token
-    console.log(accessToken)
     if (!_.isEmpty(accessToken)) {
       config.headers.Authorization = `Bearer ${accessToken}`
     }

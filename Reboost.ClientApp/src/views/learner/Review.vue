@@ -909,8 +909,9 @@ export default {
             this.hideDeleteToolBar()
           } else {
             const deleteTool = document.getElementById('deleteTool')
-            var posXX = rect.left
-            var posYY = parseInt(rect.top) + rect.height + 10
+            // 54 is the width of deleteTool
+            var posXX = parseInt(rect.left) + parseInt(rect.width / 2) - 54 / 2
+            var posYY = parseInt(rect.top) + parseInt(rect.height) + 15
             deleteTool.style = 'position: absolute; top: ' + posYY + 'px; left: ' + posXX + 'px;'
           }
         } else if (type == 'highlight' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
@@ -924,9 +925,10 @@ export default {
             this.hideDeleteToolBar()
           } else {
             const rectTool = document.getElementById('rectTool')
-            var posXrect = rects.left
-            var posYrect = parseInt(rects.top) + rects.height + 10
-            rectTool.style = 'position: absolute; top: ' + posYrect + 'px; left: ' + posXrect + 'px;'
+            // 110 is the width of rectTool
+            const posX = parseInt(rects.left) + parseInt(rects.width / 2) - 110 / 2
+            const posY = parseInt(rects.top) + parseInt(rects.height) + 7
+            rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
           }
         }
         if (type == 'comment-highlight' || type == 'point' || type == 'comment-area') {
@@ -1020,7 +1022,7 @@ export default {
             // if (this.showQuestion) {
             // posX += parseInt(document.getElementById('left-panel').offsetWidth)
             // }
-            const posY = parseInt(rect.top) + parseInt(target.getAttribute('height')) * this.RENDER_OPTIONS.scale + 10
+            const posY = parseInt(rect.top) + parseInt(target.getAttribute('height')) * this.RENDER_OPTIONS.scale + 7
             rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
           }
         } else if (type == 'textbox' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
@@ -1706,6 +1708,7 @@ export default {
           }
         }
         if (this.annotation.type != 'area' && this.annotation.type != 'comment-area') {
+          // Delete annotation and text selection
           PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, this.annotation.uuid, true)
             .then((isDeleted) => {
               if (isDeleted) {

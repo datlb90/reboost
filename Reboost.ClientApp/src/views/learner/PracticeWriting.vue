@@ -24,11 +24,11 @@
                         </div>
                       </div>
                       <div>
-                        <el-tag v-if="isTesting" class="mr-2" type="warning">{{ minute }} : {{ second }}</el-tag>
-                        <el-tag v-if="isTesting" class="mr-2" type="warning">In test mode</el-tag>
-                        <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" @click="startTest()">Start Test</el-button>
+                        <!-- <el-tag v-if="isTesting" class="mr-2" type="warning" size="medium">In test mode</el-tag> -->
+                        <el-tag v-if="isTesting" class="mr-2" type="warning" size="medium" style="height: 30px; line-height: 28px;">The test will end in {{ minute }} : {{ second }}</el-tag>
+                        <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" style="padding: 8px 15px;" @click="startTest()">Start Test</el-button>
                         <!-- <el-switch v-model="isTest" style="display: block" active-color="#13ce66" inactive-color="#ff4949" active-text="Test" inactive-text="Practice" @change="changedOption()" /> -->
-                        <el-checkbox v-model="isTest" size="mini" border @change="changedOption()">Test Mode</el-checkbox>
+                        <el-checkbox v-model="isTest" size="mini" border style="height: 30px;" @change="changedOption()"> Test Mode</el-checkbox>
                       </div>
                     </div>
                     <hr style="margin: 0; margin-bottom: 8px;">
@@ -133,14 +133,13 @@
             </div>
           </el-tab-pane>
           <!-- <el-tab-pane label="Similiar">Similiar</el-tab-pane> -->
-          <el-tab-pane>
+          <!-- <el-tab-pane>
             <template #label>
-
-              <div class="practice-tab-discussion">
+              <div style="position: relative; top: -2px; width: 220px;">
                 <span>
                   Submissions
                 </span>
-                <el-select v-model="selectedSubmission" placeholder="Select submission" size="mini" style="margin-left:10px" @change="onSubmissionChange">
+                <el-select v-model="selectedSubmission" placeholder="Select Submission" size="mini" style="margin-left:10px" @change="onSubmissionChange">
                   <el-option
                     v-for="item in userSubmissions"
                     :key="item.reviewId"
@@ -157,7 +156,7 @@
             <div class="par-content" style="padding-right: 10px;">
               <iframe ref="ifReview" style="width: 100%; height: 100%" src="http://localhost:3011/review-plain/3/277/282?plain=true" />
             </div>
-          </el-tab-pane>
+          </el-tab-pane> -->
         </el-tabs>
       </pane>
       <pane v-if="!tabDisCussionShowed">
@@ -189,7 +188,7 @@
             </div>
           </div>
           <div style="flex-grow: 1;">
-            <textarea v-model="writingContent" :disabled="isEdit" placeholder="Please input..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
+            <textarea v-model="writingContent" :disabled="isEdit" placeholder="Start your writing here ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
           </div>
         </div>
       </pane>
@@ -223,7 +222,7 @@
 import documentService from '../../services/document.service'
 import userService from '../../services/user.service'
 import reviewService from '../../services/review.service'
-import submissionService from '../../services/submission.service'
+// import submissionService from '../../services/submission.service'
 import TabDisCussion from '../learner/PracticeWriting_TabDiscussion.vue'
 import TabRubric from '../learner/PracticeWriting_TabRubric.vue'
 import TabSamples from '../learner/PracticeWriting_TabSamples.vue'
@@ -390,13 +389,13 @@ export default {
       console.log('unrated list : ', rs)
     })
 
-    submissionService.getByUser(this.currentUser.id, this.questionId).then(rs => {
-      this.userSubmissions = rs.map(r => ({
-        reviewId: r.reviewId,
-        docId: r.docId,
-        submittedDate: moment(r.submittedDate).format('DD/MM/YYYY hh:mm:ss')
-      }))
-    })
+    // submissionService.getByUser(this.currentUser.id, this.questionId).then(rs => {
+    //   this.userSubmissions = rs.map(r => ({
+    //     reviewId: r.reviewId,
+    //     docId: r.docId,
+    //     submittedDate: moment(r.submittedDate).format('DD/MM/YYYY hh:mm:ss')
+    //   }))
+    // })
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
@@ -428,6 +427,8 @@ export default {
         })
       } else {
         this.writingContent = localStorage.getItem(this.idLocalStorage)
+        if (this.writingContent == null || this.writingContent == 'null') this.writingContent = ''
+        console.log(this.writingContent)
         this.countWords()
         // documentService.search(this.currentUser.id, this.questionId).then(rs => {
         //   if (rs && rs.length > 0) {
@@ -620,9 +621,9 @@ export default {
     showDiscussion(e) {
       if (e.label == 'Discussions') {
         this.tabDisCussionShowed = true
-        this.$router.push('/PracticeWriting/' + this.getDataQuestion.id + '/discuss').catch(() => {})
+        this.$router.push('/practice/' + this.getDataQuestion.id + '/discuss').catch(() => {})
       } else {
-        this.$router.push('/PracticeWriting/' + this.getDataQuestion.id).catch(() => {})
+        this.$router.push('/practice/' + this.getDataQuestion.id).catch(() => {})
         this.tabDisCussionShowed = false
       }
     },

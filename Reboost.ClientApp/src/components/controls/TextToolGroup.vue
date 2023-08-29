@@ -56,13 +56,13 @@ export default ({
       if (rects.length == 1) {
         // 167 is the width of textToolGroup
         posX = parseInt(rects[0].left) + parseInt(rects[0].width / 2) - 167 / 2
-        posY = parseInt(rects[0].top) + e.target.offsetHeight + 10
+        posY = parseInt(rects[0].top) + e.target.offsetHeight + 3
       } else {
         const listRect = Array.prototype.slice.call(rects)
 
         const max = Math.max(...listRect.map(a => parseInt(a.width)))
         posX = parseInt(rects[rects.length - 1].left) + max / 2 - 167 / 2
-        posY = parseInt(rects[rects.length - 1].top) + e.target.offsetHeight + 10
+        posY = parseInt(rects[rects.length - 1].top) + e.target.offsetHeight + 3
       }
 
       textToolGroup.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
