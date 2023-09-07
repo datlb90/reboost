@@ -410,7 +410,7 @@ export default {
   computed: {
     loadedAnnotation() {
       const data = this.$store.getters['review/getAnnotations']
-      if (!data) {
+      if (!data || (!data.annotations && !data.comments && !data.reviewer)) {
         return null
       }
 
@@ -435,6 +435,7 @@ export default {
       this.isView = this.$route.params.isViewOrRate === 'view' || this.$route.params.isViewOrRate === 'rate'
       this.RENDER_OPTIONS.documentId = this.documentId
       this.isRate = this.$route.params.isViewOrRate === 'rate'
+      console.log(this.isRate)
     }
   },
   async mounted() {
@@ -2827,7 +2828,7 @@ export default {
             this.isSubmit = true
           }
 
-          if (rs.review.status === 'Completed' && (this.currentUser.role === UserRole.ADMIN || this.currentUser.id == rs.review.revieweeId)) {
+          if (rs.review.status === REVIEW_REQUEST_STATUS.COMPLETED && (this.currentUser.role === UserRole.ADMIN || this.currentUser.id == rs.review.revieweeId)) {
             reviewService.getDisputeByReviewId(rs.review.id).then(rs => {
               if (rs) {
                 this.isDisputed = true
@@ -2851,7 +2852,7 @@ export default {
           this.isReviewAuth = true
         }
 
-        if (rs.review && (this.currentUser.id === rs.review.reviewerId || this.currentUser.id === rs.review.revieweeId) && rs.review.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED) {
+        if (rs.review && (this.currentUser.id === rs.review.reviewerId || this.currentUser.id === rs.review.revieweeId) && (rs.review.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED || rs.review.status.trim() === REVIEW_REQUEST_STATUS.RATED)) {
           this.isRate = true
 
           reviewService.getReviewRating(this.$route.params.reviewId).then(r => {
@@ -2882,7 +2883,7 @@ export default {
       })
     },
     commentUserName() {
-      if (this.loadedAnnotation.reviewer) {
+      if (this.loadedAnnotation && this.loadedAnnotation.reviewer) {
         return this.loadedAnnotation.reviewer.firstName + this.loadedAnnotation.reviewer.lastName
       }
       return this.currentUser.firstName + this.currentUser.lastName
