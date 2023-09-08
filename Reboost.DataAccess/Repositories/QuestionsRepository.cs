@@ -384,7 +384,7 @@ namespace Reboost.DataAccess.Repositories
                     {
                         var extensionPath = Path.GetExtension(item.FileName);
                         var fileName = model.Id + extensionPath;
-                        var audioDirectory = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\audio");
+                        var audioDirectory = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/audio");
                         if (!Directory.Exists(audioDirectory))
                         {
                             Directory.CreateDirectory(audioDirectory);
@@ -444,7 +444,7 @@ namespace Reboost.DataAccess.Repositories
                     {
                         var extensionPath = Path.GetExtension(item.FileName);
                         var fileName = model.Id + extensionPath;
-                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\audio", fileName);
+                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/audio", fileName);
 
                         FileInfo file = new FileInfo(filePath);
 

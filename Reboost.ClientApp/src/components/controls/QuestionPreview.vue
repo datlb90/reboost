@@ -79,7 +79,7 @@
                 <hr style="margin:0; margin-bottom: 8px; ">
                 <div>
                   <audio v-if="getListening != ''" controls style="width: 100%; height: 35px; margin-bottom: 3px;">
-                    <source :src="'http://localhost:6990/audio/'+getListening" type="audio/mpeg">
+                    <source :src="'/audio/'+getListening" type="audio/mpeg">
                   </audio>
                   <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
                     <div style="flex-grow: 1;">

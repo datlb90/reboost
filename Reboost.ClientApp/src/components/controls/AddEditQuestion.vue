@@ -249,7 +249,7 @@ export default {
         if (fileListenName) {
           file = {
             name: fileListenName.content,
-            url: 'http://localhost:6990/audio/' + this.questionExist.id + '.' + fileListenName.content
+            url: '/audio/' + this.questionExist.id + '.' + fileListenName.content
           }
           this.fileList = [file]
         }
@@ -258,7 +258,7 @@ export default {
         if (fileChartName) {
           file = {
             name: fileChartName.content,
-            url: 'http://localhost:6990/audio/' + this.questionExist.id + '.' + fileChartName.content
+            url: '/audio/' + this.questionExist.id + '.' + fileChartName.content
           }
           this.chartFileList = [file]
         }
