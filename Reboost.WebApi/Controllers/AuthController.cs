@@ -147,7 +147,7 @@ namespace Reboost.WebApi.Controllers
         }
 
         // /api/auth/confirm_email?userid&token
-        [HttpGet("confirm_email")]
+        [HttpGet("confirmemail")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
@@ -157,7 +157,7 @@ namespace Reboost.WebApi.Controllers
 
             if (result.IsSuccess)
             {
-                return Redirect($"{_configuration["AppUrl"]}/ConfirmEmail.html");
+                return Redirect($"{_configuration["ClientUrl"]}/confirm/email");
             }
 
             return BadRequest(result);

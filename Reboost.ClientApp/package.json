@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@caohenghu/vue-colorpicker": "^1.2.4",
+    "@paypal/paypal-js": "^7.0.2",
     "@stripe/stripe-js": "^1.12.0",
     "@tinymce/tinymce-vue": "^3.2.6",
     "axios": "^0.19.2",

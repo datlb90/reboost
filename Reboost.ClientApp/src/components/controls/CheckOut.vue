@@ -2,7 +2,7 @@
   <el-dialog
     id="practiceWritingCheckoutContainer"
     :visible.sync="dlVisible"
-    width="90%"
+    width="400px"
     height="820px"
     :before-close="handleClose"
     @opened="dialogOpened"
@@ -16,146 +16,29 @@
       <div class="co-header">
         <img style="width:50px; height:50px; margin: 0 10px;" src="@/assets/img/checkout-icon-premium.png" alt="">
         <div class="title-container">
-          <span>Writing preview</span>
+          <span>Writing Review</span>
           <span class="title-price">${{ total }}</span>
         </div>
       </div>
       <div class="co-form" :class="{ active: activeStep == 1 }">
-        <div v-if="!epaySelected" class="co-form__section" :class="{ inactive: activeStep == 2 }">
+        <div class="co-form__section" :class="{ inactive: activeStep == 2 }">
           <div class="co-form__title" style="padding-top: 10px">
             <span style="padding: 0 10px; font-weight: 600;"> Select Payment Method</span>
             <el-button v-if="activeStep == 2" style="position: absolute;right: 1rem;" size="mini" type="primary" @click="editCheckOutInfo">Edit</el-button>
           </div>
 
           <div class="saperator" style="padding-top: 10px" />
-          <div
-            style="border: #999999 solid 1px;
-            padding: 5px 20px;
-            background: white;
-            border-radius: 50px;
-            margin: auto;
-            width: 350px;
-            margin-top: 15px;
-            cursor: pointer;
-            text-align: center;"
-            @click="epaySelected = true"
-          >
-            <img class="logo" src="http://vnptepay.com.vn/public/theme/images/logo_new_1.png" alt="" width="200px">
-          </div>
-
           <div v-if="!subcribe" id="paypal-button" class="paypal-icon__btn" />
-          <div style="display:flex; justify-content:center">
+          <div v-if="!paid" id="paypal-button-container" />
+          <!-- <div style="display:flex; justify-content:center">
             <div v-if="subcribe" id="paypal-subscribe-button-container" style="width:80%; margin:5px" />
-          </div>
-          <!-- <div class="co-form__content" :class="{ hidden: activeStep == 2 }" style="padding-top: 10px">
-            <div class="section-container">
-              <label size="mini"> Choose a Payment Method: </label>
-              <div class="input-section">
-                <el-select v-model="value" size="mini" placeholder="New Payment Method" @change="changeMethod">
-                  <div v-if="currentMethods || currentMethods==[]">
-                    <el-option
-                      v-for="item in currentMethods"
-                      :key="item.id"
-                      :label="'**** **** **** '+item.card.last4"
-                      :value="item.id"
-                    />
-                  </div>
-                  <el-option key="0" label="New Payment Method" value="0">New Payment Method</el-option>
-                </el-select>
-              </div>
-            </div>
-            <div :style="{ display: newMethod ? 'block' : 'none' }">
-              <div class="section-container">
-                <label size="mini"> Please fill in your bill information: </label>
-                <div style="display:flex; padding:0 0 10px 0; max-width:60%">
-                  <el-input v-model="firstName" style="padding-right:10px;" size="mini" placeholder="First Name" />
-                  <el-input v-model="lastName" size="mini" placeholder="Last Name" />
-                </div>
-                <el-input v-model="email" style="max-width:60%" :disabled="true" size="mini" placeholder="Please input" />
-              </div>
-              <div v-if="!dlVisible" class="section-container">
-                <label size="mini"> Please fill in your credit information: </label>
-                <div class="checkout">
-                  <form id="payment-form">
-                    <div id="card-element" />
-                    <p id="card-error" role="alert" />
-                  </form>
-                </div>
-              </div>
-            </div>
           </div> -->
-          <!-- <div v-if="activeStep == 2" class="co-form__content" style="padding-top: 10px; padding-bottom: 10px">
-            <div>{{ email }}</div>
-            <div>{{ firstName }} {{ lastName }}</div>
-            <div>{{ credit }} </div>
-          </div> -->
+
+          <!-- <paypal-buttons :on-approve="onApprove" :create-order="createOrder" :on-shipping-change="onShippingChange" :on-error="onError" :style-object="style" /> -->
         </div>
 
-        <div v-else class="co-form__section" :class="{ inactive: activeStep == 2 }" style="height: 700px;">
-          <div class="co-form__title">
-            <div
-              style="border: #999999 solid 1px;
-            padding: 5px 20px;
-            background: white;
-            border-radius: 50px;
-            margin: auto;
-            width: 350px;
-            margin-top: 15px;
-            cursor: pointer;
-            text-align: center;"
-              @click="epaySelected = true"
-            >
-              <img class="logo" src="http://vnptepay.com.vn/public/theme/images/logo_new_1.png" alt="" width="200px">
-
-            </div>
-          </div>
-
-          VNPT EPAY
-
-          <div style="padding-bottom: 40px;">
-            <form id="megapayForm" name="megapayForm" method="POST">
-              <input id="merId" type="hidden" name="merId" :value="merId">
-              <input id="currency" type="hidden" name="currency" value="VND">
-              <input id="amount" type="hidden" name="amount" :value="amountVND">
-              <input id="invoiceNo" type="hidden" name="invoiceNo" value="reboost0001">
-              <input id="goodsNm" type="hidden" name="goodsNm" value="Reboost Pro Review">
-              <input id="payType" type="hidden" name="payType" value="IC">
-              <!-- <label for="payType">Payment Type:</label>
-              <select id="payType" name="payType">
-                <option value="IC">Thẻ tín dụng (Visa/master/JCB…)</option>
-                <option value="DC">Thẻ ATM nội địa</option>
-                <option value="VA">Tài khoản chuyên dụng</option>
-                <option value="EW">Ví điện tử (Zalopay, Momo, Moca)</option>
-                <option value="IS">Thanh toán trả góp</option>
-                <option value="NO">Chưa xác định</option>
-              </select> -->
-              <input id="callBackUrl" type="hidden" name="callBackUrl" value="http://localhost:6990/api/payment/epay/callback">
-              <input id="notiUrl" type="hidden" name="notiUrl" value="http://localhost:6990/api/payment/epay/noti">
-              <input id="reqDomain" type="hidden" name="reqDomain" value="http://localhost:6990/">
-              <input id="description" type="hidden" name="description" value="Payment for Reboost Pro Review">
-              <input id="merchantToken" type="hidden" name="merchantToken" :value="merchantToken">
-              <input id="userLanguage" type="hidden" name="userLanguage" value="VN">
-              <input id="timeStamp" type="hidden" name="timeStamp" :value="timeStamp">
-              <input id="merTrxId" type="hidden" name="merTrxId" :value="merTrxId">
-              <input id="windowColor" type="hidden" name="windowColor" value="#ef5459">
-              <input id="windowType" type="hidden" name="windowType" value="0">
-              <div @click="submitForm()">Pay Now </div>
-            </form>
-          </div>
-
-        </div>
         <div v-if="activeStep == 1" class="saperator" style="padding-bottom: 10px" />
-        <!-- <div class="co-form__section" :class="{ active: activeStep == 2, inactive: activeStep ==1 }">
-          <div class="co-form__title" style="padding-bottom: 10px; padding-top: 10px">
-            <span class="step-title" :class="{ active: activeStep == 2 }">2</span>
-            <span style="padding: 0 10px; font-weight: 600;">Review and comfirm</span>
-          </div>
-          <div class="saperator" />
-          <div v-if="activeStep == 2" class="co-form__content" style="padding-top: 10px; padding-bottom: 10px">
-            <div style="margin-bottom: 10px">Add a promotion code</div>
-            <div><el-input v-model="promotionCode" style="padding-right:10px; width: 200px" size="mini" placeholder="Enter Code" /></div>
-          </div>
-        </div> -->
+
       </div>
 
     </div>
@@ -187,10 +70,14 @@
 
 </template>
 
+<!-- <script src="https://www.paypal.com/sdk/js?client-id=Aa5nScHY-XCvNuR8KYRHA4BySu_7-91JTnBfvZ0vj9Zto8107b40nHn8-vGADPJBx5XAJS_IHL_WWK3I"></script> -->
+
 <script>
+// const PayPalButton = window.paypal.Buttons.driver('vue', window.Vue)
 // @ is an alias to /src
 // import http from '@/utils/axios'
 // import { loadStripe } from '@stripe/stripe-js'
+import { loadScript } from '@paypal/paypal-js'
 import paymentService from '../../services/payment.service'
 import { REVIEW_REQUEST_STATUS, SUBSCRIPTION_PLANS } from '../../app.constant'
 import reviewService from '../../services/review.service'
@@ -199,6 +86,9 @@ import { openPayment } from '../../assets/epay/js/paymentClient'
 // import { configs } from '../../app.constant'
 export default {
   name: 'Checkout',
+  // components: {
+  //   'paypal-buttons': PayPalButton
+  // },
   props: { visible: { type: Boolean, default: true },
     subcribe: { type: Object, default: null },
     submissionId: { type: Number, default: null },
@@ -220,7 +110,7 @@ export default {
       checkoutDisable: true,
       newMethod: false,
       selectedMethod: null,
-      amount: 3.50,
+      amount: 90.50,
       paymentIntent: null,
       total: null,
       epaySelected: false,
@@ -230,7 +120,8 @@ export default {
       merId: 'EPAY000001',
       amountVND: '200000',
       encodeKey: 'rf8whwaejNhJiQG2bsFubSzccfRc/iRYyGUn6SPmT6y/L7A2XABbu9y4GvCoSTOTpvJykFi6b1G0crU8et2O0Q==',
-      merchantToken: ''
+      merchantToken: '',
+      paid: false
     }
   },
   computed: {
@@ -243,6 +134,69 @@ export default {
     currentPrices() {
       return this.$store.getters['payment/getAllPrices']
     }
+    // createOrder: function() {
+    //   return (data) => {
+    //     console.log(data)
+    //     // Order is created on the server and the order id is returned
+    //     // return fetch("/my-server/create-paypal-order", {
+    //     //   method: "POST",
+    //     //   headers: {
+    //     //     "Content-Type": "application/json",
+    //     //   },
+    //     //   // use the "body" param to optionally pass additional order information
+    //     //   // like product skus and quantities
+    //     //   body: JSON.stringify({
+    //     //     cart: [
+    //     //       {
+    //     //         sku: "YOUR_PRODUCT_STOCK_KEEPING_UNIT",
+    //     //         quantity: "YOUR_PRODUCT_QUANTITY",
+    //     //       },
+    //     //     ],
+    //     //   }),
+    //     // })
+    //     // .then((response) => response.json())
+    //     // .then((order) => order.id);
+    //   }
+    // },
+    // onApprove: function() {
+    //   return (data) => {
+    //     console.log(data)
+    //     // Order is captured on the server
+    //     // return fetch("/my-server/capture-paypal-order", {
+    //     //   method: "POST",
+    //     //   headers: {
+    //     //     "Content-Type": "application/json",
+    //     //   },
+    //     //   body: JSON.stringify({
+    //     //     orderID: data.orderID
+    //     //   })
+    //     // })
+    //     // .then((response) => response.json());
+    //   }
+    // },
+    // onShippingChange: function() {
+    //   return (data, actions) => {
+    //     if (data.shipping_address.country_code !== 'US') {
+    //       return actions.reject()
+    //     }
+    //     return actions.resolve()
+    //   }
+    // },
+    // onError: function() {
+    //   return (err) => {
+    //     console.error(err)
+    //     window.location.href = '/404'
+    //   }
+    // },
+    // style: function() {
+    //   return {
+    //     shape: 'pill',
+    //     color: 'gold',
+    //     layout: 'horizontal',
+    //     label: 'paypal',
+    //     tagline: false
+    //   }
+    // }
   },
   watch: {
     visible: function(newVal, oldVal) {
@@ -259,22 +213,22 @@ export default {
     }
   },
   beforeCreate() {
-    const jquery = document.createElement('script')
-    jquery.src = 'https://code.jquery.com/jquery-3.6.0.min.js'
-    document.head.appendChild(jquery)
+    // const jquery = document.createElement('script')
+    // jquery.src = 'https://code.jquery.com/jquery-3.6.0.min.js'
+    // document.head.appendChild(jquery)
 
-    const script = document.createElement('script')
-    script.src = 'https://www.paypalobjects.com/api/checkout.js'
-    document.body.appendChild(script)
+    // const script = document.createElement('script')
+    // script.src = 'https://www.paypalobjects.com/api/checkout.js'
+    // document.body.appendChild(script)
 
-    const epayScript = document.createElement('script')
-    epayScript.src = 'https://sandbox.megapay.vn:2810/pg_was/js/payment/layer/paymentClient.js'
-    document.head.appendChild(epayScript)
+    // const epayScript = document.createElement('script')
+    // epayScript.src = 'https://sandbox.megapay.vn:2810/pg_was/js/payment/layer/paymentClient.js'
+    // document.head.appendChild(epayScript)
 
-    const sub_script = document.createElement('script')
-    sub_script.src = 'https://www.paypal.com/sdk/js?client-id=AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F&vault=true&intent=subscription'
-    sub_script.setAttribute('data-namespace', 'paypal_sdk')
-    document.body.appendChild(sub_script)
+    // const sub_script = document.createElement('script')
+    // sub_script.src = 'https://www.paypal.com/sdk/js?client-id=Aa5nScHY-XCvNuR8KYRHA4BySu_7-91JTnBfvZ0vj9Zto8107b40nHn8-vGADPJBx5XAJS_IHL_WWK3I'
+    // sub_script.setAttribute('data-namespace', 'paypal_sdk')
+    // document.body.appendChild(sub_script)
   },
   async mounted() {
     this.email = this.currentUser.email
@@ -289,6 +243,25 @@ export default {
     console.log(this.merchantToken)
   },
   methods: {
+    createOrder: function(data, actions) {
+      console.log('Creating order...')
+      return actions.order.create({
+        purchase_units: [
+          {
+            amount: {
+              value: 10.00
+            }
+          }
+        ]
+      })
+    },
+    onApprove: function(data, actions) {
+      console.log('Order approved...')
+      return actions.order.capture().then(() => {
+        this.paid = true
+        console.log('Order complete!')
+      })
+    },
     submitForm() {
       openPayment(1, this.domain)
     },
@@ -417,6 +390,15 @@ export default {
       }
       this.total = this.amount
 
+      loadScript({ 'client-id': 'Aa5nScHY-XCvNuR8KYRHA4BySu_7-91JTnBfvZ0vj9Zto8107b40nHn8-vGADPJBx5XAJS_IHL_WWK3I' }).then((paypal) => {
+        paypal
+          .Buttons({
+            createOrder: this.createOrder,
+            onApprove: this.onApprove
+          })
+          .render('#paypal-button-container')
+      })
+
       // paymentService.getIntent(this.amount).then(rs => {
       //   this.paymentIntent = rs
       //   this.clientSecret = rs.client_secret
@@ -449,7 +431,7 @@ export default {
       //   document.querySelector('#card-error').textContent = event.error ? event.error.message : ''
       // })
 
-      this.loadPaypalBtn()
+      // this.loadPaypalBtn()
     },
     handleClose(done) {
       this.$confirm('Are you sure to exit?')
@@ -585,23 +567,24 @@ export default {
       }
     },
     loadPaypalBtn() {
+      console.log(window.paypal)
       if (document.getElementById('paypal-button') && !document.getElementById('paypal-button').childNodes.length > 0) {
         if (!this.subcribe) {
           window.paypal.Button.render({
             // Configure environment
             env: 'sandbox',
             client: {
-              sandbox: 'AamTDpWxcBAOJ4twRr0E_XVy1z2uJ3AxTU9BejLB0sJCM3Om2RuApDwSZce6Lterg8aaNl-XWIyxw__F',
+              sandbox: 'Aa5nScHY-XCvNuR8KYRHA4BySu_7-91JTnBfvZ0vj9Zto8107b40nHn8-vGADPJBx5XAJS_IHL_WWK3I',
               production: 'demo_production_client_id'
             },
             // Customize button (optional)
             locale: 'en_US',
             style: {
-              size: 'large',
-              color: 'gold',
               shape: 'pill',
-              label: 'checkout',
-              tagline: 'true'
+              color: 'gold',
+              layout: 'horizontal',
+              label: 'paypal',
+              tagline: false
             },
 
             // Enable Pay Now checkout flow (optional)
@@ -612,7 +595,7 @@ export default {
               return actions.payment.create({
                 transactions: [{
                   amount: {
-                    total: '0.5',
+                    total: '90.50',
                     currency: 'USD'
                   }
                 }]

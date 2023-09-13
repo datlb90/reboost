@@ -29,7 +29,7 @@ namespace Reboost.Service.Services
         {
             var apiKey = _configuration["SendGridAPIKey"];
             var client = new SendGridClient(apiKey);
-            var from = new EmailAddress("adm.reboost@gmail.com", "Reboost Confirmation Email");
+            var from = new EmailAddress("reboost.ad@gmail.com", "Reboost Support");
             var to = new EmailAddress(toEmail);
             var msg = MailHelper.CreateSingleEmail(from, to, subject, content, content);
             var response = await client.SendEmailAsync(msg);
@@ -40,7 +40,7 @@ namespace Reboost.Service.Services
         {
             var apiKey = _configuration["SendGridAPIKey"];
             var client = new SendGridClient(apiKey);
-            var from = new EmailAddress("adm.reboost@gmail.com", "Reboost Contact Email");
+            var from = new EmailAddress("reboost.ad@gmail.com", "Reboost Contact Email");
             var to = new EmailAddress("emailforevaluate@gmail.com");
             var msg = MailHelper.CreateSingleEmail(from, to, subject, content, content);
 

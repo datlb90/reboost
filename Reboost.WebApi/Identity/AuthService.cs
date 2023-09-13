@@ -93,8 +93,11 @@ namespace Reboost.WebApi.Identity
 
                     string url = $"{_configuration["AppUrl"]}/api/auth/confirmemail?userid={identityUser.Id}&token={validEmailToken}";
 
-                    await _mailService.SendEmailAsync(identityUser.Email, "Confirm your email", $"<h1>Welcome to Reboost</h1>" +
-                        $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
+                    await _mailService.SendEmailAsync(identityUser.Email, "Verify your email address", $"<h1>Welcome to Reboost</h1>" +
+                        $"<p>To finish setting up your Reboost account, we just need to make sure this email address is yours.</p>" +
+                        $"<p>To verify your email address, please click on this link: <a href='{url}'>{url}</a></p>" +
+                        $"<p>If you didn't make this request, you can safely ignore this email.</p>" +
+                        $"<p>Thanks,</p><p>The Reboost Support Team</p>");
 
 
                     var claims = new[]
