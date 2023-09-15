@@ -404,10 +404,50 @@ namespace Reboost.WebApi.Controllers
             return Ok(rs);
         }
 
-
+        /// <summary>
+        /// Create a pro rater request after learner make payment
+        /// This is used when there are only master raters like Tuc
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost("request/pro")]
         public async Task<IActionResult> CreateProRequestAsync([FromBody] ReviewRequests request)
+        {
+            // Get current user info
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            request.UserId = currentUser.Id;
+
+            // Get request if exist
+            var exist = await _service.GetReviewRequestBySubmissionId(request.SubmissionId, currentUser.Id);
+
+            if (exist != null)
+            {
+                // Get rater and update requested time of queue
+                var rs = await _service.ReRequestProRequestAsync(exist);
+
+                return Ok(rs.Request);
+            }
+            else
+            {
+                // Add request then return the rater that applied to this request
+                var rs = await _service.CreateProRequestAsync(request);
+
+                if (rs == null)
+                {
+                    return BadRequest(new { message = "No rater available!" });
+                }
+
+                return Ok(rs.Request);
+            }
+        }
+
+        [Authorize]
+        [HttpPost("request/pro/raters")]
+        public async Task<IActionResult> CreateProRequestWithCertifiedRatersAsync([FromBody] ReviewRequests request)
         {
             // Get current user info
             var currentUserClaim = HttpContext.User;

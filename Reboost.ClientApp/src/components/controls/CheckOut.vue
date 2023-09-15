@@ -2,33 +2,36 @@
   <el-dialog
     id="practiceWritingCheckoutContainer"
     :visible.sync="dlVisible"
-    width="400px"
+    width="500px"
     height="820px"
     :before-close="handleClose"
     @opened="dialogOpened"
     @closed="dialogClosed"
   >
     <div slot="title">
-      <div style="padding: 5px 20px; font-size: 18px; text-align:center;"><i class="el-icon-shopping-cart-1" />&nbsp;&nbsp;Checkout</div>
+      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Pro Review Checkout</div>
       <div class="divider--horizontal divider" />
     </div>
     <div class="dialog-body">
       <div class="co-header">
-        <img style="width:50px; height:50px; margin: 0 10px;" src="@/assets/img/checkout-icon-premium.png" alt="">
+        <img style="width: 50px; height: 40px; margin-bottom: 2px; margin-left: 18px;" src="@/assets/img/checkout-icon-premium.png" alt="">
         <div class="title-container">
-          <span>Writing Review</span>
-          <span class="title-price">${{ total }}</span>
+          <span>Writing Review Service</span>
+          <span class="title-price">${{ total }}.00</span>
         </div>
+      </div>
+      <div style="padding: 2px 20px;">
+        <span style="font-size: 12px; color: grey;">A certified rater will review your writing and provide feedback within 24 hours</span>
       </div>
       <div class="co-form" :class="{ active: activeStep == 1 }">
         <div class="co-form__section" :class="{ inactive: activeStep == 2 }">
           <div class="co-form__title" style="padding-top: 10px">
-            <span style="padding: 0 10px; font-weight: 600;"> Select Payment Method</span>
+            <span style="font-weight: 600;"> Select Payment Method</span>
             <el-button v-if="activeStep == 2" style="position: absolute;right: 1rem;" size="mini" type="primary" @click="editCheckOutInfo">Edit</el-button>
           </div>
 
-          <div class="saperator" style="padding-top: 10px" />
-          <div v-if="!subcribe" id="paypal-button" class="paypal-icon__btn" />
+          <!-- <div class="saperator" style="padding-top: 5px" /> -->
+          <!-- <div v-if="!subcribe" id="paypal-button" class="paypal-icon__btn" /> -->
           <div v-if="!paid" id="paypal-button-container" />
           <!-- <div style="display:flex; justify-content:center">
             <div v-if="subcribe" id="paypal-subscribe-button-container" style="width:80%; margin:5px" />
@@ -37,13 +40,13 @@
           <!-- <paypal-buttons :on-approve="onApprove" :create-order="createOrder" :on-shipping-change="onShippingChange" :on-error="onError" :style-object="style" /> -->
         </div>
 
-        <div v-if="activeStep == 1" class="saperator" style="padding-bottom: 10px" />
+        <div v-if="activeStep == 1" class="saperator" />
 
       </div>
 
     </div>
     <div slot="footer" class="dialog-footer">
-      <div class="co-form-footer__title">
+      <!-- <div class="co-form-footer__title">
         <div>
           <span>Item:</span>
           <span class="title-price title-price__footer">${{ total }}</span>
@@ -60,9 +63,9 @@
       </div>
       <div class="footer--btn_container">
         <el-button v-if="activeStep == 1" :disabled="checkoutDisable" size="mini" type="primary" class="co-button" @click="dialogClosed">Cancel</el-button>
-        <!-- <el-button v-if="activeStep == 1" :disabled="checkoutDisable" size="mini" type="primary" class="co-button" @click="nextStep()">Continue</el-button> -->
-        <!-- <el-button v-if="activeStep == 2" size="mini" type="warning" class="co-button checkout" @click="completeCheckout()">Checkout</el-button> -->
-      </div>
+        <el-button v-if="activeStep == 1" :disabled="checkoutDisable" size="mini" type="primary" class="co-button" @click="nextStep()">Continue</el-button>
+        <el-button v-if="activeStep == 2" size="mini" type="warning" class="co-button checkout" @click="completeCheckout()">Checkout</el-button>
+      </div> -->
     </div>
     <!-- <div class="payment__divider">OR</div> -->
 
@@ -110,7 +113,7 @@ export default {
       checkoutDisable: true,
       newMethod: false,
       selectedMethod: null,
-      amount: 90.50,
+      amount: 15.00,
       paymentIntent: null,
       total: null,
       epaySelected: false,
@@ -249,7 +252,7 @@ export default {
         purchase_units: [
           {
             amount: {
-              value: 10.00
+              value: 15.00
             }
           }
         ]
@@ -257,9 +260,17 @@ export default {
     },
     onApprove: function(data, actions) {
       console.log('Order approved...')
-      return actions.order.capture().then(() => {
-        this.paid = true
-        console.log('Order complete!')
+      return actions.order.capture().then(order => {
+        console.log(order)
+        const purchaseUnits = order.purchase_units
+        if (purchaseUnits.length > 0) {
+          const captures = purchaseUnits[0].payments.captures
+          if (captures.length > 0) {
+            this.paid = true
+            this.createPaymentHistory(captures[0].id)
+            this.paymentSuccessed()
+          }
+        }
       })
     },
     submitForm() {
@@ -437,6 +448,8 @@ export default {
       this.$confirm('Are you sure to exit?')
         .then(_ => {
           done()
+          const paypalContaner = document.getElementById('paypal-button-container')
+          paypalContaner.innerHTML = ''
         })
         .catch(_ => {})
     },
@@ -699,8 +712,8 @@ export default {
     },
     paymentSuccessed() {
       this.$notify.success({
-        title: 'Payment',
-        message: 'Payment Successed!',
+        title: 'Payment Success',
+        message: 'Your payment for the writing service was processed successfully!',
         type: 'success',
         duration: 1500
       })
@@ -715,20 +728,20 @@ export default {
       }).then(rs => {
         this.dialogClosed()
         this.$notify.success({
-          title: 'Submission Requested',
-          message: 'Requested!',
+          title: 'Pro Review Request',
+          message: 'The pro review request has been successfully submitted!',
           type: 'success',
           duration: 1500
         })
         this.$emit('proReviewRequested')
       })
     },
-    createPaymentHistory(paymentId) {
+    createPaymentHistory(transactionId) {
       const data = {
         UserId: this.currentUser.id,
         QuestionId: this.questionId,
-        PaypalInvoiceId: paymentId,
-        Amount: '0.5'
+        PaypalTransactionId: transactionId,
+        Amount: '15.00'
       }
       paymentService.createPaymentHistory(data).then(rs => {
         console.log('payment history created: ', rs)
@@ -742,6 +755,13 @@ export default {
 </style>
 
 <style scoped>
+#paypal-button-container{
+  width: 90%;
+  margin: auto;
+  overflow: auto;
+  max-height: 400px;
+  margin-top: 10px;
+}
 .hidden{
     display: none;
 }
@@ -750,7 +770,7 @@ export default {
 }
 .co-header{
   width: 100%;
-  padding: 10px 0 10px 0;
+  padding: 5px 0 5px 0;
   display: flex;
   align-items: center;
   border-bottom: solid 1px rgb(187, 187, 187);
@@ -765,8 +785,8 @@ export default {
   box-shadow: inset 0px 0px 5px 0px #9a9a9a;
 }
 .co-form__title{
-  display: flex;
-  align-items: center;
+  display: block;
+  text-align: center;
 }
 .co-form__content{
   padding: 0px 25px;
@@ -804,14 +824,14 @@ export default {
   position: relative;
 }
 .title-price{
-  color: #999;
-  font-size: 12px;
+  font-size: 14px;
 }
 .title-container{
-padding: 0 10px;
-width:100%;
-display: flex;
-justify-content: space-between;
+  margin-right: 10px;
+  padding: 0 10px;
+  width:100%;
+  display: flex;
+  justify-content: space-between;
 }
 .input-section{
   max-width: 65%;
@@ -843,6 +863,7 @@ input {
 }
 .dialog-footer{
   align-items: center;
+  margin-bottom: 20px;
 }
 .co-form-footer__title{
   position: relative;

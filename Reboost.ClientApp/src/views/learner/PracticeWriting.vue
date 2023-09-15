@@ -721,7 +721,7 @@ export default {
   min-height: 0 !important;
 }
 #practiceWritingCheckoutContainer .el-dialog .el-dialog__header{
-  padding: 20px 0 0 0 !important;
+  padding: 10px 0 0 0 !important;
   height: 60px;
 }
 #practiceWritingCheckoutContainer .el-dialog .el-dialog__body{

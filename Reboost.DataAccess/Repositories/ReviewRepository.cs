@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
@@ -740,9 +741,11 @@ namespace Reboost.DataAccess.Repositories
 
             await db.SaveChangesAsync();
 
-            var rater = await GetRaterForProRequestAsync();
+            var rater = await GetMasterRaterForProRequestAsync();
+            // Use this when certified raters replace master raters
+            // var rater = await GetRaterForProRequestAsync();
 
-            if (rater== null)
+            if (rater == null)
             {
                 return null;
             }
@@ -753,12 +756,14 @@ namespace Reboost.DataAccess.Repositories
 
             await db.SaveChangesAsync();
 
-            return new CreatedProRequestModel{Rater= rater, Request= request };
+            return new CreatedProRequestModel{Rater = rater, Request = request };
         }
 
         public async Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request)
         {
-            var rater = await GetRaterForProRequestAsync();
+            var rater = await GetMasterRaterForProRequestAsync();
+            // Use this when certified raters replace master raters
+            // var rater = await GetRaterForProRequestAsync();
 
             request.FeedbackType = ReviewRequestType.PRO;
 
@@ -788,6 +793,19 @@ namespace Reboost.DataAccess.Repositories
             await db.SaveChangesAsync();
 
             return new CreatedProRequestModel { Rater = rater, Request = request };
+        }
+
+        // Get master rater for pro request
+        public async Task<Raters> GetMasterRaterForProRequestAsync()
+        {
+            var rater = await db.Raters.Where(r => r.Biography == "Master Rater").FirstOrDefaultAsync();
+            var user = await db.Users.Where(u => u.Id == rater.UserId).FirstOrDefaultAsync();
+
+            if (rater == null || user == null)
+                return null;
+
+            rater.User = user;
+            return rater;
         }
 
         // Get rater for pro request
@@ -907,11 +925,12 @@ namespace Reboost.DataAccess.Repositories
                 return result;
             }
 
-            if (assignment.Status == RequestAssignmentStatus.ASSIGNED && DateTime.Now.Subtract(assignment.CreateDate).TotalSeconds > 600)
-            {
-                result.Error = "Assignment's timeout has ended!";
-                return result;
-            }
+            // Use this when certified raters replace master raters
+            //if (assignment.Status == RequestAssignmentStatus.ASSIGNED && DateTime.Now.Subtract(assignment.CreateDate).TotalSeconds > 600)
+            //{
+            //    result.Error = "Assignment's timeout has ended!";
+            //    return result;
+            //}
 
             // Change Request's status to 'In Progess'
             request.Status = ReviewStatus.IN_PROGRESS;

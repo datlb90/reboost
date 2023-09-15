@@ -104,7 +104,7 @@ namespace Reboost.DataAccess.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     QuestionId = table.Column<int>(type: "int", nullable: false),
-                    PaypalInvoiceId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PaypalTransactionId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Amount = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },

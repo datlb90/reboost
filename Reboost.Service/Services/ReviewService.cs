@@ -245,7 +245,22 @@ namespace Reboost.Service.Services
 
             string url = $"{configuration["ClientUrl"]}/review/pro/" + rs.Request.Id;
 
-            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", $"You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: <a href='{url}'>Clicking here</a>");
+            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Writing Review Request!", $"You have a new pro request. Please complete the review within 24 hours using the following link: <a href='{url}'>Clicking here</a>");
+
+            return rs;
+        }
+        public async Task<CreatedProRequestModel> CreateProRequestWithCertifiedRatersAsync(ReviewRequests request)
+        {
+            var rs = await _unitOfWork.Review.CreateProRequestAsync(request);
+
+            if (rs == null)
+            {
+                return null;
+            }
+
+            string url = $"{configuration["ClientUrl"]}/review/pro/" + rs.Request.Id;
+
+            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Writing Review Request!", $"You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: <a href='{url}'>Clicking here</a>");
 
             // ReAssign to another rater if request not accepted after 10 minutes
             BackgroundJob.Schedule(() => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10));
@@ -259,7 +274,7 @@ namespace Reboost.Service.Services
             {
                 string url = $"{configuration["ClientUrl"]}/review/pro/" + requestId;
                 // Send mail to rater with confirm link
-                await mailService.SendEmailAsync(rater.User.Email, "New Review Request!", $"You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: <a href='{url}'>Clicking here</a>");
+                await mailService.SendEmailAsync(rater.User.Email, "New Writing Review Request!", $"You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: <a href='{url}'>Clicking here</a>");
             }
         }
         public async Task<CreatedProRequestModel> ReRequestProRequestAsync(ReviewRequests request)
@@ -273,12 +288,27 @@ namespace Reboost.Service.Services
 
             string url = $"{configuration["ClientUrl"]}/review/pro/" + rs.Request.Id;
             // Send mail to rater with confirm link
-            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Review Request!", $"You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: <a href='{url}'>Clicking here</a>");
+            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Writing Review Request!", $"You have a new pro request. Please complete the review within 24 hours using the following link: <a href='{url}'>Clicking here</a>");
+
+            return rs;
+        }
+        public async Task<CreatedProRequestModel> ReRequestProRequestWithCertifiedRatersAsync(ReviewRequests request)
+        {
+            var rs = await _unitOfWork.Review.ReRequestProRequestAsync(request);
+
+            if (rs == null)
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "No rater available!");
+            }
+
+            string url = $"{configuration["ClientUrl"]}/review/pro/" + rs.Request.Id;
+            // Send mail to rater with confirm link
+            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Writing Review Request!", $"You have a new pro request. You have 10 minutes to accept the request and 3 hours to finish the review after acceptance. Link at: <a href='{url}'>Clicking here</a>");
 
             // ReAssign to another rater if request not accepted after 10 minutes
             BackgroundJob.Schedule(
                 () => ReAssignRater(rs.Request.Id), TimeSpan.FromMinutes(10)
-                );
+            );
 
             return rs;
         }
