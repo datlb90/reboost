@@ -72,6 +72,9 @@ pre {
   visibility: visible;
   margin-left: 0 !important;
 }
+#left-panel.hideQuestion{
+  display: none;
+}
 .hideQuestion .fa-angle-double-left{
 visibility: visible;
 transform: rotate(180deg);

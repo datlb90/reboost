@@ -25,7 +25,7 @@
                     size="mini"
                     style="min-width: 240px; display:flex; justify-content: space-around;margin-bottom:10px;"
                     :disabled="readOnly || currentUser.role == 'Admin'"
-                    @input="rubricMileStoneClick(criteria.id, $event)"
+                    @input="rubricMileStoneClick(reviewid, criteria, $event)"
                   >
                     <el-tooltip
                       v-for="milestone in criteria.bandScoreDescriptions.slice()"
@@ -56,8 +56,13 @@
                     :maxlength="8000"
                     class="criteria-comment"
                     :readonly="readOnly || currentUser.role == 'Admin'"
+                    @focus="onFocus(criteria)"
+                    @blur="onBlur($event, criteria)"
                     @input="reviewCommentChange(criteria.comment, criteria.id)"
                   />
+                </div>
+                <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="margin-top: 10px;">
+                  <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
                 </div>
               </div>
             </el-card>
@@ -96,26 +101,75 @@ export default ({
     loadRubric() {
       console.log(this.reviewid)
       rubricService.getByQuestionId(this.questionid).then(rs => {
-        // this.criteriaFeedback['id']
-        this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, comment: '' }))
-        reviewService.loadReviewFeedback(this.reviewid).then(rs => {
-          if (rs.length > 0) {
-            rs.forEach(rc => {
-              this.rubricCriteria.map(criteria => {
-                if (criteria.id == rc.criteriaId) {
-                  criteria.comment = rc.comment
-                  criteria.mark = rc.score
-                }
+        this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, isFocused: false, comment: '' }))
+        // Get rubric data from localstorage first
+        var retrievedComment = localStorage.getItem('reviewRubricComment')
+        var retrievedScore = localStorage.getItem('reviewRubricScore')
+        retrievedComment = JSON.parse(retrievedComment)
+        retrievedScore = JSON.parse(retrievedScore)
+        // If there are existing comments or scores, load from localstorage
+        if (retrievedComment || retrievedScore) {
+          this.getLocaleStorageData()
+        } else {
+          // If there is nothing in localstorage, load from database
+          reviewService.loadReviewFeedback(this.reviewid).then(rs => {
+            if (rs.length > 0) {
+              var comments = []
+              var milestones = []
+              rs.forEach(rc => {
+                this.rubricCriteria.map(criteria => {
+                  if (criteria.id == rc.criteriaId) {
+                    criteria.comment = rc.comment
+                    criteria.mark = rc.score
+                  }
+                })
+                var cmt = { id: rc.criteriaId, content: rc.comment, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
+                comments.push(cmt)
+
+                var ms = { id: rc.criteriaId, content: rc.score, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
+                milestones.push(ms)
+              })
+              if (this.currentUser.role !== 'Admin') { this.readOnly = false } else {
+                this.readOnly = false
               }
-              )
-            })
-            if (this.currentUser.role !== 'Admin') { this.readOnly = false } else {
-              this.readOnly = false
+              // Set localstorage so we don't have to load from db again
+              localStorage.setItem('reviewRubricComment', JSON.stringify(comments))
+              localStorage.setItem('reviewRubricScore', JSON.stringify(milestones))
             }
-          } else {
-            this.getLocaleStorageData()
-          }
+          })
+        }
+      })
+    },
+    onFocus(criteria) {
+      criteria.isFocused = true
+    },
+    onBlur(event, criteria) {
+      const target = event.relatedTarget
+      if (target) {
+        const targetId = target.id
+        const thisId = 'save-btn-' + criteria.id
+        if (targetId === thisId) {
+          return
+        }
+      }
+      criteria.isFocused = false
+    },
+    saveRubric(reviewId, criteria) {
+      this.getLocaleStorageData()
+      var reviewData = []
+      this.rubricCriteria.forEach(r => {
+        reviewData.push({
+          Comment: r.comment,
+          CriteriaId: r.id,
+          Score: r.mark,
+          ReviewId: reviewId
         })
+      })
+      reviewService.saveRubric(reviewId, reviewData).then(rs => {
+        if (rs) {
+          this.setStatusText('Saved')
+        }
+        criteria.isFocused = false
       })
     },
     getLocaleStorageData() {
@@ -125,8 +179,8 @@ export default ({
       retrievedComment = JSON.parse(retrievedComment)
       retrievedScore = JSON.parse(retrievedScore)
 
-      console.log('comment', retrievedComment)
-      console.log('score', retrievedScore)
+      // console.log('comment', retrievedComment)
+      // console.log('score', retrievedScore)
 
       if (retrievedComment) {
         retrievedComment.forEach(rc => {
@@ -146,7 +200,7 @@ export default ({
         })
       })
     },
-    rubricMileStoneClick(id, mileStone) {
+    rubricMileStoneClick(reviewId, criteria, mileStone) {
       if (this.rubicCommentDelay) {
         clearTimeout(this.rubicCommentDelay)
       }
@@ -155,14 +209,14 @@ export default ({
         if (!retrievedObject) {
           var t = []
           localStorage.setItem('reviewRubricScore', JSON.stringify(t))
-          retrievedObject = []
+          retrievedObject = '[]'
         }
 
         retrievedObject = JSON.parse(retrievedObject)
-        var temp = retrievedObject?.filter(r => r.id == id && r.documentId == this.documentId && r.reviewid == this.reviewid)
-        if (temp.length > 0) {
+        var temp = retrievedObject?.filter(r => r.id == criteria.id && r.documentId == this.documentId && r.reviewid == this.reviewid)
+        if (temp && temp.length > 0) {
           retrievedObject.map(r => {
-            if (r.id == id) {
+            if (r.id == criteria.id) {
               r.content = mileStone
               r.documentId = this.documentId
               r.reviewid = this.reviewid
@@ -170,43 +224,44 @@ export default ({
             }
           })
         } else {
-          var cmt = { id: id, content: mileStone, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
+          var cmt = { id: criteria.id, content: mileStone, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
           retrievedObject.push(cmt)
         }
         localStorage.setItem('reviewRubricScore', JSON.stringify(retrievedObject))
 
         this.setStatusText('Saved')
+
+        this.saveRubric(reviewId, criteria)
       }, 20)
     },
     reviewCommentChange(e, criteriaId) {
-      console.log('rubric comment changed')
       if (this.rubicCommentDelay) {
         clearTimeout(this.rubicCommentDelay)
       }
       this.rubicCommentDelay = setTimeout(() => {
-        // var retrievedObject = localStorage.getItem('reviewRubricComment')
-        // if (!retrievedObject) {
-        //   var t = []
-        //   localStorage.setItem('reviewRubricComment', JSON.stringify(t))
-        //   retrievedObject = []
-        // }
+        var retrievedObject = localStorage.getItem('reviewRubricComment')
+        if (!retrievedObject) {
+          var t = []
+          localStorage.setItem('reviewRubricComment', JSON.stringify(t))
+          retrievedObject = '[]'
+        }
 
-        // retrievedObject = JSON.parse(retrievedObject)
-        // var temp = retrievedObject.filter(r => r.id == criteriaId && r.documentId == this.documentId && r.reviewid == this.reviewid)
-        // if (temp.length > 0) {
-        //   retrievedObject.map(r => {
-        //     if (r.id == criteriaId) {
-        //       r.content = e
-        //       r.documentId = this.documentId
-        //       r.reviewid = this.reviewid
-        //       r.questionid = this.questionid
-        //     }
-        //   })
-        // } else {
-        //   var cmt = { id: criteriaId, content: e, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
-        //   retrievedObject.push(cmt)
-        // }
-        // localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedObject))
+        retrievedObject = JSON.parse(retrievedObject)
+        var temp = retrievedObject.filter(r => r.id == criteriaId && r.documentId == this.documentId && r.reviewid == this.reviewid)
+        if (temp.length > 0) {
+          retrievedObject.map(r => {
+            if (r.id == criteriaId) {
+              r.content = e
+              r.documentId = this.documentId
+              r.reviewid = this.reviewid
+              r.questionid = this.questionid
+            }
+          })
+        } else {
+          var cmt = { id: criteriaId, content: e, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
+          retrievedObject.push(cmt)
+        }
+        localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedObject))
 
         this.setStatusText('Saved')
       }, 20)

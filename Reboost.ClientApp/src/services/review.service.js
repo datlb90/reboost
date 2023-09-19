@@ -22,6 +22,9 @@ const reviewService = {
   addInTextComment(docId, reviewId, comment, annotation) {
     return http.post(`/review/inTextComment/${docId}/${reviewId}`, { comment, annotation })
   },
+  saveRubric(reviewId, data) {
+    return http.post(`/review/rubric/${reviewId}`, data).then(rs => rs.data)
+  },
   saveReviewFeedback(reviewId, data) {
     return http.post(`/review/feedback/${reviewId}`, data).then(rs => rs.data)
   },

@@ -21,6 +21,7 @@ namespace Reboost.DataAccess.Repositories
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<Annotations> AddAnnotationAsync( Annotations annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<InTextComments> comments);
+        Task<Reviews> SaveRubric(int reviewId, List<ReviewData> data);
         Task<Reviews> SaveFeedback(int reviewId, List<ReviewData> data);
         Task<List<ReviewData>> LoadFeedBack(int reviewId);
         Task<InTextComments> AddInTextCommentAsync(InTextComments cmt);
@@ -127,6 +128,37 @@ namespace Reboost.DataAccess.Repositories
             await db.SaveChangesAsync();
 
             return await Task.FromResult(comments);
+        }
+        public async Task<Reviews> SaveRubric(int reviewId, List<ReviewData> data)
+        {
+            Reviews review = await db.Reviews.FindAsync(reviewId);
+
+            if (review == null)
+            {
+                return null;
+            }
+
+            // Update or add new ReviewData records
+            foreach(ReviewData item in data)
+            {
+                ReviewData thisData = await db.ReviewData.Where(r => r.ReviewId == item.ReviewId && r.CriteriaId == item.CriteriaId).FirstOrDefaultAsync();
+                if(thisData == null)
+                {
+                    db.ReviewData.Add(item);
+                }
+                else
+                {
+                    thisData.Score = item.Score;
+                    thisData.Comment = item.Comment;
+                    db.ReviewData.Update(thisData);
+                }
+            }
+            // db.ReviewData.UpdateRange(data);
+            //await db.ReviewData.AddRangeAsync(data);
+
+            review.LastActivityDate = DateTime.Now;
+            await db.SaveChangesAsync();
+            return review;
         }
         public async Task<Reviews> SaveFeedback(int reviewId,List<ReviewData> data)
         {
@@ -987,11 +1019,12 @@ namespace Reboost.DataAccess.Repositories
                     return 2;
                 }
 
-                if (DateTime.Now.Subtract(assignment.CreateDate).TotalSeconds > (3 * 60 * 60))
-                {
-                    // Return 0 if review's timeout has ended
-                    return 0;
-                }
+                // Remove the timeout condition for now
+                //if (DateTime.Now.Subtract(assignment.CreateDate).TotalSeconds > (3 * 60 * 60))
+                //{
+                //    // Return 0 if review's timeout has ended
+                //    return 0;
+                //}
 
                 // Return 1 if it is a pro request and timeout has not ended
                 return 1;

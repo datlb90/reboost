@@ -17,6 +17,7 @@ namespace Reboost.Service.Services
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<Annotations> annotations, IEnumerable<InTextComments> comments);
+        Task<Reviews> SaveRubric(int reviewId, List<ReviewData> data);
         Task<Reviews> SaveFeedback(int reviewId, List<ReviewData> data);
         Task<List<ReviewData>> LoadFeedback(int reviewId);
         Task<Annotations> AddAnnotationAsync(Annotations annotation);
@@ -103,6 +104,17 @@ namespace Reboost.Service.Services
                 }
             }
             return await _unitOfWork.Review.SaveCommentsAsync(_comments);
+        }
+        public async Task<Reviews> SaveRubric(int reviewId, List<ReviewData> data)
+        {
+            var rs = await _unitOfWork.Review.SaveRubric(reviewId, data);
+
+            if (rs == null)
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "Review or Rater not existed");
+            }
+
+            return rs;
         }
         public async Task<Reviews> SaveFeedback(int reviewId, List<ReviewData> data)
         { 

@@ -119,6 +119,16 @@ namespace Reboost.WebApi.Controllers
             return Ok(newReview);
         }
         [Authorize]
+        [HttpPost("rubric/{id}")]
+        public async Task<IActionResult> SaveRubric([FromRoute] int id, [FromBody] List<ReviewData> data)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+            var rs = await _service.SaveRubric(id, data);
+            return Ok(rs);
+        }
+        [Authorize]
         [HttpPost("feedback/{id}")]
         public async Task<IActionResult> ReviewFeedback([FromRoute] int id, [FromBody] List<ReviewData> data)
         {
