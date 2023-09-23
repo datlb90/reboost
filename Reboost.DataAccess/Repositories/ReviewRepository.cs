@@ -132,12 +132,10 @@ namespace Reboost.DataAccess.Repositories
         public async Task<Reviews> SaveRubric(int reviewId, List<ReviewData> data)
         {
             Reviews review = await db.Reviews.FindAsync(reviewId);
-
             if (review == null)
             {
                 return null;
             }
-
             // Update or add new ReviewData records
             foreach(ReviewData item in data)
             {
@@ -153,9 +151,6 @@ namespace Reboost.DataAccess.Repositories
                     db.ReviewData.Update(thisData);
                 }
             }
-            // db.ReviewData.UpdateRange(data);
-            //await db.ReviewData.AddRangeAsync(data);
-
             review.LastActivityDate = DateTime.Now;
             await db.SaveChangesAsync();
             return review;

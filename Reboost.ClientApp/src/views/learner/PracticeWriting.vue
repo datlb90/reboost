@@ -181,9 +181,10 @@
                 </el-dropdown-menu>
               </el-dropdown>
 
-              <el-button v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit</el-button>
+              <el-button v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="save()">Save</el-button>
+              <el-button v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" type="primary" @click="submit()">Submit</el-button>
               <el-button v-if="isEdit" style="margin-left:5px" size="mini" @click="isEdit=false">Edit</el-button>
-              <el-button v-if="hasSubmitionForThisQuestion&& !isEdit" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="submit()">Submit</el-button>
+              <el-button v-if="hasSubmitionForThisQuestion&& !isEdit" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" type="primary" @click="submit()">Submit</el-button>
 
             </div>
           </div>
@@ -405,7 +406,7 @@ export default {
     loadData() {
       if (this.submissionId) {
         reviewService.getReviewRequestBySubmissionId(this.submissionId).then(rs => {
-          console.log('request data ', rs)
+          console.log('request data: ', rs)
           if (rs) {
             this.isFreeRequested = rs.feedbackType == 'Free'
             this.isProRequested = rs.feedbackType == 'Pro'
@@ -413,12 +414,11 @@ export default {
         })
 
         documentService.getBySubmissionId(+this.submissionId).then(rs => {
-          this.timeSpent = rs.submissions[0].timeSpentInSeconds
-
           if (rs) {
+            this.timeSpent = rs.submissions[0].timeSpentInSeconds
             const latestSubmition = rs
             this.writingContent = latestSubmition.text
-            this.hasSubmitionForThisQuestion = true
+            if (rs.submissions[0].status != 'Saved') { this.hasSubmitionForThisQuestion = true }
           }
           if (localStorage.getItem(this.idSubmissionStorage) && localStorage.getItem(this.idSubmissionStorage) != '') {
             this.writingContent = localStorage.getItem(this.idSubmissionStorage)
@@ -426,10 +426,7 @@ export default {
           this.countWords()
         })
       } else {
-        this.writingContent = localStorage.getItem(this.idLocalStorage)
-        if (this.writingContent == null || this.writingContent == 'null') this.writingContent = ''
-        console.log(this.writingContent)
-        this.countWords()
+        // Search for all submissions for this question
         // documentService.search(this.currentUser.id, this.questionId).then(rs => {
         //   if (rs && rs.length > 0) {
         //     this.submissionId = rs[0]['submissions'][0]?.id
@@ -439,6 +436,21 @@ export default {
 
         //   }
         // })
+
+        // Check if there is a saved submission
+        documentService.getSavedDocument(this.currentUser.id, this.questionId).then(rs => {
+          console.log(rs)
+          if (rs) {
+            this.submissionId = rs['submissions'][0]?.id
+            this.idSubmissionStorage = this.currentUser.username + '_QuestionId' + this.questionId + '_SubmissionId' + this.submissionId
+            this.loadData()
+          }
+        })
+
+        this.writingContent = localStorage.getItem(this.idLocalStorage)
+        if (this.writingContent == null || this.writingContent == 'null') this.writingContent = ''
+        console.log(this.writingContent)
+        this.countWords()
       }
     },
     calculateContainerHeight() {
@@ -454,6 +466,63 @@ export default {
         document.getElementById('child-scroll').style.paddingRight = '0'
       } else {
         document.getElementById('child-scroll').style.paddingRight = '10px'
+      }
+    },
+    save() {
+      if (!this.writingContent) {
+        this.$notify.error({
+          title: 'Error',
+          message: 'Nothing to submit',
+          type: 'error',
+          duration: 1000
+        })
+        return
+      }
+
+      var timeInSeconds
+      if (this.isTesting) {
+        timeInSeconds = (+this.getDataQuestion.time.slice(0, 2) - this.minute - 1) * 60 + 60 - this.second
+      } else {
+        timeInSeconds = moment().diff(this.timeStart, 'seconds')
+      }
+
+      if (this.timeSpent > 0) {
+        timeInSeconds += this.timeSpent
+      }
+
+      var data = {
+        filename: new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() + new Date().getDate().toString() + new Date().getHours().toString() + new Date().getMinutes().toString() + new Date().getSeconds().toString() + '.pdf',
+        text: this.writingContent,
+        userId: this.currentUser.id,
+        questionId: +this.questionId,
+        timeSpentInSeconds: timeInSeconds
+      }
+
+      if (this.submissionId) {
+        data.status = 'Saved'
+        documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
+          if (rs) {
+            this.$notify.success({
+              title: 'Success',
+              message: 'Saved successfully',
+              type: 'success',
+              duration: 2000
+            })
+          }
+        })
+      } else {
+        data.status = 'Saved'
+        documentService.saveDocument(data).then(rs => {
+          if (rs) {
+            this.$notify.success({
+              title: 'Success',
+              message: 'Saved successfully',
+              type: 'success',
+              duration: 2000
+            })
+            this.submissionId = rs.submissions[0]?.id
+          }
+        })
       }
     },
     submit() {
@@ -493,7 +562,7 @@ export default {
 
       this.timeSpent = 0
       this.timeStart = moment()
-      this.isEdit = true
+      // this.isEdit = true // Edit button should not be visible after submitting?
 
       if (this.submissionId) {
         data.status = this.unRatedList.length > 0 ? 'Pending' : 'Submitted'
@@ -503,7 +572,7 @@ export default {
             this.writingSubmitted = true
             this.$notify.success({
               title: 'Success',
-              message: 'Updated successfully',
+              message: 'Submitted successfully',
               type: 'success',
               duration: 2000
             })
@@ -591,7 +660,9 @@ export default {
         if (this.idSubmissionStorage) {
           localStorage.setItem(this.idSubmissionStorage, this.writingContent)
         }
-        localStorage.setItem(this.idLocalStorage, this.writingContent)
+        if (!this.$route.params.submissionId) {
+          localStorage.setItem(this.idLocalStorage, this.writingContent)
+        }
       }, 50)
     },
     changedOption() {

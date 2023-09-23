@@ -18,6 +18,7 @@ namespace Reboost.Shared
     }
     public static class SubmissionStatus {
         public const string PENDING = "Pending";
+        public const string SAVED = "Saved";
         public const string SUBMITTED = "Submitted";
         public const string REVIEW_REQUESTED = "Review Requested";
         public const string REVIEWED = "Reviewed";

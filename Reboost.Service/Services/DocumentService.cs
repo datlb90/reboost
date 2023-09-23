@@ -10,21 +10,16 @@ namespace Reboost.Service.Services
     public interface IDocumentService
     {
         Task<Documents> Create(Documents newDocument);
-
         Task<Documents> Update(Documents document);
-
         Task<Documents> Delete(Documents document);
-
         Task<IEnumerable<Documents>> GetAllDocument();
-
         Task<Documents> GetById(int id);
-
         Task<IEnumerable<Documents>> GetByFileName(string fileName);
-
         Task<IEnumerable<Documents>> GetByStatus(string status);
         Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId);
         Task<Documents> GetSubmissionById(int id);
         Task<Documents> UpdateDocumentBySubmissionId(int id, DocumentRequestModel data);
+        Task<Documents> GetSavedDocument(string userId, int questionId);
     }
 
     public class DocumentService : IDocumentService
@@ -81,20 +76,23 @@ namespace Reboost.Service.Services
             var rs = await _unitOfWork.Documents.SearchByUser(userId, questionId);
             return rs;
         }
-
         public async Task<Documents> GetSubmissionById(int id)
         {
             var rs = await _unitOfWork.Documents.GetSubmissionByIdAsync(id);
             return rs;
         }
-
         public async Task<Documents> UpdateDocumentBySubmissionId(int id, DocumentRequestModel data)
         {
-            data.Status = "Submitted";
+            // data.Status = "Submitted"; Need Investigation
             data.Data = _pdfService.WriteParagraph(data.Text);
 
             var rs = await _unitOfWork.Documents.UpdateDocumentBySubmissionId(id, data);
 
+            return rs;
+        }
+        public async Task<Documents> GetSavedDocument(string userId, int questionId)
+        {
+            var rs = await _unitOfWork.Documents.GetSavedDocument(userId, questionId);
             return rs;
         }
     }

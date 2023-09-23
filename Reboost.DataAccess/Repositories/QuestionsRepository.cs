@@ -87,7 +87,8 @@ namespace Reboost.DataAccess.Repositories
                             AverageScore = quest.AverageScore,
                             Submission = quest.SubmissionCount,
                             Like = quest.LikeCount,
-                            Status = (from sub in ReboostDbContext.Submissions where sub.UserId == userId && sub.QuestionId == quest.Id select sub).Count() > 0 ? "Completed" : "To do"
+                            Status = (from sub in ReboostDbContext.Submissions where sub.UserId == userId && sub.Status != "Saved" &&
+                                      sub.QuestionId == quest.Id select sub).Count() > 0 ? "Completed" : "To do"
                         };
             return await query.ToListAsync();
         }
@@ -318,7 +319,7 @@ namespace Reboost.DataAccess.Repositories
 
             var listsubmissions = await (from s in ReboostDbContext.Submissions
                                          join q in ReboostDbContext.Questions on s.QuestionId equals q.Id
-                                         where s.UserId == userId
+                                         where s.UserId == userId && s.Status != "Saved"
                                          orderby s.UpdatedDate descending, s.SubmittedDate descending
                                          select new SubmissionsModel
                                          {

@@ -15,6 +15,7 @@ namespace Reboost.DataAccess.Repositories
         Task<IEnumerable<Documents>> SearchByUser(string userId, int questionId);
         Task<Documents> GetSubmissionByIdAsync(int id);
         Task<Documents> UpdateDocumentBySubmissionId(int id, DocumentRequestModel data);
+        Task<Documents> GetSavedDocument(string userId, int questionId);
     }
 
     public class DocumentRespository : BaseRepository<Documents>, IDocumentRepository
@@ -52,7 +53,6 @@ namespace Reboost.DataAccess.Repositories
             }
             return rs;
         }
-
         public async Task<Documents> GetSubmissionByIdAsync(int id)
         {
             var submission = await ReboostDbContext.Submissions.FindAsync(id);
@@ -61,14 +61,14 @@ namespace Reboost.DataAccess.Repositories
             return rs;
 
         }
-
         public async Task<Documents> UpdateDocumentBySubmissionId(int id, DocumentRequestModel data)
         {
             var submission = await ReboostDbContext.Submissions.FindAsync(id);
-            
             var doc = await ReboostDbContext.Documents.FindAsync(submission.DocId);
 
             submission.TimeSpentInSeconds = data.TimeSpentInSeconds;
+            submission.Status = data.Status;
+            submission.UpdatedDate = DateTime.Now;
 
             doc.Text = data.Text;
             doc.Filename = data.Filename;
@@ -78,7 +78,17 @@ namespace Reboost.DataAccess.Repositories
 
             return data;
         }
-
+        public async Task<Documents> GetSavedDocument(string userId, int questionId)
+        {
+            var submission = await ReboostDbContext.Submissions.Where(s => s.UserId == userId && s.QuestionId == questionId && s.Status == "Saved").FirstOrDefaultAsync();
+            if(submission != null)
+            {
+                var doc = await ReboostDbContext.Documents.FindAsync(submission.DocId);
+                doc.Submissions.Add(submission);
+                return doc;
+            }
+            return null;
+        }
         private ReboostDbContext ReboostDbContext
         {
             get { return context as ReboostDbContext; }

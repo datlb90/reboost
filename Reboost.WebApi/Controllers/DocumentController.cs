@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using Reboost.Service.Services;
@@ -48,7 +49,25 @@ namespace Reboost.WebApi.Controllers
 
             return newDoc;
         }
+        [HttpPost]
+        [Route("save")]
+        public async Task<Documents> Save(DocumentRequestModel model)
+        {
+            var newDoc = await _docService.Create(model);
+            await _submissionService.CreateAsync(new Submissions
+            {
+                DocId = newDoc.Id,
+                UserId = model.UserId,
+                QuestionId = model.QuestionId,
+                SubmittedDate = DateTime.Now,
+                Type = "Submission",
+                TimeSpentInSeconds = model.TimeSpentInSeconds,
+                Status = "Saved",
+                UpdatedDate = DateTime.Now
+            });
 
+            return newDoc;
+        }
         [HttpPost]
         [Route("pending")]
         public async Task<Documents> CreatePending(DocumentRequestModel model)
@@ -129,6 +148,13 @@ namespace Reboost.WebApi.Controllers
         public async Task<Documents> UpdateDocumentBySubmissionId(int id, DocumentRequestModel model)
         {
             return await _docService.UpdateDocumentBySubmissionId(id, model);
+        }
+
+        [HttpGet]
+        [Route("saved/user/{userId}/question/{questionId}")]
+        public async Task<Documents> GetSavedDocument(string userId, int questionId)
+        {
+            return await _docService.GetSavedDocument(userId, questionId);
         }
     }
 }

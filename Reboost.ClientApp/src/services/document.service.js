@@ -18,6 +18,12 @@ const documentService = {
   },
   getDocument(id) {
     return http.get(`document/${id}`)
+  },
+  saveDocument(data) {
+    return http.post('/document/save', data).then(rs => rs.data)
+  },
+  getSavedDocument(userId, questionId) {
+    return http.get(`document/saved/user/${userId}/question/${questionId}`).then(rs => rs.data)
   }
 }
 
