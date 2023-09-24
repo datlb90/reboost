@@ -583,5 +583,11 @@ namespace Reboost.WebApi.Controllers
 
             return Ok(rs);
         }
+        [Authorize]
+        [HttpGet("reassign/{requestId}/{raterId}")]
+        public async Task<Raters> ReAssignReviewRequest(int requestId, int raterId)
+        {
+            return await _service.ReAssignReviewRequest(requestId, raterId);
+        }
     }
 }

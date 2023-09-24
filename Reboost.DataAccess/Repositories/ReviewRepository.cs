@@ -60,6 +60,7 @@ namespace Reboost.DataAccess.Repositories
         Task<List<Disputes>> GetAllLearnerDisputesAsync(string userId);
         Task<Reviews> Create(Reviews data);
         Task<List<ReviewRequestModel>> GetReviewRequestModel();
+        Task<Raters> ReAssignReviewRequest(int requestId, int raterId);
     }
 
     public class ReviewRepository : BaseRepository<Reviews>, IReviewRepository
@@ -1143,7 +1144,27 @@ namespace Reboost.DataAccess.Repositories
             }
             return null;
         }
+        public async Task<Raters> ReAssignReviewRequest(int requestId, int raterId)
+        {
+            var assignment = await db.RequestAssignments.Where(a => a.RequestId == requestId).FirstOrDefaultAsync();
 
+            if (assignment != null && assignment.Status == RequestAssignmentStatus.ASSIGNED)
+            {
+                var rater = await db.Raters.Where(r => r.Id == raterId).FirstOrDefaultAsync();
+
+                if (rater == null)
+                {
+                    return null;
+                }
+
+                assignment.RaterId = rater.Id;
+                await db.SaveChangesAsync();
+                rater.User = await db.Users.FindAsync(rater.UserId);
+
+                return rater;
+            }
+            return null;
+        }
         public async Task<Disputes> CreateDisputeAsync(Disputes disputes)
         {
             await db.Disputes.AddAsync(disputes);

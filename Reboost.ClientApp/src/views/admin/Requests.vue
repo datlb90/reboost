@@ -5,12 +5,12 @@
     </div>
 
     <el-row :gutter="20">
-      <el-col :md="6" class="filter-container">
+      <el-col :md="12" class="filter-container">
         <div>
-          <el-input v-model="textSearch" size="mini" placeholder="Search for request" @input="search()" />
+          <el-input v-model="textSearch" size="mini" placeholder="Search for request by learner, rater, request status and learner status" @input="search()" />
         </div>
       </el-col>
-      <el-col :md="12" class="filter-container">
+      <el-col :md="6" class="filter-container">
         <!-- <div class="filter-toolbar">
           <dropdown-menu v-model="filterSection" style="margin-right: 20px" :tittle="messageTranslates('adminQuestions', 'testSection')" @confirm="search()" @reset="resetFilterSection()" />
           <dropdown-menu v-model="filterType" style="margin-right: 20px" :tittle="messageTranslates('adminQuestions', 'type')" @confirm="search()" @reset="resetFilterType()" />
@@ -47,32 +47,43 @@
       </el-col>
     </el-row>
     <el-table ref="filterTable" :data="requests" stripe style="width: 100%;">
-      <el-table-column prop="requestId" sortable label="Id" width="60" />
-      <el-table-column prop="learnerName" sortable label="Learner" />
-      <el-table-column prop="raterName" sortable label="Rater" />
-      <el-table-column prop="requestStatus" sortable label="Request Status" width="160" />
-      <el-table-column prop="assignmentStatus" sortable label="Assignment Status" width="190" />
-      <el-table-column prop="reviewStatus" sortable label="Review Status" width="160" />
-      <!-- <el-table-column prop="submissionStatus" sortable label="Submission Status" width="180" /> -->
-      <el-table-column prop="submissionId" sortable label="SID" width="80" />
-      <el-table-column prop="questionId" sortable label="QID" width="80" />
-      <el-table-column prop="docId" sortable label="DID" width="80" />
-      <el-table-column prop="reviewId" sortable label="RID" width="80" />
-      <!-- <el-table-column
+      <el-table-column prop="requestId" label="Id" width="50" />
+      <el-table-column prop="learnerName" label="Learner" />
+      <el-table-column prop="raterName" label="Rater" />
+      <el-table-column prop="requestStatus" label="Request Status" width="150" />
+      <el-table-column prop="assignmentStatus" label="Assignment" width="150" />
+      <el-table-column prop="reviewStatus" label="Review Status" width="150" />
+      <el-table-column prop="submissionId" label="SID" width="60" />
+      <el-table-column prop="questionId" label="QID" width="60" />
+      <el-table-column prop="docId" label="DID" width="60" />
+      <el-table-column prop="reviewId" label="RID" width="60" />
+      <el-table-column
         label="Requested Date"
         sortable
         prop="requestedDateTime"
+        width="160"
       >
         <template slot-scope="scope">
           <span style="word-break: break-word">{{ getTimeFromDateCreateToNow(scope.row.requestedDateTime) }}</span>
         </template>
-      </el-table-column> -->
+      </el-table-column>
       <el-table-column
         label="Actions"
       >
         <template slot-scope="scope">
           <div>
-            <el-button size="mini" @click="publishQuestion(scope.row)">View</el-button>
+            <el-button v-if="scope.row.reviewId != 0" size="mini" style="margin-bottom: 5px;" @click="viewReview(scope.row)">View Review</el-button>
+            <!-- <el-button size="mini" style="margin-bottom: 5px; margin-left: 0px;" @click="sendReminder(scope.row)">Send Reminder</el-button> -->
+            <el-dropdown @command="handleReassignCommand">
+              <el-button type="primary" size="mini" plain>
+                Re-assign<i class="el-icon-arrow-down el-icon--right" />
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item v-for="rater in raters" :key="rater.id" :command="{requestId: scope.row.requestId, raterId: rater.id, index: scope.$index, raterName: rater.user.firstName + ' ' + rater.user.lastName}">
+                  {{ rater.user.firstName + ' ' + rater.user.lastName }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
             <!-- <el-button class="action-button" size="mini" @click="handleEdit(scope.row)">{{ messageTranslates('adminQuestions', 'edit') }}</el-button>
             <el-button class="action-button" size="mini" @click="previewQuestion(scope.row)">{{ messageTranslates('adminQuestions', 'preview') }}</el-button>
             <el-button class="action-button" size="mini" @click="openAddNewSampleDialog(scope.row)">{{ messageTranslates('adminQuestions', 'addNewSample') }}</el-button>
@@ -113,8 +124,8 @@
 <script>
 import _ from 'lodash'
 import moment from 'moment'
-// import reviewService from '../../services/review.service'
-// import questionService from '../../services/question.service'
+import raterService from '../../services/rater.service'
+import reviewService from '../../services/review.service'
 export default {
   name: 'AdminRequests',
   components: {
@@ -138,7 +149,8 @@ export default {
       pageSize: 20,
       dialogVisible: false,
       deleteDialogVisible: false,
-      selectedQuestion: null
+      selectedQuestion: null,
+      raters: []
     }
   },
   computed: {
@@ -152,8 +164,37 @@ export default {
   mounted() {
     this.getRequestsData()
     console.log(this.requests)
+    this.getRatersData()
   },
   methods: {
+    getRatersData() {
+      raterService.getMasterRaters().then(rs => {
+        this.raters = rs
+        console.log(this.raters)
+      })
+    },
+    handleReassignCommand(command) {
+      console.log(command)
+
+      this.$confirm('Are you sure you want to re-assign this request?').then(() => {
+        reviewService.reassignReviewRequest(command.requestId, command.raterId).then(rs => {
+          // Update rater information in the requests table
+          if (rs) {
+            console.log(this.requests[command.index])
+            this.requests[command.index].raterId = rs.id
+            this.requests[command.index].raterName = command.raterName
+            this.$notify.success({
+              title: 'Success',
+              message: 'Request has been reassigned!',
+              type: 'success',
+              duration: 2000
+            })
+          }
+        })
+      }).catch(() => {
+
+      })
+    },
     getRequestsData() {
       this.$store.dispatch('review/loadRequests').then(rs => {
         this.requestCached = this.getAllRequests
@@ -169,7 +210,10 @@ export default {
       // let filtered = this.filter().sort((a, b) => b.id - a.id)
       let filtered = this.requestCached
       if (this.textSearch) {
-        filtered = filtered.filter(q => q.title.toLowerCase().indexOf(this.textSearch.toLowerCase()) >= 0)
+        filtered = filtered.filter(q => q.learnerName.toLowerCase().includes(this.textSearch.toLowerCase()) ||
+                                        q.raterName.toLowerCase().includes(this.textSearch.toLowerCase()) ||
+                                        q.requestStatus.toLowerCase().includes(this.textSearch.toLowerCase()) ||
+                                        q.assignmentStatus.toLowerCase().includes(this.textSearch.toLowerCase()))
         this.requests = filtered.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
         this.totalRow = filtered.length
       } else {
@@ -292,6 +336,7 @@ export default {
   .requests-container{
     max-width: 80%;
     margin: auto;
+    margin-top: 10px;
   }
   @media only screen and (max-width: 880px) {
     .filter-container{

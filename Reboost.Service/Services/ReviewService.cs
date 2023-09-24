@@ -58,6 +58,7 @@ namespace Reboost.Service.Services
         Task<List<Disputes>> GetAllLearnerDisputesAsync(string userId);
         Task<Reviews> Create(dynamic data);
         Task<List<ReviewRequestModel>> GetReviewRequestModel();
+        Task<Raters> ReAssignReviewRequest(int requestId, int raterId);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -421,6 +422,17 @@ namespace Reboost.Service.Services
         public async Task<List<ReviewRequestModel>> GetReviewRequestModel()
         {
             return await _unitOfWork.Review.GetReviewRequestModel();
+        }
+        public async Task<Raters> ReAssignReviewRequest(int requestId, int raterId)
+        {
+            var rater = await _unitOfWork.Review.ReAssignReviewRequest(requestId, raterId);
+            if (rater != null)
+            {
+                string url = $"{configuration["ClientUrl"]}/review/pro/" + requestId;
+                // Send mail to rater with confirm link
+                await mailService.SendEmailAsync(rater.User.Email, "New Writing Review Request!", $"You have a new pro request. Please complete the review within 24 hours using the following link: <a href='{url}'>Clicking here</a>");
+            }
+            return rater;
         }
     }
 }

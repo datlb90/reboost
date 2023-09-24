@@ -114,6 +114,9 @@ const reviewService = {
   },
   getReviewRequestModel() {
     return http.get('/review/request/model').then(rs => rs.data)
+  },
+  reassignReviewRequest(requestId, raterId) {
+    return http.get(`/review/reassign/${requestId}/${raterId}`).then(rs => rs.data)
   }
 }
 

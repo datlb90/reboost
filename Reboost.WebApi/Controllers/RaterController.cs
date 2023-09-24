@@ -157,5 +157,12 @@ namespace Reboost.WebApi.Controllers
 
             return Ok(rs);
         }
+        [Authorize]
+        [HttpGet]
+        [Route("master")]
+        public async Task<List<Raters>> GetAllMasterRater()
+        {
+            return await _service.GetAllMasterRater();
+        }
     }
 }

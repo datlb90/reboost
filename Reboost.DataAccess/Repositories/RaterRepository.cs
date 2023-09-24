@@ -24,6 +24,7 @@ namespace Reboost.DataAccess.Repositories
         Task<decimal> GetRaterRatingAsync(string UserID);
         Task<Raters> GetRaterPaypalAccountAsync(string userId);
         Task<Raters> UpdateRaterPaypalAccountAsync(string userId, string paypalAccount);
+        Task<List<Raters>> GetAllMasterRater();
     }
     public class RaterRepository : BaseRepository<Raters>, IRaterRepository
     {
@@ -125,6 +126,10 @@ namespace Reboost.DataAccess.Repositories
             await ReboostDbContext.SaveChangesAsync();
 
             return currentRater;
+        }
+        public async Task<List<Raters>> GetAllMasterRater()
+        {
+            return await ReboostDbContext.Raters.Where(r => r.IsMaster == true && r.Status == "Final Approval").Include("User").ToListAsync();
         }
     }
 }

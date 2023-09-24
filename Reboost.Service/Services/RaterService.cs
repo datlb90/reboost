@@ -3,6 +3,7 @@ using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using Reboost.Shared;
+using Stripe;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,6 +28,7 @@ namespace Reboost.Service.Services
         Task<Raters> GetRaterPaypalAccountAsync(string userId);
         Task<Raters> UpdateRaterPaypalAccountAsync(string userId, string paypalAccount);
         Task<ContactRequestModel> SendContactRequestAsync(string userName, ContactRequestModel model);
+        Task<List<Raters>> GetAllMasterRater();
     }
 
     public class RaterService : BaseService, IRaterService
@@ -236,6 +238,11 @@ namespace Reboost.Service.Services
             await mailService.SendContactEmail(model.Email, model.Fullname, "Support DL", content, listPaths);
 
             return model;
+        }
+
+        public async Task<List<Raters>> GetAllMasterRater()
+        {
+            return await _unitOfWork.Raters.GetAllMasterRater();
         }
     }
 }
