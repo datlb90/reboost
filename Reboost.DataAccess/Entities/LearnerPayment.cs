@@ -8,6 +8,7 @@ namespace Reboost.DataAccess.Entities
     {
         public string UserId { get; set; }
         public int QuestionId { get; set; }
+        public int SubmissionId { get; set; }
         public string PaypalTransactionId { get; set; }
         public string Amount { get; set; }
         public DateTime CreatedDate { get; set; }

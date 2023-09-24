@@ -570,11 +570,18 @@ namespace Reboost.WebApi.Controllers
 
             return Ok(rs);
         }
+        [Authorize]
+        [HttpGet("request/model")]
+        public async Task<IActionResult> GetReviewRequestModel()
+        {
+            // Get current user info
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
 
-        //[Authorize]
-        //[HttpPost("createSubmissionReview")]
-        //public async Task<IActionResult> CreateSubmissionReview() {
-        //    _service.CreateSubmissionReview()
-        //}
+            var rs = await _service.GetReviewRequestModel();
+
+            return Ok(rs);
+        }
     }
 }

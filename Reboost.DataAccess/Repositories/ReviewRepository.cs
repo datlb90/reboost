@@ -59,6 +59,7 @@ namespace Reboost.DataAccess.Repositories
         Task<Disputes> UpdateDisputeAsync(Disputes dispute);
         Task<List<Disputes>> GetAllLearnerDisputesAsync(string userId);
         Task<Reviews> Create(Reviews data);
+        Task<List<ReviewRequestModel>> GetReviewRequestModel();
     }
 
     public class ReviewRepository : BaseRepository<Reviews>, IReviewRepository
@@ -822,10 +823,10 @@ namespace Reboost.DataAccess.Repositories
             return new CreatedProRequestModel { Rater = rater, Request = request };
         }
 
-        // Get master rater for pro request
-        public async Task<Raters> GetMasterRaterForProRequestAsync()
+        // Get the only master rater for pro request
+        public async Task<Raters> GetTheOnlyMasterRaterForProRequestAsync()
         {
-            var rater = await db.Raters.Where(r => r.Biography == "Master Rater").FirstOrDefaultAsync();
+            var rater = await db.Raters.Where(r => r.IsMaster == true).FirstOrDefaultAsync();
             var user = await db.Users.Where(u => u.Id == rater.UserId).FirstOrDefaultAsync();
 
             if (rater == null || user == null)
@@ -834,6 +835,93 @@ namespace Reboost.DataAccess.Repositories
             rater.User = user;
             return rater;
         }
+
+        public async Task<Raters> GetMasterRaterForProRequestAsync()
+        {
+            //Query master rater that have lowest assigned requests
+            var selectedRater = await (from r in db.Raters
+                                       join a in (from a in db.RequestAssignments where a.Status == RequestAssignmentStatus.ASSIGNED select a) on r.Id equals a.RaterId into raterFull
+                                       from a in raterFull.DefaultIfEmpty()
+                                       where r.Status == RaterStatus.APPROVED && r.IsMaster == true
+                                       orderby r.AppliedDate
+                                       group r by r.Id into g
+                                       select new
+                                       {
+                                           RaterId = g.Key,
+                                           AssignedRequests = g.Count()
+                                       }).OrderBy(r => r.AssignedRequests).ToListAsync();
+
+            int key = 0;
+
+            if (selectedRater.Count == 0)
+            {
+                return null;
+            }
+
+            foreach (var r in selectedRater)
+            {
+                var rater = await (from ra in db.Raters
+                                   where ra.Id == r.RaterId
+                                   select ra).FirstOrDefaultAsync();
+
+                if (rater == null)
+                    continue;
+
+                var reviews = await (from re in db.Reviews
+                                     where re.ReviewerId == rater.UserId
+                                     orderby re.Id descending
+                                     select re).Take(5).ToListAsync();
+
+                int totalDispute = 0;
+
+                foreach (var review in reviews)
+                {
+
+                    var disputeExist = await (from d in db.Disputes
+                                              where d.ReviewId == review.Id
+                                              select d).FirstOrDefaultAsync();
+
+                    var rate = await (from ra in db.ReviewRatings
+                                      where ra.ReviewId == review.Id && ra.Rate < 2
+                                      select ra).FirstOrDefaultAsync();
+
+                    if (disputeExist != null || rate != null)
+                    {
+                        totalDispute++;
+                    }
+                }
+
+                var pendingReviews = await (from rv in db.Reviews
+                                            join rq in db.ReviewRequests on rv.RequestId equals rq.Id
+                                            join rt in db.ReviewRatings on rv.Id equals rt.ReviewId into completedReviews
+                                            from rated in completedReviews.DefaultIfEmpty()
+                                            where rv.RevieweeId == rater.UserId && rq.Status == ReviewRequestStatus.COMPLETED && rated == null
+                                            select rv).ToListAsync();
+
+                if (totalDispute < 3 && pendingReviews.Count() == 0)
+                {
+                    key = selectedRater.IndexOf(r);
+                    break;
+                }
+            }
+
+
+            if (selectedRater[key] == null)
+                return null;
+
+            var raterUser = await (from r in db.Raters
+                                   join u in db.Users on r.UserId equals u.Id
+                                   where r.Id == selectedRater[key].RaterId
+                                   select new { Rater = r, User = u }).FirstOrDefaultAsync();
+
+            if (raterUser == null)
+                return null;
+
+            raterUser.Rater.User = raterUser.User;
+
+            return raterUser.Rater;
+        }
+
 
         // Get rater for pro request
         public async Task<Raters> GetRaterForProRequestAsync()
@@ -1167,6 +1255,48 @@ namespace Reboost.DataAccess.Repositories
             db.Reviews.Add(newReview);
             await db.SaveChangesAsync();
             return newReview;
+        }
+        public async Task<List<ReviewRequestModel>> GetReviewRequestModel()
+        {
+            var reviewRequests = await (from rr in db.ReviewRequests
+                                        join ra in db.RequestAssignments on rr.Id equals ra.RequestId into assignments
+                                            from assignment in assignments.DefaultIfEmpty()
+                                        join s in db.Submissions on rr.SubmissionId equals s.Id into submissions
+                                            from submission in submissions.DefaultIfEmpty()
+                                        join lph in db.LearnerPaymentsHistory on rr.SubmissionId equals lph.SubmissionId into payments
+                                            from payment in payments.DefaultIfEmpty()
+                                        join r in db.Reviews on rr.Id equals r.RequestId into reviews
+                                            from review in reviews.DefaultIfEmpty()
+                                        join r2 in db.Raters on assignment.RaterId equals r2.Id into raters
+                                            from rater in raters.DefaultIfEmpty()
+                                        join u in db.Users on rr.UserId equals u.Id into learners
+                                            from learner in learners.DefaultIfEmpty()
+                                        join u2 in db.Users on rater.UserId equals u2.Id into raterProfiles
+                                            from raterProfile in raterProfiles.DefaultIfEmpty()
+                                        where rr.FeedbackType == "Pro"
+                                        select new ReviewRequestModel
+                                        {
+                                          RequestId = rr.Id,
+                                          LearnerId = rr.UserId,
+                                          LearnerName = learner.FirstName + " " + learner.LastName,
+                                          RaterId = rater.UserId,
+                                          RaterName = raterProfile.FirstName + " " + raterProfile.LastName,
+                                          RequestStatus = rr.Status,
+                                          AssignmentStatus = assignment.Status,
+                                          ReviewStatus = review.Status,
+                                          SubmissionStatus = submission.Status,
+                                          SubmissionId = submission.Id,
+                                          QuestionId = submission.QuestionId,
+                                          DocId = submission.DocId,
+                                          ReviewId = review.Id,
+                                          PaypalTransactionId = payment.PaypalTransactionId,
+                                          RaterPaypalAccount = rater.PaypalAccount,
+                                          RequestedDateTime = rr.RequestedDateTime,
+                                          SubmittedDate = submission.SubmittedDate,
+                                          LastReviewActivityDate = review.LastActivityDate,
+                                          CompletedDatetime = rr.CompletedDateTime
+                                        }).ToListAsync();
+            return reviewRequests;
         }
     }
 }

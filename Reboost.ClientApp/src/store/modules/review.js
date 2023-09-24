@@ -4,7 +4,8 @@ const state = {
   annotations: {},
   reviews: [],
   reviewsById: [],
-  anno: null
+  anno: null,
+  requests: []
 }
 
 const actions = {
@@ -32,6 +33,11 @@ const actions = {
     return reviewService.addInTextComment(docId, reviewId, obj).then(rs => {
       commit('ADD_REVIEW_ANNOTATION', rs)
     })
+  },
+  loadRequests({ commit }) {
+    return reviewService.getReviewRequestModel().then(result => {
+      commit('SET_REQUESTS', result)
+    })
   }
 }
 
@@ -48,6 +54,9 @@ const mutations = {
   ADD_REVIEW_ANNOTATION: (state, annotation) => {
     state.anno = annotation
     state.annotations['annotations'].push(annotation)
+  },
+  SET_REQUESTS: (state, requests) => {
+    state.requests = requests
   }
 }
 
@@ -55,7 +64,8 @@ const getters = {
   getAnnotations: state => state.annotations,
   getAddedAnnotation: state => state.anno,
   getReviews: state => state.reviews,
-  getReviewsById: state => state.reviewsById
+  getReviewsById: state => state.reviewsById,
+  getAllRequests: state => state.requests
 }
 
 export default {

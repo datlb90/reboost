@@ -711,12 +711,12 @@ export default {
       }
     },
     paymentSuccessed() {
-      this.$notify.success({
-        title: 'Payment Success',
-        message: 'Your payment for the writing service was processed successfully!',
-        type: 'success',
-        duration: 1500
-      })
+      // this.$notify.success({
+      //   title: 'Payment Success',
+      //   message: 'Your payment for the writing service was processed successfully!',
+      //   type: 'success',
+      //   duration: 1500
+      // })
       this.requestProReview()
     },
     requestProReview() {
@@ -740,6 +740,7 @@ export default {
       const data = {
         UserId: this.currentUser.id,
         QuestionId: this.questionId,
+        SubmissionId: this.submissionId,
         PaypalTransactionId: transactionId,
         Amount: '15.00'
       }

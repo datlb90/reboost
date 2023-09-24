@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Reboost.Shared.Extensions;
+using Stripe;
+using System.Net.Http;
 
 namespace Reboost.Service.Services
 {
@@ -55,6 +57,7 @@ namespace Reboost.Service.Services
         Task<Disputes> UpdateDisputeAsync(Disputes dispute);
         Task<List<Disputes>> GetAllLearnerDisputesAsync(string userId);
         Task<Reviews> Create(dynamic data);
+        Task<List<ReviewRequestModel>> GetReviewRequestModel();
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -414,6 +417,10 @@ namespace Reboost.Service.Services
                 LastActivityDate = DateTime.Now
             };
             return await _unitOfWork.Review.Create(newReview);
+        }
+        public async Task<List<ReviewRequestModel>> GetReviewRequestModel()
+        {
+            return await _unitOfWork.Review.GetReviewRequestModel();
         }
     }
 }

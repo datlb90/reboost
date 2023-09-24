@@ -22,6 +22,7 @@ namespace Reboost.DataAccess.Entities
         public string Biography { get; set; }
         public System.DateTime LastActivityDate { get; set; }
         public string PaypalAccount { get; set; }
+        public bool IsMaster { get; set; }
         public virtual User User { get; set; }
         public virtual ICollection<RaterCredentials> RaterCredentials { get; set; }
 

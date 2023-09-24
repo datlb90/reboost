@@ -77,6 +77,7 @@ import Submissions from '../views/learner/Submissions.vue'
 import Disputes from '../views/admin/Disputes.vue'
 import LearnerDisputes from '../views/learner/Disputes.vue'
 import AdminQuestions from '../views/admin/Questions.vue'
+import AdminRequests from '../views/admin/Requests.vue'
 import Samples from '../views/admin/Samples.vue'
 import Articles from '../views/admin/Articles.vue'
 import LearnerArticles from '../views/learner/Articles.vue'
@@ -449,6 +450,15 @@ const router = new VueRouter({
       path: '/admin/questions',
       component: AdminQuestions,
       name: PageName.ADMIN_QUESTIONS,
+      meta: {
+        loginRequired: true,
+        role: UserRole.ADMIN
+      }
+    },
+    {
+      path: '/admin/requests',
+      component: AdminRequests,
+      name: 'Requests Management',
       meta: {
         loginRequired: true,
         role: UserRole.ADMIN

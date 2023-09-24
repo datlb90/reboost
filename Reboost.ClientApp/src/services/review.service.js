@@ -111,6 +111,9 @@ const reviewService = {
   },
   updateDispute(data) {
     return http.post(`/review/dispute/update`, data).then(rs => rs.data)
+  },
+  getReviewRequestModel() {
+    return http.get('/review/request/model').then(rs => rs.data)
   }
 }
 
