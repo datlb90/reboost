@@ -587,7 +587,23 @@ namespace Reboost.WebApi.Controllers
         [HttpGet("reassign/{requestId}/{raterId}")]
         public async Task<Raters> ReAssignReviewRequest(int requestId, int raterId)
         {
+            // Get current user info
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
             return await _service.ReAssignReviewRequest(requestId, raterId);
+        }
+        [Authorize]
+        [HttpPut("record/payment/{reviewId}")]
+        public async Task<Reviews> RecordPayment(int reviewId)
+        {
+            // Get current user info
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            return await _service.RecordPayment(reviewId);
         }
     }
 }

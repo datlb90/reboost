@@ -162,6 +162,10 @@ namespace Reboost.WebApi.Controllers
         [Route("master")]
         public async Task<List<Raters>> GetAllMasterRater()
         {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
             return await _service.GetAllMasterRater();
         }
     }

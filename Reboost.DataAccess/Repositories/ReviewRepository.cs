@@ -61,6 +61,7 @@ namespace Reboost.DataAccess.Repositories
         Task<Reviews> Create(Reviews data);
         Task<List<ReviewRequestModel>> GetReviewRequestModel();
         Task<Raters> ReAssignReviewRequest(int requestId, int raterId);
+        Task<Reviews> RecordPayment(int reviewId);
     }
 
     public class ReviewRepository : BaseRepository<Reviews>, IReviewRepository
@@ -1342,6 +1343,21 @@ namespace Reboost.DataAccess.Repositories
                                           CompletedDatetime = rr.CompletedDateTime
                                         }).ToListAsync();
             return reviewRequests;
+        }
+        public async Task<Reviews> RecordPayment(int reviewId)
+        {
+            var review = await db.Reviews.Where(r => r.Id == reviewId).FirstOrDefaultAsync();
+
+            if(review == null)
+            {
+                return null;
+            }
+
+            review.Status = ReviewStatus.PAID;
+            review.LastActivityDate = DateTime.Now;
+            await db.SaveChangesAsync();
+
+            return review;
         }
     }
 }

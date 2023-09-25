@@ -59,6 +59,7 @@ namespace Reboost.Service.Services
         Task<Reviews> Create(dynamic data);
         Task<List<ReviewRequestModel>> GetReviewRequestModel();
         Task<Raters> ReAssignReviewRequest(int requestId, int raterId);
+        Task<Reviews> RecordPayment(int reviewId);
     }
 
     public class ReviewService : BaseService, IReviewService
@@ -433,6 +434,10 @@ namespace Reboost.Service.Services
                 await mailService.SendEmailAsync(rater.User.Email, "New Writing Review Request!", $"You have a new pro request. Please complete the review within 24 hours using the following link: <a href='{url}'>Clicking here</a>");
             }
             return rater;
+        }
+        public async Task<Reviews> RecordPayment(int reviewId)
+        {
+            return await _unitOfWork.Review.RecordPayment(reviewId);
         }
     }
 }

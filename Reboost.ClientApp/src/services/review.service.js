@@ -117,6 +117,9 @@ const reviewService = {
   },
   reassignReviewRequest(requestId, raterId) {
     return http.get(`/review/reassign/${requestId}/${raterId}`).then(rs => rs.data)
+  },
+  recordPayment(reviewId) {
+    return http.put(`/review/record/payment/${reviewId}`).then(rs => rs.data)
   }
 }
 

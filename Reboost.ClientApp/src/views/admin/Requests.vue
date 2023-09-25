@@ -69,6 +69,7 @@
       </el-table-column>
       <el-table-column
         label="Actions"
+        width="150"
       >
         <template slot-scope="scope">
           <div>
@@ -95,7 +96,7 @@
               type="success"
               plain
               style="margin-top: 5px;"
-              @click="recordPay(scope.row, scope.$index)"
+              @click="recordPayment(scope.row, scope.$index)"
             >Record Pay</el-button>
           </div>
         </template>
@@ -161,10 +162,16 @@ export default {
     this.getRatersData()
   },
   methods: {
-    recordPay(row, index) {
+    recordPayment(row, index) {
       reviewService.recordPayment(row.reviewId).then(rs => {
         if (rs) {
           this.requests[index].reviewStatus = 'Paid'
+          this.$notify.success({
+            title: 'Success',
+            message: 'Payment to rater has been recorded!',
+            type: 'success',
+            duration: 2000
+          })
         }
       })
     },
