@@ -73,21 +73,30 @@
         <template slot-scope="scope">
           <div>
             <el-button v-if="scope.row.reviewId != 0" size="mini" style="margin-bottom: 5px;" @click="viewReview(scope.row)">View Review</el-button>
-            <!-- <el-button size="mini" style="margin-bottom: 5px; margin-left: 0px;" @click="sendReminder(scope.row)">Send Reminder</el-button> -->
             <el-dropdown @command="handleReassignCommand">
               <el-button type="primary" size="mini" plain>
                 Re-assign<i class="el-icon-arrow-down el-icon--right" />
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-for="rater in raters" :key="rater.id" :command="{requestId: scope.row.requestId, raterId: rater.id, index: scope.$index, raterName: rater.user.firstName + ' ' + rater.user.lastName}">
+                <el-dropdown-item
+                  v-for="rater in raters"
+                  :key="rater.id"
+                  :command="{requestId: scope.row.requestId, raterId: rater.id, index: scope.$index,
+                             raterName: rater.user.firstName + ' ' + rater.user.lastName}"
+                >
                   {{ rater.user.firstName + ' ' + rater.user.lastName }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
-            <!-- <el-button class="action-button" size="mini" @click="handleEdit(scope.row)">{{ messageTranslates('adminQuestions', 'edit') }}</el-button>
-            <el-button class="action-button" size="mini" @click="previewQuestion(scope.row)">{{ messageTranslates('adminQuestions', 'preview') }}</el-button>
-            <el-button class="action-button" size="mini" @click="openAddNewSampleDialog(scope.row)">{{ messageTranslates('adminQuestions', 'addNewSample') }}</el-button>
-            <el-button class="action-button" size="mini" @click="deleteQuestion(scope.row)">{{ messageTranslates('adminQuestions', 'delete') }}</el-button> -->
+
+            <el-button
+              v-if="scope.row.reviewStatus != 'Paid' && (scope.row.requestStatus == 'Rated' || scope.row.requestStatus == 'Completed')"
+              size="mini"
+              type="success"
+              plain
+              style="margin-top: 5px;"
+              @click="recordPay(scope.row, scope.$index)"
+            >Record Pay</el-button>
           </div>
         </template>
       </el-table-column>
@@ -103,22 +112,6 @@
         @current-change="handleCurrentChange"
       />
     </div>
-    <!-- <div>
-      <add-edit-question ref="questionDialog" @refreshQuestion="getQuestionsData" />
-      <question-preview ref="questionPreviewDialog" />
-      <add-sample ref="sampleDialog" />
-    </div> -->
-    <!-- <el-dialog
-      title="Delete"
-      :visible.sync="deleteDialogVisible"
-      width="30%"
-    >
-      <span>Delete this question will delete all of its samples. Do you want to continue ? This process can not be undone.</span>
-      <span slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="deleteDialogVisible = false">Cancel</el-button>
-        <el-button size="mini" type="primary" @click="deleteConfirmed()">Confirm</el-button>
-      </span>
-    </el-dialog> -->
   </div>
 </template>
 <script>
@@ -126,6 +119,7 @@ import _ from 'lodash'
 import moment from 'moment'
 import raterService from '../../services/rater.service'
 import reviewService from '../../services/review.service'
+import NProgress from 'nprogress'
 export default {
   name: 'AdminRequests',
   components: {
@@ -167,6 +161,23 @@ export default {
     this.getRatersData()
   },
   methods: {
+    recordPay(row, index) {
+      reviewService.recordPayment(row.reviewId).then(rs => {
+        if (rs) {
+          this.requests[index].reviewStatus = 'Paid'
+        }
+      })
+    },
+    viewReview(row) {
+      this.$router.push({
+        name: 'Review',
+        params: {
+          questionId: row.questionId,
+          docId: row.docId,
+          reviewId: row.reviewId
+        }
+      })
+    },
     getRatersData() {
       raterService.getMasterRaters().then(rs => {
         this.raters = rs
@@ -177,6 +188,7 @@ export default {
       console.log(command)
 
       this.$confirm('Are you sure you want to re-assign this request?').then(() => {
+        NProgress.start()
         reviewService.reassignReviewRequest(command.requestId, command.raterId).then(rs => {
           // Update rater information in the requests table
           if (rs) {
@@ -189,10 +201,18 @@ export default {
               type: 'success',
               duration: 2000
             })
+          } else {
+            this.$notify.error({
+              title: 'Error',
+              message: 'Request was not reassigned!',
+              type: 'error',
+              duration: 2000
+            })
           }
         })
+        NProgress.done()
       }).catch(() => {
-
+        NProgress.done()
       })
     },
     getRequestsData() {

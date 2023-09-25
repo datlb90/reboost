@@ -31,6 +31,7 @@ namespace Reboost.Shared
         public const string REVIEW_REQUESTED = "Review Requested";
         public const string RATED = "Rated";
         public const string WAITING = "Waiting";
+        public const string IN_PROGRESS = "In Progress";
     }
     public static class TestsName
     {
@@ -51,6 +52,7 @@ namespace Reboost.Shared
         public const string COMPLETED = "Completed";
         public const string RATED = "Rated";
         public const string DISPUTED = "Disputed";
+        public const string PAID = "Paid";
     }
     public static class ReviewRequestType
     {

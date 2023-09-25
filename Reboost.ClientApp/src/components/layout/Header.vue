@@ -81,7 +81,7 @@
                   <router-link to="/admin/raters" class="nav-link">Raters</router-link>
                 </li>
                 <li class="nav-item">
-                  <router-link to="/admin/disputes" class="nav-link">Disputes</router-link>
+                  <router-link to="/admin/requests" class="nav-link">Requests</router-link>
                 </li>
                 <li class="nav-item">
                   <router-link to="/admin/questions" class="nav-link">Questions</router-link>
@@ -91,6 +91,9 @@
                 </li>
                 <li class="nav-item">
                   <router-link to="/admin/articles" class="nav-link">Articles</router-link>
+                </li>
+                <li class="nav-item">
+                  <router-link to="/admin/disputes" class="nav-link">Disputes</router-link>
                 </li>
               <!-- <li class="nav-item">
                 <router-link to="/admin/rubric" class="nav-link">Rubric</router-link>

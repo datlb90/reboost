@@ -98,24 +98,35 @@ export default ({
     this.loadRubric()
   },
   methods: {
-    loadRubric() {
+    async loadRubric() {
       console.log(this.reviewid)
-      rubricService.getByQuestionId(this.questionid).then(rs => {
+      const rs = await rubricService.getByQuestionId(this.questionid)
+      if (rs) {
         this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, isFocused: false, comment: '' }))
         // Get rubric data from localstorage first
+        var hasComment = false
         var retrievedComment = localStorage.getItem('reviewRubricComment')
-        var retrievedScore = localStorage.getItem('reviewRubricScore')
         retrievedComment = JSON.parse(retrievedComment)
+        if (retrievedComment) {
+          hasComment = retrievedComment.some(r => r.reviewid == this.reviewid)
+        } else {
+          retrievedComment = []
+        }
+        var hasScore = false
+        var retrievedScore = localStorage.getItem('reviewRubricScore')
         retrievedScore = JSON.parse(retrievedScore)
+        if (retrievedScore) {
+          hasScore = retrievedScore.some(r => r.reviewid == this.reviewId)
+        } else {
+          retrievedScore = []
+        }
         // If there are existing comments or scores, load from localstorage
-        if (retrievedComment || retrievedScore) {
+        if (hasComment || hasScore) {
           this.getLocaleStorageData()
         } else {
-          // If there is nothing in localstorage, load from database
+        // If there is nothing in localstorage, load from database
           reviewService.loadReviewFeedback(this.reviewid).then(rs => {
             if (rs.length > 0) {
-              var comments = []
-              var milestones = []
               rs.forEach(rc => {
                 this.rubricCriteria.map(criteria => {
                   if (criteria.id == rc.criteriaId) {
@@ -123,22 +134,24 @@ export default ({
                     criteria.mark = rc.score
                   }
                 })
-                var cmt = { id: rc.criteriaId, content: rc.comment, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
-                comments.push(cmt)
+                var cmt = { id: rc.criteriaId, content: rc.comment, reviewid: this.reviewid, questionid: this.questionid }
+                retrievedComment.push(cmt)
 
-                var ms = { id: rc.criteriaId, content: rc.score, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
-                milestones.push(ms)
+                var ms = { id: rc.criteriaId, content: rc.score, reviewid: this.reviewid, questionid: this.questionid }
+                retrievedScore.push(ms)
               })
               if (this.currentUser.role !== 'Admin') { this.readOnly = false } else {
-                this.readOnly = false
+                this.readOnly = true
               }
               // Set localstorage so we don't have to load from db again
-              localStorage.setItem('reviewRubricComment', JSON.stringify(comments))
-              localStorage.setItem('reviewRubricScore', JSON.stringify(milestones))
+              localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedComment))
+              localStorage.setItem('reviewRubricScore', JSON.stringify(retrievedScore))
             }
           })
         }
-      })
+      } else {
+        console.log('Error: rubric cannot be found!')
+      }
     },
     onFocus(criteria) {
       criteria.isFocused = true
@@ -185,7 +198,7 @@ export default ({
       if (retrievedComment) {
         retrievedComment.forEach(rc => {
           this.rubricCriteria.map(criteria => {
-            if (criteria.id == rc.id && rc.documentId == this.documentId && rc.reviewid == this.reviewid) {
+            if (criteria.id == rc.id && rc.reviewid == this.reviewid) {
               criteria.comment = rc.content
             }
           }
@@ -194,7 +207,7 @@ export default ({
       }
       retrievedScore?.forEach(rc => {
         this.rubricCriteria.map(criteria => {
-          if (criteria.id == rc.id && rc.documentId == this.documentId && rc.reviewid == this.reviewid) {
+          if (criteria.id == rc.id && rc.reviewid == this.reviewid) {
             criteria.mark = rc.content
           }
         })
@@ -213,18 +226,17 @@ export default ({
         }
 
         retrievedObject = JSON.parse(retrievedObject)
-        var temp = retrievedObject?.filter(r => r.id == criteria.id && r.documentId == this.documentId && r.reviewid == this.reviewid)
+        var temp = retrievedObject?.filter(r => r.id == criteria.id && r.reviewid == this.reviewid)
         if (temp && temp.length > 0) {
           retrievedObject.map(r => {
-            if (r.id == criteria.id) {
+            if (r.id == criteria.id && r.reviewid == this.reviewid) {
               r.content = mileStone
-              r.documentId = this.documentId
               r.reviewid = this.reviewid
               r.questionid = this.questionid
             }
           })
         } else {
-          var cmt = { id: criteria.id, content: mileStone, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
+          var cmt = { id: criteria.id, content: mileStone, reviewid: this.reviewid, questionid: this.questionid }
           retrievedObject.push(cmt)
         }
         localStorage.setItem('reviewRubricScore', JSON.stringify(retrievedObject))
@@ -247,18 +259,17 @@ export default ({
         }
 
         retrievedObject = JSON.parse(retrievedObject)
-        var temp = retrievedObject.filter(r => r.id == criteriaId && r.documentId == this.documentId && r.reviewid == this.reviewid)
+        var temp = retrievedObject.filter(r => r.id == criteriaId && r.reviewid == this.reviewid)
         if (temp.length > 0) {
           retrievedObject.map(r => {
-            if (r.id == criteriaId) {
+            if (r.id == criteriaId && r.reviewid == this.reviewid) {
               r.content = e
-              r.documentId = this.documentId
               r.reviewid = this.reviewid
               r.questionid = this.questionid
             }
           })
         } else {
-          var cmt = { id: criteriaId, content: e, documentId: this.documentId, reviewid: this.reviewid, questionid: this.questionid }
+          var cmt = { id: criteriaId, content: e, reviewid: this.reviewid, questionid: this.questionid }
           retrievedObject.push(cmt)
         }
         localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedObject))

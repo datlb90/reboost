@@ -1056,24 +1056,48 @@ namespace Reboost.DataAccess.Repositories
             await db.SaveChangesAsync();
 
             // Get review if existed
-            result.Review = await db.Reviews.Where(r => r.RequestId == requestId).FirstOrDefaultAsync();
-
-            if (result?.Review != null)
+            var review = await db.Reviews.Where(r => r.RequestId == requestId).FirstOrDefaultAsync();
+            if(review != null)
             {
+                // Update reviewer and status
+                review.ReviewerId = rater.UserId;
+                review.LastActivityDate = DateTime.Now;
+                review.Status = ReviewStatus.IN_PROGRESS;
+                await db.SaveChangesAsync();
+
+                result.Review = review;
                 result.ReviewId = result.Review.Id;
                 result.ReviewRequest = request;
-                result.Submission = await db.Submissions.Where(s => s.Id == result.ReviewRequest.SubmissionId).FirstOrDefaultAsync();
+                result.Submission = await db.Submissions.Where(s => s.Id == request.SubmissionId).FirstOrDefaultAsync();
                 return result;
             }
 
+            //result.Review = await db.Reviews.Where(r => r.RequestId == requestId).FirstOrDefaultAsync();
+            //if (result?.Review != null)
+            //{
+            //    result.ReviewId = result.Review.Id;
+            //    result.ReviewRequest = request;
+            //    result.Submission = await db.Submissions.Where(s => s.Id == result.ReviewRequest.SubmissionId).FirstOrDefaultAsync();
+            //    return result;
+            //}
+
             // Create new review if not existed
-            Reviews rv = new Reviews { RevieweeId = request.UserId, RequestId = request.Id, ReviewerId = currentUserId, LastActivityDate = DateTime.Now, FinalScore = null, TimeSpentInSeconds = 0, Status = ReviewStatus.IN_PROGRESS };
+            Reviews rv = new Reviews {
+                RevieweeId = request.UserId,
+                RequestId = request.Id,
+                ReviewerId = currentUserId,
+                SubmissionId = request.SubmissionId,
+                LastActivityDate = DateTime.Now,
+                FinalScore = null,
+                TimeSpentInSeconds = 0,
+                Status = ReviewStatus.IN_PROGRESS
+            };
             await db.Reviews.AddAsync(rv);
             await db.SaveChangesAsync();
 
             result.Review = rv;
             result.ReviewRequest = request;
-            result.Submission = await db.Submissions.Where(s => s.Id == result.ReviewRequest.SubmissionId).FirstOrDefaultAsync();
+            result.Submission = await db.Submissions.Where(s => s.Id == request.SubmissionId).FirstOrDefaultAsync();
 
             return result;
         }
@@ -1148,7 +1172,7 @@ namespace Reboost.DataAccess.Repositories
         {
             var assignment = await db.RequestAssignments.Where(a => a.RequestId == requestId).FirstOrDefaultAsync();
 
-            if (assignment != null && assignment.Status == RequestAssignmentStatus.ASSIGNED)
+            if (assignment != null)
             {
                 var rater = await db.Raters.Where(r => r.Id == raterId).FirstOrDefaultAsync();
 
