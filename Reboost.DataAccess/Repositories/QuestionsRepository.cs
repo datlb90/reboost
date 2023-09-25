@@ -406,6 +406,30 @@ namespace Reboost.DataAccess.Repositories
 
                         }
                     }
+                    else
+                    {
+                        var extensionPath = Path.GetExtension(item.FileName);
+                        var fileName = model.Id + extensionPath;
+                        var audioDirectory = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/photo");
+                        if (!Directory.Exists(audioDirectory))
+                        {
+                            Directory.CreateDirectory(audioDirectory);
+                        }
+                        var filePath = Path.Combine(audioDirectory, fileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await item.CopyToAsync(fileStream);
+                        }
+
+                        foreach (var p in model.QuestionParts)
+                        {
+                            if (p.Name == "Chart")
+                            {
+                                p.Content = fileName;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -466,6 +490,32 @@ namespace Reboost.DataAccess.Repositories
                                 p.Content = fileName;
                             }
 
+                        }
+                    }
+                    else
+                    {
+                        var extensionPath = Path.GetExtension(item.FileName);
+                        var fileName = model.Id + extensionPath;
+                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/photo", fileName);
+
+                        FileInfo file = new FileInfo(filePath);
+
+                        if (file != null)
+                        {
+                            file.Delete();
+                        }
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await item.CopyToAsync(fileStream);
+                        }
+
+                        foreach (var p in model.QuestionParts)
+                        {
+                            if (p.Name == "Chart")
+                            {
+                                p.Content = fileName;
+                            }
                         }
                     }
                 }

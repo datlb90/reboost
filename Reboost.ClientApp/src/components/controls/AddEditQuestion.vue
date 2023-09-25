@@ -258,7 +258,7 @@ export default {
         if (fileChartName) {
           file = {
             name: fileChartName.content,
-            url: '/audio/' + this.questionExist.id + '.' + fileChartName.content
+            url: '/photo/' + this.questionExist.id + '.' + fileChartName.content
           }
           this.chartFileList = [file]
         }

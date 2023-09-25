@@ -102,7 +102,7 @@
             <pre id="transcriptContent" v-html="getTranscript.content" />
           </div>
           <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))">
-            <img src="../../assets/chart/1.png" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
+            <img :src="'/photo/' + getChart" :alt="getChart" style="max-height: 100%; max-width: 100%;">
           </div>
         </div>
       </div>
@@ -173,8 +173,8 @@ export default {
     getChart() {
       if (typeof (this.getDataQuestionParts) != 'undefined') {
         if (this.getDataQuestionParts.find(u => u.name == 'Chart')) {
-          var chart = this.getDataQuestionParts.find(u => u.name == 'Chart')
-          chart.content = '../../assets/' + chart.content.trim()
+          var chart = this.getDataQuestionParts.find(u => u.name == 'Chart').content
+          // chart.content = '/' + chart.content.trim()
           return chart
         }
       }
