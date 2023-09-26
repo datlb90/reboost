@@ -26,7 +26,7 @@
 <script>
 // @ is an alias to /src
 // import http from '@/utils/axios'
-import { loadStripe } from '@stripe/stripe-js'
+// import { loadStripe } from '@stripe/stripe-js'
 export default {
   name: 'About',
   data() {
@@ -39,26 +39,26 @@ export default {
 
   },
   async mounted() {
-    const stripe = await loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx')
-    var elements = stripe.elements()
-    var style = {
-      base: {
-        color: '#32325d',
-        fontFamily: 'Arial, sans-serif',
-        fontSmoothing: 'antialiased',
-        fontSize: '16px',
-        '::placeholder': {
-          color: '#32325d'
-        }
-      },
-      invalid: {
-        fontFamily: 'Arial, sans-serif',
-        color: '#fa755a',
-        iconColor: '#fa755a'
-      }
-    }
-    var card = elements.create('card', { style: style })
-    card.mount('#card-element')
+    // const stripe = await loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx')
+    // var elements = stripe.elements()
+    // var style = {
+    //   base: {
+    //     color: '#32325d',
+    //     fontFamily: 'Arial, sans-serif',
+    //     fontSmoothing: 'antialiased',
+    //     fontSize: '16px',
+    //     '::placeholder': {
+    //       color: '#32325d'
+    //     }
+    //   },
+    //   invalid: {
+    //     fontFamily: 'Arial, sans-serif',
+    //     color: '#fa755a',
+    //     iconColor: '#fa755a'
+    //   }
+    // }
+    // var card = elements.create('card', { style: style })
+    // card.mount('#card-element')
   },
   methods: {
   }

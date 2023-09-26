@@ -85,7 +85,7 @@ import paymentService from '../../services/payment.service'
 import { REVIEW_REQUEST_STATUS, SUBSCRIPTION_PLANS } from '../../app.constant'
 import reviewService from '../../services/review.service'
 import * as moment from 'moment'
-import { openPayment } from '../../assets/epay/js/paymentClient'
+// import { openPayment } from '../../assets/epay/js/paymentClient'
 // import { configs } from '../../app.constant'
 export default {
   name: 'Checkout',
@@ -274,7 +274,7 @@ export default {
       })
     },
     submitForm() {
-      openPayment(1, this.domain)
+      // openPayment(1, this.domain)
     },
     sha256(s) {
       var chrsz = 8

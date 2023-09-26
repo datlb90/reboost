@@ -167,7 +167,7 @@ import paymentService from '../../services/payment.service'
 // import accountService from '../../services/account.service'
 import moment from 'moment'
 import { configs } from '../../app.constant'
-import { loadStripe } from '@stripe/stripe-js'
+// import { loadStripe } from '@stripe/stripe-js'
 export default {
   name: 'PaymentInfo',
   data() {
@@ -246,31 +246,32 @@ export default {
       this.loadTable()
     },
     async dialogOpened() {
-      this.updateVisible = true
-      this.stripe = await loadStripe(configs.stripeApiKey)
-      var elements = this.stripe.elements()
-      var style = {
-        base: {
-          color: '#32325d',
-          fontFamily: 'Arial, sans-serif',
-          fontSmoothing: 'antialiased',
-          fontSize: '16px',
-          '::placeholder': {
-            color: '#32325d'
-          }
-        },
-        invalid: {
-          fontFamily: 'Arial, sans-serif',
-          color: '#fa755a',
-          iconColor: '#fa755a'
-        }
-      }
-      this.card = elements.create('card', { style: style })
-      this.card.mount('#card-element')
-      this.card.on('change', (event) => {
-        this.isCardValid = !event.error
-        document.querySelector('#card-error').textContent = event.error ? event.error.message : ''
-      })
+      console.log(configs.stripeApiKey)
+      // this.updateVisible = true
+      // this.stripe = await loadStripe(configs.stripeApiKey)
+      // var elements = this.stripe.elements()
+      // var style = {
+      //   base: {
+      //     color: '#32325d',
+      //     fontFamily: 'Arial, sans-serif',
+      //     fontSmoothing: 'antialiased',
+      //     fontSize: '16px',
+      //     '::placeholder': {
+      //       color: '#32325d'
+      //     }
+      //   },
+      //   invalid: {
+      //     fontFamily: 'Arial, sans-serif',
+      //     color: '#fa755a',
+      //     iconColor: '#fa755a'
+      //   }
+      // }
+      // this.card = elements.create('card', { style: style })
+      // this.card.mount('#card-element')
+      // this.card.on('change', (event) => {
+      //   this.isCardValid = !event.error
+      //   document.querySelector('#card-error').textContent = event.error ? event.error.message : ''
+      // })
     },
     formatPrice(id) {
       var value = this.currentPrices.filter(r => r.product == id)[0].unit_amount / 100
@@ -298,42 +299,42 @@ export default {
       setTimeout(() => {
         document.getElementsByClassName('el-loading-spinner')[0].setAttribute('style', 'margin-top: -10px;')
       }, 20)
-      this.stripe.createPaymentMethod({
-        type: 'card',
-        card: this.card,
-        billing_details: {
-          name: this.currentUser.username
-        }
-      })
-        .then(rs => {
-          if (rs) {
-            paymentService.updateDefaultPaymentMethod(this.currentUser.stripeCustomerId, rs.paymentMethod.id).then(result => {
-              if (result) {
-                this.$store.dispatch('payment/loadDefaultPaymentMethod', this.currentUser.stripeCustomerId)
-                this.$notify.success({
-                  title: 'Update Sucess',
-                  message: 'Updated successfully',
-                  type: 'success',
-                  duration: 3000
-                })
-                this.updateVisible = false
-                this.loading = false
-              } else {
-                this.$notify.error({
-                  title: 'Error',
-                  message: 'Error occured!',
-                  type: 'error',
-                  duration: 3000
-                })
-              }
-              this.loading = false
-            })
-          }
-          this.selectedMethod = rs.paymentMethod
-          this.lastName = this.selectedMethod.billing_details.name
-          this.credit = '**** **** **** ' + this.selectedMethod.card.last4
-          this.activeStep = this.activeStep == 1 ? 2 : 1
-        })
+      // this.stripe.createPaymentMethod({
+      //   type: 'card',
+      //   card: this.card,
+      //   billing_details: {
+      //     name: this.currentUser.username
+      //   }
+      // })
+      //   .then(rs => {
+      //     if (rs) {
+      //       paymentService.updateDefaultPaymentMethod(this.currentUser.stripeCustomerId, rs.paymentMethod.id).then(result => {
+      //         if (result) {
+      //           this.$store.dispatch('payment/loadDefaultPaymentMethod', this.currentUser.stripeCustomerId)
+      //           this.$notify.success({
+      //             title: 'Update Sucess',
+      //             message: 'Updated successfully',
+      //             type: 'success',
+      //             duration: 3000
+      //           })
+      //           this.updateVisible = false
+      //           this.loading = false
+      //         } else {
+      //           this.$notify.error({
+      //             title: 'Error',
+      //             message: 'Error occured!',
+      //             type: 'error',
+      //             duration: 3000
+      //           })
+      //         }
+      //         this.loading = false
+      //       })
+      //     }
+      //     this.selectedMethod = rs.paymentMethod
+      //     this.lastName = this.selectedMethod.billing_details.name
+      //     this.credit = '**** **** **** ' + this.selectedMethod.card.last4
+      //     this.activeStep = this.activeStep == 1 ? 2 : 1
+      //   })
     }
   }
 

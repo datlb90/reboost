@@ -15,14 +15,14 @@
       </el-col>
     </el-row>
     <el-row class="advertisement-top">
-      <ins
+      <!-- <ins
         class="adsbygoogle"
         style="display:block"
         data-ad-client="ca-pub-9880795331210715"
         data-ad-slot="8468836821"
         data-ad-format="auto"
         data-full-width-responsive="true"
-      />
+      /> -->
     </el-row>
     <el-row class="articles-container">
       <div class="articles-list__container col-lg-10 col-md-12">
@@ -200,8 +200,8 @@ export default {
     }
   },
   mounted() {
-    const adsbygoogle = window.adsbygoogle || []
-    adsbygoogle.push({})
+    // const adsbygoogle = window.adsbygoogle || []
+    // adsbygoogle.push({})
     this.selectCategory('All')
     this.loadArticlesList()
   },
