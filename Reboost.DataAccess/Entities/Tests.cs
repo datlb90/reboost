@@ -14,7 +14,7 @@ namespace Reboost.DataAccess.Entities
         public string Name { get; set; }
 
         public virtual ICollection<TestSections> TestSections { get; set; }
-        public virtual ICollection<RaterCredentials> RaterCredentials { get; set; }
+        //public virtual ICollection<RaterCredentials> RaterCredentials { get; set; }
 
     }
 }

@@ -106,7 +106,7 @@ namespace Reboost.DataAccess.Repositories
             {
                 Name = g.Key,
                 Id = g.FirstOrDefault()?.CriteriaId,
-                Description = g.FirstOrDefault()?.Description,
+                Description = g.FirstOrDefault()?.CriteriaDescription,
                 BandScoreDescriptions = g.ElementAt(0).Id == -1 ? new List<BandScoreDescription>() : g.Select(d => new BandScoreDescription
                 {
                     Id = d.Id,

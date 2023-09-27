@@ -13,6 +13,6 @@ namespace Reboost.DataAccess.Entities
         public byte[] Data { get; set; }
         public string FileExtension { get; set; }
         public virtual Raters Rater { get; set; }
-        public virtual Tests Test { get; set; }
+        //public virtual Tests Test { get; set; }
     }
 }

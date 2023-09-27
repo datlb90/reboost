@@ -150,7 +150,7 @@
                 <el-dropdown-item>Action 3</el-dropdown-item>
                 <el-dropdown-item disabled>Action 4</el-dropdown-item> -->
                   <el-dropdown-item command="selectTest" divided>Selected test {{ testsToText() }}</el-dropdown-item>
-                  <el-dropdown-item v-if="role == 'Learner'" command="addQuestion">Contribute a question</el-dropdown-item>
+                  <el-dropdown-item command="addQuestion">Contribute a question</el-dropdown-item>
                   <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>

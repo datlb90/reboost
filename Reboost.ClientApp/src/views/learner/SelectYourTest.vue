@@ -12,14 +12,19 @@
           <el-col :span="12" class="padding-10" style="padding-right: 15px;">
             <el-row style="margin-bottom: 25px;">
               <el-col :span="24">
-                <div class="image-ielts" :class="{'question-con': selectIELTS}" style="height: 225px; padding: 0; border: 1px solid #ebeef5;" @click="selectScoreIELTS()">
-                  <img src="@/assets/img/LogoIELTS.png" alt="" style="height:100%; width: 100%;">
+                <div class="image-ielts" :class="{'question-con': selectIELTS}" style="text-align: center; height: 225px; padding: 0; border: 1px solid #ebeef5;" @click="selectScoreIELTS()">
+                  <img src="@/assets/img/ielts-logo-1.png" alt="" style="height:100%; width: 90%;">
                 </div>
               </el-col>
             </el-row>
 
             <div v-if="selectIELTS" style="margin-bottom: 25px;">
-              <el-col :span="24" class="select-score-ielts question-con">
+              <el-alert
+                title="IELTS test has been selected "
+                type="success"
+                show-icon
+              />
+              <!-- <el-col :span="24" class="select-score-ielts question-con">
                 <div style="margin-bottom:10px">
                   <span style="font-style:normal ;font-size: 15px; margin: 0 5px 5px;">Select You Current IELTS Writing Score</span>
                   <el-popover
@@ -73,20 +78,25 @@
                     </el-form-item>
                   </el-row>
                 </el-form-item>
-              </el-col>
+              </el-col> -->
             </div>
           </el-col>
 
           <el-col :span="12" class="padding-10" style="padding-left: 15px;">
             <el-row style="margin-bottom: 25px;">
               <el-col :span="24">
-                <div style="height: 225px; padding: 0; border: 1px solid #ebeef5;" class="image-ielts" :class="{'question-con': selectTOEFL}" @click="selectScoreTOEFL()">
-                  <img src="@/assets/img/LogoTOEFL.png" alt="" style="height:100%; width: 100%;">
+                <div style="height: 225px; padding: 58px; border: 1px solid #ebeef5;" class="image-ielts" :class="{'question-con': selectTOEFL}" @click="selectScoreTOEFL()">
+                  <img src="@/assets/img/toefl-logo.png" alt="" style="height:100%; width: 100%;">
                 </div>
               </el-col>
             </el-row>
             <div v-if="selectTOEFL" style="margin-bottom: 25px;">
-              <el-col :span="24" class="select-score-ielts question-con">
+              <el-alert
+                title="TOEFL test has been selected "
+                type="success"
+                show-icon
+              />
+              <!-- <el-col :span="24" class="select-score-ielts question-con">
                 <div style="margin-bottom:10px">
                   <span style="font-style:normal ;font-size: 15px; margin: 0 5px 5px;">Select You Current IELTS Writing Score</span>
                   <el-popover
@@ -140,7 +150,7 @@
                     </el-form-item>
                   </el-row>
                 </el-form-item>
-              </el-col>
+              </el-col> -->
             </div>
           </el-col>
         </el-row>
@@ -173,16 +183,16 @@ export default {
       },
       formData: {
         ieltsTestScore: {
-          WRITING: null,
-          READING: null,
-          LISTENING: null,
-          SPEAKING: null
+          WRITING: 0,
+          READING: 0,
+          LISTENING: 0,
+          SPEAKING: 0
         },
         toeflTestScore: {
-          WRITING: null,
-          READING: null,
-          LISTENING: null,
-          SPEAKING: null
+          WRITING: 0,
+          READING: 0,
+          LISTENING: 0,
+          SPEAKING: 0
         }
       },
       selectIELTS: false,
@@ -237,39 +247,80 @@ export default {
     },
     submit(formName) {
       var scores = []
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          if (this.selectIELTS) {
-            for (const key in this.formData.ieltsTestScore) {
-              if (this.formData.ieltsTestScore[key]) {
-                scores.push({
-                  sectionId: SCORES.IELTS[key].sectionId,
-                  score: this.formData.ieltsTestScore[key],
-                  updatedDate: moment().format('yyyy-MM-DD')
-                })
-              }
-            }
-          }
-          if (this.selectTOEFL) {
-            for (const key in this.formData.toeflTestScore) {
-              if (this.formData.toeflTestScore[key]) {
-                scores.push({
-                  sectionId: SCORES.TOEFL[key].sectionId,
-                  score: this.formData.toeflTestScore[key],
-                  updatedDate: moment().format('yyyy-MM-DD')
-                })
-              }
-            }
-          }
-          userService.addScore(this.currentUser.id, scores).then(rs => {
-            this.$store.dispatch('auth/setSelectedTest').then(() => {
-              if (rs.userScores.length > 0) {
-                this.$router.push('/questions')
-              }
-            })
+
+      if (this.selectIELTS) {
+        for (const key in this.formData.ieltsTestScore) {
+          scores.push({
+            sectionId: SCORES.IELTS[key].sectionId,
+            score: 0,
+            updatedDate: moment().format('yyyy-MM-DD')
           })
+          // if (this.formData.ieltsTestScore[key]) {
+          //   scores.push({
+          //     sectionId: SCORES.IELTS[key].sectionId,
+          //     score: this.formData.ieltsTestScore[key],
+          //     updatedDate: moment().format('yyyy-MM-DD')
+          //   })
+          // }
         }
+      }
+      if (this.selectTOEFL) {
+        for (const key in this.formData.toeflTestScore) {
+          scores.push({
+            sectionId: SCORES.TOEFL[key].sectionId,
+            score: 0, // this.formData.toeflTestScore[key],
+            updatedDate: moment().format('yyyy-MM-DD')
+          })
+          // if (this.formData.toeflTestScore[key]) {
+          //   scores.push({
+          //     sectionId: SCORES.TOEFL[key].sectionId,
+          //     score: this.formData.toeflTestScore[key],
+          //     updatedDate: moment().format('yyyy-MM-DD')
+          //   })
+          // }
+        }
+      }
+      userService.addScore(this.currentUser.id, scores).then(rs => {
+        this.$store.dispatch('auth/setSelectedTest').then(() => {
+          if (rs.userScores.length > 0) {
+            this.$router.push('/questions')
+          }
+        })
       })
+
+      // this.$refs[formName].validate((valid) => {
+      //   if (valid) {
+      //     if (this.selectIELTS) {
+      //       for (const key in this.formData.ieltsTestScore) {
+      //         if (this.formData.ieltsTestScore[key]) {
+      //           scores.push({
+      //             sectionId: SCORES.IELTS[key].sectionId,
+      //             score: this.formData.ieltsTestScore[key],
+      //             updatedDate: moment().format('yyyy-MM-DD')
+      //           })
+      //         }
+      //       }
+      //     }
+      //     if (this.selectTOEFL) {
+      //       for (const key in this.formData.toeflTestScore) {
+      //         if (this.formData.toeflTestScore[key]) {
+      //           scores.push({
+      //             sectionId: SCORES.TOEFL[key].sectionId,
+      //             score: this.formData.toeflTestScore[key],
+      //             updatedDate: moment().format('yyyy-MM-DD')
+      //           })
+      //         }
+      //       }
+      //     }
+      //     userService.addScore(this.currentUser.id, scores).then(rs => {
+      //       this.$store.dispatch('auth/setSelectedTest').then(() => {
+      //         if (rs.userScores.length > 0) {
+      //           this.$router.push('/questions')
+      //         }
+      //       })
+      //     })
+      //   }
+      // })
     },
     selectScoreIELTS() {
       this.selectIELTS = !this.selectIELTS
@@ -289,7 +340,8 @@ export default {
 .question-con {
   padding: 10px 30px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
-  background-color: #fff;
+  /* background-color:#fff; */
+  background-color:#f0f9eb;
   border-radius: 4px;
   font-size: 12px;
   font-style: italic;
