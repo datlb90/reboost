@@ -235,11 +235,11 @@ export default {
   },
   async mounted() {
     this.email = this.currentUser.email
-    if (this.currentUser.stripeCustomerId) {
-      this.$store.dispatch('payment/loadPaymentMethods', this.currentUser.stripeCustomerId)
-    } else {
-      this.$store.dispatch('payment/loadPaymentMethods', null)
-    }
+    // if (this.currentUser.stripeCustomerId) {
+    //   this.$store.dispatch('payment/loadPaymentMethods', this.currentUser.stripeCustomerId)
+    // } else {
+    //   this.$store.dispatch('payment/loadPaymentMethods', null)
+    // }
   },
   async created() {
     this.merchantToken = this.sha256(this.timeStamp + this.merTrxId + this.merId + this.amountVND + this.encodeKey)

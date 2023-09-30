@@ -31,7 +31,7 @@ namespace Reboost.DataAccess.Repositories
         Task<QuestionRequestModel> UpdateQuestionAsync(Questions q, QuestionRequestModel model);
         Task<Questions> PublishQuestionAsync(int id);
         Task<Questions> ApproveQuestionAsync(int id);
-
+        Task<List<SubmissionsForQuestionModel>> GetSubmissionsForQuestion(string userId, int questionId);
     }
     public class QuestionsRepository : BaseRepository<Questions>, IQuestionsRepository
     {
@@ -312,10 +312,7 @@ namespace Reboost.DataAccess.Repositories
         public async Task<List<SubmissionsModel>> GetAllSubmissionByUserIdAsync(string userId)
         {
             
-            var listReviewRequest = await (from r in ReboostDbContext.ReviewRequests
-                                           where r.UserId == userId
-                                           select r
-                                    ).ToListAsync();
+            
 
             var listsubmissions = await (from s in ReboostDbContext.Submissions
                                          join q in ReboostDbContext.Questions on s.QuestionId equals q.Id
@@ -337,6 +334,11 @@ namespace Reboost.DataAccess.Repositories
                                              TimeSubmitted = s.SubmittedDate
                                          }).ToListAsync();
 
+            //var listReviewRequest = await (from r in ReboostDbContext.ReviewRequests
+            //                               where r.UserId == userId
+            //                               select r
+            //                        ).ToListAsync();
+
             //foreach (ReviewRequests r in listReviewRequest)
             //{
             //    //int flag = listsubmissions.Any(s => s.Id == r.SubmissionId && r.Status == "Completed") ? 2 : listsubmissions.Any(s => s.Id == r.SubmissionId) ? 1 : 0;
@@ -355,7 +357,28 @@ namespace Reboost.DataAccess.Repositories
             //}
             return listsubmissions;
         }
+        public async Task<List<SubmissionsForQuestionModel>> GetSubmissionsForQuestion(string userId, int questionId)
+        {
 
+            var listsubmissions = await (from s in ReboostDbContext.Submissions
+                                         join d in ReboostDbContext.Documents on s.DocId equals d.Id
+                                         where s.UserId == userId && s.QuestionId == questionId
+                                         orderby s.UpdatedDate descending, s.SubmittedDate descending
+                                         select new SubmissionsForQuestionModel
+                                         {
+                                             Id = s.Id,
+                                             SubmittedTimeStr = s.SubmittedDate.ToString("MM/dd/yyyy hh:mm tt"),
+                                             Status = s.Status,
+                                             Action = (s.Status == SubmissionStatus.REVIEWED || s.Status == SubmissionStatus.COMPLETED) ? "View Review" : "",
+                                             TimeTaken = s.TimeSpentInSeconds,
+                                             TimeSubmitted = s.SubmittedDate,
+                                             PageCount = d.PageCount,
+                                             Text = d.Text
+                                         }).ToListAsync();
+
+
+            return listsubmissions;
+        }
         public async Task<QuestionDataModel> GetAllDataForAddOrEditQuestion()
         {
             QuestionDataModel result = new QuestionDataModel();

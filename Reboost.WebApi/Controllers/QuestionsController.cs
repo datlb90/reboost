@@ -100,12 +100,18 @@ namespace Reboost.WebApi.Controllers
         }
         [Authorize]
         [HttpGet]
-        [Route("submission/{userId}")]
+        [Route("submissions/{userId}")]
         public async Task<List<SubmissionsModel>> GetAllSubmissionsByUserId([FromRoute] string userId)
         {
             return await _service.GetAllSubmissionByUserId(userId);
         }
-
+        [Authorize]
+        [HttpGet]
+        [Route("submissions/{userId}/{questionId}")]
+        public async Task<List<SubmissionsForQuestionModel>> GetSubmissionsForQuestion(string userId, int questionId)
+        {
+            return await _service.GetSubmissionsForQuestion(userId, questionId);
+        }
         [Authorize]
         [HttpGet]
         [Route("add-edit/data")]

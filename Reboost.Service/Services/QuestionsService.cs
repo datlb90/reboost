@@ -2,6 +2,7 @@
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using Reboost.Shared;
+using Stripe;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -31,7 +32,7 @@ namespace Reboost.Service.Services
         Task<QuestionRequestModel> UpdateQuestionAsync(Questions q, QuestionRequestModel model);
         Task<Questions> PublishQuestionAsync(int id);
         Task<Questions> ApproveQuestionAsync(int id);
-
+        Task<List<SubmissionsForQuestionModel>> GetSubmissionsForQuestion(string userId, int questionId);
     }
     public class QuestionsService : BaseService, IQuestionsService
     {
@@ -114,12 +115,14 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Questions.GetAllSubmissionByUserIdAsync(userId);
         }
-
+        public async Task<List<SubmissionsForQuestionModel>> GetSubmissionsForQuestion(string userId, int questionId)
+        {
+            return await _unitOfWork.Questions.GetSubmissionsForQuestion(userId, questionId);
+        }
         public async Task<QuestionDataModel> GetAllDataForAddOrEditQuestion()
         {
             return await _unitOfWork.Questions.GetAllDataForAddOrEditQuestion();
         }
-
         public async Task<QuestionRequestModel> CreateQuestionAsync(Questions q, QuestionRequestModel model)
         {
             model.AddedDate = DateTime.Now;

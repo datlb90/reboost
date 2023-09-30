@@ -26,7 +26,10 @@ const questionService = {
     return http.get(`/questions/sampleForQuestion/${questionId}`).then(rs => { return rs ? rs.data : [] })
   },
   getSubmissionsByUserId(userId) {
-    return http.get(`/questions/submission/${userId}`).then(rs => { return rs ? rs.data : [] })
+    return http.get(`/questions/submissions/${userId}`).then(rs => { return rs ? rs.data : [] })
+  },
+  getSubmissionsforQuestion(userId, questionId) {
+    return http.get(`/questions/submissions/${userId}/${questionId}`).then(rs => { return rs ? rs.data : [] })
   },
   getAddEditQuestionData() {
     return http.get('/questions/add-edit/data').then(rs => rs.data)

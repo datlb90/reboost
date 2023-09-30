@@ -2,8 +2,8 @@
   <div id="practiceWritingContainer" :style="{ height: containerHeight, visibility: loadCompleted?'visible': 'hidden' }">
     <splitpanes class="default-theme" vertical style="height: 100%; width: 100%;">
       <pane>
-        <el-tabs type="border-card" style="height: 100%;" @tab-click="showDiscussion">
-          <el-tab-pane label="Topic">
+        <el-tabs v-model="activeTab" type="border-card" style="height: 100%;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
+          <el-tab-pane label="Description" name="description">
             <div style="height: 100%;display: flex; flex-direction: column">
               <div style="margin-bottom: 8px;">
                 <el-row>
@@ -117,21 +117,129 @@
             </div>
 
           </el-tab-pane>
-          <el-tab-pane label="Samples" style="height: 100%; position: relative;">
-            <div class="par-content">
-              <tab-samples />
-            </div>
-          </el-tab-pane>
-          <el-tab-pane label="Rubric" style="height: 100%; position: relative;">
+          <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
             <div class="par-content">
               <tab-rubric />
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Discussions" style="height: 100%; position: relative;">
+          <el-tab-pane label="Samples" name="sample" style="height: 100%; position: relative;">
+            <div class="par-content">
+              <tab-samples />
+            </div>
+          </el-tab-pane>
+
+          <!-- <el-tab-pane label="Discussions" style="height: 100%; position: relative;">
             <div class="par-content" style="padding-right: 10px;">
               <tab-discussion />
             </div>
+          </el-tab-pane> -->
+
+          <el-tab-pane label="Submissions" name="submissions" style="height: 100%; position: relative;">
+            <div class="par-content" style="padding-right: 10px;">
+              <el-table
+                :data="submissions"
+                stripe
+                style="width: 100%"
+                size="mini"
+                :row-style="{'cursor': 'pointer'}"
+                @row-click="onSubmissionRowClick"
+              >
+                <el-table-column
+                  prop="id"
+                  label="Id"
+                  width="50"
+                />
+                <el-table-column
+                  prop="submittedTimeStr"
+                  label="Submitted Date"
+                  min-width="155"
+                >
+                  <template slot-scope="scope">
+                    <span>{{ scope.row.submittedTimeStr }}</span>
+                  </template>
+                </el-table-column>
+
+                <el-table-column
+                  prop="status"
+                  label="Status"
+                  min-width="160"
+                >
+                  <template slot-scope="scope">
+                    <el-tag>{{ scope.row.status }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  prop="timeTaken"
+                  label="Time Taken"
+                  min-width="120"
+                >
+                  <template slot-scope="scope">
+                    <span>{{ getTimeTaken(scope.row.timeTaken) }}</span>
+                  </template>
+                </el-table-column>
+
+                <el-table-column
+                  label="Word Count"
+                  min-width="100"
+                >
+                  <template slot-scope="scope">
+                    <span>{{ scope.row.text ? scope.row.text.trim().split(/\b\S+\b/).length - 1 : 0 }}</span>
+                  </template>
+                </el-table-column>
+
+              </el-table>
+            </div>
           </el-tab-pane>
+
+          <el-tab-pane
+            v-for="item in editableTabs"
+            :key="item.id"
+            :label="item.status"
+            :name="'submission' + item.id"
+            closable
+          >
+            <el-card class="box-card">
+              <div slot="header" class="box-card__title" style="min-width: 380px;">
+                <div style="height: 30px;">
+                  <div style="width: 260px; float: left; margin-top: 5px; font-size: 14px; font-weight: bold;">
+                    Submitted at {{ item.submittedTimeStr }}
+                  </div>
+                  <div style="float: right;">
+                    <el-tag size="medium">Status: {{ item.status }}</el-tag>
+                  </div>
+                </div>
+                <div style="height: 30px;">
+                  <div style="float: left; margin-right: 5px;">
+                    <el-tag
+                      type="info"
+                      size="medium"
+                      effect="plain"
+                    >
+                      Time Taken: {{ getTimeTaken(item.timeTaken) }}
+                    </el-tag>
+                  </div>
+                  <div style="float: left; margin-right: 5px;">
+                    <el-tag
+                      type="info"
+                      size="medium"
+                      effect="plain"
+                    >
+                      Word count: {{ item.text ? item.text.trim().split(/\b\S+\b/).length - 1 : 0 }}
+                    </el-tag>
+                  </div>
+                  <div style="margin-top: 8px; float: right; " @click="copyTextToClipboard(item.text)">
+                    <i class="far fa-clone" style="font-size: 18px; color: #9b9898; cursor: pointer;" />
+                  </div>
+                </div>
+              </div>
+              <div class="box-card__content">
+                <div style="flex-grow: 1;">
+                  <textarea v-model="item.text" :disabled="true" spellcheck="false" class="textarea-style" style="height: calc(100vh - 220px); border-top: 1px solid #e2e2e2;" />
+                </div>
+              </div>
+            </el-card>
+          </el-tab-pane>
+
           <!-- <el-tab-pane label="Similiar">Similiar</el-tab-pane> -->
           <!-- <el-tab-pane>
             <template #label>
@@ -161,17 +269,88 @@
       </pane>
       <pane v-if="!tabDisCussionShowed">
         <div style="height: 100%; display: flex; flex-direction: column;">
-          <div class="header-passage" style="display:flex; justify-content: space-between; border: 1px solid #e2e2e2; padding: 5px;">
-            <div v-if="getQuestion != '' && !writingSubmitted">
+          <div class="header-passage">
+            <el-dropdown
+              v-if="userSubmissions.length > 0"
+              style="float: left; margin-right: 5px;"
+              placemen="bottom-start"
+              @command="onSubmissionChange"
+            >
+              <el-button type="primary" plain size="mini">
+                Submissions<i class="el-icon-arrow-down el-icon--right" />
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item v-for="submission in userSubmissions" :key="submission.id" :command="submission.id">
+                  {{ submission.submittedDate }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+
+            <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
+              <el-tag
+                v-if="isShowCountWord && countWord != 0"
+                type="info"
+                size="medium"
+                closable
+                effect="plain"
+                :disable-transitions="true"
+                @close="toggleShowCount()"
+              >
+                Word count: {{ countWord }}
+              </el-tag>
+
+              <el-button v-if="!isShowCountWord" size="mini" plain @click="toggleShowCount()">
+                Show Word Count
+              </el-button>
+            </div>
+
+            <!-- <el-tag v-if="isShowCountWord && countWord != 0" type="info" size="small" closable @close="onWordCountClosed()">{{ countWord }} words</el-tag> -->
+
+            <!-- <div v-if="getQuestion != '' && !writingSubmitted">
               <el-button size="mini" @click="toggleShowCount()">Hide Word Count</el-button>
               <span v-if="isShowCountWord && countWord != 0" style="margin-left: 15px;">Words: {{ countWord }}</span>
-            </div>
+            </div> -->
             <div v-if="writingSubmitted" class="submited-message">
               <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'" style="white-space: normal; height: 100%;">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;"> Reviews.</a> </el-tag>
             </div>
             <div v-if="getQuestion != ''">
-              <el-dropdown v-if="writingSubmitted || hasSubmitionForThisQuestion " size="mini" @command="checkoutVisibles">
-                <el-button size="mini">
+              <el-button
+                v-if="hasSubmitionForThisQuestion&& !isEdit"
+                style="float: right; margin-left: 5px"
+                size="mini"
+                :disabled="!(writingContent && writingContent.length > 0)"
+                type="primary"
+                @click="submit()"
+              >Submit</el-button>
+              <el-button
+                v-if="isEdit"
+                style="float: right; margin-left: 5px"
+                size="mini"
+                @click="isEdit=false"
+              >Edit</el-button>
+              <el-button
+                v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
+                size="mini"
+                :disabled="!(writingContent && writingContent.length > 0)"
+                type="primary"
+                style="float: right; margin-left: 5px;"
+                @click="submit()"
+              >Submit</el-button>
+              <el-button
+                v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
+                size="mini"
+                :disabled="!(writingContent && writingContent.length > 0)"
+                style="float: right;"
+                @click="save()"
+              >Save</el-button>
+
+              <el-dropdown
+                v-if="writingSubmitted || hasSubmitionForThisQuestion "
+                size="mini"
+                style=" float: right;"
+                @command="checkoutVisibles"
+              >
+                <el-button size="mini" type="success" plain>
                   Get Writing Review
                 </el-button>
                 <el-dropdown-menu slot="dropdown" size="mini">
@@ -180,12 +359,6 @@
                   <el-dropdown-item divided>View Review Sample</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
-
-              <el-button v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" @click="save()">Save</el-button>
-              <el-button v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit" size="mini" :disabled="!(writingContent && writingContent.length > 0)" type="primary" @click="submit()">Submit</el-button>
-              <el-button v-if="isEdit" style="margin-left:5px" size="mini" @click="isEdit=false">Edit</el-button>
-              <el-button v-if="hasSubmitionForThisQuestion&& !isEdit" style="margin-left:5px" size="mini" :disabled="!(writingContent && writingContent.length > 0)" type="primary" @click="submit()">Submit</el-button>
-
             </div>
           </div>
           <div style="flex-grow: 1;">
@@ -224,7 +397,8 @@ import documentService from '../../services/document.service'
 import userService from '../../services/user.service'
 import reviewService from '../../services/review.service'
 // import submissionService from '../../services/submission.service'
-import TabDisCussion from '../learner/PracticeWriting_TabDiscussion.vue'
+import questionService from '../../services/question.service'
+// import TabDisCussion from '../learner/PracticeWriting_TabDiscussion.vue'
 import TabRubric from '../learner/PracticeWriting_TabRubric.vue'
 import TabSamples from '../learner/PracticeWriting_TabSamples.vue'
 import CheckOut from '../../components/controls/CheckOut.vue'
@@ -241,7 +415,7 @@ export default {
   components: {
     'splitpanes': Splitpanes,
     'pane': Pane,
-    'tab-discussion': TabDisCussion,
+    // 'tab-discussion': TabDisCussion,
     'tab-rubric': TabRubric,
     'tab-samples': TabSamples,
     'checkout': CheckOut
@@ -287,7 +461,10 @@ export default {
       timeStart: null,
       idSubmissionStorage: null,
       isEdit: false,
-      isShowQuestion: true
+      isShowQuestion: true,
+      submissions: [],
+      editableTabs: [],
+      activeTab: 'description'
     }
   },
   computed: {
@@ -356,102 +533,115 @@ export default {
     window.component = this
     this.questionId = this.$route.params.id
     this.submissionId = this.$route.params.submissionId
-
     this.$store.dispatch('question/loadQuestion', +this.questionId).then(rs => {
       this.calculateContainerHeight()
       this.loadCompleted = true
     })
-
     userService.hasSubmissionOnTaskOf(this.currentUser.id, this.questionId).then(rs => {
       if (rs) {
         this.email = this.currentUser.email
         this.hideDirection = 'Show'
       }
     })
-
     window.addEventListener('resize', this.calculateContainerHeight.bind(this))
     this.setIntervalForScroll = setInterval(() => {
       this.calculateStylePaddingScroll()
     }, 80)
-
     if (this.submissionId) {
       this.idSubmissionStorage = this.currentUser.username + '_QuestionId' + this.questionId + '_SubmissionId' + this.submissionId
       this.isEdit = true
     }
-
     this.idLocalStorage = this.currentUser.username + '_QuestionId' + this.questionId
-
     this.loadData()
-
     reviewService.getUnratedReview().then(rs => {
       if (rs.length > 0) {
         this.unRatedList = rs
       }
-      console.log('unrated list : ', rs)
+      console.log('Unrated Reviews: ', rs)
     })
-
-    // submissionService.getByUser(this.currentUser.id, this.questionId).then(rs => {
-    //   this.userSubmissions = rs.map(r => ({
-    //     reviewId: r.reviewId,
-    //     docId: r.docId,
-    //     submittedDate: moment(r.submittedDate).format('DD/MM/YYYY hh:mm:ss')
-    //   }))
-    // })
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
     clearInterval(this.timeSpentInterval)
   },
   methods: {
-    loadData() {
-      if (this.submissionId) {
-        reviewService.getReviewRequestBySubmissionId(this.submissionId).then(rs => {
-          console.log('request data: ', rs)
-          if (rs) {
-            this.isFreeRequested = rs.feedbackType == 'Free'
-            this.isProRequested = rs.feedbackType == 'Pro'
-          }
-        })
-
-        documentService.getBySubmissionId(+this.submissionId).then(rs => {
-          if (rs) {
-            this.timeSpent = rs.submissions[0].timeSpentInSeconds
-            const latestSubmition = rs
-            this.writingContent = latestSubmition.text
-            if (rs.submissions[0].status != 'Saved') { this.hasSubmitionForThisQuestion = true }
+    async loadData() {
+      this.submissions = await questionService.getSubmissionsforQuestion(this.currentUser.id, this.questionId)
+      console.log('Submissions: ', this.submissions)
+      if (this.submissions && this.submissions.length > 0) {
+        if (this.submissionId) {
+          const thisSubmission = this.submissions.find(s => s.id == this.submissionId)
+          console.log('This Submission: ', thisSubmission)
+          if (thisSubmission) {
+            this.timeSpent = this.timeSpent = thisSubmission.timeTaken
+            this.writingContent = thisSubmission.text
+            this.hasSubmitionForThisQuestion = true
+            const reviewRequest = await reviewService.getReviewRequestBySubmissionId(this.submissionId)
+            if (reviewRequest) {
+              this.isFreeRequested = reviewRequest.feedbackType == 'Free'
+              this.isProRequested = reviewRequest.feedbackType == 'Pro'
+            }
           }
           if (localStorage.getItem(this.idSubmissionStorage) && localStorage.getItem(this.idSubmissionStorage) != '') {
             this.writingContent = localStorage.getItem(this.idSubmissionStorage)
           }
-          this.countWords()
-        })
-      } else {
-        // Search for all submissions for this question
-        // documentService.search(this.currentUser.id, this.questionId).then(rs => {
-        //   if (rs && rs.length > 0) {
-        //     this.submissionId = rs[0]['submissions'][0]?.id
-        //     this.$router.push(`/PracticeWriting/${this.questionId}/${this.submissionId}`)
-        //     this.loadData()
-        //   } else {
-
-        //   }
-        // })
-
-        // Check if there is a saved submission
-        documentService.getSavedDocument(this.currentUser.id, this.questionId).then(rs => {
-          console.log(rs)
-          if (rs) {
-            this.submissionId = rs['submissions'][0]?.id
+        } else {
+          const savedSubmission = this.submissions.find(s => s.status == 'Saved')
+          console.log('Saved Submission: ', savedSubmission)
+          if (savedSubmission) {
+            this.submissionId = savedSubmission.id
+            this.timeSpent = savedSubmission.timeTaken
+            this.writingContent = savedSubmission.text
             this.idSubmissionStorage = this.currentUser.username + '_QuestionId' + this.questionId + '_SubmissionId' + this.submissionId
-            this.loadData()
+            if (localStorage.getItem(this.idSubmissionStorage) && localStorage.getItem(this.idSubmissionStorage) != '') {
+              this.writingContent = localStorage.getItem(this.idSubmissionStorage)
+            }
+          } else {
+            this.writingContent = localStorage.getItem(this.idLocalStorage)
           }
-        })
-
+        }
+      } else {
         this.writingContent = localStorage.getItem(this.idLocalStorage)
-        if (this.writingContent == null || this.writingContent == 'null') this.writingContent = ''
-        console.log(this.writingContent)
-        this.countWords()
       }
+
+      if (this.writingContent == null || this.writingContent == 'null') this.writingContent = ''
+      console.log('Writing Content: ', this.writingContent)
+      this.countWords()
+    },
+    copyTextToClipboard(text) {
+      console.log(text)
+      navigator.clipboard.writeText(text)
+      this.$notify.success({
+        title: 'Success',
+        message: 'Submission text was copied to the clipboard!',
+        type: 'success',
+        duration: 2000
+      })
+    },
+    onTabRemove(tabName) {
+      // Remove this tab
+      var index = this.editableTabs.findIndex(t => t.name == tabName)
+      if (index > -1) { // only splice array when item is found
+        this.editableTabs.splice(index, 1) // 2nd parameter means remove one item only
+      }
+      // Select the active tab
+      if (this.activeTab == tabName) {
+        if (index == 0) {
+          this.activeTab = 'submissions'
+        } else {
+          if (this.editableTabs.length > 0) {
+            this.activeTab = this.editableTabs[index - 1].name
+          }
+        }
+      }
+    },
+    onSubmissionRowClick(row, column, event) {
+      row.name = 'submission' + row.id
+      var thisTab = this.editableTabs.find(t => t.id == row.id)
+      if (!thisTab) { this.editableTabs.push(row) }
+
+      this.activeTab = 'submission' + row.id
+      console.log(this.activeTab)
     },
     calculateContainerHeight() {
       const headerHeight = document.getElementById('header').clientHeight
@@ -755,18 +945,40 @@ export default {
       }, 1000)
     },
     onSubmissionChange(id) {
-      const e = this.userSubmissions.find(r => r.reviewId === id)
-      this.$refs.ifReview.setAttribute('src', `http://localhost:3011/review-plain/${this.questionId}/${e.docId}/${e.reviewId}?plain=true`)
+      this.$router.push(`/practice/${this.questionId}/${id}`)
+      // const e = this.userSubmissions.find(r => r.reviewId === id)
+      // this.$refs.ifReview.setAttribute('src', `http://localhost:3011/review-plain/${this.questionId}/${e.docId}/${e.reviewId}?plain=true`)
     },
     onCommentOrRubric(e) {
       console.log('Comment/Rubric', e)
       this.$refs.ifReview.contentWindow.postMessage(e, '*')
+    },
+    getTimeTaken(time) {
+      var minutes = Math.floor(time / 60)
+      var seconds = time - minutes * 60
+      return minutes + ' min ' + seconds + ' sec '
     }
   }
 }
 </script>
 
 <style>
+.el-tabs__nav-next {
+    right: 3px !important;
+    top: -2px !important;
+    font-size: 14px !important;
+    color: #606060 !important;
+}
+.el-tabs__nav-prev {
+    left: 3px !important;
+    top: -2px !important;
+    font-size: 14px !important;
+    color: #606060 !important;
+}
+.el-tabs__item {
+  padding: 0 15px !important;
+  font-size: 13px !important;
+}
 .practice-tab-discussion .el-radio-button{
   margin-bottom: 0;
 }
@@ -880,7 +1092,9 @@ export default {
 .header-passage {
   font-size: 13px;
   background-color: #f5f7fa;
-  border: 2px solid #eff0f2;
+  border: 1px solid #e2e2e2;
+  padding: 5px;
+  min-width: 500px;
 }
 
 .body-passage {
