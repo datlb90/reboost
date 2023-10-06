@@ -32,7 +32,7 @@
                       </div>
                     </div>
                     <hr style="margin: 0; margin-bottom: 8px;">
-                    <div class="tip" style=" margin-bottom: 8px;">
+                    <div class="tip">
                       <pre style="font-size: 13px; color: #6084a4;"> <span style="font-weight: 600;">Direction: </span> <span v-if="hideDirection == 'Hide'" v-html="getDataQuestion.direction" /> <span class="hide-direction" @click="toggleDirection()">{{ hideDirection }}</span></pre>
                     </div>
                   </el-col>
@@ -45,7 +45,7 @@
                     <el-col :span="24" class="question-con">
                       <div>
                         <div style="font-size: 13px;">
-                          <span style="font-weight: 600;word-break: keep-all;">Question: </span>
+                          <!-- <span style="font-weight: 600;word-break: keep-all;">Question: </span> -->
                           <div id="questionContent" v-html="getQuestion.content" />
                         </div>
                       </div>
@@ -270,7 +270,7 @@
       <pane v-if="!tabDisCussionShowed">
         <div style="height: 100%; display: flex; flex-direction: column;">
           <div class="header-passage">
-            <el-dropdown
+            <!-- <el-dropdown
               v-if="userSubmissions.length > 0"
               style="float: left; margin-right: 5px;"
               placemen="bottom-start"
@@ -283,6 +283,22 @@
                 <el-dropdown-item v-for="submission in userSubmissions" :key="submission.id" :command="submission.id">
                   {{ submission.submittedDate }}
                 </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown> -->
+
+            <el-dropdown
+              v-if="writingSubmitted || hasSubmitionForThisQuestion "
+              size="mini"
+              style="float: left; margin-right: 5px;"
+              @command="checkoutVisibles"
+            >
+              <el-button size="mini" type="success" plain>
+                Get Writing Review
+              </el-button>
+              <el-dropdown-menu slot="dropdown" size="mini">
+                <el-dropdown-item :disabled="isProRequested||isFreeRequested || unRatedList.length > 0" command="free">Free Peer Review</el-dropdown-item>
+                <el-dropdown-item :disabled="isProRequested" command="checkout">Pro Rater Review</el-dropdown-item>
+                <el-dropdown-item divided>View Review Sample</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
 
@@ -303,19 +319,9 @@
                 Show Word Count
               </el-button>
             </div>
-
-            <!-- <el-tag v-if="isShowCountWord && countWord != 0" type="info" size="small" closable @close="onWordCountClosed()">{{ countWord }} words</el-tag> -->
-
-            <!-- <div v-if="getQuestion != '' && !writingSubmitted">
-              <el-button size="mini" @click="toggleShowCount()">Hide Word Count</el-button>
-              <span v-if="isShowCountWord && countWord != 0" style="margin-left: 15px;">Words: {{ countWord }}</span>
-            </div> -->
-            <div v-if="writingSubmitted" class="submited-message">
-              <el-tag :type="unRatedList.length>0 ? 'warning' : 'success'" style="white-space: normal; height: 100%;">{{ submittedMessage }} <a href="/submissions" style="color:inherit; text-decoration: underline;"> Reviews.</a> </el-tag>
-            </div>
             <div v-if="getQuestion != ''">
               <el-button
-                v-if="hasSubmitionForThisQuestion&& !isEdit"
+                v-if="!writingSubmitted && hasSubmitionForThisQuestion && !isEdit"
                 style="float: right; margin-left: 5px"
                 size="mini"
                 :disabled="!(writingContent && writingContent.length > 0)"
@@ -343,26 +349,10 @@
                 style="float: right;"
                 @click="save()"
               >Save</el-button>
-
-              <el-dropdown
-                v-if="writingSubmitted || hasSubmitionForThisQuestion "
-                size="mini"
-                style=" float: right;"
-                @command="checkoutVisibles"
-              >
-                <el-button size="mini" type="success" plain>
-                  Get Writing Review
-                </el-button>
-                <el-dropdown-menu slot="dropdown" size="mini">
-                  <el-dropdown-item :disabled="isProRequested||isFreeRequested || unRatedList.length > 0" command="free">Free Peer Review</el-dropdown-item>
-                  <el-dropdown-item :disabled="isProRequested" command="checkout">Pro Rater Review</el-dropdown-item>
-                  <el-dropdown-item divided>View Review Sample</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
             </div>
           </div>
           <div style="flex-grow: 1;">
-            <textarea v-model="writingContent" :disabled="isEdit" placeholder="Start your writing here ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
+            <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Start your writing here ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
           </div>
         </div>
       </pane>
@@ -456,7 +446,6 @@ export default {
       showStartTestButton: false,
       isTesting: false,
       dialogVisible: false,
-      submittedMessage: 'Your writing has been successfully submitted. You can request a review now.',
       isStart: false,
       timeStart: null,
       idSubmissionStorage: null,
@@ -756,16 +745,25 @@ export default {
 
       if (this.submissionId) {
         data.status = this.unRatedList.length > 0 ? 'Pending' : 'Submitted'
-        this.submittedMessage = this.unRatedList.length > 0 ? 'Your submission is currently pending, please rate all of your unrated.' : this.submittedMessage
         documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
             this.writingSubmitted = true
-            this.$notify.success({
-              title: 'Success',
-              message: 'Submitted successfully',
-              type: 'success',
-              duration: 2000
-            })
+            if (this.unRatedList.length > 0) {
+              this.$notify.warning({
+                title: 'Warning',
+                dangerouslyUseHTMLString: true,
+                message: `<p>Your submission is currently pending because you have unrated reviews. The submission will be automatically submitted after all of the unrated reviews are rated. You can find them in the <a href='/submissions'>Submissions page</a></p>`,
+                type: 'warning',
+                duration: 0
+              })
+            } else {
+              this.$notify.success({
+                title: 'Success',
+                message: 'Your writing has been successfully submitted. You can request a review now.',
+                type: 'success',
+                duration: 3000
+              })
+            }
           }
         })
       } else {
@@ -773,13 +771,14 @@ export default {
           data.status = 'Pending'
           documentService.submitPendingDocument(data).then(rs => {
             if (rs) {
-              this.$notify.success({
-                title: 'Success',
-                message: 'Submitted successfully',
-                type: 'success',
-                duration: 2000
+              this.$notify.warning({
+                title: 'Warning',
+                dangerouslyUseHTMLString: true,
+                message: `<p>Your submission is currently pending because you have unrated reviews. The submission will be automatically submitted after all of the unrated reviews are rated. You can find them in the <a href='/submissions'>Submissions page</a></p>`,
+                type: 'warning',
+                duration: 0
               })
-              this.submittedMessage = 'Your submission is currently pending, please rate all of your unrated.'
+
               this.writingSubmitted = true
               this.hasSubmitionForThisQuestion = true
               this.submissionId = rs.submissions[0]?.id
@@ -791,9 +790,9 @@ export default {
             if (rs) {
               this.$notify.success({
                 title: 'Success',
-                message: 'Submitted successfully',
+                message: 'Your writing has been successfully submitted. You can request a review now.',
                 type: 'success',
-                duration: 2000
+                duration: 3000
               })
               this.writingSubmitted = true
               this.hasSubmitionForThisQuestion = true
@@ -802,8 +801,6 @@ export default {
           })
         }
       }
-
-      // console.log('SUBMIT DATA', data)
     },
     toggleBtnShowTab() {
       this.isShowTimer = true
@@ -926,10 +923,10 @@ export default {
       }
     },
     startTest() {
-      const time = +this.getDataQuestion.time.slice(0, 2)
+      // const time = +this.getDataQuestion.time.slice(0, 2)
       this.isTesting = true
-      this.minute = time
-      this.second = 0
+      this.minute = 0 // time
+      this.second = 10
       this.isShowQuestion = true
 
       this.timeSpentInterval = setInterval(() => {
@@ -939,8 +936,13 @@ export default {
           this.minute--
           if (this.minute < 0) {
             clearInterval(this.timeSpentInterval)
+            this.isTesting = false
             this.dialogVisible = true
           }
+        }
+
+        if (this.minute == 0 && this.second == 0) {
+          console.log('Submitted!')
         }
       }, 1000)
     },
@@ -1058,9 +1060,9 @@ export default {
   scrollbar-width: none;
 }
 
-.par-content::-webkit-scrollbar {
+/* .par-content::-webkit-scrollbar {
   width: 7px;
-}
+} */
 
 /* Handle */
 .par-content::-webkit-scrollbar-thumb {

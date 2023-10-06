@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Reboost.Shared;
 using Reboost.DataAccess.Models;
 using System.IO;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Reboost.DataAccess.Repositories
 {
@@ -70,11 +71,11 @@ namespace Reboost.DataAccess.Repositories
         }
         public async Task<List<QuestionModel>> GetAllByUserAsync(string userId) {
             var tests = await GetTestForCurrentUsers(userId);
-            var query = from quest in ReboostDbContext.Questions
+            var allQuestions = from quest in ReboostDbContext.Questions
                         join task in ReboostDbContext.Tasks on quest.TaskId equals task.Id
                         join sec in ReboostDbContext.TestSections on task.SectionId equals sec.Id
                         join test in ReboostDbContext.Tests on sec.TestId equals test.Id
-                        where tests.Contains(test.Name) && quest.Status == QuestionStatus.ACTIVE
+                       where tests.Contains(test.Name) && quest.Status == QuestionStatus.ACTIVE
                         select new QuestionModel
                         {
                             Id = quest.Id,
@@ -87,10 +88,52 @@ namespace Reboost.DataAccess.Repositories
                             AverageScore = quest.AverageScore,
                             Submission = quest.SubmissionCount,
                             Like = quest.LikeCount,
-                            Status = (from sub in ReboostDbContext.Submissions where sub.UserId == userId && sub.Status != "Saved" &&
-                                      sub.QuestionId == quest.Id select sub).Count() > 0 ? "Completed" : "To do"
+                            Status = "To do"
+                            //(from sub in ReboostDbContext.Submissions where sub.UserId == userId && sub.Status != "Saved" &&
+                            //          sub.QuestionId == quest.Id select sub).Count() > 0 ? "Completed" : "To do"
                         };
-            return await query.ToListAsync();
+
+            var completed =  (from s in ReboostDbContext.Submissions
+                              where s.UserId == userId && s.Status != "Saved"
+                              select new
+                              {
+                                  Id = s.QuestionId,
+                                  Status = "Completed"
+                              }).Distinct();
+
+            var attempted = (from s in ReboostDbContext.Submissions
+                             where s.UserId == userId && s.Status == "Saved"
+                             select new
+                             {
+                                 Id = s.QuestionId,
+                                 Status = "Attempted"
+                             }).Distinct();
+
+            var result = from all in allQuestions
+                         join comp in completed on all.Id equals comp.Id into allCompleted
+                         from allComp in allCompleted.DefaultIfEmpty()
+                         join att in attempted on all.Id equals att.Id into allAttempted
+                         from allAtt in allAttempted.DefaultIfEmpty()
+                         select new QuestionModel
+                         {
+                             Id = all.Id,
+                             Title = all.Title,
+                             Section = all.Section,
+                             Test = all.Test,
+                             Time = all.Time,
+                             Type = all.Type,
+                             Sample = all.Sample,
+                             AverageScore = all.AverageScore,
+                             Submission = all.Submission,
+                             Like = all.Like,
+                             Status = allComp.Status != null ? allComp.Status : allAtt.Status != null ? allAtt.Status : all.Status
+                             //(from sub in ReboostDbContext.Submissions where sub.UserId == userId && sub.Status != "Saved" &&
+                             //          sub.QuestionId == quest.Id select sub).Count() > 0 ? "Completed" : "To do"
+                         };
+
+
+
+            return await result.ToListAsync();
         }
 
         public async Task<List<QuestionModel>> GetAllExAsync()

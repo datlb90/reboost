@@ -61,6 +61,12 @@ const actions = {
       commit('SET_ALL_SAMPLE', rs)
     })
   }
+  // getAddEditQuestionData({ commit }) {
+  //   questionService.getAddEditQuestionData().then(result => {
+  //     commit('SET_ADD_EDIT_DATA', result)
+  //     return result
+  //   })
+  // }
 }
 
 const mutations = {

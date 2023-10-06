@@ -1,66 +1,52 @@
 <template>
   <div class="newcontainer">
-    <div class="title">
-      <!-- <h2>All Writing Topics</h2> -->
-      <h2>{{ messageTranslates('question', 'title') }}</h2>
+    <div>
+      <div style="display: flex; overflow: auto;">
+        <el-tag type="info" effect="dark" style="margin-right: 5px; margin-bottom: 5px; cursor: pointer;">All Topics: {{ taskCompleted }} /{{ questionsCount }} completed</el-tag>
+        <el-tag v-for="item in summary" :key="item.section" type="info" style="margin-right: 5px; margin-bottom: 5px; cursor: pointer;">{{ item.section }}: {{ item.count }}</el-tag>
+      </div>
     </div>
     <div>
-      <hr>
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div class="left-content">
-          <div class="completed">
-            <span> {{ taskCompleted }} /{{ questionsCount }} {{ messageTranslates('question', 'completed') }}</span>
-          </div>
-          <div><span style="margin: 0 5px;">-</span></div>
-          <div v-for="item in summary" :key="item.section">
-            <span class="filter">{{ item.section }}: {{ item.count }}</span>
-          </div>
-        </div>
-        <div class="btnPickOne">
-          <el-button size="mini" @click="clickPickOne">{{ messageTranslates('question', 'pickOne') }}
-            <i class="fas fa-random" />
-          </el-button>
-        </div>
-      </div>
-      <hr>
-    </div>
-
-    <el-row :gutter="40">
-      <el-col :md="6" class="filter-container">
-        <div>
-          <el-input v-model="textSearch" size="mini" :placeholder="messageTranslates('question', 'placeholderSearch')" @input="search()" />
-        </div>
-      </el-col>
-      <el-col :md="12" class="filter-container">
-        <div class="filter-toolbar">
-          <i class="el-icon-document" style="margin-right: 15px; cursor: pointer;" @click="filterSample" />
+      <div class="filter-container" style="width: 300px; float: left;">
+        <div class="filter-toolbar" style="margin-top: 10px;">
           <dropdown-menu id="ddFilterSection" v-model="filterSection" style="margin-right: 20px" :tittle="messageTranslates('question', 'testSection')" @confirm="search()" @reset="resetFilterSection()" />
           <dropdown-menu v-model="filterType" style="margin-right: 20px" :tittle="messageTranslates('question', 'type')" @confirm="search()" @reset="resetFilterType()" />
           <dropdown-menu v-model="filterStatus" :tittle="messageTranslates('question', 'status')" @confirm="search()" @reset="resetFilterStatus()" />
+          <i class="el-icon-document" style="margin-left: 15px; cursor: pointer;" @click="filterSample" />
+          <div class="tag-selection">
+            <el-tag
+              v-for="tag in selectionTag"
+              :key="tag"
+              size="mini"
+              type="success"
+              effect="dark"
+              closable
+              :disable-transitions="false"
+              @close="handleClose(tag)"
+            >
+              {{ tag }}
+            </el-tag>
+          </div>
         </div>
-        <div class="tag-selection">
-          <el-tag
-            v-for="tag in selectionTag"
-            :key="tag"
-            size="mini"
-            type="success"
-            effect="dark"
-            closable
-            :disable-transitions="false"
-            @close="handleClose(tag)"
-          >
-            {{ tag }}
-          </el-tag>
-        </div>
-      </el-col>
+      </div>
 
-      <el-col :md="6" class="filter-container">
-        <div style="text-align: right;">
-          <el-button size="mini" @click="clearFilter">{{ messageTranslates('question', 'resetAll') }}</el-button>
-        </div>
-      </el-col>
-
-    </el-row>
+      <div class="filter-container" style="width: calc(100% - 310px); float: right;">
+        <el-button size="mini" style="float: right; margin-top: 5px;" @click="clearFilter">
+          {{ messageTranslates('question', 'resetAll') }}
+        </el-button>
+        <el-button size="mini" style="float: right; margin-right: 5px; margin-top: 5px;" @click="clickPickOne">
+          {{ messageTranslates('question', 'pickOne') }}
+          <!-- <i class="fas fa-random" /> -->
+        </el-button>
+        <el-input
+          v-model="textSearch"
+          size="mini"
+          :placeholder="messageTranslates('question', 'placeholderSearch')"
+          style="float: right; width: 200px; margin-top: 5px;"
+          @input="search()"
+        />
+      </div>
+    </div>
 
     <el-table ref="filterTable" :data="questions" stripe style="width: 100%;">
       <el-table-column prop="id" label="#" width="50" />
@@ -104,6 +90,14 @@
             :type="typeSuccess"
             size="mini"
             effect="dark"
+          >
+            {{ scope.row.status }}
+          </el-tag>
+          <el-tag
+            v-else-if="scope.row.status == 'Attempted'"
+            :key="scope.row.status"
+            type="warning"
+            size="mini"
           >
             {{ scope.row.status }}
           </el-tag>
@@ -185,17 +179,18 @@ export default {
   mounted() {
     this.$store.dispatch('question/loadAllQuestionByUser', this.currentUser.id).then(questions => {
       this.questionCached = this.$store.getters['question/getAll']
+      console.log('Questions: ', this.questionCached)
       this.totalRow = this.questionsCount = this.questionCached.length
       this.filterSection = Object.keys(_.groupBy(this.questionCached, 'section')).map(k => ({ text: k }))
       this.filterType = Object.keys(_.groupBy(this.questionCached, 'type')).map(k => ({ text: k }))
       this.filterStatus = Object.keys(_.groupBy(this.questionCached, 'status')).map(k => ({ text: k }))
       this.loadTable()
+      this.loadSummary()
     })
-    this.$store.dispatch('question/loadSummaryByUser', this.currentUser.id).then(() => {
-      this.summary = this.$store.getters['question/getSummaryByUser']
-
-      console.log('summary', this.summary)
-    })
+    // this.$store.dispatch('question/loadSummaryByUser', this.currentUser.id).then(() => {
+    //   this.summary = this.$store.getters['question/getSummaryByUser']
+    //   console.log('Summary: ', this.summary)
+    // })
   },
   methods: {
     loadTable() {
@@ -208,6 +203,24 @@ export default {
         this.questions = filtered.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
         this.totalRow = filtered.length
       }
+    },
+    loadSummary() {
+      var counts = this.questions.reduce((p, c) => {
+        var name = c.section
+        if (!p.hasOwnProperty(c.section)) {
+          p[name] = 0
+        }
+        if (c.status == 'Completed') {
+          p[name]++
+        }
+        return p
+      }, {})
+
+      this.summary = Object.keys(counts).map(k => {
+        return { section: k, count: counts[k] }
+      })
+
+      console.log('Summary: ', this.summary)
     },
     clearFilter() {
       this.textSearch = ''
@@ -350,15 +363,32 @@ export default {
 }
 </script>
 <style scoped>
+
+.newcontainer {
+  padding: 0 200px;
+  margin-top: 10px;
+}
+
+@media only screen and (max-width: 1200px) {
+  .filter-container{
+    padding: 5px 0;
+  }
+  .newcontainer {
+    padding: 0 100px;
+    margin-top: 10px;
+  }
+}
+
 @media only screen and (max-width: 990px) {
   .filter-container{
     padding: 5px 0;
   }
+  .newcontainer {
+    padding: 0 10px;
+    margin-top: 10px;
+  }
 }
-.newcontainer {
-  padding: 0 120px;
-  margin-top: 20px;
-}
+
 el-table{
   word-break: normal;
 }
@@ -473,9 +503,9 @@ el-table{
     z-index: 1;
     align-items: center;
 }
-.el-tag + .el-tag {
+/* .el-tag + .el-tag {
   margin-left: 10px;
-}
+} */
 .tag-selection{
   margin-top: 10px;
 }

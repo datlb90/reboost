@@ -3,7 +3,7 @@ export const Question = {
   completed: 'Completed',
   pickOne: 'Pick one',
   resetAll: 'Reset all filters',
-  placeholderSearch: 'Type to search',
+  placeholderSearch: 'Search questions',
   testSection: 'Test Section',
   type: 'Type',
   status: 'Status',

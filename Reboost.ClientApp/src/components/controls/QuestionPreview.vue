@@ -325,9 +325,9 @@ export default {
   scrollbar-width: none;
 }
 
-.par-content::-webkit-scrollbar {
+/* .par-content::-webkit-scrollbar {
   width: 7px;
-}
+} */
 
 /* Handle */
 .par-content::-webkit-scrollbar-thumb {

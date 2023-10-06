@@ -207,11 +207,11 @@ export default {
     }
   },
   mounted() {
-    questionService.getAddEditQuestionData().then(rs => {
-      this.tasks = rs.tasks
-      this.tests = rs.tests
-      this.types = rs.types
-    })
+    // questionService.getAddEditQuestionData().then(rs => {
+    //   this.tasks = rs.tasks
+    //   this.tests = rs.tests
+    //   this.types = rs.types
+    // })
   },
   methods: {
     openDialog() {
@@ -219,6 +219,13 @@ export default {
       this.isEdit = false
       this.dialogVisible = true
       this.$refs['questionForm'].resetFields()
+      // Load add/edit question data
+      questionService.getAddEditQuestionData().then(rs => {
+        console.log(rs)
+        this.tasks = rs.tasks
+        this.tests = rs.tests
+        this.types = rs.types
+      })
     },
     openEditDialog(question) {
       this.fileList = []

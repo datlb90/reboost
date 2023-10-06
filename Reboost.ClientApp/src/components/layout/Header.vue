@@ -31,9 +31,9 @@
                 <li class="nav-item">
                   <router-link to="/reviews" class="nav-link">Reviews</router-link>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                   <router-link to="/disputes" class="nav-link">Disputes</router-link>
-                </li>
+                </li> -->
                 <li class="nav-item">
                   <a href="/questions" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
                 </li>
@@ -134,8 +134,8 @@
                 </el-dropdown-menu>
               </el-dropdown>
 
-              <el-dropdown style="float: right;" @command="handleCommand">
-                <span class="el-dropdown-link">
+              <el-dropdown style="float: right;" trigger="click" @command="handleCommand">
+                <span class="el-dropdown-link" @click="getRaterRating">
                   <i class="far fa-user-circle" style="font-size: 24px;" />
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -145,16 +145,11 @@
                     <span>Role: {{ currentUser.role }}</span>
                     <span>Rating: {{ toFix(raterRating) }} <i class="fas fa-star" /></span>
                   </div>
-                  <!-- <el-dropdown-item>Action 1</el-dropdown-item>
-                <el-dropdown-item>Action 2</el-dropdown-item>
-                <el-dropdown-item>Action 3</el-dropdown-item>
-                <el-dropdown-item disabled>Action 4</el-dropdown-item> -->
                   <el-dropdown-item command="selectTest" divided>Selected test {{ testsToText() }}</el-dropdown-item>
                   <el-dropdown-item command="addQuestion">Contribute a question</el-dropdown-item>
                   <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
-            <!-- <a href="#" class="btn btn-primary">Login</a> -->
             </div>
           </nav>
 
@@ -207,9 +202,9 @@ export default {
   },
   mounted() {
     const that = this
-    if (this.currentUser?.id) {
-      this.$store.dispatch('auth/setSelectedTest')
-    }
+    // if (this.currentUser?.id) {
+    //   this.$store.dispatch('auth/setSelectedTest')
+    // }
     console.log('current user', this.currentUser)
     this.checkApprovedRater()
     window.addEventListener('scroll', () => {
@@ -221,14 +216,10 @@ export default {
         that.isSticky = false
       }
     })
-    if (this.currentUser.id) {
-      raterService.getRaterRating().then(rs => {
-        this.raterRating = rs
-      })
-    }
-    if (!this.currentUser.stripeCustomerId) {
-      this.$store.dispatch('auth/loadCustomerId')
-    }
+
+    // if (!this.currentUser.stripeCustomerId) {
+    //   this.$store.dispatch('auth/loadCustomerId')
+    // }
     var _lang = localStorage.getItem('language')
     if (_lang) {
       this.lang = _lang.charAt(0).toUpperCase() + _lang.slice(1)
@@ -242,6 +233,14 @@ export default {
     console.log('vue_app_const: ', t)
   },
   methods: {
+    getRaterRating() {
+      if (this.currentUser.id) {
+        raterService.getRaterRating().then(rs => {
+          console.log('User Rating: ', rs)
+          this.raterRating = rs
+        })
+      }
+    },
     handleCommand(action) {
       if (action === 'logout') {
         this.$store.dispatch('auth/logout').then(rs => {
