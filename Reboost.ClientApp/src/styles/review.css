@@ -24,7 +24,7 @@ pre {
   padding-right: 10px;
   top: 0;
   left: 0;
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
   height: 100%;
   width: 100%;
   -ms-overflow-style: none;
@@ -173,11 +173,12 @@ transform: rotate(180deg);
   display: none;
 }
 #tool-bar{
+  padding-top: 6px;
   align-items: center;
   position: relative;
   display: flex;
   overflow: hidden;
-  min-height: 45px;
+  height: 40px;
   top: 0;
   z-index: 1;
 }

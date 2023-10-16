@@ -1,8 +1,8 @@
 export const Question = {
   title: 'All Writing Topics',
   completed: 'Completed',
-  pickOne: 'Pick one',
-  resetAll: 'Reset all filters',
+  pickOne: 'Pick One',
+  resetAll: 'Reset Filters',
   placeholderSearch: 'Search questions',
   testSection: 'Test Section',
   type: 'Type',

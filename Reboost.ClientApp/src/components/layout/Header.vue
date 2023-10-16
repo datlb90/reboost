@@ -11,35 +11,37 @@
         <div class="container" style=" max-width: 100%;">
           <nav class="navbar navbar-expand-md navbar-light">
             <router-link class="navbar-brand" to="/" style="    margin-top: 0px; padding-top: 0px;">
-              <img src="../../assets/logo/green_logo.png" alt="logo" style="position: absolute; height: 22px; top: 13px;left: 20px; ">
+              <img src="../../assets/logo/green_logo.png" alt="logo" style="position: absolute; height: 22px; top: 11px;left: 20px; ">
             </router-link>
 
             <b-navbar-toggle target="navbarSupportedContent" />
 
             <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
               <ul v-if="role == 'Learner' && selectedTest.length>0" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/questions" class="nav-link">Questions</router-link>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/submissions" class="nav-link">Submissions</router-link>
                 </li>
                 <!-- <li class="nav-item">
                 <router-link to="/practice" class="nav-link">Practice</router-link>
               </li> -->
 
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/reviews" class="nav-link">Reviews</router-link>
                 </li>
                 <!-- <li class="nav-item">
                   <router-link to="/disputes" class="nav-link">Disputes</router-link>
                 </li> -->
-                <li class="nav-item">
-                  <a href="/questions" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
-                </li>
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <a href="/articles" class="nav-link">Articles</a>
                 </li>
+
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <a href="/questions" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
+                </li>
+
               <!-- <li class="nav-item">
                 <router-link to="/revision" class="nav-link">Revision</router-link>
               </li>
@@ -55,15 +57,15 @@
               </ul>
               <ul v-if="role == 'Rater'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
 
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/rater/apply" class="nav-link">Application</router-link>
                 </li>
-                <li v-if="isApprovedRater" class="nav-item">
+                <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/reviews" class="nav-link">Review</router-link>
                 </li>
-                <li v-if="isApprovedRater" class="nav-item">
+                <!-- <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/rater/payout" class="nav-link">Balance</router-link>
-                </li>
+                </li> -->
                 <li class="nav-item">
                   <a href="/" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
                 </li>
@@ -77,22 +79,22 @@
               </ul>
               <ul v-if="role == 'Admin'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
 
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/admin/raters" class="nav-link">Raters</router-link>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/admin/requests" class="nav-link">Requests</router-link>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/admin/questions" class="nav-link">Questions</router-link>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/admin/samples" class="nav-link">Samples</router-link>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/admin/articles" class="nav-link">Articles</router-link>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/admin/disputes" class="nav-link">Disputes</router-link>
                 </li>
               <!-- <li class="nav-item">
@@ -125,16 +127,16 @@
                 </el-dropdown-menu>
               </el-dropdown> -->
 
-              <el-dropdown class="lang-dropdown" style="margin-right: 20px; float: left;" placement="bottom" @command="onChangeLanguage">
+              <!-- <el-dropdown class="lang-dropdown" style="margin-right: 20px; float: left;" placement="bottom" @command="onChangeLanguage">
                 <flag v-if="lang == 'English'" iso="gb" style="border-radius: 2px;" />
                 <flag v-else iso="vn" style="border-radius: 2px;" />
                 <el-dropdown-menu slot="dropdown" class="lang-dropdown-menu">
                   <el-dropdown-item command="vietnamese"><flag iso="vn" style="border-radius: 2px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
                   <el-dropdown-item command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
                 </el-dropdown-menu>
-              </el-dropdown>
+              </el-dropdown> -->
 
-              <el-dropdown style="float: right;" trigger="click" @command="handleCommand">
+              <el-dropdown style="float: right; margin-top: 4px;" trigger="click" @command="handleCommand">
                 <span class="el-dropdown-link" @click="getRaterRating">
                   <i class="far fa-user-circle" style="font-size: 24px;" />
                 </span>
@@ -145,8 +147,19 @@
                     <span>Role: {{ currentUser.role }}</span>
                     <span>Rating: {{ toFix(raterRating) }} <i class="fas fa-star" /></span>
                   </div>
-                  <el-dropdown-item command="selectTest" divided>Selected test {{ testsToText() }}</el-dropdown-item>
-                  <el-dropdown-item command="addQuestion">Contribute a question</el-dropdown-item>
+                  <el-dropdown-item command="selectTest" divided>Selected Test: {{ testsToText() }}</el-dropdown-item>
+                  <el-dropdown-item>
+                    <el-dropdown class="lang-dropdown" placement="left" @command="onChangeLanguage">
+                      <span v-if="lang == 'English'">Select Language: <flag iso="gb" style="border-radius: 2px; margin-right: 6px;" /></span>
+                      <span v-else>Select Language: <flag iso="vn" style="border-radius: 2px; margin-right: 6px;" /></span>
+                      <!-- <flag v-else iso="vn" style="border-radius: 2px;" /> -->
+                      <el-dropdown-menu slot="dropdown" class="lang-dropdown-menu">
+                        <el-dropdown-item command="vietnamese"><flag iso="vn" style="border-radius: 2px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
+                        <el-dropdown-item command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </el-dropdown>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="addQuestion">Contribute Question</el-dropdown-item>
                   <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>

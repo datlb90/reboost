@@ -217,11 +217,12 @@
         { "name": "#167e7d" },
         { "name": "#2e4b8b" },
         { "name": "#76287b" },
-        { "name": "#ffffff" },
         { "name": "#cdcdcd" },
         { "name": "#9c9c9c" },
         { "name": "#696969" },
         { "name": "#272727" },
-        { "name": "#0000ff"}
+        { "name": "#0000ff"},
+        { "name": "#419efe"},
+        { "name": "#3074bb"}
       ]
 }

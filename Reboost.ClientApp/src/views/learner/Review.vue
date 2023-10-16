@@ -65,7 +65,7 @@
       <el-card id="add-new-comment" class="box-card add-new-comment" style="width: 100%; display: none;">
         <div slot="header" class="clearfix">
           <div>
-            <div style="font-size: 15px; font-weight: bold; text-align: left;">
+            <div style="font-size: 15px; text-align: left;">
               {{ commentUserName() }}
             </div>
           </div>
@@ -102,7 +102,7 @@
       >
         <div slot="header" class="clearfix">
           <div>
-            <div style="font-size: 15px; font-weight: bold; text-align: left;">
+            <div style="font-size: 15px; text-align: left;">
               {{ commentUserName() }}
             </div>
           </div>
@@ -169,10 +169,10 @@
       </el-button>
     </el-button-group>
     <div id="colorPickerTool" class="colorPicker">
-      <span>
+      <!-- <span>
         Stroke
-      </span>
-      <ul class="group-color">
+      </span> -->
+      <ul class="group-color" style="margin-top: 15px;">
         <li v-for="item in listColor" :key="item.name" @click="changeColor(item.name)"><button :style="{'background-color': item.name, height:18+'px',width:18+'px', margin:'5px 5px 5px 5px', 'border-radius':'50%','outline': 'none','border': 'none'}" /></li>
       </ul>
     </div>
@@ -775,10 +775,10 @@ export default {
       let textColor
 
       function initText() {
-        const size = document.querySelector('.toolbar .text-size');
-        [8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96].forEach(s => {
-          size.appendChild(new Option(s, s))
-        })
+        // const size = document.querySelector('.toolbar .text-size');
+        // [8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96].forEach(s => {
+        //   size.appendChild(new Option(s, s))
+        // })
 
         setText(
           localStorage.getItem(`${self.RENDER_OPTIONS.documentId}/text/size`) ||
@@ -807,7 +807,7 @@ export default {
             `${self.RENDER_OPTIONS.documentId}/text/size`,
             textSize
           )
-          document.querySelector('.toolbar .text-size').value = textSize
+          // document.querySelector('.toolbar .text-size').value = textSize
         }
 
         if (textColor !== color) {
@@ -964,45 +964,48 @@ export default {
           const svgHeight = parseInt(target.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12
           const svgPageNum = parseInt(target.getAttribute('page-num'))
           if (svgPageNum > 1) { gTop += ((svgPageNum - 1) * svgHeight) }
-          const cTop = this.comments[this.order].topPosition
 
-          // remove current selected comment card class if any
-          const selected = document.getElementsByClassName('comment-card-selected')
-          if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
-          // Set this card as selected
-          // console.log('this.order', this.order)
-          commentCards[this.order].classList.add('comment-card-selected')
-          // cmtSelected.classList.add('comment-card-selected')
-          // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
-          if (cTop != gTop) {
-            // Move the comment up to gTop
-            this.comments[this.order].topPosition = gTop
-            // cmtSelected.setAttribute('top-position', gTop)
-            // cmtSelected.style.top = gTop + 'px'
+          if (this.order > -1) {
+            const cTop = this.comments[this.order].topPosition
 
+            // remove current selected comment card class if any
             const selected = document.getElementsByClassName('comment-card-selected')
             if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
+            // Set this card as selected
+            // console.log('this.order', this.order)
             commentCards[this.order].classList.add('comment-card-selected')
-
             // cmtSelected.classList.add('comment-card-selected')
-            const endPos = gTop + commentCards[this.order].offsetHeight
-
             // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
-            // const endPos = gTop + cmtSelected.offsetHeight
-            if (cTop > gTop) {
+            if (cTop != gTop) {
+            // Move the comment up to gTop
+              this.comments[this.order].topPosition = gTop
+              // cmtSelected.setAttribute('top-position', gTop)
+              // cmtSelected.style.top = gTop + 'px'
+
+              const selected = document.getElementsByClassName('comment-card-selected')
+              if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
+              commentCards[this.order].classList.add('comment-card-selected')
+
+              // cmtSelected.classList.add('comment-card-selected')
+              const endPos = gTop + commentCards[this.order].offsetHeight
+
+              // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
+              // const endPos = gTop + cmtSelected.offsetHeight
+              if (cTop > gTop) {
               // Move up other uppen comments
-              if (this.order > 0) { this.moveUpFromTopPos(commentCards, this.order - 1, gTop) }
-              // Move up other lower comments
-              if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
-            } else if (cTop <= gTop) {
+                if (this.order > 0) { this.moveUpFromTopPos(commentCards, this.order - 1, gTop) }
+                // Move up other lower comments
+                if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
+              } else if (cTop <= gTop) {
               // Move down other uppen comments
-              if (this.order > 0) { this.moveDownToTopPos(commentCards, this.order - 1, gTop) }
-              // Move down other lower comments
-              if (this.order < commentCards.length - 1) { this.moveDownFromEndPos(commentCards, this.order + 1, endPos) }
+                if (this.order > 0) { this.moveDownToTopPos(commentCards, this.order - 1, gTop) }
+                // Move down other lower comments
+                if (this.order < commentCards.length - 1) { this.moveDownFromEndPos(commentCards, this.order + 1, endPos) }
+              }
+            } else {
+              const endPos = gTop + commentCards[this.order].offsetHeight
+              if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
             }
-          } else {
-            const endPos = gTop + commentCards[this.order].offsetHeight
-            if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
           }
         } else if (type == 'area' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
           target.classList.add('rectangle-selected')
@@ -1708,7 +1711,7 @@ export default {
             this.moveDownToTopPos(commentCards, this.order - 1, endPos)
           }
         }
-        if (this.annotation.type != 'area' && this.annotation.type != 'comment-area') {
+        if (this.annotation && this.annotation.type != 'area' && this.annotation.type != 'comment-area') {
           // Delete annotation and text selection
           PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, this.annotation.uuid, true)
             .then((isDeleted) => {
@@ -2884,9 +2887,9 @@ export default {
     },
     commentUserName() {
       if (this.loadedAnnotation && this.loadedAnnotation.reviewer) {
-        return this.loadedAnnotation.reviewer.firstName + this.loadedAnnotation.reviewer.lastName
+        return this.loadedAnnotation.reviewer.firstName + ' ' + this.loadedAnnotation.reviewer.lastName
       }
-      return this.currentUser.firstName + this.currentUser.lastName
+      return this.currentUser.firstName + ' ' + this.currentUser.lastName
     },
     openDisputeDialog() {
       this.disputeDialogVisible = true
@@ -2935,6 +2938,29 @@ export default {
 }
 </style>
 <style>
+
+.el-tabs__content{
+  overflow: auto !important;
+}
+.comment-card >.el-card__header, .add-new-comment >.el-card__header {
+  background: #b3d4f4;
+}
+
+@keyframes cursor-blink {
+  0% {
+    opacity: 0;
+  }
+}
+
+#pdf-annotate-text-input::before {
+  content: "";
+  width: 2px;
+  height: 100%;
+  /* background: #787878; */
+  display: inline-block;
+  animation: cursor-blink 1.5s steps(2) infinite;
+}
+
 #mileStone{
   width:100%;
 }

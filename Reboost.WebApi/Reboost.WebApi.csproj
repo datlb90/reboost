@@ -1471,6 +1471,7 @@
     <Content Remove="wwwroot\static\output.pdf" />
     <Content Remove="wwwroot\static\test1.pdf" />
     <Content Remove="wwwroot\static\Tasks.pdf" />
+    <Content Remove="wwwroot\img\ielts-logo-1.61797df8.png" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 </Project>

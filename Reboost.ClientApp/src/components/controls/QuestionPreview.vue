@@ -317,7 +317,7 @@ export default {
   padding-right: 10px;
   top: 0;
   left: 0;
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
   height: 100%;
   width: 100%;
   -ms-overflow-style: none;

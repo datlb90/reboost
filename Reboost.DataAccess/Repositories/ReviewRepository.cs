@@ -641,7 +641,8 @@ namespace Reboost.DataAccess.Repositories
                                  join question in db.Questions on rq.Submission.QuestionId equals question.Id
                                  join sec in db.TestSections on question.Task.SectionId equals sec.Id
                                  join test in db.Tests on sec.TestId equals test.Id
-                                 where queue.MinimumRate <= rate && queue.Status == 0 && rq.Status != SubmissionStatus.PENDING && tests.Contains(test.Name) && rq.UserId != userID && rq.FeedbackType == ReviewRequestType.FREE
+                                 where queue.MinimumRate <= rate && queue.Status == 0 && rq.Status != SubmissionStatus.PENDING
+                                 && tests.Contains(test.Name) && rq.UserId != userID && rq.FeedbackType == ReviewRequestType.FREE
                                  orderby queue.Priority descending, queue.RequestedDatetime ascending
                                  select queue).FirstOrDefaultAsync();
 
@@ -660,6 +661,11 @@ namespace Reboost.DataAccess.Repositories
                 var review = await GetOrCreateReviewByReviewRequestAsync(request.RequestId, userID);
                 return review;
             }
+            //else
+            //{
+            //    // If there is no matching request in the queue because the user rating is not high enough
+            //    // We should still allow users to review random writing, but the feedback won't be sent to the learner because of its quality
+            //}
 
             return null;
         }

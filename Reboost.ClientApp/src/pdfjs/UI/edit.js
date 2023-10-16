@@ -29,7 +29,7 @@ let svgEdit
 let dragOffsetX, dragOffsetY, dragStartX, dragStartY
 let editingAnnotation
 let isEditing = false
-const OVERLAY_BORDER_SIZE = 3
+const OVERLAY_BORDER_SIZE = 2
 
 /**
  * Create an overlay for editing an annotation.
@@ -49,8 +49,8 @@ function createEditOverlay(target) {
   const parentNode = findSVGContainer(target).parentNode
   const id = target.getAttribute('data-pdf-annotate-id')
   const rect = getAnnotationRect(target)
-  const styleLeft = rect.left - OVERLAY_BORDER_SIZE
-  const styleTop = rect.top - OVERLAY_BORDER_SIZE
+  const styleLeft = rect.left // - OVERLAY_BORDER_SIZE
+  const styleTop = rect.top // - OVERLAY_BORDER_SIZE
 
   overlay.setAttribute('id', 'pdf-annotate-edit-overlay')
   overlay.setAttribute('data-target-id', id)
@@ -60,8 +60,10 @@ function createEditOverlay(target) {
   overlay.style.left = `${styleLeft}px`
   overlay.style.width = `${rect.width}px`
   overlay.style.height = `${rect.height}px`
-  overlay.style.border = `${OVERLAY_BORDER_SIZE}px solid ${BORDER_COLOR}`
-  overlay.style.borderRadius = `${OVERLAY_BORDER_SIZE}px`
+  // overlay.style.cursor = 'pointer'
+  // overlay.style.border = `${OVERLAY_BORDER_SIZE}px solid ${BORDER_COLOR}`
+  // overlay.style['border-bottom'] = '1px solid #868e96' // `${OVERLAY_BORDER_SIZE}px solid ${BORDER_COLOR}`
+  // overlay.style.borderRadius = `${OVERLAY_BORDER_SIZE}px`
 
   // anchor.innerHTML = '×'
   // anchor.setAttribute('href', 'javascript://')

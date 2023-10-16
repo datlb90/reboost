@@ -35,7 +35,9 @@
         <el-tooltip class="item" effect="dark" content="Note (N)" placement="bottom">
           <button class="toolbar-btn" :class="[activeButton=='point'?'active':'']" data-tooltype="point" type="button" @click="toolBarButtonClick('point')">
             <div class="icon">
-              <i class="toolbar-icon far fa-sticky-note" />
+              <i class="toolbar-icon fas fa-sticky-note" />
+
+              <!-- <i class="toolbar-icon far fa-sticky-note" /> -->
             </div>
           </button>
         </el-tooltip>
@@ -56,17 +58,19 @@
       <div v-if="!disableAnnotation" class="toolbar-btn-wrapper">
         <el-tooltip class="item" effect="dark" content="Rectangle (R)" placement="bottom">
           <button class="toolbar-btn" :class="[activeButton=='rectangle'?'active':'']" data-tooltype="rectangle" type="button" @click="toolBarButtonClick('rectangle')">
-            <div class="icon">
-              <i class="far fa-square" />
+            <div class="icon" style="height: 17px;">
+              <i class="far fa-square" style="font-size: 17px;" />
             </div>
+
           </button>
         </el-tooltip>
       </div>
 
       <!-- Color picker control -->
-      <div :style="{display:(activeButton || clickedAnnotation)&&!disableAnnotation?'block':'none'}">
+      <!-- <div :style="{display: (activeButton || clickedAnnotation) && !disableAnnotation? 'block':'none'}">
         <colorPicker ref="colorPickerCom" :initcolor="colorChosen" :documentid="documentid" @colorChange="colorPickerChange($event)" />
-      </div>
+      </div> -->
+
       <!-- :expandcolorpicker.sync="expandColorPicker" -->
       <!-- Text selection tools -->
       <div v-if="!disableAnnotation" id="textTool" data-element="textToolGroupButton" class="tool-group-button text-tool-group-button">
@@ -104,7 +108,7 @@
       </div>
 
       <!-- Text size -->
-      <select v-if="!disableAnnotation" :style="{ 'display': activeButton == 'text' ? 'block' : 'none' }" class="text-size" />
+      <!-- <select v-if="!disableAnnotation" :style="{ 'display': activeButton == 'text' ? 'block' : 'none' }" class="text-size" /> -->
 
       <!-- No presets -->
       <!-- <div v-if="(activeButton || clickedAnnotation) && !disableAnnotation" class="preset-none">
@@ -115,13 +119,13 @@
       <el-dropdown size="mini" split-button style="margin-left: 10px;min-width:95px" @command="handleScale">
         {{ scaleText }}
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="fitWidth" icon="fas fa-expand-arrows-alt">{{ messageTranslates('viewerToolBar', 'fitToWidth') }}</el-dropdown-item>
-          <el-dropdown-item command="fitPage" icon="fas fa-expand-alt">{{ messageTranslates('viewerToolBar', 'fitToPage') }}</el-dropdown-item>
-          <el-dropdown-item command="0.5" divided> 50% </el-dropdown-item>
-          <el-dropdown-item command="1">100%</el-dropdown-item>
-          <el-dropdown-item command="1.25">125%</el-dropdown-item>
-          <el-dropdown-item command="1.5">150%</el-dropdown-item>
-          <el-dropdown-item command="2">200%</el-dropdown-item>
+          <el-dropdown-item command="fitWidth"> <i class="fas fa-expand-arrows-alt" style="margin-right: 7px;" />{{ messageTranslates('viewerToolBar', 'fitToWidth') }}</el-dropdown-item>
+          <el-dropdown-item command="fitPage"> <i class="fas fa-expand-alt" style="margin-right: 4px;" /> {{ messageTranslates('viewerToolBar', 'fitToPage') }}</el-dropdown-item>
+          <el-dropdown-item command="0.5" divided> Zoom 50% </el-dropdown-item>
+          <el-dropdown-item command="1"> Zoom 100%</el-dropdown-item>
+          <el-dropdown-item command="1.25"> Zoom 125%</el-dropdown-item>
+          <el-dropdown-item command="1.5"> Zoom 150%</el-dropdown-item>
+          <el-dropdown-item command="2"> Zoom 200%</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
 
@@ -167,16 +171,16 @@
 </template>
 
 <script>
-import ColorPicker from './ColorPicker'
+// import ColorPicker from './ColorPicker'
 import UI from '@/pdfjs/UI'
 import ReviewVue from '@/views/learner/Review.vue'
 import { UserRole, RATER_STATUS, RATER_TRAINING_STATUS, DISPUTE_STATUS } from '../../app.constant'
 import reviewService from '../../services/review.service'
 export default ({
   name: 'ToolBar',
-  components: {
-    'colorPicker': ColorPicker
-  },
+  // components: {
+  //   'colorPicker': ColorPicker
+  // },
   props: { documentid: { type: Number, default: null },
     reviewid: { type: Number, default: null },
     expandcolorpicker: { type: Boolean, default: false },
@@ -267,7 +271,7 @@ export default ({
           this.activeButton = tooltype
           switch (this.activeButton) {
             case 'text':
-              this.$refs.colorPickerCom.changeColorWhenClickToolBarButton('#000000')
+              // this.$refs.colorPickerCom.changeColorWhenClickToolBarButton('#000000')
               UI.enableText()
               break
             case 'point':
@@ -276,7 +280,7 @@ export default ({
             case 'area':
             case 'highlight':
             case 'rectangle':
-              this.$refs.colorPickerCom.changeColorWhenClickToolBarButton('#000000')
+              // this.$refs.colorPickerCom.changeColorWhenClickToolBarButton('#000000')
               UI.enableRect('area')
               break
             case 'strikeout':
@@ -434,10 +438,10 @@ export default ({
       let textColor = 'red'
 
       function initText() {
-        const size = document.querySelector('.toolbar .text-size');
-        [8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96].forEach(s => {
-          size.appendChild(new Option(s, s))
-        })
+        // const size = document.querySelector('.toolbar .text-size');
+        // [8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96].forEach(s => {
+        //   size.appendChild(new Option(s, s))
+        // })
 
         setText(
           // localStorage.getItem(`${self.RENDER_OPTIONS.documentId}/text/size`) ||
@@ -466,7 +470,7 @@ export default ({
             `${self.RENDER_OPTIONS.documentId}/text/size`,
             textSize
           )
-          document.querySelector('.toolbar .text-size').value = textSize
+          // document.querySelector('.toolbar .text-size').value = textSize
         }
 
         if (textColor !== color) {
@@ -499,13 +503,13 @@ export default ({
         }
       }
 
-      function handleTextSizeChange(e) {
-        setText(e.target.value, textColor)
-      }
+      // function handleTextSizeChange(e) {
+      //   setText(e.target.value, textColor)
+      // }
 
-      document
-        .querySelector('.toolbar .text-size')
-        .addEventListener('change', handleTextSizeChange)
+      // document
+      //   .querySelector('.toolbar .text-size')
+      //   .addEventListener('change', handleTextSizeChange)
 
       initText()
     },
@@ -523,14 +527,16 @@ export default ({
       this.toolBarButtonClick('cursor')
     },
     handleAnnotationClicked(e) {
-      if (e) {
-        if (e.color) { this.colorChosen = e.color.includes('#') ? e.color : '#' + e.color }
-        this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, e)
-        this.clickedAnnotation = e
-      } else {
-        this.clickedAnnotation = e
-        this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, null)
-      }
+      this.clickedAnnotation = e
+
+      // if (e) {
+      //   if (e.color) { this.colorChosen = e.color.includes('#') ? e.color : '#' + e.color }
+      //   this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, e)
+      //   this.clickedAnnotation = e
+      // } else {
+      //   this.clickedAnnotation = e
+      //   this.$refs.colorPickerCom.changeColorByClickedAnno(this.colorChosen, null)
+      // }
     },
     colorPickerChange(e) {
       this.colorChosen = e

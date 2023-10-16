@@ -2,7 +2,7 @@ import http from '@/utils/axios'
 
 const questionService = {
   getAll() {
-    return http.get('/Questions').then(rs => { return rs ? rs.data : [] })
+    return http.get('/questions').then(rs => { return rs ? rs.data : [] })
   },
   getAllByUser(userId) {
     return http.get(`/questions/list/${userId}`).then(rs => { return rs ? rs.data : [] })

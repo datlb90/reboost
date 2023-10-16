@@ -8,7 +8,8 @@ export default {
     return {
       clickHandler: (e) => {
         let exist = false
-        for (const el of e.path) {
+        var path = e.composedPath ? e.composedPath() : e.path
+        for (const el of path) {
           if (el.classList && el.className == 'c-dropdown-menu') {
             exist = true
             break
@@ -20,12 +21,12 @@ export default {
       }
     }
   },
-  mounted() {
-    document.addEventListener('click', this.clickHandler)
-  },
-  destroyed() {
-    document.removeEventListener('click', this.clickHandler)
-  },
+  // mounted() {
+  //   document.addEventListener('click', this.clickHandler)
+  // },
+  // destroyed() {
+  //   document.removeEventListener('click', this.clickHandler)
+  // },
   methods: {
 
   }

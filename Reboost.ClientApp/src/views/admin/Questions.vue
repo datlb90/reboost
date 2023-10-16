@@ -4,7 +4,7 @@
       <h2>{{ messageTranslates('adminQuestions', 'allQuestion') }}</h2>
     </div>
 
-    <el-row :gutter="20">
+    <!-- <el-row :gutter="20">
       <el-col :md="6" class="filter-container">
         <div>
           <el-input v-model="textSearch" size="mini" :placeholder="messageTranslates('adminQuestions', 'typeToSearch')" @input="search()" />
@@ -12,9 +12,30 @@
       </el-col>
       <el-col :md="12" class="filter-container">
         <div class="filter-toolbar">
-          <dropdown-menu v-model="filterSection" style="margin-right: 20px" :tittle="messageTranslates('adminQuestions', 'testSection')" @confirm="search()" @reset="resetFilterSection()" />
-          <dropdown-menu v-model="filterType" style="margin-right: 20px" :tittle="messageTranslates('adminQuestions', 'type')" @confirm="search()" @reset="resetFilterType()" />
-          <dropdown-menu v-model="filterStatus" :tittle="messageTranslates('adminQuestions', 'status')" @confirm="search()" @reset="resetFilterStatus()" />
+          <el-dropdown
+            v-if="filterSections && filterSections.length > 0"
+            placement="bottom-start"
+            :hide-on-click="false"
+            style="float: left;"
+            @command="onSectionChange"
+          >
+            <span class="el-dropdown-link" style="cursor: pointer; font-weight: bold; color: #003469;">
+              Test Section<i class="el-icon-arrow-down el-icon--right" />
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-for="item in filterSections"
+                :key="item.text"
+                :command="item.text"
+                :icon="selectedSections.includes(item.text) ? 'el-icon-success' : 'el-icon-minus'"
+              >{{ item.text }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+
+          <dropdown-menu v-model="filterSections" style="margin-right: 20px" :tittle="messageTranslates('adminQuestions', 'testSection')" @confirm="search()" @reset="resetFilterSection()" />
+          <dropdown-menu v-model="filterTypes" style="margin-right: 20px" :tittle="messageTranslates('adminQuestions', 'type')" @confirm="search()" @reset="resetFilterType()" />
+          <dropdown-menu v-model="filterStatuses" :tittle="messageTranslates('adminQuestions', 'status')" @confirm="search()" @reset="resetFilterStatus()" />
         </div>
 
         <div class="tag-selection">
@@ -38,14 +59,107 @@
           <el-button size="mini" @click="clearFilter">{{ messageTranslates('adminQuestions', 'resetFilter') }}</el-button>
         </div>
       </el-col>
-    </el-row>
-    <el-row style="margin:10px 0px;">
-      <el-col class="filter-container">
-        <div style="text-align: right;">
-          <el-button size="mini" @click="openAddQuestionDialog">{{ messageTranslates('adminQuestions', 'addQuestion') }}</el-button>
+    </el-row> -->
+
+    <div style="height: 40px;">
+      <div class="filter-container" style="width: 310px; float: left;">
+        <div class="filter-toolbar" style="margin-top: 10px;">
+          <el-dropdown
+            v-if="filterSections && filterSections.length > 0"
+            placement="bottom-start"
+            :hide-on-click="false"
+            style="float: left; margin-right: 15px;"
+            @command="onFilterChange"
+          >
+            <span class="el-dropdown-link" style="cursor: pointer;">
+              Test Sections<i class="el-icon-arrow-down el-icon--right" />
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-for="item in filterSections"
+                :key="item.text"
+                :command="item"
+                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+              >{{ item.text }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+
+          <el-dropdown
+            v-if="filterTypes && filterTypes.length > 0"
+            placement="bottom-start"
+            :hide-on-click="false"
+            style="float: left; margin-right: 15px;"
+            @command="onFilterChange"
+          >
+            <span class="el-dropdown-link" style="cursor: pointer;">
+              Types<i class="el-icon-arrow-down el-icon--right" />
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-for="item in filterTypes"
+                :key="item.text"
+                :command="item"
+                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+              >{{ item.text }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+
+          <el-dropdown
+            v-if="filterStatuses && filterStatuses.length > 0"
+            placement="bottom-start"
+            :hide-on-click="false"
+            style="float: left; margin-right: 15px;"
+            @command="onFilterChange"
+          >
+            <span class="el-dropdown-link" style="cursor: pointer;">
+              Status<i class="el-icon-arrow-down el-icon--right" />
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-for="item in filterStatuses"
+                :key="item.text"
+                :command="item"
+                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+              >{{ item.text }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
-      </el-col>
-    </el-row>
+      </div>
+
+      <div class="filter-container" style="width: calc(100% - 310px); float: right;">
+        <el-button size="mini" style="float: right;  margin-top: 5px;" @click="openAddQuestionDialog">{{ messageTranslates('adminQuestions', 'addQuestion') }}</el-button>
+
+        <el-button size="mini" style="float: right; margin-right: 5px; margin-top: 5px;" @click="clearFilter">
+          {{ messageTranslates('question', 'resetAll') }}
+        </el-button>
+
+        <el-input
+          v-model="textSearch"
+          size="mini"
+          :placeholder="messageTranslates('question', 'placeholderSearch')"
+          style="float: right; width: 200px; margin-top: 5px;"
+          @input="search()"
+        />
+      </div>
+    </div>
+
+    <div v-if="selectionTag && selectionTag.length > 0" class="tag-selection">
+      <el-tag
+        v-for="tag in selectionTag"
+        :key="tag"
+        size="small"
+        type="info"
+        closable
+        :disable-transitions="false"
+        style="margin-right: 5px; margin-bottom: 5px;"
+        @close="handleClose(tag)"
+      >
+        {{ tag }}
+      </el-tag>
+    </div>
     <el-table ref="filterTable" :data="questions" stripe style="width: 100%;">
       <el-table-column prop="id" sortable label="#" width="60" />
       <el-table-column prop="title" sortable :label="messageTranslates('adminQuestions', 'questionName')">
@@ -154,7 +268,6 @@
 </template>
 <script>
 import _ from 'lodash'
-import DropdownMenu from '../../components/controls/DropdownMenu'
 import moment from 'moment'
 import AddEditQuestion from '../../components/controls/AddEditQuestion.vue'
 import QuestionPreview from '../../components/controls/QuestionPreview.vue'
@@ -163,7 +276,6 @@ import questionService from '../../services/question.service'
 export default {
   name: 'AdminQuestions',
   components: {
-    'dropdown-menu': DropdownMenu,
     'add-edit-question': AddEditQuestion,
     'question-preview': QuestionPreview,
     'add-sample': AddQuestionSample
@@ -176,9 +288,12 @@ export default {
       totalRow: 10,
       questionsCount: 0,
       selectionTag: [],
-      filterStatus: [],
-      filterSection: [],
-      filterType: [],
+      filterSections: [],
+      selectedSections: [],
+      filterTypes: [],
+      selectedTypes: [],
+      filterStatuses: [],
+      selectedStatus: [],
       questions: [],
       pageSize: 20,
       dialogVisible: false,
@@ -202,9 +317,9 @@ export default {
       this.$store.dispatch('question/loadQuestions').then(rs => {
         this.questionCached = this.getAllQuestions
         this.totalRow = this.questionsCount = this.questionCached.length
-        this.filterSection = Object.keys(_.groupBy(this.questionCached, 'section')).map(k => ({ text: k }))
-        this.filterType = Object.keys(_.groupBy(this.questionCached, 'type')).map(k => ({ text: k }))
-        this.filterStatus = Object.keys(_.groupBy(this.questionCached, 'status')).map(k => ({ text: k }))
+        this.filterSections = Object.keys(_.groupBy(this.questionCached, 'section')).map(k => ({ text: k }))
+        this.filterTypes = Object.keys(_.groupBy(this.questionCached, 'type')).map(k => ({ text: k }))
+        this.filterStatuses = Object.keys(_.groupBy(this.questionCached, 'status')).map(k => ({ text: k }))
 
         this.loadTable()
       })
@@ -222,21 +337,29 @@ export default {
     },
     clearFilter() {
       this.textSearch = ''
-      this.filterSection = this.filterSection.map(i => ({ ...i, checked: false }))
-      this.filterType = this.filterType.map(i => ({ ...i, checked: false }))
-      this.filterStatus = this.filterStatus.map(i => ({ ...i, checked: false }))
+      this.filterSections = this.filterSections.map(i => ({ ...i, checked: false }))
+      this.filterTypes = this.filterTypes.map(i => ({ ...i, checked: false }))
+      this.filterStatuses = this.filterStatuses.map(i => ({ ...i, checked: false }))
       this.loadTable()
     },
     search() {
       this.page = 1
       this.loadTable()
     },
+    onFilterChange(command) {
+      if (command.checked) {
+        command.checked = false
+      } else {
+        command.checked = true
+      }
+      this.search()
+    },
     filter() {
       let result = []
       this.selectionTag = []
-      const _filteredSection = this.filterSection.filter(s => s.checked).map(s => s.text)
-      const _filteredType = this.filterType.filter(s => s.checked).map(s => s.text)
-      const _filteredStatus = this.filterStatus.filter(s => s.checked).map(s => s.text)
+      const _filteredSection = this.filterSections.filter(s => s.checked).map(s => s.text)
+      const _filteredType = this.filterTypes.filter(s => s.checked).map(s => s.text)
+      const _filteredStatus = this.filterStatuses.filter(s => s.checked).map(s => s.text)
 
       this.selectionTag = _filteredSection.concat(_filteredType, _filteredStatus)
 
@@ -263,16 +386,16 @@ export default {
     handleClose(tag) {
       this.selectionTag.splice(this.selectionTag.indexOf(tag), 1)
 
-      const _filteredSection = this.filterSection.filter(s => s.text == tag)
-      const _filteredType = this.filterType.filter(s => s.text == tag)
-      const _filteredStatus = this.filterStatus.filter(s => s.text == tag)
+      const _filteredSection = this.filterSections.filter(s => s.text == tag)
+      const _filteredType = this.filterTypes.filter(s => s.text == tag)
+      const _filteredStatus = this.filterStatuses.filter(s => s.text == tag)
 
       if (_filteredSection.length > 0) {
-        this.filterSection.find(s => s.text == tag).checked = false
+        this.filterSections.find(s => s.text == tag).checked = false
       } else if (_filteredType.length > 0) {
-        this.filterType.find(s => s.text == tag).checked = false
+        this.filterTypes.find(s => s.text == tag).checked = false
       } else if (_filteredStatus.length > 0) {
-        this.filterStatus.find(s => s.text == tag).checked = false
+        this.filterStatuses.find(s => s.text == tag).checked = false
       }
       this.loadTable()
     },

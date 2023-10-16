@@ -23,7 +23,7 @@ function handleDocumentMouseup(e) {
   input = document.createElement('input')
   input.setAttribute('id', 'pdf-annotate-point-input')
   input.setAttribute('placeholder', 'Enter note')
-  input.style.border = `3px solid ${BORDER_COLOR}`
+  input.style.border = `2px solid ${BORDER_COLOR}`
   input.style.borderRadius = '3px'
   input.style.position = 'absolute'
   input.style.top = `${e.clientY}px`

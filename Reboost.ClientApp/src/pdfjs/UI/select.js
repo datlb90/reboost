@@ -88,7 +88,7 @@ function handleDocumentMousedown(e) {
   overlay.style.position = 'absolute'
   overlay.style.top = `${originY - rect.top}px`
   overlay.style.left = `${originX - rect.left}px`
-  overlay.style.border = `3px solid ${BORDER_COLOR}`
+  overlay.style.border = `2px solid ${BORDER_COLOR}`
   overlay.style.borderRadius = '3px'
   svg.parentNode.appendChild(overlay)
 

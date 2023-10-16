@@ -73,12 +73,14 @@ function handleDocumentMouseup(e) {
 
   input = document.createElement('pre')
   input.setAttribute('id', 'pdf-annotate-text-input')
+  input.class = 'free-text'
   input.style.maxWidth = `${w}px`
   // input.setAttribute('placeholder', 'Enter text')
   input.setAttribute('contenteditable', true)
   input.setAttribute('display', 'block')
-  // input.style.border = `3px solid ${BORDER_COLOR}`
+  // input.style.border = `1px solid red`
   input.style.outline = 'none'
+  input.style.border = 'none'
   // input.style.borderRadius = '3px'
   input.style.position = 'absolute'
   input.style.color = localStorage.getItem(`${documentId}/color`) || _textColor
@@ -90,7 +92,7 @@ function handleDocumentMouseup(e) {
   // } else {
   //   input.style.width = '150px'
   // }
-  input.style.top = `${y}px`
+  input.style.top = `${y - 10}px`
   input.style.left = `${x}px`
 
   input.addEventListener('blur', handleInputBlur)
@@ -101,10 +103,9 @@ function handleDocumentMouseup(e) {
 
   document.querySelector(`div[data-page-number='${pageNumber}']`).appendChild(input)
 
+  // input.innerText = 'a'
   input.focus()
-
-  input.innerText = 'Enter Text Here'
-  document.execCommand('selectAll', false, null)
+  // document.execCommand('selectAll', false, null)
 }
 
 /**
@@ -171,8 +172,8 @@ async function saveText() {
       color: localStorage.getItem(`${documentId}/color`) || _textColor,
       content: content
     }, scaleDown(svg, {
-      x: clientX - rect.left,
-      y: clientY - rect.top,
+      x: clientX - rect.left + 1,
+      y: clientY - rect.top - 10,
       width: w,
       height: input.offsetHeight
     })

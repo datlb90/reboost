@@ -529,6 +529,7 @@ Navbar CSS
 .startp-nav nav .navbar-nav .nav-item {
   position: relative;
   padding: 15px 0;
+  padding-bottom: 12px;
 }
 
 .startp-nav nav .navbar-nav .nav-item a {
