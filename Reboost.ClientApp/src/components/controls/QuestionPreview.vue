@@ -279,11 +279,12 @@ export default {
   padding: 0 !important;
 }
 #questionContent{
+  padding: 10px;
   word-break: break-word;
 }
 #questionContent p {
   color: black;
-  line-height: 1.5;
+  line-height: 1.5 !important;
 }
 #readingContent {
   word-break: break-word;

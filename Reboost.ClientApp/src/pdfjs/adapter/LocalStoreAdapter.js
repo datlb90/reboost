@@ -12,7 +12,6 @@ export default class LocalStoreAdapter extends StoreAdapter {
           const annotations = getAnnotations(documentId).filter((i) => {
             return i.page === pageNumber && i.class === 'Annotation'
           })
-
           resolve({
             documentId,
             pageNumber,
@@ -93,13 +92,9 @@ export default class LocalStoreAdapter extends StoreAdapter {
             topPosition: topPos,
             id: id
           }
-
-          // console.log('Comment', comment)
-
           const annotations = getAnnotations(documentId)
           annotations.push(comment)
           updateAnnotations(documentId, annotations)
-
           resolve(comment)
         })
       },

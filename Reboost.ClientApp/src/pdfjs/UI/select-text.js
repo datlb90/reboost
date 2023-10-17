@@ -89,6 +89,7 @@ export function enableTextSelection(parent) {
         deleteTool.style.visibility = 'hidden'
       }
       // Hide add new comment form
+
       const newCommentWrapper = document.getElementById('add-new-comment')
       if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
         const validTarget = that.hasAParentWithClass(e.target, 'add-new-comment')
@@ -100,6 +101,7 @@ export function enableTextSelection(parent) {
         // if (this.annotationClicked.getAttribute('data-pdf-annotate-type') == 'comment-area') {
         //   this.annotationClicked.setAttribute('data-pdf-annotate-type', 'area')
         // }
+
         if (!validTarget && comment.replace(/\s/g, '').length == 0) {
           that.cancelCommentText()
         } else if (!validTarget && comment.replace(/\s/g, '').length != 0) {

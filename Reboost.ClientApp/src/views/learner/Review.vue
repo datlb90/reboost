@@ -435,7 +435,6 @@ export default {
       this.isView = this.$route.params.isViewOrRate === 'view' || this.$route.params.isViewOrRate === 'rate'
       this.RENDER_OPTIONS.documentId = this.documentId
       this.isRate = this.$route.params.isViewOrRate === 'rate'
-      console.log(this.isRate)
     }
   },
   async mounted() {
@@ -447,7 +446,7 @@ export default {
     window['APP'] = this
     window.onmessage = function(e) {
       console.log('receive message from parent', e.data)
-      this.showRubric = e.data.toLowerCase() === 'rubric'
+      if (e.data) { this.showRubric = e.data.toLowerCase() === 'rubric' }
     }
     // window.addEventListener('message', (e) => {
     //   console.log('receive message from parent iframe', e)
@@ -623,7 +622,6 @@ export default {
       await this.comments.sort(this.compareTopAnnoAttributes)
       this.handleCommentPositionsRestore()
       this.hideDeleteToolBar()
-
       this.registerEvents()
       enableTextSelection(this)
       await this.reRenderPages()
@@ -964,8 +962,7 @@ export default {
           const svgHeight = parseInt(target.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12
           const svgPageNum = parseInt(target.getAttribute('page-num'))
           if (svgPageNum > 1) { gTop += ((svgPageNum - 1) * svgHeight) }
-
-          if (this.order > -1) {
+          if (this.order > -1 && this.comments[this.order] && commentCards[this.order]) {
             const cTop = this.comments[this.order].topPosition
 
             // remove current selected comment card class if any
@@ -1224,13 +1221,17 @@ export default {
       const comments = await PDFJSAnnotate.getStoreAdapter().getComments(documentId)
       comments.forEach(comment => {
         const thisCard = document.querySelector(".comment-card[highlight-id='" + comment.uuid + "']")
-        comment.topPosition = parseInt(thisCard.getAttribute('top-position'))
+        if (thisCard) {
+          comment.topPosition = parseInt(thisCard.getAttribute('top-position'))
+        }
 
         if (typeof (e) == 'undefined') {
           const commentTextContainer = document.getElementById('comment-text-' + comment.uuid)
-          if (commentTextContainer.clientHeight > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 3)) {
-            commentTextContainer.style.webkitLineClamp = '3'
-            this.showMoreList.push({ id: comment.uuid, value: 0 })
+          if (commentTextContainer) {
+            if (commentTextContainer.clientHeight > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 3)) {
+              commentTextContainer.style.webkitLineClamp = '3'
+              this.showMoreList.push({ id: comment.uuid, value: 0 })
+            }
           }
         }
       })
@@ -1260,9 +1261,7 @@ export default {
       const commentWrapper = document.getElementById('add-new-comment')
       const uuid = commentWrapper.getAttribute('highlight-id')
       if (!status) {
-        await PDFJSAnnotate.getStoreAdapter().getAnnotation(this.documentId, uuid).then(r => {
-          this.annotation = r
-        })
+        this.annotation = await PDFJSAnnotate.getStoreAdapter().getAnnotation(this.documentId, uuid)
       }
       // let newComment = await UI.addCommentText(this.newComment, this.RENDER_OPTIONS.documentId);
       const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
@@ -1295,7 +1294,7 @@ export default {
       // await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
       await this.comments.sort(this.compareTopAnnoAttributes)
       // this.comments.sort(this.compareTopAnnoAttributes)
-      document.getElementById('add-new-comment').style.display = 'none'
+      // document.getElementById('add-new-comment').style.display = 'none'
       newComment.annotation.documentId = this.documentId
       var anno = {
         DocumentId: this.documentId,
@@ -1331,14 +1330,19 @@ export default {
           }
         })
       }
+
       await this.updatePositionsAfterCommentAdded()
       // await this.handleCommentPositionsRestore()
       if (status) {
         const target = this.getHighlightByCommentId(this.annotation.uuid)
         this.handleCommentAnnotationClick(target)
       }
-
       this.newComment = ''
+
+      // Need to investigate on why #add-new-comment need to be hidden late
+      setTimeout(function() {
+        document.getElementById('add-new-comment').style.display = 'none'
+      }, 10)
     },
     // Begin migrating code from select.js to document.vue
     async commentText(note) {
@@ -1543,22 +1547,29 @@ export default {
         const commentCardTemp = document.querySelectorAll('.comment-card')
         var commentCards = Array.prototype.slice.call(commentCardTemp)
         commentCards.sort(this.compareTopAttributes)
-        const endPos = parseInt(newComment.getAttribute('top-position')) + newComment.offsetHeight
-        if (this.order < (commentCards.length - 1)) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
+        if (newComment) {
+          const endPos = parseInt(newComment.getAttribute('top-position')) + newComment.offsetHeight
+          if (this.order < (commentCards.length - 1)) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
+        }
+        // const endPos = parseInt(newComment.getAttribute('top-position')) + newComment.offsetHeight
+        // if (this.order < (commentCards.length - 1)) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
       }
       const that = this
 
       const commentTextContainer = document.getElementById('comment-text-' + this.annotation.uuid)
-      if (commentTextContainer.clientHeight > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 3)) {
+
+      if (commentTextContainer && commentTextContainer.clientHeight > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 3)) {
         commentTextContainer.style.webkitLineClamp = '3'
         if (this.showMoreList.filter(item => item.id === this.annotation.uuid) == 0) {
           this.showMoreList.push({ id: this.annotation.uuid, value: 0 })
         }
       }
 
-      newComment.addEventListener('click', function commentCardClick() {
-        that.handleCommentCardClick(this)
-      })
+      if (newComment) {
+        newComment.addEventListener('click', function commentCardClick() {
+          that.handleCommentCardClick(this)
+        })
+      }
     },
     async updateCommentCardPosition(uuid) {
       const newComment = document.querySelector(".comment-card[highlight-id='" + uuid + "']")
@@ -2156,15 +2167,18 @@ export default {
           const cmtAnno = document.querySelector(`[data-pdf-annotate-id="${editCmt.getAttribute('highlight-id')}"]`)
           if (cmtAnno) {
             const commentTextContainer = document.getElementById('comment-input-' + comment.uuid)
-            if (parseInt(window.getComputedStyle(commentTextContainer).height, 10) > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 4)) {
-              commentTextContainer.style.webkitLineClamp = '3'
-              if (this.showMoreList.filter(item => item.id === comment.uuid) == 0) {
-                this.showMoreList.push({ id: comment.uuid, value: 0 })
+            if (commentTextContainer) {
+              if (parseInt(window.getComputedStyle(commentTextContainer).height, 10) > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 4)) {
+                commentTextContainer.style.webkitLineClamp = '3'
+                if (this.showMoreList.filter(item => item.id === comment.uuid) == 0) {
+                  this.showMoreList.push({ id: comment.uuid, value: 0 })
+                }
+              } else {
+                commentTextContainer.style.webkitLineClamp = 'inherit'
+                this.showMoreList = this.showMoreList.filter(item => item.id !== editCmt.getAttribute('highlight-id'))
               }
-            } else {
-              commentTextContainer.style.webkitLineClamp = 'inherit'
-              this.showMoreList = this.showMoreList.filter(item => item.id !== editCmt.getAttribute('highlight-id'))
             }
+
             await this.showMoreList.map(rs => { rs.value = 0 })
             this.hideDeleteToolBar()
             await this.handleCommentAnnotationClick(cmtAnno)

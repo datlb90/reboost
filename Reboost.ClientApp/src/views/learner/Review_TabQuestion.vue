@@ -43,7 +43,7 @@
           <p>
             <b><a href="#">{{ getQuestionSection }}</a></b>
           </p>
-          <div v-html="getQuestion.content" />
+          <div id="questionContent" v-html="getQuestion.content" />
         </div>
         <div v-if="getReading != ''" class="content-con">
           <p>

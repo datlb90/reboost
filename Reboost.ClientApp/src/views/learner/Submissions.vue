@@ -178,10 +178,10 @@ export default {
       if (action.trim() === 'Request Review') {
         if (this.unRatedList.length > 0) {
           this.$notify.error({
-            title: 'Rate request',
-            message: 'Please rate all of your un-rate review before making a free review request.',
+            title: 'Unrated Reviews',
+            message: 'Please rate all of your unrated reviews before requesting for a free peer review',
             type: 'error',
-            duration: 1500
+            duration: 0
           })
         } else {
           reviewService.createReviewRequest({

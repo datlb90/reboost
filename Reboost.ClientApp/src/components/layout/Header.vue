@@ -141,24 +141,29 @@
                   <i class="far fa-user-circle" style="font-size: 24px;" />
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                  <div style="padding:0px 20px; display:inline-grid">
-                    <span style="padding:5px 0px;font-weight:700;font-size:20px;">Hi, {{ displayName }}</span>
-                    <span>Email: {{ currentUser.email }}</span>
-                    <span>Role: {{ currentUser.role }}</span>
-                    <span>Rating: {{ toFix(raterRating) }} <i class="fas fa-star" /></span>
+                  <div style="padding:0px 20px; margin-bottom: 10px; display:inline-grid">
+                    <span style="padding:5px 0px;font-weight:700;font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap; max-width: 200px;">Hi, {{ displayName }}</span>
+                    <span style="text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap; max-width: 200px;">
+                      Email: {{ currentUser.email }}
+                    </span>
+                    <!-- <span>Role: {{ currentUser.role }}</span> -->
+                    <span>TOEFL Score: 20/30</span>
+                    <span>IELTS Score: 7.0/9.0</span>
+                    <span>Review Rating: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></span>
                   </div>
-                  <el-dropdown-item command="selectTest" divided>Selected Test: {{ testsToText() }}</el-dropdown-item>
-                  <el-dropdown-item>
-                    <el-dropdown class="lang-dropdown" placement="left" @command="onChangeLanguage">
-                      <span v-if="lang == 'English'">Select Language: <flag iso="gb" style="border-radius: 2px; margin-right: 6px;" /></span>
-                      <span v-else>Select Language: <flag iso="vn" style="border-radius: 2px; margin-right: 6px;" /></span>
-                      <!-- <flag v-else iso="vn" style="border-radius: 2px;" /> -->
+
+                  <div style="padding:0px 20px; border-top: 1px solid #EBEEF5; padding-top: 12px; padding-bottom: 6px;">
+                    <el-dropdown class="lang-dropdown" trigger="click" placement="left" @command="onChangeLanguage">
+                      <span v-if="lang == 'English'">Language: English <flag iso="gb" style="border-radius: 3px; margin-left: 2px;" /></span>
+                      <span v-else>Ngôn Ngữ: Tiếng Việt <flag iso="vn" style="border-radius: 3px; margin-left: 2px;" /></span>
                       <el-dropdown-menu slot="dropdown" class="lang-dropdown-menu">
-                        <el-dropdown-item command="vietnamese"><flag iso="vn" style="border-radius: 2px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
-                        <el-dropdown-item command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
+                        <el-dropdown-item command="vietnamese"><flag iso="vn" style="border-radius: 3px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
+                        <el-dropdown-item command="english"><flag iso="gb" style="border-radius: 3px; margin-right: 6px;" />English</el-dropdown-item>
                       </el-dropdown-menu>
                     </el-dropdown>
-                  </el-dropdown-item>
+                  </div>
+
+                  <el-dropdown-item command="selectTest" divided>Selected Test: {{ testsToText() }}</el-dropdown-item>
                   <el-dropdown-item command="addQuestion">Contribute Question</el-dropdown-item>
                   <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
                 </el-dropdown-menu>

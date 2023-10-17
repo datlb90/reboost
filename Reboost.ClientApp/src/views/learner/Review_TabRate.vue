@@ -1,7 +1,7 @@
 <template>
   <div style="height: 100%;display: flex; flex-direction: column">
     <div id="rate">
-      <div style="height: 100%; overflow: auto;">
+      <div style="height: calc(100vh - 125px); overflow: auto;">
         <div class="content-con">
           <div style="margin: 0 0 10px 5px">
             <span class="title">Rate </span>
@@ -11,10 +11,11 @@
             <span class="title">Comment: </span>
             <el-input
               v-model="rateComment"
+              type="textarea"
               style="margin-top:5px"
               :maxlength="8000"
               placeholder="Please input your comment"
-              :rows="3"
+              autosize
               :disabled="isRated"
             />
           </div>
