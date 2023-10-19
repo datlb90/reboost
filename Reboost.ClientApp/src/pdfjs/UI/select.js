@@ -628,7 +628,6 @@ function getHighlightByCommentId(commentId) {
 // Add comment tab to the pdf viewer
 function displayAddNewCommentForm() {
   const newCommentWrapper = document.getElementById('add-new-comment')
-
   newCommentWrapper.style.visibility = 'visible'
 
   const svg = _svg

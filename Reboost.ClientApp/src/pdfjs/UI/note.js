@@ -79,7 +79,6 @@ function savePoint() {
       y: clientY - rect.top
     })
     )
-    // const commentWrapper = document.getElementById('add-new-comment')
     // const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
     PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
       .then((annotation) => {

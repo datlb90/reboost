@@ -59,6 +59,13 @@ export default {
   }
 }
 </script>
+
+<style>
+.sample-container p {
+  color: black;
+  line-height: 1.5 !important;
+}
+</style>
 <style scoped>
   pre{
     white-space: break-spaces;
@@ -108,8 +115,4 @@ export default {
   word-break: break-word;
   }
 
-  .sample-container p {
-    color: black;
-    line-height: 1.5;
-}
 </style>

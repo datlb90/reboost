@@ -5,6 +5,6 @@ export const ViewerToolBar = {
   submit: 'Submit',
   clickToUpload: 'Click to upload',
   revise: 'Revise',
-  rateReview: 'Rate Review',
+  rateReview: 'Submit Rating',
   dispute: 'Dispute'
 }

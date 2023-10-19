@@ -2,7 +2,7 @@
   <div id="reviewContainer" :style="{cursor: activeButton== 'text'||activeButton== 'rectangle' || activeButton== 'point' ? 'crosshair':''}" style="border-top: 1px solid rgb(223 224 238); padding: 5px; background: rgb(248, 249, 250);">
 
     <div id="content-wrapper" style="background: rgb(248, 249, 250); height: inherit; width: 100%;position: absolute; overflow: unset;">
-      <div id="left-panel" :class="{'hideQuestion': !showQuestion}">
+      <div id="left-panel" :class="{'hideQuestion': !showQuestion}" style="height: calc(100vh - 50px);">
         <el-tabs v-model="selectedTab" type="border-card">
           <el-tab-pane name="question" label="Question">
             <tabQuestion
@@ -49,8 +49,14 @@
           @disputed="isDisputed=true"
           @closeDisputeDialog="disputeDialogVisible = false"
         />
-        <div id="viewerContainer">
+
+        <div id="viewerContainer" style="height: calc(100vh - 50px); ">
+
+          <div v-if="!completeLoading" style="width: calc(100% - 10px);">
+            <el-button type="info" plain :loading="true" style="width: 100%; border: none;">Loading Document</el-button>
+          </div>
           <div
+            v-else
             id="viewer"
             :class="{'freeText': activeButton== 'text'}"
             class="pdfViewer"
@@ -404,7 +410,9 @@ export default {
       },
       disputeNoteDialogVisible: false,
       isDisputed: false,
-      showRubric: true
+      showRubric: true,
+      isAddingNewComment: false,
+      completeLoading: false
     }
   },
   computed: {
@@ -446,7 +454,11 @@ export default {
     window['APP'] = this
     window.onmessage = function(e) {
       console.log('receive message from parent', e.data)
-      if (e.data) { this.showRubric = e.data.toLowerCase() === 'rubric' }
+      if (e.data) {
+        if (typeof e.data === 'string' || e.data instanceof String) {
+          this.showRubric = e.data.toLowerCase() === 'rubric'
+        }
+      }
     }
     // window.addEventListener('message', (e) => {
     //   console.log('receive message from parent iframe', e)
@@ -457,6 +469,7 @@ export default {
     // Render stuff
     this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId }).then(async() => {
       PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
+      this.completeLoading = true
       await this.render()
       this.$refs.toolBar?.handleScale('fitPage')
       this.$refs.toolBar?.insertExpandMenu()
@@ -1263,7 +1276,6 @@ export default {
       if (!status) {
         this.annotation = await PDFJSAnnotate.getStoreAdapter().getAnnotation(this.documentId, uuid)
       }
-      // let newComment = await UI.addCommentText(this.newComment, this.RENDER_OPTIONS.documentId);
       const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
       const newComment = await PDFJSAnnotate.getStoreAdapter().addComment(
         this.documentId,
@@ -1291,40 +1303,45 @@ export default {
         })
       }
       this.$forceUpdate()
-      // await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
       await this.comments.sort(this.compareTopAnnoAttributes)
-      // this.comments.sort(this.compareTopAnnoAttributes)
-      // document.getElementById('add-new-comment').style.display = 'none'
       newComment.annotation.documentId = this.documentId
-      var anno = {
-        DocumentId: this.documentId,
-        ReviewId: this.reviewId,
-        Type: this.annotation.type,
-        PageNum: typeof (this.annotation.pageNum) != 'undefined' ? this.annotation.pageNum : this.annotation.page,
-        Top: typeof (this.annotation.top) != 'undefined' ? this.annotation.top : parseInt(this.annotation.y),
-        Color: this.annotation.color,
-        Uuid: this.annotation.uuid,
-        Data: JSON.stringify(this.annotation),
-        Id: this.annotation.id
-      }
-      var newCmt = {
-        Text: newComment.text != null ? newComment.text : '',
-        Content: newComment.content,
-        TopPosition: newComment.topPosition,
-        Uuid: newComment.uuid,
-        Data: JSON.stringify(newComment)
-      }
+
       if (this.annotation.type == 'area') {
         this.annotation.type = 'comment-area'
-        anno.Type = 'comment-area'
         await this.updateTypeOfRect('comment-area', status)
       }
       if (this.annotation.type == 'point') {
         this.$refs.toolBar?.handleAnnotationClicked(null)
       }
       this.disableToolbarButtons()
+
+      // Need to investigate on why #add-new-comment need to be hidden late
+      setTimeout(function() {
+        document.getElementById('add-new-comment').style.display = 'none'
+      }, 10)
+
       if (status) {
-        reviewService.addInTextComment(this.documentId, 1, newCmt, anno).then(async rs => {
+        var anno = {
+          DocumentId: this.documentId,
+          ReviewId: this.reviewId,
+          Type: this.annotation.type,
+          PageNum: typeof (this.annotation.pageNum) != 'undefined' ? this.annotation.pageNum : this.annotation.page,
+          Top: typeof (this.annotation.top) != 'undefined' ? this.annotation.top : parseInt(this.annotation.y),
+          Color: this.annotation.color,
+          Uuid: this.annotation.uuid,
+          Data: JSON.stringify(this.annotation),
+          Id: this.annotation.id
+        }
+
+        var newCmt = {
+          Text: newComment.text != null ? newComment.text : '',
+          Content: newComment.content,
+          TopPosition: newComment.topPosition,
+          Uuid: newComment.uuid,
+          Data: JSON.stringify(newComment)
+        }
+
+        reviewService.addInTextComment(this.documentId, this.reviewId, newCmt, anno).then(async rs => {
           if (rs.data) {
             this.updateCommentId(rs)
           }
@@ -1338,11 +1355,8 @@ export default {
         this.handleCommentAnnotationClick(target)
       }
       this.newComment = ''
-
-      // Need to investigate on why #add-new-comment need to be hidden late
-      setTimeout(function() {
-        document.getElementById('add-new-comment').style.display = 'none'
-      }, 10)
+      this.isAddingNewComment = false
+      console.log(this.isAddingNewComment)
     },
     // Begin migrating code from select.js to document.vue
     async commentText(note) {
@@ -1581,6 +1595,7 @@ export default {
       }
     },
     displayAddNewCommentForm(note) {
+      this.isAddingNewComment = true
       const newCommentWrapper = document.getElementById('add-new-comment')
       newCommentWrapper.style.visibility = 'visible'
       var rectTop = 0
@@ -1708,6 +1723,7 @@ export default {
         const topPos = parseInt(newCommentWrapper.style.top.substring(0, newCommentWrapper.style.top.length - 2))
         const endPos = topPos + newCommentWrapper.offsetHeight
         newCommentWrapper.style.display = 'none'
+        this.isAddingNewComment = false
         const commentCards = document.querySelectorAll('.comment-card')
         if (commentCards.length > 0) {
           if (this.order <= (commentCards.length - 1)) {
@@ -2111,7 +2127,7 @@ export default {
           this.$refs.toolBar?.handleAnnotationClicked(null)
         }
         this.disableToolbarButtons()
-        reviewService.addInTextComment(this.documentId, 1, newCmt, anno).then(async rs => {
+        reviewService.addInTextComment(this.documentId, this.reviewId, newCmt, anno).then(async rs => {
           if (rs.data) {
             this.updateCommentId(rs)
           }
@@ -2258,12 +2274,61 @@ export default {
       this.rubricCriteria = this.$refs.tabRubric?.getRubricData()
       if (!this.rubricCriteria) {
         this.$notify.error({
-          title: 'Field Required',
-          message: 'Please fill all rubric fields!',
+          title: 'Rubric Completion Required',
+          message: 'All criteria in the rubric must be completed before you can submit your review.',
           type: 'error',
-          duration: 2000
+          duration: 6000
         })
+        this.selectedTab = 'rubric'
       } else {
+        // Handle case where rater is adding new comment
+        if (this.isAddingNewComment) {
+          if (this.newComment.replace(/\s/g, '').length != 0) {
+            await this.addCommentText(true)
+          } else {
+            this.cancelCommentText()
+          }
+          this.isAddingNewComment = false
+        }
+        // Handle unsaved comments
+        const unsavedComments = this.comments.filter(c => c.isSaved == false)
+        for (let i = 0; i < unsavedComments.length; i++) {
+          const comment = unsavedComments[i]
+          var anno = {
+            DocumentId: this.documentId,
+            ReviewId: this.reviewId,
+            Type: comment.annotation.type == 'area' ? 'comment-area' : comment.annotation.type,
+            PageNum: typeof (comment.annotation.pageNum) != 'undefined' ? comment.annotation.pageNum : comment.annotation.page,
+            Top: typeof (comment.annotation.top) != 'undefined' ? comment.annotation.top : parseInt(comment.annotation.y),
+            Color: comment.annotation.color,
+            Uuid: comment.annotation.uuid,
+            Data: JSON.stringify(comment.annotation),
+            Id: this.annotation.id
+          }
+          var newCmt = {
+            Text: comment.text != null ? comment.text : '',
+            Content: comment.content,
+            TopPosition: comment.topPosition,
+            Uuid: comment.uuid,
+            Data: JSON.stringify(comment)
+          }
+          const rs = await reviewService.addInTextComment(this.documentId, this.reviewId, newCmt, anno)
+          if (rs.data) {
+            await this.updateCommentId(rs)
+            comment.isSaved = true
+          }
+        }
+        // At this point, all unsaved comments have been saved
+        const annotationsCount = await this.countAnnotations()
+        if (annotationsCount < 3) {
+          this.$notify.error({
+            title: 'Annotations required',
+            message: 'At least 3 annotations required!',
+            type: 'error',
+            duration: 2000
+          })
+          return
+        }
         var reviewData = []
         this.rubricCriteria.forEach(r => {
           if (r.mark) {
@@ -2275,22 +2340,12 @@ export default {
             })
           }
         })
-        const annotationsCount = await this.countAnnotations()
-        if (annotationsCount < 3) {
-          this.$notify.error({
-            title: 'Annotations required',
-            message: 'At least 3 annotations required!',
-            type: 'error',
-            duration: 2000
-          })
-          return
-        }
         reviewService.saveReviewFeedback(this.reviewId, reviewData).then(rs => {
           this.disableToolbarSubmit()
           if (rs) {
             this.$notify.success({
               title: 'Success',
-              message: 'Submitted!',
+              message: 'Review Submitted!',
               type: 'success',
               duration: 2000
             })
@@ -2324,6 +2379,7 @@ export default {
       var count = 0
       for (let i = 1; i <= this.NUM_PAGES; i += 1) {
         await PDFJSAnnotate.getStoreAdapter().getAnnotations(this.documentId, i).then(rs => {
+          console.log(rs)
           if (rs.annotations.length > 0) {
             count += rs.annotations.length
           }
@@ -2364,24 +2420,28 @@ export default {
       this.$refs.toolBar?.insertExpandMenu()
     },
     async documentWidthCal() {
-      var docWidth = document.getElementById('pageContainer1').offsetWidth
-      if (this.comments.length == 0) {
-        docWidth = document.getElementById('right-panel').offsetWidth - 20
-        document.getElementById('comment-wrapper').style.display = 'none'
-        if (this.scaleText == 'Fit to width') {
-          this.RENDER_OPTIONS.scale = docWidth / 612
-          this.fitDocumentWidth = true
-        } else if (this.scaleText == 'Fit to page') {
-          var docHeight = window.innerHeight - 70
-          if ((docWidth / 612) < (docHeight / 792)) {
-            this.RENDER_OPTIONS.scale = (docWidth / 612)
-          } else {
-            this.RENDER_OPTIONS.scale = (docHeight / 792)
+      var container = document.getElementById('pageContainer1')
+      if (container) {
+        var docWidth = document.getElementById('pageContainer1').offsetWidth
+        if (this.comments.length == 0) {
+          docWidth = document.getElementById('right-panel').offsetWidth - 20
+          document.getElementById('comment-wrapper').style.display = 'none'
+          if (this.scaleText == 'Fit to width') {
+            this.RENDER_OPTIONS.scale = docWidth / 612
+            this.fitDocumentWidth = true
+          } else if (this.scaleText == 'Fit to page') {
+            var docHeight = window.innerHeight - 70
+            if ((docWidth / 612) < (docHeight / 792)) {
+              this.RENDER_OPTIONS.scale = (docWidth / 612)
+            } else {
+              this.RENDER_OPTIONS.scale = (docHeight / 792)
+            }
+            this.scaleText = 'Fit to page'
+            this.fitDocumentWidth = true
           }
-          this.scaleText = 'Fit to page'
-          this.fitDocumentWidth = true
         }
       }
+
       this.calculateContainerHeight()
     },
     async handleScale(e) {
@@ -2433,6 +2493,7 @@ export default {
           // await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
           await this.comments.sort(this.compareTopAnnoAttributes)
           document.getElementById('add-new-comment').style.display = 'none'
+          this.isAddingNewComment = false
           var anno = {
             DocumentId: this.documentId,
             ReviewId: this.reviewId,
@@ -2530,6 +2591,7 @@ export default {
             // await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
             await this.comments.sort(this.compareTopAnnoAttributes)
             document.getElementById('add-new-comment').style.display = 'none'
+            this.isAddingNewComment = false
             var anno = {
               DocumentId: this.documentId,
               ReviewId: this.reviewId,
@@ -2844,20 +2906,19 @@ export default {
             this.isView = true
             this.isSubmit = true
           }
-
-          if (rs.review.status === REVIEW_REQUEST_STATUS.COMPLETED && (this.currentUser.role === UserRole.ADMIN || this.currentUser.id == rs.review.revieweeId)) {
-            reviewService.getDisputeByReviewId(rs.review.id).then(rs => {
-              if (rs) {
-                this.isDisputed = true
-                this.$refs.toolBar?.loadDisputeData(rs)
-                this.$refs.tabQuestion?.getDisputeData(rs)
-                // if (rs.adminNote) {
-                //   this.disputeNote.note = rs.adminNote
-                // }
-              }
-            })
-          }
-
+          // Disable dispute for now
+          // if (rs.review.status === REVIEW_REQUEST_STATUS.COMPLETED && (this.currentUser.role === UserRole.ADMIN || this.currentUser.id == rs.review.revieweeId)) {
+          //   reviewService.getDisputeByReviewId(rs.review.id).then(rs => {
+          //     if (rs) {
+          //       this.isDisputed = true
+          //       this.$refs.toolBar?.loadDisputeData(rs)
+          //       this.$refs.tabQuestion?.getDisputeData(rs)
+          //       // if (rs.adminNote) {
+          //       //   this.disputeNote.note = rs.adminNote
+          //       // }
+          //     }
+          //   })
+          // }
           this.$refs.toolBar?.loadReviewData(rs)
         }
 
@@ -2869,7 +2930,8 @@ export default {
           this.isReviewAuth = true
         }
 
-        if (rs.review && (this.currentUser.id === rs.review.reviewerId || this.currentUser.id === rs.review.revieweeId) && (rs.review.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED || rs.review.status.trim() === REVIEW_REQUEST_STATUS.RATED)) {
+        if (rs.review && (this.currentUser.id === rs.review.reviewerId || this.currentUser.id === rs.review.revieweeId) &&
+        (rs.review.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED || rs.review.status.trim() === REVIEW_REQUEST_STATUS.RATED || rs.review.status.trim() === REVIEW_REQUEST_STATUS.PAID)) {
           this.isRate = true
 
           reviewService.getReviewRating(this.$route.params.reviewId).then(r => {

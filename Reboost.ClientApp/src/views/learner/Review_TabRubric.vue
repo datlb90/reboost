@@ -10,13 +10,25 @@
               style="margin-bottom: 5px; margin-left: 3px;"
             >
               <div slot="header" class="clearfix">
-                <span style="font-size: 16px; font-weight: bold;">
-                  {{ criteria.name }}
-                </span>
-                <div style="font-size: 14px; margin-top: 10px;">
+                <div style="height: 30px;">
+                  <div style="float: left; font-size: 16px; font-weight: bold; width: calc(100% - 65px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                    {{ criteria.name }}
+                  </div>
+                  <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="float: right;">
+                    <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
+                  </div>
+                </div>
+
+                <div style="font-size: 14px;">
                   {{ criteria.description }}
                 </div>
+
+                <!-- <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="margin-top: 10px;">
+                  <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
+                </div> -->
+
               </div>
+
               <div>
                 <div>
                   <el-radio-group
@@ -35,8 +47,8 @@
                       effect="light"
                       placement="top"
                     >
-                      <div slot="content" style="max-width: 500px;">
-                        {{ milestone.description }}
+                      <div slot="content" style="max-width: 500px; overflow: hidden;">
+                        <pre style="font-size: 13px; overflow: hidden;">{{ milestone.description }}</pre>
                       </div>
                       <el-radio-button
                         id="mileStone"
@@ -61,9 +73,7 @@
                     @input="reviewCommentChange(criteria.comment, criteria.id)"
                   />
                 </div>
-                <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="margin-top: 10px;">
-                  <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
-                </div>
+
               </div>
             </el-card>
           </div>
@@ -297,4 +307,17 @@ export default ({
 
 <style scoped>
 @import '../../styles/review.css';
+</style>
+
+<style>
+.el-tabs--border-card>.el-tabs__content{
+  padding: 10px !important;
+}
+.el-radio-button__orig-radio:disabled:checked+.el-radio-button__inner{
+  color: #FFF !important;
+  background-color: #409EFF !important;
+  border-color: #409EFF !important;
+  -webkit-box-shadow: -1px 0 0 0 #409EFF !important;
+  box-shadow: -1px 0 0 0 #409EFF !important;
+}
 </style>

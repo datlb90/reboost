@@ -39,11 +39,11 @@
           </p>
         </div>
 
-        <div class="content-con">
-          <p>
+        <div v-if="loadingComplete" id="questionContent" class="content-con">
+          <div style="padding-bottom: 10px; border-bottom: 1px solid #dcddde; margin-bottom: 10px;">
             <b><a href="#">{{ getQuestionSection }}</a></b>
-          </p>
-          <div id="questionContent" v-html="getQuestion.content" />
+          </div>
+          <div v-html="getQuestion.content" />
         </div>
         <div v-if="getReading != ''" class="content-con">
           <p>
@@ -100,7 +100,8 @@ export default ({
       dispute: null,
       UserRole: UserRole,
       DISPUTE_STATUS: DISPUTE_STATUS,
-      updateStatus: null
+      updateStatus: null,
+      loadingComplete: false
     }
   },
   computed: {
@@ -167,6 +168,7 @@ export default ({
       this.showDirection = false
     }
     this.$store.dispatch('question/loadQuestion', this.questionid).then(rs => {
+      this.loadingComplete = true
       this.calculateContainerHeight()
     })
   },
