@@ -139,7 +139,7 @@
       </el-tag>
     </div>
 
-    <el-table v-if="questions" ref="filterTable" :data="questions" stripe style="width: 100%;">
+    <el-table v-if="questions" ref="filterTable" :data="questions" stripe style="width: 100%;" @sort-change="sortChange">
       <el-table-column prop="id" label="#" width="50" />
       <el-table-column
         :label="messageTranslates('question', 'titleTable')"
@@ -326,6 +326,33 @@ export default {
       })
 
       console.log('Summary: ', this.summary)
+    },
+    sortChange(sort) {
+      this.$refs.filterTable.clearSort()
+      const filtered = this.filter()
+      filtered.sort(function(a, b) {
+        if (sort.prop === 'sample') {
+          const propA = a[sort.prop]
+          const propB = b[sort.prop]
+          if (sort.order === 'descending') {
+            return (propA === propB) ? 0 : propA ? -1 : 1
+          } else {
+            return (propA === propB) ? 0 : propA ? 1 : -1
+          }
+        } else {
+          const propA = a[sort.prop] ? a[sort.prop].trim().toUpperCase() : ''
+          const propB = b[sort.prop] ? b[sort.prop].trim().toUpperCase() : ''
+          if (propA < propB) {
+            if (sort.order === 'descending') { return -1 } else { return 1 }
+          }
+          if (propA > propB) {
+            if (sort.order === 'descending') { return 1 } else { return -1 }
+          }
+          return 0
+        }
+      })
+      this.questions = filtered.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
+      this.totalRow = filtered.length
     },
     clearFilter() {
       this.textSearch = ''

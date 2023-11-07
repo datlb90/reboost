@@ -329,7 +329,7 @@
                 @click="submit()"
               >Submit</el-button>
               <el-button
-                v-if="isEdit"
+                v-if="isEdit && !isFreeRequested && !isProRequested"
                 style="float: right; margin-left: 5px"
                 size="mini"
                 @click="isEdit=false"
