@@ -16,7 +16,7 @@
           style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
           @click="onTopicClick(null)"
         >
-          All Topics: {{ taskCompleted }} /{{ questionsCount }} Completed
+          All Topics: {{ questionsCount }}
         </el-tag>
         <el-tag
           v-for="item in summary"
@@ -212,6 +212,14 @@
             {{ scope.row.status }}
           </el-tag>
           <el-tag
+            v-else-if="scope.row.status == 'Saved'"
+            :key="scope.row.status"
+            type="info"
+            size="mini"
+          >
+            {{ scope.row.status }}
+          </el-tag>
+          <el-tag
             v-else
             :key="scope.row.status"
             size="mini"
@@ -280,6 +288,13 @@ export default {
   mounted() {
     this.$store.dispatch('question/loadAllQuestionByUser', this.currentUser.id).then(questions => {
       this.questionCached = this.$store.getters['question/getAll']
+      // Get attempted questions
+      this.questionCached.forEach(question => {
+        const writingContent = localStorage.getItem(this.currentUser.username + '_QuestionId' + question.id)
+        if (writingContent != null && writingContent != 'null' && question.status == 'To do') {
+          question.status = 'Attempted'
+        }
+      })
       console.log('Questions: ', this.questionCached)
       this.totalRow = this.questionsCount = this.questionCached.length
       this.filterSections = Object.keys(_.groupBy(this.questionCached, 'section')).map(k => ({ text: k, checked: false }))
@@ -291,11 +306,6 @@ export default {
         this.showArrow()
       })
     })
-
-    // this.$store.dispatch('question/loadSummaryByUser', this.currentUser.id).then(() => {
-    //   this.summary = this.$store.getters['question/getSummaryByUser']
-    //   console.log('Summary: ', this.summary)
-    // })
   },
   methods: {
     loadTable() {
@@ -310,14 +320,12 @@ export default {
       }
     },
     loadSummary() {
-      var counts = this.questions.reduce((p, c) => {
+      var counts = this.questionCached.reduce((p, c) => {
         var name = c.section
         if (!p.hasOwnProperty(c.section)) {
           p[name] = 0
         }
-        if (c.status == 'Completed') {
-          p[name]++
-        }
+        p[name]++
         return p
       }, {})
 
@@ -355,6 +363,7 @@ export default {
       this.totalRow = filtered.length
     },
     clearFilter() {
+      this.checkSample = false
       this.textSearch = ''
       this.filterSections = this.filterSections.map(i => ({ ...i, checked: false }))
       this.filterTypes = this.filterTypes.map(i => ({ ...i, checked: false }))
@@ -473,7 +482,7 @@ export default {
     },
     moveRight() {
       const container = document.getElementById('topic-container')
-      const distance = 200
+      const distance = 300
       container.scrollBy({
         left: distance,
         behavior: 'smooth'
@@ -483,7 +492,7 @@ export default {
     },
     moveLeft() {
       const container = document.getElementById('topic-container')
-      const distance = -200
+      const distance = -300
       container.scrollBy({
         left: distance,
         behavior: 'smooth'

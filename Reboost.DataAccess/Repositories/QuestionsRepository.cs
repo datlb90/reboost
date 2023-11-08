@@ -89,8 +89,6 @@ namespace Reboost.DataAccess.Repositories
                             Submission = quest.SubmissionCount,
                             Like = quest.LikeCount,
                             Status = "To do"
-                            //(from sub in ReboostDbContext.Submissions where sub.UserId == userId && sub.Status != "Saved" &&
-                            //          sub.QuestionId == quest.Id select sub).Count() > 0 ? "Completed" : "To do"
                         };
 
             var completed =  (from s in ReboostDbContext.Submissions
@@ -101,19 +99,19 @@ namespace Reboost.DataAccess.Repositories
                                   Status = "Completed"
                               }).Distinct();
 
-            var attempted = (from s in ReboostDbContext.Submissions
+            var saved = (from s in ReboostDbContext.Submissions
                              where s.UserId == userId && s.Status == "Saved"
                              select new
                              {
                                  Id = s.QuestionId,
-                                 Status = "Attempted"
+                                 Status = "Saved"
                              }).Distinct();
 
             var result = from all in allQuestions
                          join comp in completed on all.Id equals comp.Id into allCompleted
                          from allComp in allCompleted.DefaultIfEmpty()
-                         join att in attempted on all.Id equals att.Id into allAttempted
-                         from allAtt in allAttempted.DefaultIfEmpty()
+                         join save in saved on all.Id equals save.Id into allSaved
+                         from allSave in allSaved.DefaultIfEmpty()
                          select new QuestionModel
                          {
                              Id = all.Id,
@@ -126,9 +124,7 @@ namespace Reboost.DataAccess.Repositories
                              AverageScore = all.AverageScore,
                              Submission = all.Submission,
                              Like = all.Like,
-                             Status = allComp.Status != null ? allComp.Status : allAtt.Status != null ? allAtt.Status : all.Status
-                             //(from sub in ReboostDbContext.Submissions where sub.UserId == userId && sub.Status != "Saved" &&
-                             //          sub.QuestionId == quest.Id select sub).Count() > 0 ? "Completed" : "To do"
+                             Status = allComp.Status != null ? allComp.Status : allSave.Status != null ? allSave.Status : all.Status
                          };
 
 

@@ -19,27 +19,29 @@
             <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
               <ul v-if="role == 'Learner' && selectedTest.length>0" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
                 <li class="nav-item" style="padding-bottom: 12px;">
-                  <router-link to="/questions" class="nav-link">Questions</router-link>
+                  <!-- <router-link to="/questions" class="nav-link">Questions</router-link> -->
+                  <a :href="$router.resolve({name: questionsPage}).href">Questions</a>
                 </li>
                 <li class="nav-item" style="padding-bottom: 12px;">
-                  <router-link to="/submissions" class="nav-link">Submissions</router-link>
+                  <!-- <router-link to="/submissions" class="nav-link">Submissions</router-link> -->
+                  <a :href="$router.resolve({name: submissionsPage}).href">Submissions</a>
                 </li>
                 <!-- <li class="nav-item">
-                <router-link to="/practice" class="nav-link">Practice</router-link>
-              </li> -->
-
+                  <router-link to="/practice" class="nav-link">Practice</router-link>
+                </li> -->
                 <li class="nav-item" style="padding-bottom: 12px;">
-                  <router-link to="/reviews" class="nav-link">Reviews</router-link>
+                  <!-- <router-link to="/reviews" class="nav-link">Reviews</router-link> -->
+                  <a :href="$router.resolve({name: reviewsPage}).href">Reviews</a>
                 </li>
                 <!-- <li class="nav-item">
                   <router-link to="/disputes" class="nav-link">Disputes</router-link>
                 </li> -->
-                <li class="nav-item" style="padding-bottom: 12px;">
+                <!-- <li class="nav-item" style="padding-bottom: 12px;">
                   <a href="/articles" class="nav-link">Articles</a>
-                </li>
+                </li> -->
 
                 <li class="nav-item" style="padding-bottom: 12px;">
-                  <a href="/questions" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
+                  <a href="/" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
                 </li>
 
               <!-- <li class="nav-item">
@@ -61,7 +63,8 @@
                   <router-link to="/rater/apply" class="nav-link">Application</router-link>
                 </li>
                 <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
-                  <router-link to="/reviews" class="nav-link">Review</router-link>
+                  <!-- <router-link to="/reviews" class="nav-link">Reviews</router-link> -->
+                  <a :href="$router.resolve({name: reviewsPage}).href">Reviews</a>
                 </li>
                 <!-- <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/rater/payout" class="nav-link">Balance</router-link>
@@ -186,7 +189,7 @@ import reviewService from '../../services/review.service'
 import { RATER_STATUS } from '../../app.constant'
 import AddEditQuestion from '../../components/controls/AddEditQuestion.vue'
 import ContactDialog from '../../components/controls/ContactDialog.vue'
-
+import { PageName } from '@/app.constant'
 export default {
   name: 'HeaderTwo',
   components: {
@@ -200,7 +203,10 @@ export default {
       appInProgress: true,
       raterRating: 0,
       isApprovedRater: false,
-      lang: ''
+      lang: '',
+      questionsPage: PageName.QUESTIONS,
+      submissionsPage: PageName.SUBMISSIONS,
+      reviewsPage: PageName.REVIEWS
     }
   },
 
