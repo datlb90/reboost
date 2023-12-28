@@ -1,6 +1,6 @@
 export const Submissions = {
   title: 'My Submissions',
-  questionTable: 'Question',
+  questionTable: 'Topic',
   statusTable: 'Status',
   timeSubmitTable: 'Time Submitted',
   timeTakenTable: 'Time Taken',

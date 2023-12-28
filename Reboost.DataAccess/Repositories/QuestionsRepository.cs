@@ -350,16 +350,15 @@ namespace Reboost.DataAccess.Repositories
         }
         public async Task<List<SubmissionsModel>> GetAllSubmissionByUserIdAsync(string userId)
         {
-            
-            
-
             var listsubmissions = await (from s in ReboostDbContext.Submissions
                                          join q in ReboostDbContext.Questions on s.QuestionId equals q.Id
+                                         join t in ReboostDbContext.Tasks on q.TaskId equals t.Id
+                                         join ts in ReboostDbContext.TestSections on q.Task.SectionId equals ts.Id
                                          where s.UserId == userId && s.Status != "Saved"
                                          orderby s.UpdatedDate descending, s.SubmittedDate descending
                                          select new SubmissionsModel
                                          {
-                                             Id = s.Id,
+                                             Id = q.Id,
                                              QuestionId = q.Id,
                                              Question = q.Title,
                                              Status = s.Status,
@@ -370,30 +369,11 @@ namespace Reboost.DataAccess.Repositories
                                                 (s.Status == SubmissionStatus.REVIEWED || 
                                                 s.Status == SubmissionStatus.COMPLETED) ? "View Review" : "View Submission",
                                              TimeTaken = s.TimeSpentInSeconds,
-                                             TimeSubmitted = s.SubmittedDate
+                                             TimeSubmitted = s.SubmittedDate,
+                                             Test = ts.Test.Name,
+                                             TestSection = t.Name,
+                                             QuestionType = q.Type
                                          }).ToListAsync();
-
-            //var listReviewRequest = await (from r in ReboostDbContext.ReviewRequests
-            //                               where r.UserId == userId
-            //                               select r
-            //                        ).ToListAsync();
-
-            //foreach (ReviewRequests r in listReviewRequest)
-            //{
-            //    //int flag = listsubmissions.Any(s => s.Id == r.SubmissionId && r.Status == "Completed") ? 2 : listsubmissions.Any(s => s.Id == r.SubmissionId) ? 1 : 0;
-            //    //if (listsubmissions.Any(s => s.Id == r.SubmissionId && r.Status == "Completed"))
-            //    //{
-            //    //    int index = listsubmissions.FindIndex(s => s.Id == r.SubmissionId);
-            //    //    listsubmissions[index].Action = "View Review";
-            //    //    listsubmissions[index].Status = "Reviewed";
-            //    //}
-            //    //else if (listsubmissions.Any(s => s.Id == r.SubmissionId))
-            //    //{
-            //    //    int index = listsubmissions.FindIndex(s => s.Id == r.SubmissionId);
-            //    //    listsubmissions[index].Action = "View Submission";
-            //    //    listsubmissions[index].Status = "Requested";
-            //    //}
-            //}
             return listsubmissions;
         }
         public async Task<List<SubmissionsForQuestionModel>> GetSubmissionsForQuestion(string userId, int questionId)

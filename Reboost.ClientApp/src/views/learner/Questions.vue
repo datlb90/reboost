@@ -1,6 +1,6 @@
 <template>
-  <div class="newcontainer">
-    <div>
+  <div class="new-container">
+    <div class="top-navigator">
       <el-button
         v-if="showLeftArrow"
         type="text"
@@ -139,7 +139,14 @@
       </el-tag>
     </div>
 
-    <el-table v-if="questions" ref="filterTable" :data="questions" stripe style="width: 100%;" @sort-change="sortChange">
+    <el-table
+      v-if="questions"
+      ref="filterTable"
+      :data="questions"
+      stripe
+      style="width: 100%;"
+      @sort-change="sortChange"
+    >
       <el-table-column prop="id" label="#" width="50" />
       <el-table-column
         :label="messageTranslates('question', 'titleTable')"
@@ -274,7 +281,8 @@ export default {
       checkSample: false,
       showLeftArrow: false,
       showRightArrow: false,
-      allTopicEffect: 'dark'
+      allTopicEffect: 'dark',
+      sortedQuestions: null
     }
   },
   computed: {
@@ -309,15 +317,43 @@ export default {
   },
   methods: {
     loadTable() {
-      let filtered = this.filter()
-      if (this.textSearch) {
-        filtered = filtered.filter(q => q.title.toLowerCase().indexOf(this.textSearch.toLowerCase()) >= 0)
-        this.questions = filtered.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
-        this.totalRow = filtered.length
-      } else {
-        this.questions = filtered.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
-        this.totalRow = filtered.length
+      this.sortedQuestions = null
+      const filtered = this.filter()
+      this.questions = filtered.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
+      this.totalRow = filtered.length
+    },
+    filter() {
+      let result = []
+      this.selectionTag = []
+      const _filteredSection = this.filterSections.filter(s => s.checked).map(s => s.text)
+      const _filteredType = this.filterTypes.filter(s => s.checked).map(s => s.text)
+      const _filteredStatus = this.filterStatuses.filter(s => s.checked).map(s => s.text)
+
+      this.selectionTag = _filteredSection.concat(_filteredType, _filteredStatus)
+
+      for (const q of this.questionCached) {
+        let pass = true
+        if (_filteredSection.length > 0 && !_filteredSection.includes(q.section)) {
+          pass = false
+        }
+        if (_filteredType.length > 0 && !_filteredType.includes(q.type)) {
+          pass = false
+        }
+        if (_filteredStatus.length > 0 && !_filteredStatus.includes(q.status)) {
+          pass = false
+        }
+        if (pass) {
+          result.push(q)
+        }
       }
+      if (this.checkSample) {
+        result = result.filter(rs => rs.sample == true)
+      }
+      if (this.textSearch) {
+        result = result.filter(q => q.title.toLowerCase().indexOf(this.textSearch.toLowerCase()) >= 0)
+      }
+      result = result.sort((a, b) => a.id - b.id)
+      return result
     },
     loadSummary() {
       var counts = this.questionCached.reduce((p, c) => {
@@ -359,6 +395,9 @@ export default {
           return 0
         }
       })
+
+      this.sortedQuestions = filtered
+      console.log('Filtered questions:', filtered)
       this.questions = filtered.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
       this.totalRow = filtered.length
     },
@@ -380,7 +419,12 @@ export default {
     },
     handleCurrentChange(val) {
       this.page = val
-      this.loadTable()
+      if (this.sortedQuestions) {
+        this.questions = this.sortedQuestions.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
+        this.totalRow = this.sortedQuestions.length
+      } else {
+        this.loadTable()
+      }
     },
     handleChangeRowPerPage(val) {
       console.log(typeof this.rowPerPage)
@@ -416,37 +460,6 @@ export default {
         command.checked = true
       }
       this.search()
-    },
-    filter() {
-      let result = []
-      this.selectionTag = []
-      const _filteredSection = this.filterSections.filter(s => s.checked).map(s => s.text)
-      const _filteredType = this.filterTypes.filter(s => s.checked).map(s => s.text)
-      const _filteredStatus = this.filterStatuses.filter(s => s.checked).map(s => s.text)
-
-      this.selectionTag = _filteredSection.concat(_filteredType, _filteredStatus)
-
-      for (const q of this.questionCached) {
-        let pass = true
-        if (_filteredSection.length > 0 && !_filteredSection.includes(q.section)) {
-          pass = false
-        }
-        if (_filteredType.length > 0 && !_filteredType.includes(q.type)) {
-          pass = false
-        }
-        if (_filteredStatus.length > 0 && !_filteredStatus.includes(q.status)) {
-          pass = false
-        }
-
-        if (pass) {
-          result.push(q)
-        }
-      }
-      if (this.checkSample) {
-        result = result.filter(rs => rs.sample == true)
-      }
-      result = result.sort((a, b) => a.id - b.id)
-      return result
     },
     handleClose(tag) {
       this.selectionTag.splice(this.selectionTag.indexOf(tag), 1)
@@ -515,14 +528,22 @@ export default {
         this.summary.forEach((e) => { e.effect = 'light' })
         this.allTopicEffect = 'light'
         topic.effect = 'dark'
+        // Clear other filters
+        this.checkSample = false
+        this.textSearch = ''
+        this.filterTypes = this.filterTypes.map(i => ({ ...i, checked: false }))
+        this.filterStatuses = this.filterStatuses.map(i => ({ ...i, checked: false }))
+        // Set section filters
         this.filterSections.forEach((e) => { e.checked = false })
         this.filterSections.find(s => s.text == topic.section).checked = true
+
         this.search()
       }
     }
   }
 }
 </script>
+
 <style scoped>
 #button-right{
   position: absolute;
@@ -542,7 +563,7 @@ export default {
   right: 0;
 }
 
-.newcontainer {
+.new-container {
   padding: 0 200px;
   margin-top: 10px;
 }
@@ -551,7 +572,7 @@ export default {
   .filter-container{
     padding: 5px 0;
   }
-  .newcontainer {
+  .new-container {
     padding: 0 100px;
     margin-top: 10px;
   }
@@ -561,7 +582,7 @@ export default {
   .filter-container{
     padding: 5px 0;
   }
-  .newcontainer {
+  .new-container {
     padding: 0 10px;
     margin-top: 10px;
   }
@@ -663,7 +684,6 @@ el-table{
   text-align: center;
   border-radius: 6px;
   padding: 5px 0;
-  /* Position the tooltip */
   position: absolute;
   z-index: 2000;
 }
@@ -688,12 +708,6 @@ el-table{
     z-index: 1;
     align-items: center;
 }
-/* .el-tag + .el-tag {
-  margin-left: 10px;
-} */
-/* .tag-selection{
-  margin-top: 10px;
-} */
 .el-table::before {
   height: 0 !important;
 }

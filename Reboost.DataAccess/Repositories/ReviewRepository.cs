@@ -418,31 +418,17 @@ namespace Reboost.DataAccess.Repositories
                                where rv.ReviewerId == userId
                                select new GetReviewsModel
                                {
+                                   Id = q.Id,
                                    ReviewRequest = rr,
                                    Submission = s,
                                    Review = rv,
                                    ReviewId = rv.Id,
                                    QuestionName = q.Title,
                                    QuestionType = q.Type,
-                                   TestSection = ts.Name
+                                   TestSection = t.Name,
+                                   Status = rv.Status,
+                                   Test = ts.Test.Name
                                }).ToListAsync();
-
-            //var query = ExecRawSelect(@"select rv.Id as ReviewId, * from Reviews rv"
-            //    + " JOIN ReviewRequests rr ON rr.Id = rv.RequestId"
-            //    + " JOIN Submissions s ON s.Id = rr.SubmissionId"
-            //    + " JOIN Questions q ON q.Id = s.QuestionId"
-            //    + " JOIN Tasks task ON task.Id = q.TaskId"
-            //    + " JOIN TestSections test ON test.Id = task.SectionId");
-
-            //var rs = new List<GetReviewsModel>();
-
-            //foreach (DataRow row in query.Rows)
-            //{
-            //    rs.Add(new GetReviewsModel { 
-            //        ReviewId = row.Field<int>("ReviewId")
-            //    });
-            //}
-
 
             return await Task.FromResult(rs);
         }

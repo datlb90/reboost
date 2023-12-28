@@ -7,7 +7,7 @@ export const Question = {
   testSection: 'Test Section',
   type: 'Type',
   status: 'Status',
-  titleTable: 'Title',
+  titleTable: 'Topic',
   testSectionTable: 'Test Section',
   typeTable: 'Type',
   sampleTable: 'Sample',

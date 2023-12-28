@@ -62,6 +62,9 @@ namespace Reboost.Shared
         public string Status { get; set; }
         public int TimeTaken { get; set; }
         public string Action { get; set; }
+        public string TestSection { get; set; }
+        public string Test { get; set; }
+        public string QuestionType { get; set; }
     }
     public class SubmissionsForQuestionModel
     {
