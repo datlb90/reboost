@@ -150,7 +150,7 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column prop="id" label="#" width="50" />
+      <el-table-column prop="questionId" label="#" width="50" />
 
       <el-table-column
         :label="messageTranslates('submission', 'questionTable')"
@@ -219,9 +219,9 @@
           <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
             <el-button size="mini" @click="actionClick('Request Review', scope.row)">Request Review</el-button>
           </div>
-          <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
+          <!-- <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
             <el-button size="mini" @click="actionClick('Request Pro Review', scope.row)">Request Pro Review</el-button>
-          </div>
+          </div> -->
         </template>
       </el-table-column>
     </el-table>
@@ -240,7 +240,7 @@
         :visible="checkoutVisible"
         :question-id="+selectedQuestionId"
         :submission-id="+selectedSubId"
-        @proReviewRequested="proReviewRequest"
+        @reviewRequested="reviewRequested"
         @closed="checkoutVisible=false"
       />
     </div>
@@ -248,7 +248,7 @@
 </template>
 <script>
 import reviewService from '../../services/review.service'
-import { REVIEW_REQUEST_STATUS } from '../../app.constant'
+// import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 import questionService from '../../services/question.service'
 import CheckOut from '../../components/controls/CheckOut.vue'
 import moment from 'moment'
@@ -524,47 +524,49 @@ export default {
       this.selectedSubId = e.id
 
       if (action.trim() === 'Request Review') {
-        if (this.unRatedList.length > 0) {
-          this.$notify.error({
-            title: 'Unrated Reviews',
-            message: 'Please rate all of your unrated reviews before requesting for a free peer review',
-            type: 'error',
-            duration: 0
-          })
-        } else {
-          reviewService.createReviewRequest({
-            UserId: this.currentUser.id,
-            SubmissionId: e.id,
-            FeedbackType: 'Free',
-            Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
-          }).then(rs => {
-            if (rs) {
-              this.$notify.success({
-                title: 'Submission Requested',
-                message: 'Requested!',
-                type: 'success',
-                duration: 1500
-              })
-              this.submissionsCached.forEach(r => {
-                if (r.id === e.id) {
-                  if (this.unRatedList.length > 0) {
-                    r.status = 'Pending'
-                  } else {
-                    r.status = 'Review Requested'
-                    this.$notify.success({
-                      title: 'Submission Requested',
-                      message: 'Requested!',
-                      type: 'success',
-                      duration: 1500
-                    })
-                  }
-                  r.action = 'View Submission'
-                }
-              })
-            }
-            this.loadList()
-          })
-        }
+        // if (this.unRatedList.length > 0) {
+        //   this.$notify.error({
+        //     title: 'Unrated Reviews',
+        //     message: 'Please rate all of your unrated reviews before requesting for a free peer review',
+        //     type: 'error',
+        //     duration: 0
+        //   })
+        // } else {
+        //   reviewService.createReviewRequest({
+        //     UserId: this.currentUser.id,
+        //     SubmissionId: e.id,
+        //     FeedbackType: 'Free',
+        //     Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
+        //   }).then(rs => {
+        //     if (rs) {
+        //       this.$notify.success({
+        //         title: 'Submission Requested',
+        //         message: 'Requested!',
+        //         type: 'success',
+        //         duration: 1500
+        //       })
+        //       this.submissionsCached.forEach(r => {
+        //         if (r.id === e.id) {
+        //           if (this.unRatedList.length > 0) {
+        //             r.status = 'Pending'
+        //           } else {
+        //             r.status = 'Review Requested'
+        //             this.$notify.success({
+        //               title: 'Submission Requested',
+        //               message: 'Requested!',
+        //               type: 'success',
+        //               duration: 1500
+        //             })
+        //           }
+        //           r.action = 'View Submission'
+        //         }
+        //       })
+        //     }
+        //     this.loadList()
+        //   })
+        // }
+        this.selectedQuestionId = e.questionId
+        this.checkoutVisible = true
       } else if (action == 'View Submission') {
         this.$router.push(`practice/${e.questionId}/${e.id}`)
       } else if (action == 'View Review') {
@@ -576,7 +578,7 @@ export default {
         this.checkoutVisible = true
       }
     },
-    proReviewRequest() {
+    reviewRequested() {
       this.submissionsCached.forEach(r => {
         if (r.id === this.selectedSubId) {
           r.status = 'Review Requested'

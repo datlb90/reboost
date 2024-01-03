@@ -159,6 +159,7 @@ namespace Reboost.WebApi
             services.AddScoped<IStripeService, StripeService>();
             services.AddScoped<IReviewService, Reboost.Service.Services.ReviewService>();
             services.AddScoped<IArticlesService, ArticlesService>();
+            services.AddScoped<IChatGPTService, ChatGPTService>();
 
             services.AddControllers().AddNewtonsoftJson(option => option.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
             services.AddRazorPages();

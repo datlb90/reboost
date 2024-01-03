@@ -11,11 +11,13 @@ using System.Threading.Tasks;
 using Reboost.Shared.Extensions;
 using Stripe;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 
 namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<Reviews> CreateAutomatedReview(string userId, int submissionId);
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<Annotations> annotations, IEnumerable<InTextComments> comments);
@@ -68,16 +70,136 @@ namespace Reboost.Service.Services
         IPaymentService paymentService;
         IUserService userService;
         IConfiguration configuration;
-        public ReviewService(IUnitOfWork unitOfWork, 
-            IMailService _mailService, 
-            IPaymentService _paymentService, 
+        IChatGPTService chatGPTService;
+        public ReviewService(IUnitOfWork unitOfWork,
+            IMailService _mailService,
+            IPaymentService _paymentService,
             IUserService _userService,
+            IChatGPTService _chatGPTService,
             IConfiguration _configuration) : base(unitOfWork)
         {
             mailService = _mailService;
             paymentService = _paymentService;
             userService = _userService;
+            chatGPTService = _chatGPTService;
             configuration = _configuration;
+        }
+        public static string StripHTML(string input)
+        {
+            return Regex.Replace(input, "<.*?>", String.Empty);
+        }
+        public async Task<Reviews> CreateAutomatedReview(string userId, int submissionId)
+        {
+            Submissions submission = await _unitOfWork.Submission.GetByIdAsync(submissionId);
+            QuestionModel question = await _unitOfWork.Questions.GetByIdAsync(submission.QuestionId);
+            Documents document = await _unitOfWork.Documents.GetByIdAsync(submission.DocId);
+            var questionContent = StripHTML(question.QuestionsPart.Find(p => p.Name == "Question").Content);
+            TOEFLEssayFeedbackModel toeflFeedback = new TOEFLEssayFeedbackModel();
+            IELTSEssayFeedbackModel ieltsFeedback = new IELTSEssayFeedbackModel();
+            if (question.Section == "Independent Writing" || question.Section == "Integrated Writing")
+            {
+                toeflFeedback = await chatGPTService.GetTOEFLIndependentEssayFeedback(questionContent, document.Text);
+            }
+            else if (question.Section == "Integrated Writing")
+            {
+                toeflFeedback = await chatGPTService.GetTOEFLIntegratedEssayFeedback(questionContent, document.Text);
+            }
+            else
+            {
+                ieltsFeedback = await chatGPTService.GetIELTSEssayFeedback(questionContent, document.Text);
+            }
+            var rubrics = await _unitOfWork.Rubrics.GetByQuestionId(question.Id);
+            List<ReviewData> reviewDataList = new List<ReviewData>();
+            foreach (RubricsModel criteria in rubrics)
+            {
+                ReviewData reviewData = new ReviewData();
+                reviewData.CriteriaId = (int)criteria.Id;
+                if (question.Test == "TOEFL")
+                {
+                    switch (criteria.Name)
+                    {
+                        case "Use of Language":
+                            reviewData.Comment = toeflFeedback.useOflanguge;
+                            reviewData.Score = (decimal)toeflFeedback.score;
+                            break;
+                        case "Coherence & Accuracy":
+                            reviewData.Comment = toeflFeedback.coherenceAccuracy;
+                            reviewData.Score = (decimal)toeflFeedback.score;
+                            break;
+                        case "Development & Organization":
+                            reviewData.Comment = toeflFeedback.developmentOrganization;
+                            reviewData.Score = (decimal)toeflFeedback.score;
+                            break;
+                        case "Critical Errors":
+                            reviewData.Comment = String.Join(Environment.NewLine, toeflFeedback.errors);
+                            reviewData.Score = (decimal)toeflFeedback.score;
+                            break;
+                        case "Overall Feedback":
+                            reviewData.Comment = toeflFeedback.overallFeedback;
+                            reviewData.Score = (decimal)toeflFeedback.score;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (criteria.Name)
+                    {
+                        case "Task Achievement":
+                            reviewData.Comment = ieltsFeedback.taskAchievement;
+                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            break;
+                        case "Coherence & Cohesion":
+                            reviewData.Comment = ieltsFeedback.coherence;
+                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            break;
+                        case "Lexical Resource":
+                            reviewData.Comment = ieltsFeedback.lexicalResource;
+                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            break;
+                        case "Grammatical Range & Accuracy":
+                            reviewData.Comment = ieltsFeedback.grammar;
+                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            break;
+                        case "Critical Errors":
+                            reviewData.Comment = String.Join(Environment.NewLine, ieltsFeedback.errors);
+                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            break;
+                        case "Overall Feedback":
+                            reviewData.Comment = ieltsFeedback.overallFeedback;
+                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                reviewDataList.Add(reviewData);
+            }
+
+            Reviews review = new Reviews
+            {
+                RequestId = 0,
+                ReviewerId = "AI",
+                RevieweeId = userId,
+                SubmissionId = submissionId,
+                FinalScore = null,
+                Status = ReviewStatus.COMPLETED,
+                TimeSpentInSeconds = 0,
+                LastActivityDate = DateTime.Now,
+                ReviewData = reviewDataList,
+            };
+
+            // Update the submission status
+            submission.Status = SubmissionStatus.COMPLETED;
+            submission.UpdatedDate = DateTime.Now;
+            await _unitOfWork.Submission.Update(submission);
+
+            // Create the review with review data
+            var newReview =  await _unitOfWork.Review.Create(review);
+
+            return newReview;
         }
         public async Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId)
         {

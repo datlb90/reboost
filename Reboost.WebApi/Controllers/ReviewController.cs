@@ -256,7 +256,17 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.GetReviewByIdAsync(id);
             return Ok(rs);
         }
+        [Authorize]
+        [HttpPost("automated")]
+        public async Task<IActionResult> CreateAutomatedReview([FromBody] ReviewRequests request)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
 
+            var rs = await _service.CreateAutomatedReview(currentUser.Id, request.SubmissionId);
+            return Ok(rs);
+        }
         [Authorize]
         [HttpPost("request")]
         public async Task<IActionResult> CreateReviewRequestAsync([FromBody] ReviewRequests request)

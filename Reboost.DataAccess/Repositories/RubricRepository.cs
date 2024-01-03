@@ -45,61 +45,19 @@ namespace Reboost.DataAccess.Repositories
             var query = await (from q in ReboostDbContext.Questions
                                join r in ReboostDbContext.Rubrics on q.TaskId equals r.TaskId
                                join rc in ReboostDbContext.RubricCriteria on r.Id equals rc.RubricId
-                               
                                join rm in ReboostDbContext.RubricMilestones on rc.Id equals rm.CriteriaId
-
+                               //into rcm from s in rcm.DefaultIfEmpty()
                                where q.Id == id
                                select new RubricsQuery
                                {
                                    Id = rm.Id,
                                    CriteriaId = rc.Id,
                                    CriteriaDescription = rc.Description,
+                                   HasScore = rc.HasScore,
                                    Name = rc.Name,
                                    BandScore = rm.BandScore,
                                    Description = rm.Description
                                }).ToListAsync();
-
-
-            //List<RubricsQuery> query = new List<RubricsQuery>();
-
-            //using (var cmd = ReboostDbContext.Database.GetDbConnection().CreateCommand())
-            //{
-            //    if (cmd.Connection.State != ConnectionState.Open)
-            //    {
-            //        cmd.Connection.Open();
-            //    }
-
-            //    var slQuery = "select  m.Id, m.CriteriaId, c.Description as CriteriaDesription, c.Name, m.BandScore, m.Description from questions q"
-            //        + " join rubrics r on q.taskId = r.taskId"
-            //        + " left join rubricCriteria c on c.rubricId = r.id"
-            //        + " left join rubricMilestones m on m.criteriaId = c.Id"
-            //        + $" where q.Id = {id}";
-
-            //    cmd.CommandText = slQuery;
-
-            //    var rd = cmd.ExecuteReader();
-
-            //    while (rd.Read())
-            //    {
-            //        var Id = rd["Id"] as int? ?? -1;
-            //        var CriteriaId = rd["CriteriaId"] as int? ?? -1;
-            //        var CriteriaDescription = rd["CriteriaDesription"] as string;
-            //        var Name = rd["Name"] as string;
-            //        var BandScore = rd["BandScore"] as int? ?? -1;
-            //        var Description = rd["Description"] as string;
-
-            //        query.Add(new RubricsQuery {
-            //            Id = Id,
-            //            CriteriaId = CriteriaId,
-            //            CriteriaDescription = CriteriaDescription,
-            //            Name = Name,
-            //            BandScore = BandScore,
-            //            Description = Description
-            //        });
-            //    }
-
-            //    cmd.Connection.Close();
-            //}
 
 
             var group = query.GroupBy(q => q.Name).Select(g => new RubricsModel
@@ -107,6 +65,7 @@ namespace Reboost.DataAccess.Repositories
                 Name = g.Key,
                 Id = g.FirstOrDefault()?.CriteriaId,
                 Description = g.FirstOrDefault()?.CriteriaDescription,
+                HasScore = g.FirstOrDefault().HasScore,
                 BandScoreDescriptions = g.ElementAt(0).Id == -1 ? new List<BandScoreDescription>() : g.Select(d => new BandScoreDescription
                 {
                     Id = d.Id,

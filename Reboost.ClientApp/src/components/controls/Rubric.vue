@@ -13,12 +13,12 @@
                 <span style="font-size: 16px; font-weight: bold;">
                   {{ criteria.name }}
                 </span>
-                <div style="font-size: 14px; margin-top: 10px;">
+                <!-- <div style="font-size: 14px; margin-top: 10px;">
                   {{ criteria.description }}
-                </div>
+                </div> -->
               </div>
               <div>
-                <div>
+                <div v-if="criteria.name != 'Critical Errors'">
                   <el-radio-group
                     :id="criteria.id"
                     v-model="criteria.mark"

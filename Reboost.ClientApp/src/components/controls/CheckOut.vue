@@ -2,73 +2,97 @@
   <el-dialog
     id="practiceWritingCheckoutContainer"
     :visible.sync="dlVisible"
-    width="500px"
+    width="600px"
     height="820px"
     :before-close="handleClose"
     @opened="dialogOpened"
     @closed="dialogClosed"
   >
     <div slot="title">
-      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Pro Review Checkout</div>
-      <div class="divider--horizontal divider" />
+      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Get Writing Feedback & Score</div>
+      <!-- <div class="divider--horizontal divider" /> -->
     </div>
     <div class="dialog-body">
-      <div class="co-header">
+      <div style="padding: 20px; padding-top: 5px;">
+        <div v-if="selectedReview == ''" class="tip">
+          <span style="font-size: 15px; color: #6084a4;">Select the right review service for you:</span>
+        </div>
+        <el-page-header v-if="selectedReview == 'pro' || selectedReview == 'ai'" class="tip" content="Select a payment method for your service" @back="goBack" />
+        <el-page-header v-if="selectedReview == 'peer'" class="tip" content="Confirm your selection" @back="goBack" />
+        <div v-if="selectedReview == '' || selectedReview == 'pro'" id="pro-review-card" class="box-card review-card" @click="onReviewSelect('pro')">
+          <div>
+            <div class="review-icon-wrapper" style="width: 62px; margin-left: 13px;"> <i class="fas fa-user-graduate review-icon" /></div>
+            <div class="review-description-wrapper">
+              <div class="review-title">Pro Review Service</div>
+              <div class="review-description">
+                Our certified rater will score your essay and provide detailed feedback within 24 hours (<a href="#">sample feedback</a>)
+              </div>
+            </div>
+            <div class="review-price">$15</div>
+          </div>
+        </div>
+
+        <div v-if="selectedReview == '' || selectedReview == 'ai'" id="ai-review-card" class="box-card review-card" @click="onReviewSelect('ai')">
+          <div>
+            <div class="review-icon-wrapper"><i class="fas fa-robot review-icon" /></div>
+            <div class="review-description-wrapper">
+              <div class="review-title">Instant Feedback from AI Rater</div>
+              <div class="review-description">
+                Get insighful feedback and score from our powerful writing review AI within seconds (<a href="#">sample feedback</a>)
+              </div>
+            </div>
+            <div class="review-price">$2</div>
+          </div>
+        </div>
+
+        <div v-if="selectedReview == '' || selectedReview == 'peer'" id="peer-review-card" class="box-card review-card" @click="onReviewSelect('peer')">
+          <div>
+            <div class="review-icon-wrapper"> <i class="fas fa-user-friends review-icon" /></div>
+            <div class="review-description-wrapper">
+              <div class="review-title">Free Peer Review</div>
+              <div class="review-description">
+                Get constructive feedback from another learner with similar or higher writing level (<a href="#">sample feedback</a>)
+              </div>
+            </div>
+            <div class="review-price">Free</div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="selectedReview == 'peer'">
+        <!-- <div class="tip" style="margin: 20px;">
+          <span style="font-size: 15px; color: #6084a4;">We will notify you when the feedback is available</span>
+        </div> -->
+        <div style="padding-top: 10px; text-align: center;">
+          <!-- <span style="font-weight: 600;"> Select Payment Method</span> -->
+          <el-button type="primary" @click="requestPeerReview()">Confirm Selection</el-button>
+        </div>
+      </div>
+
+      <!-- <div class="co-header">
         <img style="width: 50px; height: 40px; margin-bottom: 2px; margin-left: 18px;" src="@/assets/img/checkout-icon-premium.png" alt="">
         <div class="title-container">
           <span>Writing Review Service</span>
           <span class="title-price">${{ total }}.00</span>
         </div>
       </div>
+
       <div style="padding: 2px 20px;">
         <span style="font-size: 12px; color: grey;">A certified rater will review your writing and provide feedback within 24 hours</span>
-      </div>
-      <div class="co-form" :class="{ active: activeStep == 1 }">
+      </div> -->
+      <div v-show="selectedReview == 'pro' || selectedReview == 'ai'" class="co-form" :class="{ active: activeStep == 1 }">
         <div class="co-form__section" :class="{ inactive: activeStep == 2 }">
           <div class="co-form__title" style="padding-top: 10px">
-            <span style="font-weight: 600;"> Select Payment Method</span>
+            <!-- <span style="font-weight: 600;"> Select Payment Method</span> -->
             <el-button v-if="activeStep == 2" style="position: absolute;right: 1rem;" size="mini" type="primary" @click="editCheckOutInfo">Edit</el-button>
           </div>
-
-          <!-- <div class="saperator" style="padding-top: 5px" /> -->
-          <!-- <div v-if="!subcribe" id="paypal-button" class="paypal-icon__btn" /> -->
           <div v-if="!paid" id="paypal-button-container" />
-          <!-- <div style="display:flex; justify-content:center">
-            <div v-if="subcribe" id="paypal-subscribe-button-container" style="width:80%; margin:5px" />
-          </div> -->
-
-          <!-- <paypal-buttons :on-approve="onApprove" :create-order="createOrder" :on-shipping-change="onShippingChange" :on-error="onError" :style-object="style" /> -->
         </div>
-
         <div v-if="activeStep == 1" class="saperator" />
-
       </div>
 
     </div>
-    <div slot="footer" class="dialog-footer">
-      <!-- <div class="co-form-footer__title">
-        <div>
-          <span>Item:</span>
-          <span class="title-price title-price__footer">${{ total }}</span>
-        </div>
-        <div>
-          <span>Estimate Tax:</span>
-          <span class="title-price title-price__footer">$0.00</span>
-        </div>
-        <div class="divider--horizontal divider" />
-        <div class="title-footer__total">
-          <span>Order total: </span>
-          <span class="title-price title-price__footer">${{ total }}</span>
-        </div>
-      </div>
-      <div class="footer--btn_container">
-        <el-button v-if="activeStep == 1" :disabled="checkoutDisable" size="mini" type="primary" class="co-button" @click="dialogClosed">Cancel</el-button>
-        <el-button v-if="activeStep == 1" :disabled="checkoutDisable" size="mini" type="primary" class="co-button" @click="nextStep()">Continue</el-button>
-        <el-button v-if="activeStep == 2" size="mini" type="warning" class="co-button checkout" @click="completeCheckout()">Checkout</el-button>
-      </div> -->
-    </div>
-    <!-- <div class="payment__divider">OR</div> -->
-
+    <div slot="footer" class="dialog-footer" />
   </el-dialog>
 
 </template>
@@ -117,14 +141,8 @@ export default {
       paymentIntent: null,
       total: null,
       epaySelected: false,
-      domain: 'https://sandbox.megapay.vn:2810',
-      timeStamp: '20211209150000',
-      merTrxId: 'EPAY000001301190',
-      merId: 'EPAY000001',
-      amountVND: '200000',
-      encodeKey: 'rf8whwaejNhJiQG2bsFubSzccfRc/iRYyGUn6SPmT6y/L7A2XABbu9y4GvCoSTOTpvJykFi6b1G0crU8et2O0Q==',
-      merchantToken: '',
-      paid: false
+      paid: false,
+      selectedReview: ''
     }
   },
   computed: {
@@ -137,69 +155,7 @@ export default {
     currentPrices() {
       return this.$store.getters['payment/getAllPrices']
     }
-    // createOrder: function() {
-    //   return (data) => {
-    //     console.log(data)
-    //     // Order is created on the server and the order id is returned
-    //     // return fetch("/my-server/create-paypal-order", {
-    //     //   method: "POST",
-    //     //   headers: {
-    //     //     "Content-Type": "application/json",
-    //     //   },
-    //     //   // use the "body" param to optionally pass additional order information
-    //     //   // like product skus and quantities
-    //     //   body: JSON.stringify({
-    //     //     cart: [
-    //     //       {
-    //     //         sku: "YOUR_PRODUCT_STOCK_KEEPING_UNIT",
-    //     //         quantity: "YOUR_PRODUCT_QUANTITY",
-    //     //       },
-    //     //     ],
-    //     //   }),
-    //     // })
-    //     // .then((response) => response.json())
-    //     // .then((order) => order.id);
-    //   }
-    // },
-    // onApprove: function() {
-    //   return (data) => {
-    //     console.log(data)
-    //     // Order is captured on the server
-    //     // return fetch("/my-server/capture-paypal-order", {
-    //     //   method: "POST",
-    //     //   headers: {
-    //     //     "Content-Type": "application/json",
-    //     //   },
-    //     //   body: JSON.stringify({
-    //     //     orderID: data.orderID
-    //     //   })
-    //     // })
-    //     // .then((response) => response.json());
-    //   }
-    // },
-    // onShippingChange: function() {
-    //   return (data, actions) => {
-    //     if (data.shipping_address.country_code !== 'US') {
-    //       return actions.reject()
-    //     }
-    //     return actions.resolve()
-    //   }
-    // },
-    // onError: function() {
-    //   return (err) => {
-    //     console.error(err)
-    //     window.location.href = '/404'
-    //   }
-    // },
-    // style: function() {
-    //   return {
-    //     shape: 'pill',
-    //     color: 'gold',
-    //     layout: 'horizontal',
-    //     label: 'paypal',
-    //     tagline: false
-    //   }
-    // }
+
   },
   watch: {
     visible: function(newVal, oldVal) {
@@ -215,44 +171,32 @@ export default {
       }
     }
   },
-  beforeCreate() {
-    // const jquery = document.createElement('script')
-    // jquery.src = 'https://code.jquery.com/jquery-3.6.0.min.js'
-    // document.head.appendChild(jquery)
-
-    // const script = document.createElement('script')
-    // script.src = 'https://www.paypalobjects.com/api/checkout.js'
-    // document.body.appendChild(script)
-
-    // const epayScript = document.createElement('script')
-    // epayScript.src = 'https://sandbox.megapay.vn:2810/pg_was/js/payment/layer/paymentClient.js'
-    // document.head.appendChild(epayScript)
-
-    // const sub_script = document.createElement('script')
-    // sub_script.src = 'https://www.paypal.com/sdk/js?client-id=Aa5nScHY-XCvNuR8KYRHA4BySu_7-91JTnBfvZ0vj9Zto8107b40nHn8-vGADPJBx5XAJS_IHL_WWK3I'
-    // sub_script.setAttribute('data-namespace', 'paypal_sdk')
-    // document.body.appendChild(sub_script)
-  },
   async mounted() {
     this.email = this.currentUser.email
-    // if (this.currentUser.stripeCustomerId) {
-    //   this.$store.dispatch('payment/loadPaymentMethods', this.currentUser.stripeCustomerId)
-    // } else {
-    //   this.$store.dispatch('payment/loadPaymentMethods', null)
-    // }
   },
   async created() {
-    this.merchantToken = this.sha256(this.timeStamp + this.merTrxId + this.merId + this.amountVND + this.encodeKey)
-    console.log(this.merchantToken)
   },
   methods: {
+    goBack() {
+      this.selectedReview = ''
+    },
+    onReviewSelect(reviewType) {
+      this.selectedReview = reviewType
+      if (reviewType === 'pro') {
+        this.amount = 15.00
+      } else if (reviewType === 'ai') {
+        this.amount = 2.00
+      } else {
+        this.amount = 0.00
+      }
+    },
     createOrder: function(data, actions) {
       console.log('Creating order...')
       return actions.order.create({
         purchase_units: [
           {
             amount: {
-              value: 15.00
+              value: this.amount
             }
           }
         ]
@@ -273,128 +217,6 @@ export default {
         }
       })
     },
-    submitForm() {
-      // openPayment(1, this.domain)
-    },
-    sha256(s) {
-      var chrsz = 8
-      var hexcase = 0
-
-      function safe_add(x, y) {
-        var lsw = (x & 0xFFFF) + (y & 0xFFFF)
-        var msw = (x >> 16) + (y >> 16) + (lsw >> 16)
-        return (msw << 16) | (lsw & 0xFFFF)
-      }
-
-      function S(X, n) { return (X >>> n) | (X << (32 - n)) }
-      function R(X, n) { return (X >>> n) }
-      function Ch(x, y, z) { return ((x & y) ^ ((~x) & z)) }
-      function Maj(x, y, z) { return ((x & y) ^ (x & z) ^ (y & z)) }
-      function Sigma0256(x) { return (S(x, 2) ^ S(x, 13) ^ S(x, 22)) }
-      function Sigma1256(x) { return (S(x, 6) ^ S(x, 11) ^ S(x, 25)) }
-      function Gamma0256(x) { return (S(x, 7) ^ S(x, 18) ^ R(x, 3)) }
-      function Gamma1256(x) { return (S(x, 17) ^ S(x, 19) ^ R(x, 10)) }
-
-      function core_sha256(m, l) {
-        var K = [0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5, 0xD807AA98,
-          0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174, 0xE49B69C1, 0xEFBE4786, 0xFC19DC6,
-          0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA, 0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3,
-          0xD5A79147, 0x6CA6351, 0x14292967, 0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13, 0x650A7354, 0x766A0ABB, 0x81C2C92E,
-          0x92722C85, 0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3, 0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070, 0x19A4C116,
-          0x1E376C08, 0x2748774C, 0x34B0BCB5, 0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3, 0x748F82EE, 0x78A5636F, 0x84C87814,
-          0x8CC70208, 0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2]
-        var HASH = [0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19]
-        var W = new Array(64)
-        var a, b, c, d, e, f, g, h //, i, j
-        var T1, T2
-
-        m[l >> 5] |= 0x80 << (24 - l % 32)
-        m[((l + 64 >> 9) << 4) + 15] = l
-
-        for (var x = 0; x < m.length; x += 16) {
-          a = HASH[0]
-          b = HASH[1]
-          c = HASH[2]
-          d = HASH[3]
-          e = HASH[4]
-          f = HASH[5]
-          g = HASH[6]
-          h = HASH[7]
-
-          for (var y = 0; y < 64; y++) {
-            if (y < 16) W[y] = m[y + x]
-            else W[y] = safe_add(safe_add(safe_add(Gamma1256(W[y - 2]), W[y - 7]), Gamma0256(W[y - 15])), W[y - 16])
-
-            T1 = safe_add(safe_add(safe_add(safe_add(h, Sigma1256(e)), Ch(e, f, g)), K[y]), W[y])
-            T2 = safe_add(Sigma0256(a), Maj(a, b, c))
-
-            h = g
-            g = f
-            f = e
-            e = safe_add(d, T1)
-            d = c
-            c = b
-            b = a
-            a = safe_add(T1, T2)
-          }
-
-          HASH[0] = safe_add(a, HASH[0])
-          HASH[1] = safe_add(b, HASH[1])
-          HASH[2] = safe_add(c, HASH[2])
-          HASH[3] = safe_add(d, HASH[3])
-          HASH[4] = safe_add(e, HASH[4])
-          HASH[5] = safe_add(f, HASH[5])
-          HASH[6] = safe_add(g, HASH[6])
-          HASH[7] = safe_add(h, HASH[7])
-        }
-        return HASH
-      }
-
-      function str2binb(str) {
-        var bin = []
-        var mask = (1 << chrsz) - 1
-        for (var i = 0; i < str.length * chrsz; i += chrsz) {
-          bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << (24 - i % 32)
-        }
-        return bin
-      }
-
-      function Utf8Encode(string) {
-        string = string.replace(/\r\n/g, '\n')
-        var utftext = ''
-
-        for (var n = 0; n < string.length; n++) {
-          var c = string.charCodeAt(n)
-
-          if (c < 128) {
-            utftext += String.fromCharCode(c)
-          } else if ((c > 127) && (c < 2048)) {
-            utftext += String.fromCharCode((c >> 6) | 192)
-            utftext += String.fromCharCode((c & 63) | 128)
-          } else {
-            utftext += String.fromCharCode((c >> 12) | 224)
-            utftext += String.fromCharCode(((c >> 6) & 63) | 128)
-            utftext += String.fromCharCode((c & 63) | 128)
-          }
-        }
-
-        return utftext
-      }
-
-      function binb2hex(binarray) {
-        var hex_tab = hexcase ? '0123456789ABCDEF' : '0123456789abcdef'
-        var str = ''
-        for (var i = 0; i < binarray.length * 4; i++) {
-          str += hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) +
- hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8)) & 0xF)
-        }
-        return str
-      }
-
-      s = Utf8Encode(s)
-      return binb2hex(core_sha256(str2binb(s), s.length * chrsz))
-    },
-
     async dialogOpened() {
       if (this.subcribe) {
         this.amount = this.subcribe.price
@@ -409,40 +231,6 @@ export default {
           })
           .render('#paypal-button-container')
       })
-
-      // paymentService.getIntent(this.amount).then(rs => {
-      //   this.paymentIntent = rs
-      //   this.clientSecret = rs.client_secret
-      //   console.log('this.paymentIntent', this.paymentIntent)
-      // })
-
-      // this.stripe = await loadStripe(configs.stripeApiKey)
-      // var elements = this.stripe.elements()
-      // var style = {
-      //   base: {
-      //     color: '#32325d',
-      //     fontFamily: 'Arial, sans-serif',
-      //     fontSmoothing: 'antialiased',
-      //     fontSize: '16px',
-      //     '::placeholder': {
-      //       color: '#32325d'
-      //     }
-      //   },
-      //   invalid: {
-      //     fontFamily: 'Arial, sans-serif',
-      //     color: '#fa755a',
-      //     iconColor: '#fa755a'
-      //   }
-      // }
-      // this.card = elements.create('card', { style: style })
-      // this.card.mount('#card-element')
-      // this.card.on('change', (event) => {
-      // // Disable the Pay button if there are no card details in the Element
-      //   this.checkoutDisable = !!event.error
-      //   document.querySelector('#card-error').textContent = event.error ? event.error.message : ''
-      // })
-
-      // this.loadPaypalBtn()
     },
     handleClose(done) {
       this.$confirm('Are you sure to exit?')
@@ -711,13 +499,11 @@ export default {
       }
     },
     paymentSuccessed() {
-      // this.$notify.success({
-      //   title: 'Payment Success',
-      //   message: 'Your payment for the writing service was processed successfully!',
-      //   type: 'success',
-      //   duration: 1500
-      // })
-      this.requestProReview()
+      if (this.selectedReview == 'pro') {
+        this.requestProReview()
+      } else if (this.selectedReview == 'ai') {
+        this.requestAutomatedReview()
+      }
     },
     requestProReview() {
       reviewService.createProReviewRequest({
@@ -733,7 +519,45 @@ export default {
           type: 'success',
           duration: 1500
         })
-        this.$emit('proReviewRequested')
+        this.$emit('reviewRequested')
+      })
+    },
+    requestPeerReview() {
+      reviewService.createReviewRequest({
+        UserId: this.currentUser.id,
+        SubmissionId: +this.submissionId,
+        FeedbackType: 'Free',
+        Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
+      }).then(rs => {
+        this.dialogClosed()
+        this.$notify.success({
+          title: 'Peer Review Request',
+          message: 'The peer review request has been successfully submitted!',
+          type: 'success',
+          duration: 1500
+        })
+        this.$emit('reviewRequested')
+      })
+    },
+    requestAutomatedReview() {
+      reviewService.createAutomatedReview({
+        UserId: this.currentUser.id,
+        SubmissionId: +this.submissionId
+      }).then(rs => {
+        console.log(rs)
+        this.dialogClosed()
+        this.$notify.success({
+          title: 'Automated AI Review Request',
+          message: 'The automated AI review request has been successfully submitted!',
+          type: 'success',
+          duration: 1500
+        })
+
+        const url = `/review/${this.questionId}/${rs.submissionId}/${rs.id}`
+        this.$router.push(url)
+        // Redirect to the review page
+        // rs should contains question id, submission id, and review id
+        // this.$emit('reviewRequested')
       })
     },
     createPaymentHistory(transactionId) {
@@ -755,7 +579,64 @@ export default {
 <style scoped src="@/assets/epay/css/paymentClient.css">
 </style>
 
+<style>
+.el-page-header__left {
+  font-size: 15px;
+  color: #6084a4;
+}
+.el-page-header__content {
+  font-size: 15px !important;
+  color: #6084a4 !important;
+}
+</style>
 <style scoped>
+
+.review-card {
+  height: 120px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  margin-top: 20px;
+  padding: 20px;
+  cursor: pointer
+}
+.review-card:hover {
+  cursor: pointer;
+  opacity: 0.9;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+}
+.review-icon-wrapper {
+  float: left;
+  width: 70px;
+  margin-top: 22px;
+  margin-left: 5px;
+}
+.review-description-wrapper {
+  float: left;
+  width: calc(100% - 115px);
+}
+.review-price {
+  float: left;
+  width: 40px;
+  font-size: 16px;
+  color: #4a6f8a;
+  text-align: center;
+  margin-top: 30px;
+}
+.review-icon {
+  font-size: 30px;
+  color: #4a6f8a;
+}
+.review-title {
+  font-size: 18px;
+    font-weight: 500;
+    color: #4a6f8a;
+}
+.review-description {
+  word-break: break-word;
+  color: rgb(116, 116, 116);
+  margin-top: 5px;
+}
+
 #paypal-button-container{
   width: 90%;
   margin: auto;

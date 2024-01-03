@@ -1,6 +1,9 @@
 import http from '@/utils/axios'
 
 const reviewService = {
+  createAutomatedReview(request) {
+    return http.post('/review/automated', request).then(rs => rs.data)
+  },
   getAnnotation(docId, reviewId) {
     return http.get(`/review/getAnnotation/${docId}/${reviewId}`).then(rs => rs.data)
   },

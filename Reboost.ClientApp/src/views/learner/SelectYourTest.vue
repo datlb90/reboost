@@ -340,7 +340,6 @@ export default {
 .question-con {
   padding: 10px 30px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
-  /* background-color:#fff; */
   background-color:#f0f9eb;
   border-radius: 4px;
   font-size: 12px;

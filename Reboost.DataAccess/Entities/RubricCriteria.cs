@@ -21,6 +21,7 @@ namespace Reboost.DataAccess.Entities
         public decimal MaxScore { get; set; }
         public Nullable<int> Weight { get; set; }
         public System.DateTime LastActivityDate { get; set; }
+        public bool HasScore { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<CriteriaValues> CriteriaValues { get; set; }

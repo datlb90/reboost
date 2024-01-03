@@ -358,7 +358,7 @@ namespace Reboost.DataAccess.Repositories
                                          orderby s.UpdatedDate descending, s.SubmittedDate descending
                                          select new SubmissionsModel
                                          {
-                                             Id = q.Id,
+                                             Id = s.Id,
                                              QuestionId = q.Id,
                                              Question = q.Title,
                                              Status = s.Status,

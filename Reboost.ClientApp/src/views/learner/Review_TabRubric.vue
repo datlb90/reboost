@@ -19,9 +19,9 @@
                   </div>
                 </div>
 
-                <div style="font-size: 14px;">
+                <!-- <div style="font-size: 14px;">
                   {{ criteria.description }}
-                </div>
+                </div> -->
 
                 <!-- <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="margin-top: 10px;">
                   <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
@@ -30,7 +30,7 @@
               </div>
 
               <div>
-                <div>
+                <div v-if="criteria.name != 'Critical Errors'">
                   <el-radio-group
                     :id="criteria.id"
                     v-model="criteria.mark"
