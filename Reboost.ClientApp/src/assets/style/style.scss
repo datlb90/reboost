@@ -631,7 +631,8 @@ Navbar CSS
     .startp-nav {
         .navbar-toggler {
             outline: 0;
-            border-color: $black-color;
+            border-color: white; 
+            // $black-color;
             border-radius: 0;
 
             .navbar-toggler-icon {

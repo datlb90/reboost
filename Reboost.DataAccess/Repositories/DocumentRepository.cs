@@ -68,7 +68,8 @@ namespace Reboost.DataAccess.Repositories
 
             submission.TimeSpentInSeconds = data.TimeSpentInSeconds;
             submission.Status = data.Status;
-            submission.UpdatedDate = DateTime.Now;
+            submission.UpdatedDate = DateTime.UtcNow;
+            submission.SubmittedDate = DateTime.UtcNow;
 
             doc.Text = data.Text;
             doc.Filename = data.Filename;

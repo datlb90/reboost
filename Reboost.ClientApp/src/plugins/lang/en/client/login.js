@@ -1,5 +1,5 @@
 export const Login = {
-  usernameEmail: 'Username or email',
+  usernameEmail: 'Email',
   password: 'Password',
   signIn: 'Sign In',
   forgotPassword: 'Forgot Password?',

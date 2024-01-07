@@ -221,7 +221,7 @@
   </div>
 </template>
 <script>
-import moment from 'moment'
+import moment from 'moment-timezone'
 import reviewService from '../../services/review.service'
 import { PageName, REVIEW_REQUEST_STATUS } from '../../app.constant'
 import _ from 'lodash'
@@ -318,7 +318,7 @@ export default {
       if (this.textSearch) {
         result = result.filter(q => q.questionName.toLowerCase().indexOf(this.textSearch.toLowerCase()) >= 0)
       }
-      result = result.sort((a, b) => a.id - b.id)
+      // result = result.sort((a, b) => a.id - b.id)
       return result
     },
     loadSummary() {
@@ -465,7 +465,8 @@ export default {
       if (!time) {
         return 'No Submission'
       }
-      return moment(new Date(time)).fromNow()
+      var tz = moment.tz.guess()
+      return moment.utc(time).tz(tz).format('DD/MM/YYYY LT')
     },
     navigateToReviewRequest(object) {
       const url = `/review/${object.submission.questionId}/${object.submission.docId}/${object.reviewId}`

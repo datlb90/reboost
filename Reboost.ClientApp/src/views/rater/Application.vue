@@ -289,7 +289,7 @@
 <script>
 // @ is an alias to /src
 import raterService from '../../services/rater.service'
-import moment from 'moment'
+import moment from 'moment-timezone'
 // import Notification from 'element-ui'
 import * as mapUtil from '@/utils/model-mapping'
 import * as stringUtil from '@/utils/string'

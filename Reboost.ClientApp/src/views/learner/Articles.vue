@@ -148,7 +148,7 @@
 </template>
 <script>
 import { ARTICLE_CATEGORIES } from '../../app.constant'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import AddEditArticle from '../../components/controls/AddEditArticles.vue'
 
 export default {
@@ -253,7 +253,8 @@ export default {
       this.loadList()
     },
     getTimeFromDateCreateToNow(time) {
-      return moment(new Date(time)).fromNow()
+      var tz = moment.tz.guess()
+      return moment.utc(time).tz(tz).format('DD/MM/YYYY LT')
     },
     handlePageChange(page) {
       this.page = page

@@ -158,7 +158,7 @@
 import AddEditArticleDialog from '../../components/controls/AddEditArticles.vue'
 import DropdownMenu from '../../components/controls/DropdownMenu'
 import { ARTICLE_CATEGORIES } from '../../app.constant'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import articlesService from '../../services/articles.service'
 
 export default {
@@ -301,7 +301,8 @@ export default {
       this.$refs.articleDialog.openAddDialog()
     },
     getTimeFromDateCreateToNow(time) {
-      return moment(new Date(time)).format('MMMM Do YYYY, hh:mm:ss a')
+      var tz = moment.tz.guess()
+      return moment.utc(time).tz(tz).format('DD/MM/YYYY LT')
     },
     getMatchLabel(article) {
       return this.labels.filter(r => r.articleId === article.id)

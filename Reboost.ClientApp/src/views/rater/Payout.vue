@@ -67,7 +67,7 @@
 </template>
 <script>
 import paymentService from '../../services/payment.service'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import raterService from '../../services/rater.service'
 export default {
   name: 'StartRating',
@@ -169,7 +169,8 @@ export default {
       })
     },
     getTimeFromDateCreateToNow(time) {
-      return moment(new Date(time)).format('MMMM Do YYYY, hh:mm:ss a')
+      var tz = moment.tz.guess()
+      return moment.utc(time).tz(tz).format('DD/MM/YYYY LT')
     },
     connectPaypalAccountToRater(e) {
       return new Promise(async(resolve, reject) => {

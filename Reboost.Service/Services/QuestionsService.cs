@@ -125,8 +125,8 @@ namespace Reboost.Service.Services
         }
         public async Task<QuestionRequestModel> CreateQuestionAsync(Questions q, QuestionRequestModel model)
         {
-            model.AddedDate = DateTime.Now;
-            model.LastActivityDate = DateTime.Now;
+            model.AddedDate = DateTime.UtcNow;
+            model.LastActivityDate = DateTime.UtcNow;
             model.AverageScore = "0.0";
             model.HasSample = false;
             model.SubmissionCount = 0;

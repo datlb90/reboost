@@ -18,24 +18,22 @@
               </li>
 
               <li class="nav-item">
-                <a href="whyUs" class="nav-link">Why Us</a>
-              </li>
-
-              <li class="nav-item">
                 <a href="features" class="nav-link">Features </a>
               </li>
 
-              <li class="nav-item">
+              <!-- <li class="nav-item">
+                <a href="whyUs" class="nav-link">Why Us</a>
+              </li> -->
+
+              <!-- <li class="nav-item">
                 <a href="testimony" class="nav-link">Testimony</a>
               </li>
-
               <li class="nav-item">
                 <a href="blogs" class="nav-link">Blogs</a>
               </li>
-
               <li class="nav-item">
                 <a href="faq" class="nav-link">FAQs</a>
-              </li>
+              </li> -->
               <li class="nav-item">
                 <a href="howItWorks" class="nav-link" @click.prevent="openContactDialog()">Help</a>
               </li>

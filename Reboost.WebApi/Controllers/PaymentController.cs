@@ -119,7 +119,7 @@ namespace Reboost.WebApi.Controllers
                 Amount = model.Amount,
                 Currency = model.Currency,
                 Description = "Pay for review",
-                PaymentDate = DateTime.Now,
+                PaymentDate = DateTime.UtcNow,
                 PaymentId = tf.Id,
                 Status = "success",
                 Type = "OUT",
@@ -292,7 +292,7 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("paypal/paymentHistory")]
         public async Task<IActionResult> CreatePaymentHistoryAsync([FromBody] LearnerPaymentsHistory data)
         {
-            data.CreatedDate = DateTime.Now;
+            data.CreatedDate = DateTime.UtcNow;
 
             var rs = await _service.CreatePaymentHistoryAsync(data);
             return Ok(rs);

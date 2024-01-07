@@ -14,6 +14,7 @@ namespace Reboost.DataAccess.Models
         public Reviews Review { get; set; }
         public Submissions Submission { get; set; }
         public int ReviewId { get; set; }
+        public int DocId { get; set; }
         public string Status { get; set; }
         public string QuestionName { get; set; }
         public string Test { get; set; }

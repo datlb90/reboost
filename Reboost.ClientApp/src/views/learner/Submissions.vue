@@ -214,14 +214,11 @@
       <el-table-column align="center" :label="messageTranslates('submission', 'actionsTable')">
         <template slot-scope="scope">
           <div class="action-column-cell">
-            <el-button size="mini" @click="actionClick(scope.row.action, scope.row)">{{ scope.row.action }}</el-button>
+            <el-button size="mini" style="width: 150px;" @click="actionClick(scope.row.action, scope.row)">{{ scope.row.action }}</el-button>
           </div>
           <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
-            <el-button size="mini" @click="actionClick('Request Review', scope.row)">Request Review</el-button>
+            <el-button size="mini" style="width: 150px;" @click="actionClick('Request Review', scope.row)">Request Review</el-button>
           </div>
-          <!-- <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
-            <el-button size="mini" @click="actionClick('Request Pro Review', scope.row)">Request Pro Review</el-button>
-          </div> -->
         </template>
       </el-table-column>
     </el-table>
@@ -240,6 +237,7 @@
         :visible="checkoutVisible"
         :question-id="+selectedQuestionId"
         :submission-id="+selectedSubId"
+        :unrated-count="unRatedList.length"
         @reviewRequested="reviewRequested"
         @closed="checkoutVisible=false"
       />
@@ -251,7 +249,8 @@ import reviewService from '../../services/review.service'
 // import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 import questionService from '../../services/question.service'
 import CheckOut from '../../components/controls/CheckOut.vue'
-import moment from 'moment'
+// import moment from 'moment'
+import moment from 'moment-timezone'
 import _ from 'lodash'
 export default {
   name: 'Submissions',
@@ -354,7 +353,7 @@ export default {
       if (this.textSearch) {
         result = result.filter(q => q.question.toLowerCase().indexOf(this.textSearch.toLowerCase()) >= 0)
       }
-      result = result.sort((a, b) => a.id - b.id)
+      // result = result.sort((a, b) => a.id - b.id)
       return result
     },
     loadSummary() {
@@ -513,7 +512,8 @@ export default {
       return status
     },
     getTimeFromDateCreateToNow(time) {
-      return moment(new Date(time)).format('MMMM Do YYYY, hh:mm:ss a')
+      var tz = moment.tz.guess()
+      return moment.utc(time).tz(tz).format('DD/MM/YYYY LT')
     },
     getTimeTaken(time) {
       var minutes = Math.floor(time / 60)
@@ -571,7 +571,7 @@ export default {
         this.$router.push(`practice/${e.questionId}/${e.id}`)
       } else if (action == 'View Review') {
         reviewService.getOrCreateReviewBySubmissionId(e.id).then(rs => {
-          this.$router.push(`review/${rs.reviewRequest.submission.questionId}/${rs.reviewRequest.submission.docId}/${rs.reviewId}`)
+          this.$router.push(`review/${e.questionId}/${rs.docId}/${rs.reviewId}`)
         })
       } else if (action == 'Request Pro Review') {
         this.selectedQuestionId = e.questionId

@@ -12,12 +12,14 @@ using Reboost.Shared.Extensions;
 using Stripe;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 
 namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
-        Task<Reviews> CreateAutomatedReview(string userId, int submissionId);
+        Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId);
+        Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId);
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<Annotations> annotations, IEnumerable<InTextComments> comments);
@@ -84,11 +86,15 @@ namespace Reboost.Service.Services
             chatGPTService = _chatGPTService;
             configuration = _configuration;
         }
+        public async Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId)
+        {
+            return await _unitOfWork.Review.GetAIReviewBySubmissionId(submissionId);
+        }
         public static string StripHTML(string input)
         {
             return Regex.Replace(input, "<.*?>", String.Empty);
         }
-        public async Task<Reviews> CreateAutomatedReview(string userId, int submissionId)
+        public async Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId)
         {
             Submissions submission = await _unitOfWork.Submission.GetByIdAsync(submissionId);
             QuestionModel question = await _unitOfWork.Questions.GetByIdAsync(submission.QuestionId);
@@ -187,19 +193,22 @@ namespace Reboost.Service.Services
                 FinalScore = null,
                 Status = ReviewStatus.COMPLETED,
                 TimeSpentInSeconds = 0,
-                LastActivityDate = DateTime.Now,
+                LastActivityDate = DateTime.UtcNow,
                 ReviewData = reviewDataList,
             };
 
             // Update the submission status
             submission.Status = SubmissionStatus.COMPLETED;
-            submission.UpdatedDate = DateTime.Now;
+            submission.UpdatedDate = DateTime.UtcNow;
             await _unitOfWork.Submission.Update(submission);
 
             // Create the review with review data
             var newReview =  await _unitOfWork.Review.Create(review);
-
-            return newReview;
+            GetReviewsModel result = new GetReviewsModel();
+            result.Review = newReview;
+            result.ReviewId = newReview.Id;
+            result.DocId = document.Id;
+            return result;
         }
         public async Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId)
         {
@@ -307,7 +316,7 @@ namespace Reboost.Service.Services
         }
         public async Task<ReviewRequests> CreateRequestAsync(string userId, ReviewRequests requests)
         {
-            DateTime now = DateTime.Now;
+            DateTime now = DateTime.UtcNow;
             requests.RequestedDateTime = now;
             return await _unitOfWork.Review.CreateRequestAsync(userId, requests);
         }
@@ -372,7 +381,6 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.GetReviewByIdAsync(id);
         }
-
         public async Task<CreatedProRequestModel> CreateProRequestAsync(ReviewRequests request)
         {
             var rs = await _unitOfWork.Review.CreateProRequestAsync(request);
@@ -538,7 +546,7 @@ namespace Reboost.Service.Services
                 RevieweeId = (string)data.GetProp("revieweeId"),
                 SubmissionId = (int)data.GetProp("submissionId"),
                 Status = "Submitted",
-                LastActivityDate = DateTime.Now
+                LastActivityDate = DateTime.UtcNow
             };
             return await _unitOfWork.Review.Create(newReview);
         }

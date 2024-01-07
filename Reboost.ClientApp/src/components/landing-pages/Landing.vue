@@ -9,9 +9,9 @@
     <Features />
     <RevisionCenter />
     <Matching />
-    <Feedback />
+    <!-- <Feedback />
     <Blog />
-    <FAQ />
+    <FAQ /> -->
   </div>
 </template>
 
@@ -23,11 +23,12 @@ import Features from './landing/Features'
 import RevisionCenter from './landing/RevisionCenter'
 import Matching from './landing/Matching'
 import HowItWorks2 from './landing/HowItWorks2'
-import WhyChooseUs from './landing/WhyChooseUs'
-import Blog from './landing/Blog'
 import Funfacts from './landing/Funfacts'
-import Feedback from './landing/Feedback'
-import FAQ from './landing/FAQ'
+// import WhyChooseUs from './landing/WhyChooseUs'
+
+// import Blog from './landing/Blog'
+// import Feedback from './landing/Feedback'
+// import FAQ from './landing/FAQ'
 import $ from 'jquery'
 // import Blog from './developer/Blog'
 export default {
@@ -40,11 +41,11 @@ export default {
     RevisionCenter,
     Matching,
     HowItWorks2,
-    WhyChooseUs,
-    Blog,
-    Funfacts,
-    Feedback,
-    FAQ
+    Funfacts
+    // WhyChooseUs,
+    // Blog,
+    // Feedback,
+    // FAQ
   },
   mounted() {
     $('.navbar').find('a').click(function() {

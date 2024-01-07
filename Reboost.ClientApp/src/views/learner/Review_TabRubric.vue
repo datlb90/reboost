@@ -3,15 +3,16 @@
     <div id="parent-scroll" style="flex-grow: 1;position: relative;">
       <div id="child-scroll" class="par-content default">
         <div id="rubric">
-          <div style="height: 100%; overflow: auto;">
+          <div style="height: 100%; overflow: auto; padding-bottom: 20px;">
             <el-card
               v-for="(criteria, criteriaIndex) in rubricCriteria"
               :key="criteria.id"
-              style="margin-bottom: 5px; margin-left: 3px;"
+              style="margin-bottom: 5px; margin-left: 3px; border: 1px solid rgb(190, 190, 190);"
+              shadow="hover"
             >
               <div slot="header" class="clearfix">
-                <div style="height: 30px;">
-                  <div style="float: left; font-size: 16px; font-weight: bold; width: calc(100% - 65px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                <div>
+                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 65px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
                     {{ criteria.name }}
                   </div>
                   <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="float: right;">
@@ -35,11 +36,19 @@
                     :id="criteria.id"
                     v-model="criteria.mark"
                     size="mini"
-                    style="min-width: 240px; display:flex; justify-content: space-around;margin-bottom:10px;"
+                    style="min-width: 240px; display:flex; justify-content: space-around;"
                     :disabled="readOnly || currentUser.role == 'Admin'"
                     @input="rubricMileStoneClick(reviewid, criteria, $event)"
                   >
-                    <el-tooltip
+
+                    <el-radio-button
+                      v-for="milestone in criteria.bandScoreDescriptions.slice()"
+                      id="mileStone"
+                      :key="milestone.id"
+                      :label="milestone.bandScore"
+                    />
+
+                    <!-- <el-tooltip
                       v-for="milestone in criteria.bandScoreDescriptions.slice()"
                       :key="milestone.id"
                       style="margin:0;border:none;"
@@ -55,7 +64,7 @@
                         :key="milestone.id"
                         :label="milestone.bandScore"
                       />
-                    </el-tooltip>
+                    </el-tooltip> -->
                   </el-radio-group>
                 </div>
                 <div>
@@ -64,7 +73,7 @@
                     :criteria-index="criteriaIndex"
                     type="textarea"
                     placeholder="Enter text here"
-                    :rows="3"
+                    :autosize="{ minRows: 5, maxRows: 10 }"
                     :maxlength="8000"
                     class="criteria-comment"
                     :readonly="readOnly || currentUser.role == 'Admin'"

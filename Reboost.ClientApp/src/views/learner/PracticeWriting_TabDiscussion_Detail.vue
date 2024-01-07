@@ -215,7 +215,7 @@
 </template>
 <script>
 import disussionService from '../../services/discussion.service'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import { RequestSpamGuard } from '../../utils/guard'
 export default {
   name: 'DiscussionDetail',
@@ -574,7 +574,8 @@ export default {
       })
     },
     getTimeFromDateCreateToNow(time) {
-      return moment(new Date(time)).fromNow()
+      var tz = moment.tz.guess()
+      return moment.utc(time).tz(tz).format('DD/MM/YYYY LT')
     },
     onPost() {
       if (!this.contentComment) {

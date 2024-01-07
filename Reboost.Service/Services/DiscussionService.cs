@@ -72,8 +72,8 @@ namespace Reboost.Service.Services
         }
         public async Task<Discussion> CreateAsync(Discussion discussion)
         {
-            discussion.CreatedDate = DateTime.Now;
-            discussion.UpdatedDate = DateTime.Now;
+            discussion.CreatedDate = DateTime.UtcNow;
+            discussion.UpdatedDate = DateTime.UtcNow;
             List<string> listTagName = new List<string>();
             foreach (var item in discussion.Tags)
             {
@@ -118,7 +118,7 @@ namespace Reboost.Service.Services
 
             update.Tags = null;
             update.DiscussionVote = null;
-            update.UpdatedDate = DateTime.Now;
+            update.UpdatedDate = DateTime.UtcNow;
             return await _unitOfWork.Discussion.Update(update);
         }
         public async Task<List<Tags>> GetAllTagsAsync()
@@ -155,7 +155,7 @@ namespace Reboost.Service.Services
             list[indexB] = tmp;
         }
         public double AvgView(int views,DateTime create){
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             TimeSpan diff = now - create;
             double hours = diff.TotalHours;
             double rs = views / hours;

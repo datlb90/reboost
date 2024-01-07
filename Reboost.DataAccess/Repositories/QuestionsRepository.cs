@@ -373,7 +373,7 @@ namespace Reboost.DataAccess.Repositories
                                              Test = ts.Test.Name,
                                              TestSection = t.Name,
                                              QuestionType = q.Type
-                                         }).ToListAsync();
+                                         }).OrderByDescending(s => s.TimeSubmitted).ToListAsync();
             return listsubmissions;
         }
         public async Task<List<SubmissionsForQuestionModel>> GetSubmissionsForQuestion(string userId, int questionId)

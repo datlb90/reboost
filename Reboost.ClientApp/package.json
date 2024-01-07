@@ -26,6 +26,7 @@
     "lodash": "^4.17.20",
     "module": "^1.2.5",
     "moment": "^2.29.1",
+    "moment-timezone": "^0.5.44",
     "nprogress": "^0.2.0",
     "odometer": "^0.4.8",
     "pdf-dist": "^1.0.0",

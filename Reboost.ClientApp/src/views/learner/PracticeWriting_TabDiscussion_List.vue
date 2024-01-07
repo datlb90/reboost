@@ -122,7 +122,7 @@
 </template>
 <script>
 import disussionService from '../../services/discussion.service'
-import moment from 'moment'
+import moment from 'moment-timezone'
 export default {
   components: {},
   data() {
@@ -244,7 +244,8 @@ export default {
       return '/practice/' + this.currentQuestion.id + '/discuss/' + item['id']
     },
     getTimeFromDateCreateToNow(time) {
-      return moment(new Date(time)).fromNow()
+      var tz = moment.tz.guess()
+      return moment.utc(time).tz(tz).format('DD/MM/YYYY LT')
     },
     handleCurrentChange(val) {
       this.page = val

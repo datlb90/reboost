@@ -38,12 +38,12 @@ namespace Reboost.WebApi.Controllers
                 DocId = newDoc.Id,
                 UserId = model.UserId,
                 QuestionId = model.QuestionId,
-                SubmittedDate = DateTime.Now,
+                SubmittedDate = DateTime.UtcNow,
                 Type = "Submission",
                 TimeSpentInSeconds = model.TimeSpentInSeconds,
                 Status = "Submitted",
-                UpdatedDate = DateTime.Now
-            });
+                UpdatedDate = DateTime.UtcNow
+            });;
 
             await _reviewService.Create(new { revieweeId = model.UserId, submissionId = newSub.Id });
 
@@ -59,11 +59,11 @@ namespace Reboost.WebApi.Controllers
                 DocId = newDoc.Id,
                 UserId = model.UserId,
                 QuestionId = model.QuestionId,
-                SubmittedDate = DateTime.Now,
+                SubmittedDate = DateTime.UtcNow,
                 Type = "Submission",
                 TimeSpentInSeconds = model.TimeSpentInSeconds,
                 Status = "Saved",
-                UpdatedDate = DateTime.Now
+                UpdatedDate = DateTime.UtcNow
             });
 
             return newDoc;
@@ -78,11 +78,11 @@ namespace Reboost.WebApi.Controllers
                 DocId = newDoc.Id,
                 UserId = model.UserId,
                 QuestionId = model.QuestionId,
-                SubmittedDate = DateTime.Now,
+                SubmittedDate = DateTime.UtcNow,
                 Type = "Submission",
                 TimeSpentInSeconds = model.TimeSpentInSeconds,
                 Status = "Pending",
-                UpdatedDate = DateTime.Now
+                UpdatedDate = DateTime.UtcNow
             });
 
             return newDoc;

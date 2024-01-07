@@ -36,7 +36,7 @@ namespace Reboost.Service.Services
         public async Task<Documents> Create(Documents newDocument)
         {
             newDocument.Status = "Submitted";
-            newDocument.CreatedDate = DateTime.Now;
+            newDocument.CreatedDate = DateTime.UtcNow;
             newDocument.Data = _pdfService.WriteParagraph(newDocument.Text);
 
             return await _unitOfWork.Documents.Create(newDocument);

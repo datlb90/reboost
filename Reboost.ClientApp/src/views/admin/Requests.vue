@@ -117,10 +117,10 @@
 </template>
 <script>
 import _ from 'lodash'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import raterService from '../../services/rater.service'
 import reviewService from '../../services/review.service'
-import NProgress from 'nprogress'
+// import NProgress from 'nprogress'
 export default {
   name: 'AdminRequests',
   components: {
@@ -195,7 +195,7 @@ export default {
       console.log(command)
 
       this.$confirm('Are you sure you want to re-assign this request?').then(() => {
-        NProgress.start()
+        // NProgress.start()
         reviewService.reassignReviewRequest(command.requestId, command.raterId).then(rs => {
           // Update rater information in the requests table
           if (rs) {
@@ -217,9 +217,9 @@ export default {
             })
           }
         })
-        NProgress.done()
+        // NProgress.done()
       }).catch(() => {
-        NProgress.done()
+        // NProgress.done()
       })
     },
     getRequestsData() {
@@ -306,7 +306,8 @@ export default {
       this.loadTable()
     },
     getTimeFromDateCreateToNow(time) {
-      return moment(new Date(time)).format('MMMM Do YYYY, hh:mm:ss a')
+      var tz = moment.tz.guess()
+      return moment.utc(time).tz(tz).format('DD/MM/YYYY LT')
     },
     handelClick(index, data) {
       console.log(index, data)

@@ -268,7 +268,7 @@
 </template>
 <script>
 import _ from 'lodash'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import AddEditQuestion from '../../components/controls/AddEditQuestion.vue'
 import QuestionPreview from '../../components/controls/QuestionPreview.vue'
 import AddQuestionSample from '../../components/controls/AddQuestionSampleDialog.vue'
@@ -400,7 +400,8 @@ export default {
       this.loadTable()
     },
     getTimeFromDateCreateToNow(time) {
-      return moment(new Date(time)).format('MMMM Do YYYY, hh:mm:ss a')
+      var tz = moment.tz.guess()
+      return moment.utc(time).tz(tz).format('DD/MM/YYYY LT')
     },
     handelClick(index, data) {
       console.log(index, data)

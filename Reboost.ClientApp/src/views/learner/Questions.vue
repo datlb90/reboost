@@ -161,7 +161,6 @@
         label="Test"
         prop="test"
         sortable
-        width="80"
       >
         <template slot-scope="scope">
           <span style="word-break: break-word">{{ scope.row.test }}</span>

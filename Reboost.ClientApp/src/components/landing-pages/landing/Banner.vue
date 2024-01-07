@@ -34,6 +34,7 @@
                 type="primary"
                 class="login-btn"
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
+                :loading="loading"
                 @click="signIn()"
               >
                 {{ messageTranslates('banner', 'signIn') }}
@@ -44,7 +45,7 @@
 
               <div style="padding-bottom: 40px;">
                 <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
-                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                  <el-button type="primary" :disabled="true" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
                     Facebook
                   </el-button>
                 </form>
@@ -103,7 +104,8 @@ export default {
       googleExternalLogin: null,
       returnUrl: 'rater/application/status/88',
       googleFormAction: null,
-      facebookFormAction: null
+      facebookFormAction: null,
+      loading: false
     }
   },
   async created() {
@@ -130,6 +132,7 @@ export default {
       // authService.loginGoogle(encodeURIComponent(this.returnUrl))
     },
     async signIn() {
+      this.loading = true
       this.$store.dispatch('auth/logout')
       const user = await this.login({
         Email: this.email,

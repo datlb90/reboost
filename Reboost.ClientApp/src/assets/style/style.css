@@ -695,7 +695,8 @@ Navbar CSS
 @media only screen and (max-width: 767px) {
   .startp-nav .navbar-toggler {
     outline: 0;
-    border-color: #0e314c;
+    /* border-color: none; */
+     /* //#0e314c; */
     border-radius: 0;
   }
   .startp-nav .navbar-toggler .navbar-toggler-icon {

@@ -21,7 +21,7 @@ const instance = axios.create(config)
 // Add a request interceptor
 instance.interceptors.request.use(
   function(config) {
-    store.dispatch('loading/startLoading')
+    // store.dispatch('loading/startLoading')
     const accessToken = store.state.auth.user.token
     if (!_.isEmpty(accessToken)) {
       config.headers.Authorization = `Bearer ${accessToken}`
@@ -29,7 +29,7 @@ instance.interceptors.request.use(
     return config
   },
   function(error) {
-    store.dispatch('loading/startLoading')
+    // store.dispatch('loading/startLoading')
     return Promise.reject(error)
   }
 )

@@ -126,8 +126,8 @@ namespace Reboost.Service.Services
                     newQuestion.HasSample = sampleList.AsEnumerable().Any(s => s.QuestionId == question.Id);
                     newQuestion.AverageScore = "0.0";
                     newQuestion.Status = "Active";
-                    newQuestion.AddedDate = DateTime.Now;
-                    newQuestion.LastActivityDate = DateTime.Now;
+                    newQuestion.AddedDate = DateTime.UtcNow;
+                    newQuestion.LastActivityDate = DateTime.UtcNow;
 
                     Questions thisNewQuestion = await _questionsService.CreateAsync(newQuestion);
                     // Add question parts
@@ -184,7 +184,7 @@ namespace Reboost.Service.Services
                             newSample.SampleText = sample.SampleText;
                             newSample.BandScore = sample.Rate;
                             newSample.Comment = sample.Comment;
-                            newSample.LastActivityDate = DateTime.Now;
+                            newSample.LastActivityDate = DateTime.UtcNow;
                             await _sampleService.CreateAsync(newSample);
                         }
                     }

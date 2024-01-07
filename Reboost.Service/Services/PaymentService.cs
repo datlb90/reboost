@@ -49,7 +49,7 @@ namespace Reboost.Service.Services
         }
         public async Task<Payments> CreatePaymentAsync(Payments pm)
         {
-            pm.PaymentDate = DateTime.Now;
+            pm.PaymentDate = DateTime.UtcNow;
             return await _unitOfWork.Payment.Create(pm);
         }
         public async Task<User> UpdateStripeId(User user, string id)
@@ -193,7 +193,7 @@ namespace Reboost.Service.Services
 
             var body = @"{
 			""sender_batch_header"":{
-			""sender_batch_id"":""Payout_" + DateTime.Now.ToFileTime() + @""",
+			""sender_batch_id"":""Payout_" + DateTime.UtcNow.ToFileTime() + @""",
 			" + @"""email_subject"":""" + emailSub + @""",
 			" + @"""email_message"":""" + emailMess + @"""
 			" + @"},
@@ -297,7 +297,7 @@ namespace Reboost.Service.Services
                     var temp = responseJson["billing_info"];
                     DateTime next_billing_time = temp["next_billing_time"].Value<DateTime>();
 
-                    if (next_billing_time >= DateTime.Now) {
+                    if (next_billing_time >= DateTime.UtcNow) {
                         return false;
                     }                 
                 }

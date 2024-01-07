@@ -310,7 +310,7 @@ import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
 import { RATER_STATUS, REVIEW_REQUEST_STATUS, UserRole, SubmissionStatus } from '../../app.constant'
-import moment from 'moment'
+import moment from 'moment-timezone'
 // import Rubric from '@/components/controls/Rubric'
 // import { highlightText } from '../../pdfjs/UI/highlight-text.js'
 
@@ -432,7 +432,8 @@ export default {
       return this.$store.getters['auth/getUser']
     },
     getDateNow() {
-      return moment(Date.now()).format('hh:mm MMMM Do')
+      var tz = moment.tz.guess()
+      return moment.utc().tz(tz).format('DD/MM/YYYY LT')
     }
   },
   async beforeMount() {
@@ -2897,6 +2898,7 @@ export default {
     },
     async loadReview() {
       const result = await reviewService.getById(this.$route.params.reviewId).then(async rs => {
+        console.log('Rater:', rs)
         if (this.currentUser.role === UserRole.ADMIN) {
           this.$store.dispatch('rater/setSelectedRater', rs.rater)
         }
@@ -2920,6 +2922,10 @@ export default {
           //   })
           // }
           this.$refs.toolBar?.loadReviewData(rs)
+
+          if (rs.review.reviewerId === 'AI') {
+            this.selectedTab = 'rubric'
+          }
         }
 
         if (rs.submission?.status.trim() === SubmissionStatus.REVIEWED) {

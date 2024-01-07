@@ -141,7 +141,7 @@ namespace Reboost.WebApi.Controllers
         [Route("update")]
         public async Task<IActionResult> UpdateQuestionAsync([FromForm] QuestionRequestModel model)
         {
-            model.LastActivityDate = DateTime.Now;
+            model.LastActivityDate = DateTime.UtcNow;
             var _question = _mapper.Map<Questions>(model);
             var result = await _service.UpdateQuestionAsync(_question, model);
 

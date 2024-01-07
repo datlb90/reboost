@@ -286,7 +286,7 @@
               </el-dropdown-menu>
             </el-dropdown> -->
 
-            <el-dropdown
+            <!-- <el-dropdown
               v-if="writingSubmitted || hasSubmitionForThisQuestion "
               size="mini"
               style="float: left; margin-right: 5px;"
@@ -300,7 +300,7 @@
                 <el-dropdown-item :disabled="isProRequested" command="checkout">Pro Rater Review</el-dropdown-item>
                 <el-dropdown-item divided>View Review Sample</el-dropdown-item>
               </el-dropdown-menu>
-            </el-dropdown>
+            </el-dropdown> -->
 
             <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
               <el-tag
@@ -392,14 +392,13 @@ import questionService from '../../services/question.service'
 import TabRubric from '../learner/PracticeWriting_TabRubric.vue'
 import TabSamples from '../learner/PracticeWriting_TabSamples.vue'
 import CheckOut from '../../components/controls/CheckOut.vue'
-// import moment from 'moment'
 import {
   Splitpanes,
   Pane
 } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { REVIEW_REQUEST_STATUS } from '../../app.constant'
-import moment from 'moment'
+import moment from 'moment-timezone'
 export default {
   name: 'PracticeWriting',
   components: {
@@ -747,7 +746,6 @@ export default {
         data.status = this.unRatedList.length > 0 ? 'Pending' : 'Submitted'
         documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
-            this.writingSubmitted = true
             if (this.unRatedList.length > 0) {
               this.$notify.warning({
                 title: 'Warning',
@@ -759,11 +757,13 @@ export default {
             } else {
               this.$notify.success({
                 title: 'Success',
-                message: 'Your writing has been successfully submitted. You can request a review now.',
+                message: 'Your writing has been successfully submitted!',
                 type: 'success',
                 duration: 3000
               })
             }
+            this.writingSubmitted = true
+            this.checkoutVisible = true
           }
         })
       } else {
@@ -778,10 +778,10 @@ export default {
                 type: 'warning',
                 duration: 0
               })
-
-              this.writingSubmitted = true
               this.hasSubmitionForThisQuestion = true
               this.submissionId = rs.submissions[0]?.id
+              this.writingSubmitted = true
+              this.checkoutVisible = true
             }
           })
         } else {
@@ -790,13 +790,14 @@ export default {
             if (rs) {
               this.$notify.success({
                 title: 'Success',
-                message: 'Your writing has been successfully submitted. You can request a review now.',
+                message: 'Your writing has been successfully submitted!',
                 type: 'success',
                 duration: 3000
               })
-              this.writingSubmitted = true
               this.hasSubmitionForThisQuestion = true
               this.submissionId = rs.submissions[0]?.id
+              this.writingSubmitted = true
+              this.checkoutVisible = true
             }
           })
         }

@@ -113,7 +113,7 @@ namespace Reboost.WebApi.Identity
                         issuer: _configuration["AuthSettings:JwtIssuer"],
                         audience: _configuration["AuthSettings:JwtAudience"],
                         claims: claims,
-                        expires: DateTime.Now.AddDays(30),
+                        expires: DateTime.UtcNow.AddDays(30),
                         signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
                     string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
@@ -226,7 +226,7 @@ namespace Reboost.WebApi.Identity
                         issuer: _configuration["AuthSettings:JwtIssuer"],
                         audience: _configuration["AuthSettings:JwtAudience"],
                         claims: userClaims,
-                        expires: DateTime.Now.AddDays(30),
+                        expires: DateTime.UtcNow.AddDays(30),
                         signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
                     string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
@@ -350,7 +350,7 @@ namespace Reboost.WebApi.Identity
                 issuer: _configuration["AuthSettings:JwtIssuer"],
                 audience: _configuration["AuthSettings:JwtAudience"],
                 claims: claims,
-                expires: DateTime.Now.AddDays(30),
+                expires: DateTime.UtcNow.AddDays(30),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
             string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);

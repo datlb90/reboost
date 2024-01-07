@@ -9,7 +9,7 @@
     >
       <div class="startp-nav">
         <div class="container" style=" max-width: 100%;">
-          <nav class="navbar navbar-expand-md navbar-light">
+          <nav class="navbar navbar-expand-md navbar-light" style="height: 50px;">
             <router-link class="navbar-brand" to="/" style="    margin-top: 0px; padding-top: 0px;">
               <img src="../../assets/logo/green_logo.png" alt="logo" style="position: absolute; height: 22px; top: 11px;left: 20px; ">
             </router-link>
@@ -119,26 +119,6 @@
             </b-collapse>
 
             <div class="others-option">
-              <!-- <el-dropdown style="margin-right: 20px" @command="onChangeLanguage">
-                <el-button type="primary">
-                  {{ lang }}
-                  <i class="el-icon-arrow-down el-icon--right" />
-                </el-button>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="english">English</el-dropdown-item>
-                  <el-dropdown-item command="vietnamese">Vietnamese</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown> -->
-
-              <!-- <el-dropdown class="lang-dropdown" style="margin-right: 20px; float: left;" placement="bottom" @command="onChangeLanguage">
-                <flag v-if="lang == 'English'" iso="gb" style="border-radius: 2px;" />
-                <flag v-else iso="vn" style="border-radius: 2px;" />
-                <el-dropdown-menu slot="dropdown" class="lang-dropdown-menu">
-                  <el-dropdown-item command="vietnamese"><flag iso="vn" style="border-radius: 2px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
-                  <el-dropdown-item command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown> -->
-
               <el-dropdown style="float: right; margin-top: 4px;" trigger="click" @command="handleCommand">
                 <span class="el-dropdown-link" @click="getRaterRating">
                   <i class="far fa-user-circle" style="font-size: 24px;" />
@@ -150,8 +130,8 @@
                       Email: {{ currentUser.email }}
                     </span>
                     <!-- <span>Role: {{ currentUser.role }}</span> -->
-                    <span>TOEFL Score: 20/30</span>
-                    <span>IELTS Score: 7.0/9.0</span>
+                    <!-- <span>TOEFL Score: 20/30</span>
+                    <span>IELTS Score: 7.0/9.0</span> -->
                     <span>Review Rating: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></span>
                   </div>
 

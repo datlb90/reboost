@@ -77,7 +77,7 @@
 <script>
 import { RATER_STATUS } from '../../app.constant'
 import DropdownMenu from '../../components/controls/DropdownMenu'
-import moment from 'moment'
+import moment from 'moment-timezone'
 
 export default {
   name: 'ManageRaters',
@@ -112,7 +112,8 @@ export default {
   },
   computed: {
     getAllRater() {
-      var data = this.$store.getters['rater/getAll'].map(i => ({ ...i, appliedDate: moment(new Date(i.appliedDate)).format('DD-MM-YYYY hh:mm:ss'), sortTime: moment(i.appliedDate).valueOf() }))
+      var tz = moment.tz.guess()
+      var data = this.$store.getters['rater/getAll'].map(i => ({ ...i, appliedDate: moment.utc(i.appliedDate).tz(tz).format('DD/MM/YYYY LT'), sortTime: moment.utc(i.appliedDate).tz(tz)._d }))
       return data
     },
     getAllReviews() {

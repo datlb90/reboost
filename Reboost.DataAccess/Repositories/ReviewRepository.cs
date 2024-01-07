@@ -17,6 +17,7 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IReviewRepository
     {
+        Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId);
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<Annotations> AddAnnotationAsync( Annotations annotations);
@@ -72,7 +73,20 @@ namespace Reboost.DataAccess.Repositories
         {
             db = context;
         }
-
+        public async Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId)
+        {
+            var review = await db.Reviews.Where(r => r.RequestId == 0 && r.ReviewerId == "AI" && r.SubmissionId == submissionId).FirstOrDefaultAsync();
+            if(review != null)
+            {
+                GetReviewsModel result = new GetReviewsModel();
+                result.Review = await db.Reviews.Where(r => r.RequestId == 0 && r.ReviewerId == "AI" && r.SubmissionId == submissionId).FirstOrDefaultAsync();
+                result.ReviewId = result.Review.Id;
+                Submissions submission = await db.Submissions.Where(s => s.Id == submissionId).FirstOrDefaultAsync();
+                result.DocId = submission.DocId;
+                return result;
+            }
+            return null;
+        }
         public async Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId)
         {
             var annotations = await db.Annotations.AsNoTracking().Where(a => a.DocumentId == docId && a.ReviewId == reviewId).ToListAsync();
@@ -154,7 +168,7 @@ namespace Reboost.DataAccess.Repositories
                     db.ReviewData.Update(thisData);
                 }
             }
-            review.LastActivityDate = DateTime.Now;
+            review.LastActivityDate = DateTime.UtcNow;
             await db.SaveChangesAsync();
             return review;
         }
@@ -207,12 +221,12 @@ namespace Reboost.DataAccess.Repositories
                     var submission = db.Submissions.Where(s => s.Id == request.SubmissionId).FirstOrDefault();
                     if (submission != null)
                     {
-                        submission.UpdatedDate = DateTime.Now;
+                        submission.UpdatedDate = DateTime.UtcNow;
                         submission.Status = SubmissionStatus.REVIEWED;
                     }
 
                     request.Status = ReviewRequestStatus.COMPLETED;
-                    request.CompletedDateTime = DateTime.Now;
+                    request.CompletedDateTime = DateTime.UtcNow;
 
                     //if(request.FeedbackType == ReviewRequestType.PRO)
                     //{
@@ -230,7 +244,7 @@ namespace Reboost.DataAccess.Repositories
             }
 
             review.Status = ReviewStatus.COMPLETED;
-            review.LastActivityDate = DateTime.Now;
+            review.LastActivityDate = DateTime.UtcNow;
             await db.SaveChangesAsync();
             return review;
         }
@@ -377,7 +391,7 @@ namespace Reboost.DataAccess.Repositories
                 return await Task.FromResult(exist.ReviewId.ToString());
             }
 
-            Reviews rv = new Reviews { RequestId = 0, FinalScore = 0, ReviewerId = user.Id, RevieweeId = "1", Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = DateTime.Now };
+            Reviews rv = new Reviews { RequestId = 0, FinalScore = 0, ReviewerId = user.Id, RevieweeId = "1", Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = DateTime.UtcNow };
             await db.Reviews.AddAsync(rv);
             await db.SaveChangesAsync();
 
@@ -428,7 +442,7 @@ namespace Reboost.DataAccess.Repositories
                                    TestSection = t.Name,
                                    Status = rv.Status,
                                    Test = ts.Test.Name
-                               }).ToListAsync();
+                               }).OrderByDescending(r => r.Review.LastActivityDate).ToListAsync();
 
             return await Task.FromResult(rs);
         }
@@ -448,7 +462,7 @@ namespace Reboost.DataAccess.Repositories
                 return await Task.FromResult(rs);
             };
 
-            DateTime currentTime = DateTime.Now;
+            DateTime currentTime = DateTime.UtcNow;
 
             Reviews rv = new Reviews { RequestId = requestId, FinalScore = 0, ReviewerId = userId, RevieweeId = reviewRequest.UserId, Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = currentTime };
 
@@ -498,7 +512,7 @@ namespace Reboost.DataAccess.Repositories
 
                 RaterBalances balances = new RaterBalances
                 {
-                    CreatedDate = DateTime.Now,
+                    CreatedDate = DateTime.UtcNow,
                     RaterId = rater.Id,
                     ReviewId = review.Id,
                     Status = RaterBalanceStatus.AVAILABLE,
@@ -743,7 +757,7 @@ namespace Reboost.DataAccess.Repositories
 
             foreach(var rr in requests)
             {
-                await AddRequestQueue(new RequestQueue { RequestId = rr.Id, RequestedDatetime = DateTime.Now }, userId);
+                await AddRequestQueue(new RequestQueue { RequestId = rr.Id, RequestedDatetime = DateTime.UtcNow }, userId);
             }
 
             return null;
@@ -753,7 +767,7 @@ namespace Reboost.DataAccess.Repositories
         {
             // Add request
             request.FeedbackType = ReviewRequestType.PRO;
-            request.RequestedDateTime = DateTime.Now;
+            request.RequestedDateTime = DateTime.UtcNow;
             request.Status = ReviewRequestStatus.WAITING;
             await db.ReviewRequests.AddAsync(request);
 
@@ -773,7 +787,7 @@ namespace Reboost.DataAccess.Repositories
             }
 
             // Add to request assignment
-            RequestAssignment assignment = new RequestAssignment { CreateDate = DateTime.Now, RaterId = rater.Id, RequestId = request.Id, Status = RequestAssignmentStatus.ASSIGNED };
+            RequestAssignment assignment = new RequestAssignment { CreateDate = DateTime.UtcNow, RaterId = rater.Id, RequestId = request.Id, Status = RequestAssignmentStatus.ASSIGNED };
             await db.RequestAssignments.AddAsync(assignment);
 
             await db.SaveChangesAsync();
@@ -802,14 +816,14 @@ namespace Reboost.DataAccess.Repositories
             var assignment = await db.RequestAssignments.Where(a => a.RequestId == request.Id).FirstOrDefaultAsync();
             if(assignment == null)
             {
-                RequestAssignment newAssignment = new RequestAssignment { CreateDate = DateTime.Now, RaterId = rater.Id, RequestId = request.Id, Status = RequestAssignmentStatus.ASSIGNED };
+                RequestAssignment newAssignment = new RequestAssignment { CreateDate = DateTime.UtcNow, RaterId = rater.Id, RequestId = request.Id, Status = RequestAssignmentStatus.ASSIGNED };
                 await db.RequestAssignments.AddAsync(newAssignment);
             }
             else
             {
                 assignment.Status = RequestAssignmentStatus.ASSIGNED;
                 assignment.RaterId = rater.Id;
-                assignment.CreateDate = DateTime.Now;
+                assignment.CreateDate = DateTime.UtcNow;
             }
 
             await db.SaveChangesAsync();
@@ -1054,7 +1068,7 @@ namespace Reboost.DataAccess.Repositories
             {
                 // Update reviewer and status
                 review.ReviewerId = rater.UserId;
-                review.LastActivityDate = DateTime.Now;
+                review.LastActivityDate = DateTime.UtcNow;
                 review.Status = ReviewStatus.IN_PROGRESS;
                 await db.SaveChangesAsync();
 
@@ -1080,7 +1094,7 @@ namespace Reboost.DataAccess.Repositories
                 RequestId = request.Id,
                 ReviewerId = currentUserId,
                 SubmissionId = request.SubmissionId,
-                LastActivityDate = DateTime.Now,
+                LastActivityDate = DateTime.UtcNow,
                 FinalScore = null,
                 TimeSpentInSeconds = 0,
                 Status = ReviewStatus.IN_PROGRESS
@@ -1276,7 +1290,7 @@ namespace Reboost.DataAccess.Repositories
                 var rater = await db.Raters.Where(ra => ra.UserId == review.ReviewerId).FirstOrDefaultAsync();
                 RaterBalances balances = new RaterBalances
                 {
-                    CreatedDate = DateTime.Now,
+                    CreatedDate = DateTime.UtcNow,
                     RaterId = rater.Id,
                     ReviewId = review.Id,
                     Status = RaterBalanceStatus.AVAILABLE,
@@ -1346,7 +1360,7 @@ namespace Reboost.DataAccess.Repositories
             }
 
             review.Status = ReviewStatus.PAID;
-            review.LastActivityDate = DateTime.Now;
+            review.LastActivityDate = DateTime.UtcNow;
             await db.SaveChangesAsync();
 
             return review;

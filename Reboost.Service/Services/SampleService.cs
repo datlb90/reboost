@@ -26,7 +26,7 @@ namespace Reboost.Service.Services
         }
         public async Task<Samples> CreateAsync(Samples entity)
         {
-            entity.LastActivityDate = DateTime.Now;
+            entity.LastActivityDate = DateTime.UtcNow;
             return await _unitOfWork.Samples.Create(entity);
         }
 

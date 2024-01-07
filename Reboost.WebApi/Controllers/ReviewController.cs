@@ -295,7 +295,7 @@ namespace Reboost.WebApi.Controllers
             //Add new request to request queue
             if(request.FeedbackType == ReviewRequestType.FREE)
             {
-                await _service.AddRequestQueue(new RequestQueue { RequestId = rs.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
+                await _service.AddRequestQueue(new RequestQueue { RequestId = rs.Id, RequestedDatetime = DateTime.UtcNow }, currentUser.Id);
             }
             return Ok(rs);
         }
@@ -330,19 +330,26 @@ namespace Reboost.WebApi.Controllers
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
-            var request = await _service.GetReviewRequestBySubmissionId(id, currentUser.Id);
-            if (request == null)
+            var aiReview = await _service.GetAIReviewBySubmissionId(id);
+            if(aiReview != null)
             {
-                request = await _service.CreateRequestAsync(currentUser.Id, new ReviewRequests() { UserId = currentUser.Id, SubmissionId = id } );
-                if(request.FeedbackType == ReviewRequestType.FREE)
-                {
-                    await _service.AddRequestQueue(new RequestQueue { RequestId = request.Id, RequestedDatetime = DateTime.Now }, currentUser.Id);
-                }
+                return Ok(aiReview);
             }
-            var rs = await _service.GetOrCreateReviewByReviewRequestAsync(request.Id, currentUser.Id);
-            return Ok(rs);
+            else
+            {
+                var request = await _service.GetReviewRequestBySubmissionId(id, currentUser.Id);
+                if (request == null)
+                {
+                    request = await _service.CreateRequestAsync(currentUser.Id, new ReviewRequests() { UserId = currentUser.Id, SubmissionId = id });
+                    if (request.FeedbackType == ReviewRequestType.FREE)
+                    {
+                        await _service.AddRequestQueue(new RequestQueue { RequestId = request.Id, RequestedDatetime = DateTime.UtcNow }, currentUser.Id);
+                    }
+                }
+                var rs = await _service.GetOrCreateReviewByReviewRequestAsync(request.Id, currentUser.Id);
+                return Ok(rs);
+            }
         }
-
         [Authorize]
         [HttpPost("rate")]
         public async Task<IActionResult> CreateReviewRatingAsync([FromBody] ReviewRatings data)

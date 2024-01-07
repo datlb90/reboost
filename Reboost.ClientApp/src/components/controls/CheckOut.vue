@@ -108,7 +108,7 @@ import { loadScript } from '@paypal/paypal-js'
 import paymentService from '../../services/payment.service'
 import { REVIEW_REQUEST_STATUS, SUBSCRIPTION_PLANS } from '../../app.constant'
 import reviewService from '../../services/review.service'
-import * as moment from 'moment'
+import moment from 'moment-timezone'
 // import { openPayment } from '../../assets/epay/js/paymentClient'
 // import { configs } from '../../app.constant'
 export default {
@@ -116,10 +116,12 @@ export default {
   // components: {
   //   'paypal-buttons': PayPalButton
   // },
-  props: { visible: { type: Boolean, default: true },
+  props: {
+    visible: { type: Boolean, default: true },
     subcribe: { type: Object, default: null },
     submissionId: { type: Number, default: null },
-    questionId: { type: Number, default: null }
+    questionId: { type: Number, default: null },
+    unratedCount: { type: Number, default: 0 }
   },
   data() {
     return {
@@ -142,7 +144,8 @@ export default {
       total: null,
       epaySelected: false,
       paid: false,
-      selectedReview: ''
+      selectedReview: '',
+      loadingAutomatedReview: false
     }
   },
   computed: {
@@ -181,13 +184,24 @@ export default {
       this.selectedReview = ''
     },
     onReviewSelect(reviewType) {
-      this.selectedReview = reviewType
       if (reviewType === 'pro') {
         this.amount = 15.00
+        this.selectedReview = reviewType
       } else if (reviewType === 'ai') {
         this.amount = 2.00
+        this.selectedReview = reviewType
       } else {
-        this.amount = 0.00
+        if (this.unratedCount > 0) {
+          this.$notify.error({
+            title: 'Unrated Reviews',
+            message: 'Please rate all of your unrated reviews before requesting a free peer review',
+            type: 'error',
+            duration: 2000
+          })
+        } else {
+          this.amount = 0.00
+          this.selectedReview = reviewType
+        }
       }
     },
     createOrder: function(data, actions) {
@@ -540,24 +554,25 @@ export default {
       })
     },
     requestAutomatedReview() {
+      const loading = this.$loading({
+        lock: true,
+        text: 'Please wait while our AI rater scores your essay',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
       reviewService.createAutomatedReview({
         UserId: this.currentUser.id,
         SubmissionId: +this.submissionId
       }).then(rs => {
-        console.log(rs)
-        this.dialogClosed()
         this.$notify.success({
-          title: 'Automated AI Review Request',
-          message: 'The automated AI review request has been successfully submitted!',
+          title: 'Automated AI Review',
+          message: 'Essay scoring has been completed. Please review the feedback.',
           type: 'success',
-          duration: 1500
+          duration: 2000
         })
-
-        const url = `/review/${this.questionId}/${rs.submissionId}/${rs.id}`
+        loading.close()
+        const url = `/review/${this.questionId}/${rs.docId}/${rs.reviewId}`
         this.$router.push(url)
-        // Redirect to the review page
-        // rs should contains question id, submission id, and review id
-        // this.$emit('reviewRequested')
       })
     },
     createPaymentHistory(transactionId) {
@@ -566,7 +581,7 @@ export default {
         QuestionId: this.questionId,
         SubmissionId: this.submissionId,
         PaypalTransactionId: transactionId,
-        Amount: '15.00'
+        Amount: this.amount
       }
       paymentService.createPaymentHistory(data).then(rs => {
         console.log('payment history created: ', rs)

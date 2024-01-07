@@ -165,7 +165,7 @@
 <script>
 import paymentService from '../../services/payment.service'
 // import accountService from '../../services/account.service'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import { configs } from '../../app.constant'
 // import { loadStripe } from '@stripe/stripe-js'
 export default {
