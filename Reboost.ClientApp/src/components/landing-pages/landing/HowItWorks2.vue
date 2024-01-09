@@ -16,8 +16,6 @@
             </div>
             <h3>{{ messageTranslates('howItWork2', 'titleBox1') }}</h3>
             <p>{{ messageTranslates('howItWork2', 'contentBox1') }}</p>
-
-            <a href="#"><feather type="arrow-right" /></a>
           </div>
         </div>
 
@@ -27,9 +25,7 @@
               <img src="../../../assets/img/icon2.png" alt="image">
             </div>
             <h3>{{ messageTranslates('howItWork2', 'titleBox2') }}</h3>
-            <p style="margin-top: 23px; margin-bottom: 46px;">{{ messageTranslates('howItWork2', 'contentBox2') }}</p>
-
-            <a href="#"><feather type="arrow-right" /></a>
+            <p style="margin-top: 23px; margin-bottom: 28px; line-height: 2;">{{ messageTranslates('howItWork2', 'contentBox2') }}</p>
           </div>
         </div>
 
@@ -40,8 +36,6 @@
             </div>
             <h3>{{ messageTranslates('howItWork2', 'titleBox3') }}</h3>
             <p style="margin-top: 23px; margin-bottom: 46px;">{{ messageTranslates('howItWork2', 'contentBox3') }}</p>
-
-            <a href="#"><feather type="arrow-right" /></a>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@
     <div class="container">
       <div class="row h-100 justify-content-center align-items-center">
         <div class="col-lg-8 col-md-12">
-          <img src="../../../assets/img/features/Review Center.png" class="wow fadeInDown" data-wow-delay="0.6s" alt="big-monitor">
+          <img src="../../../assets/img/features/NewReviewCenter.png" class="wow fadeInDown" data-wow-delay="0.6s" alt="big-monitor">
 
         </div>
 

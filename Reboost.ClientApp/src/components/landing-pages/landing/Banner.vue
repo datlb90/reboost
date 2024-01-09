@@ -6,7 +6,7 @@
         <div class="col-lg-6 col-md-12">
           <div class="ml-banner-content" style="margin-top: 50px;">
             <h1>{{ messageTranslates('banner', 'bannerContentTitle') }}</h1>
-            <p>{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
+            <p style="margin-top: 30px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
             <ul>
               <li>{{ messageTranslates('banner', 'content1') }}</li>
               <li>{{ messageTranslates('banner', 'content2') }}</li>

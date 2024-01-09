@@ -35,7 +35,7 @@
                 <a href="faq" class="nav-link">FAQs</a>
               </li> -->
               <li class="nav-item">
-                <a href="howItWorks" class="nav-link" @click.prevent="openContactDialog()">Help</a>
+                <a class="nav-link" @click.prevent="openContactDialog()">Contact Us</a>
               </li>
             </ul>
           </b-collapse>

@@ -100,8 +100,8 @@ namespace Reboost.Service.Services
             QuestionModel question = await _unitOfWork.Questions.GetByIdAsync(submission.QuestionId);
             Documents document = await _unitOfWork.Documents.GetByIdAsync(submission.DocId);
             var questionContent = StripHTML(question.QuestionsPart.Find(p => p.Name == "Question").Content);
-            TOEFLEssayFeedbackModel toeflFeedback = new TOEFLEssayFeedbackModel();
-            IELTSEssayFeedbackModel ieltsFeedback = new IELTSEssayFeedbackModel();
+            NewTOEFLEssayFeedbackModel toeflFeedback = new NewTOEFLEssayFeedbackModel();
+            NewIELTSEssayFeedbackModel ieltsFeedback = new NewIELTSEssayFeedbackModel();
             if (question.Section == "Independent Writing" || question.Section == "Integrated Writing")
             {
                 toeflFeedback = await chatGPTService.GetTOEFLIndependentEssayFeedback(questionContent, document.Text);
@@ -125,24 +125,35 @@ namespace Reboost.Service.Services
                     switch (criteria.Name)
                     {
                         case "Use of Language":
-                            reviewData.Comment = toeflFeedback.useOflanguge;
-                            reviewData.Score = (decimal)toeflFeedback.score;
+                            reviewData.Comment = toeflFeedback.useOflanguge.comment;
+                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.useOflanguge.score);
                             break;
                         case "Coherence & Accuracy":
-                            reviewData.Comment = toeflFeedback.coherenceAccuracy;
-                            reviewData.Score = (decimal)toeflFeedback.score;
+                            reviewData.Comment = toeflFeedback.coherenceAccuracy.comment;
+                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.coherenceAccuracy.score);
                             break;
                         case "Development & Organization":
-                            reviewData.Comment = toeflFeedback.developmentOrganization;
-                            reviewData.Score = (decimal)toeflFeedback.score;
+                            reviewData.Comment = toeflFeedback.developmentOrganization.comment;
+                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.developmentOrganization.score);
                             break;
                         case "Critical Errors":
-                            reviewData.Comment = String.Join(Environment.NewLine, toeflFeedback.errors);
-                            reviewData.Score = (decimal)toeflFeedback.score;
+                            string errors = "";
+                            foreach(AutomatedFeedbackError error in toeflFeedback.errors)
+                            {
+                                if(!String.IsNullOrEmpty(error.issue))
+                                    errors += "- '" + error.issue + "'";
+                                if (!String.IsNullOrEmpty(error.fix))
+                                    errors += " should be '" + error.fix + "'";
+                                if (!String.IsNullOrEmpty(error.type))
+                                    errors += " (" + error.type + " )";
+                                errors += Environment.NewLine;
+                            }
+                            reviewData.Comment = errors;
+                            reviewData.Score = 0;
                             break;
                         case "Overall Feedback":
-                            reviewData.Comment = toeflFeedback.overallFeedback;
-                            reviewData.Score = (decimal)toeflFeedback.score;
+                            reviewData.Comment = toeflFeedback.overallFeedback.comment;
+                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.overallFeedback.score);
                             break;
                         default:
                             break;
@@ -153,28 +164,39 @@ namespace Reboost.Service.Services
                     switch (criteria.Name)
                     {
                         case "Task Achievement":
-                            reviewData.Comment = ieltsFeedback.taskAchievement;
-                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            reviewData.Comment = ieltsFeedback.taskAchievement.comment;
+                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.taskAchievement.score);
                             break;
                         case "Coherence & Cohesion":
-                            reviewData.Comment = ieltsFeedback.coherence;
-                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            reviewData.Comment = ieltsFeedback.coherence.comment;
+                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.coherence.score);
                             break;
                         case "Lexical Resource":
-                            reviewData.Comment = ieltsFeedback.lexicalResource;
-                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            reviewData.Comment = ieltsFeedback.lexicalResource.comment;
+                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.lexicalResource.score);
                             break;
                         case "Grammatical Range & Accuracy":
-                            reviewData.Comment = ieltsFeedback.grammar;
-                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            reviewData.Comment = ieltsFeedback.grammar.comment;
+                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.grammar.score);
                             break;
                         case "Critical Errors":
-                            reviewData.Comment = String.Join(Environment.NewLine, ieltsFeedback.errors);
-                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            string errors = "";
+                            foreach (AutomatedFeedbackError error in ieltsFeedback.errors)
+                            {
+                                if (!String.IsNullOrEmpty(error.issue))
+                                    errors += "- '" + error.issue + "'";
+                                if (!String.IsNullOrEmpty(error.fix))
+                                    errors += " should be '" + error.fix + "'";
+                                if (!String.IsNullOrEmpty(error.type))
+                                    errors += " (" + error.type + " )";
+                                errors += Environment.NewLine;
+                            }
+                            reviewData.Comment = errors;
+                            reviewData.Score = 0;
                             break;
                         case "Overall Feedback":
-                            reviewData.Comment = ieltsFeedback.overallFeedback;
-                            reviewData.Score = (decimal)ieltsFeedback.score;
+                            reviewData.Comment = ieltsFeedback.overallFeedback.comment;
+                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.overallFeedback.score);
                             break;
                         default:
                             break;

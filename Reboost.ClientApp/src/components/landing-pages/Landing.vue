@@ -7,11 +7,10 @@
     <Funfacts />
     <FeaturesArea />
     <Features />
-    <RevisionCenter />
+    <UnlimitedTopics />
+    <ProRater />
     <Matching />
-    <!-- <Feedback />
-    <Blog />
-    <FAQ /> -->
+
   </div>
 </template>
 
@@ -20,10 +19,11 @@ import Banner from './landing/Banner'
 import BoxesArea from './landing/BoxesArea'
 import FeaturesArea from './landing/FeaturesArea'
 import Features from './landing/Features'
-import RevisionCenter from './landing/RevisionCenter'
+import UnlimitedTopics from './landing/UnlimitedTopics'
 import Matching from './landing/Matching'
 import HowItWorks2 from './landing/HowItWorks2'
 import Funfacts from './landing/Funfacts'
+import ProRater from './landing/ProRater'
 // import WhyChooseUs from './landing/WhyChooseUs'
 
 // import Blog from './landing/Blog'
@@ -38,10 +38,11 @@ export default {
     BoxesArea,
     FeaturesArea,
     Features,
-    RevisionCenter,
+    UnlimitedTopics,
     Matching,
     HowItWorks2,
-    Funfacts
+    Funfacts,
+    ProRater
     // WhyChooseUs,
     // Blog,
     // Feedback,

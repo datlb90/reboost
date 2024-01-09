@@ -1,6 +1,6 @@
 <template>
   <!-- Start Features Area -->
-  <section class="features-area-two ptb-80 bg-f7fafd" style="background-color: #f9f6f6;">
+  <section class="features-area-two ptb-80 bg-f7fafd" style="background-color: rgb(237 251 252);">
     <div class="container">
       <div class="row h-100 justify-content-center align-items-center">
         <div class="col-lg-4 col-md-12 services-content">
@@ -12,7 +12,7 @@
         </div>
 
         <div class="col-lg-8 col-md-12">
-          <img src="../../../assets/img/features/Revision Center.png" class="wow fadeInDown" data-wow-delay="0.6s" alt="book-self">
+          <img src="../../../assets/img/features/Topics.png" class="wow fadeInDown" data-wow-delay="0.6s" alt="book-self">
         </div>
       </div>
     </div>
@@ -22,6 +22,6 @@
 
 <script>
 export default {
-  name: 'RevisionCenter'
+  name: 'UnlimitedTopic'
 }
 </script>

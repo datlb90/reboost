@@ -14,12 +14,12 @@
         </div>
 
         <div class="col-lg-3 col-md-6 col-sm-6">
-          <div class="single-box bg-f78acb">
+          <div class="single-box bg-eb6b3d">
             <div class="icon">
-              <i class="flaticon-data-1" />
+              <i class="flaticon-support" />
             </div>
-            <h3>{{ messageTranslates('boxesArea', 'title2') }}</h3>
-            <p>{{ messageTranslates('boxesArea', 'content2') }}</p>
+            <h3>{{ messageTranslates('boxesArea', 'title4') }}</h3>
+            <p>{{ messageTranslates('boxesArea', 'content4') }}</p>
           </div>
         </div>
 
@@ -34,14 +34,15 @@
         </div>
 
         <div class="col-lg-3 col-md-6 col-sm-6">
-          <div class="single-box bg-eb6b3d">
+          <div class="single-box bg-f78acb">
             <div class="icon">
-              <i class="flaticon-support" />
+              <i class="flaticon-data-1" />
             </div>
-            <h3>{{ messageTranslates('boxesArea', 'title4') }}</h3>
-            <p>{{ messageTranslates('boxesArea', 'content4') }}</p>
+            <h3>{{ messageTranslates('boxesArea', 'title2') }}</h3>
+            <p>{{ messageTranslates('boxesArea', 'content2') }}</p>
           </div>
         </div>
+
       </div>
     </div>
   </section>

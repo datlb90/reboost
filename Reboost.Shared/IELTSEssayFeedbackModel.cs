@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace Reboost.Shared
 {
     public class IELTSEssayFeedbackModel
@@ -10,6 +12,16 @@ namespace Reboost.Shared
         public string[] errors { get; set; }
         public float score { get; set; }
         public string overallFeedback { get; set; }
+    }
+
+    public class NewIELTSEssayFeedbackModel
+    {
+        public AutomatedFeedbackModel taskAchievement { get; set; }
+        public AutomatedFeedbackModel coherence { get; set; }
+        public AutomatedFeedbackModel lexicalResource { get; set; }
+        public AutomatedFeedbackModel grammar { get; set; }
+        public List<AutomatedFeedbackError> errors { get; set; }
+        public AutomatedFeedbackModel overallFeedback { get; set; }
     }
 }
 

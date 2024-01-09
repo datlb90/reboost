@@ -55,8 +55,8 @@
             <h3>Address</h3>
 
             <ul class="footer-contact-info">
-              <li><feather type="map-pin" /> 27 Division St, New York, NY 10002, USA</li>
-              <li><feather type="mail" /> Email: <a href="#">startp@gmail.com</a></li>
+              <li><feather type="map-pin" /> Sweetwater Lake Dr, Tampa, FL, 33613, USA</li>
+              <li><feather type="mail" /> Email: <a href="#">reboost.ad@gmail.com</a></li>
               <li><feather type="phone-call" /> Phone: <a href="#">+ (321) 984 754</a></li>
             </ul>
             <ul class="social-links">
@@ -70,7 +70,7 @@
 
         <div class="col-lg-12 col-md-12">
           <div class="copyright-area">
-            <p>Copyright &copy;2020 Reboost. All Rights Reserved</p>
+            <p>Copyright &copy; 2024 Reboost. All Rights Reserved</p>
           </div>
         </div>
       </div>
