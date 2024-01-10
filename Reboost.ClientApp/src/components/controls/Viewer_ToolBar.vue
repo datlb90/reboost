@@ -164,7 +164,7 @@
     <div id="submit-container" class="submit-button" style="align-items: center;">
       <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
       <el-button v-if="isAuthor" :disabled="readOnly||isRate||isSubmit" type="primary" size="mini" @click="submitReview()">{{ messageTranslates('viewerToolBar', 'submit') }}</el-button>
-      <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="primary" size="mini" @click="rateReview()">{{ messageTranslates('viewerToolBar', 'rateReview') }}</el-button>
+      <!-- <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="primary" size="mini" @click="rateReview()">{{ messageTranslates('viewerToolBar', 'rateReview') }}</el-button> -->
       <!-- <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="danger" size="mini" @click="disputeReview()">{{ messageTranslates('viewerToolBar', 'dispute') }}</el-button> -->
     </div>
   </div>

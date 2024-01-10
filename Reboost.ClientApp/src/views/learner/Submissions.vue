@@ -1,6 +1,6 @@
 <template>
-  <div class="new-container">
-    <div class="top-navigator">
+  <div class="list-container">
+    <div class="top-navigator" style="height: 35px;">
       <el-button
         v-if="showLeftArrow"
         type="text"
@@ -9,7 +9,7 @@
         style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
         @click="moveLeft()"
       />
-      <div id="topic-container" style="display: flex; float: left; width: calc(100% - 200px); overflow: hidden;">
+      <div id="topic-container" style="display: flex; float: left; width: calc(100% - 25px); margin-right: 5px; overflow: hidden;">
         <el-tag
           type="info"
           :effect="allTopicEffect"
@@ -38,7 +38,6 @@
           style="color: grey; padding-bottom: 8px; padding-top: 8px;"
           @click="moveRight()"
         />
-
       </div>
     </div>
 
@@ -52,7 +51,9 @@
             @command="onFilterChange"
           >
             <span class="el-dropdown-link" style="cursor: pointer;">
-              Test Sections<i class="el-icon-arrow-down el-icon--right" />
+              <el-link :underline="false" type="info">
+                Test Sections<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
@@ -71,7 +72,9 @@
             @command="onFilterChange"
           >
             <span class="el-dropdown-link" style="cursor: pointer;">
-              Types<i class="el-icon-arrow-down el-icon--right" />
+              <el-link :underline="false" type="info">
+                Types<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
@@ -90,7 +93,9 @@
             @command="onFilterChange"
           >
             <span class="el-dropdown-link" style="cursor: pointer;">
-              Status<i class="el-icon-arrow-down el-icon--right" />
+              <el-link :underline="false" type="info">
+                Status<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
@@ -135,7 +140,7 @@
     </div>
 
     <el-tag
-      v-if="unRatedList.length>0"
+      v-if="unRatedList.length > 0"
       style="margin: 0 0 10px 0"
       type="warning"
     >
@@ -147,22 +152,24 @@
       ref="filterTable"
       :data="submissions"
       stripe
-      style="width: 100%;"
+      style="width: 100%; margin-top: 5px;"
+      border
       @sort-change="sortChange"
     >
-      <el-table-column prop="questionId" label="#" width="50" />
+      <el-table-column prop="questionId" label="#" width="46" fixed="left" />
 
       <el-table-column
         :label="messageTranslates('submission', 'questionTable')"
         prop="question"
         sortable
+        fixed="left"
+        min-width="200"
       >
         <template slot-scope="scope">
           <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.question }}</span>
         </template>
       </el-table-column>
-
-      <el-table-column
+      <!-- <el-table-column
         label="Test"
         prop="test"
         sortable
@@ -170,11 +177,12 @@
         <template slot-scope="scope">
           <span style="word-break: break-word">{{ scope.row.test }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
-        label="Test Section"
+        label="Section"
         prop="testSection"
         sortable
+        width="200"
       >
         <template slot-scope="scope">
           <span style="word-break: break-word"> {{ scope.row.testSection }}</span>
@@ -184,6 +192,7 @@
         label="Type"
         prop="questionType"
         sortable
+        width="190"
       >
         <template slot-scope="scope">
           <span style="word-break: break-word">{{ scope.row.questionType }}</span>
@@ -192,31 +201,36 @@
       <el-table-column
         prop="status"
         :label="messageTranslates('submission', 'statusTable')"
+        width="150"
       >
         <template slot-scope="scope">
-          <el-tag :type="getStatusVariant(scope.row.status)">{{ getStatusName(scope.row.status) }}</el-tag>
+          <el-link :underline="false" :type="getStatusVariant(scope.row.status)">{{ getStatusName(scope.row.status) }}</el-link>
         </template>
       </el-table-column>
       <el-table-column
-        :label="messageTranslates('submission', 'timeSubmitTable')"
+        label="Time Submitted"
+        width="165"
       >
         <template slot-scope="scope">
           <span>{{ getTimeFromDateCreateToNow(scope.row.timeSubmitted) }}</span>
         </template>
       </el-table-column>
-
-      <el-table-column width="110px" prop="timeTaken" align="center" :label="messageTranslates('submission', 'timeTakenTable')">
+      <!-- <el-table-column width="110px" prop="timeTaken" align="center" :label="messageTranslates('submission', 'timeTakenTable')">
         <template slot-scope="scope">
           <span>{{ getTimeTaken(scope.row.timeTaken) }}</span>
         </template>
-      </el-table-column>
-      <el-table-column align="center" :label="messageTranslates('submission', 'actionsTable')">
+      </el-table-column> -->
+      <el-table-column
+        :label="messageTranslates('submission', 'actionsTable')"
+        width="150"
+        align="center"
+      >
         <template slot-scope="scope">
           <div class="action-column-cell">
-            <el-button size="mini" style="width: 150px;" @click="actionClick(scope.row.action, scope.row)">{{ scope.row.action }}</el-button>
+            <el-button size="mini" style="width: 130px;" @click="actionClick(scope.row.action, scope.row)">{{ scope.row.action }}</el-button>
           </div>
           <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
-            <el-button size="mini" style="width: 150px;" @click="actionClick('Request Review', scope.row)">Request Review</el-button>
+            <el-button size="mini" style="width: 130px;" @click="actionClick('Request Review', scope.row)">Request Review</el-button>
           </div>
         </template>
       </el-table-column>
@@ -262,7 +276,7 @@ export default {
       submissionsCached: [],
       submissions: [],
       listSubmissionsPerPage: [],
-      pageSize: 15,
+      pageSize: 10,
       total: 0,
       page: 1,
       currentPage: 1,
@@ -496,8 +510,8 @@ export default {
       let type = 'primary'
       switch (status.trim()) {
         case 'Pending': type = 'danger'; break
-        case 'Completed': type = 'info'; break
-        case 'Submitted': type = 'default'; break
+        case 'Completed': type = 'success'; break
+        case 'Submitted': type = 'primary'; break
         case 'Review Requested': type = 'warning'; break
         case 'Reviewed': type = 'success'; break
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="new-container">
+  <div class="list-container">
     <div class="top-navigator">
       <el-button
         v-if="showLeftArrow"
@@ -56,7 +56,9 @@
             @command="onFilterChange"
           >
             <span class="el-dropdown-link" style="cursor: pointer;">
-              Test Sections<i class="el-icon-arrow-down el-icon--right" />
+              <el-link :underline="false" type="info">
+                Test Sections<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
@@ -75,7 +77,9 @@
             @command="onFilterChange"
           >
             <span class="el-dropdown-link" style="cursor: pointer;">
-              Types<i class="el-icon-arrow-down el-icon--right" />
+              <el-link :underline="false" type="info">
+                Types<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
@@ -94,7 +98,9 @@
             @command="onFilterChange"
           >
             <span class="el-dropdown-link" style="cursor: pointer;">
-              Status<i class="el-icon-arrow-down el-icon--right" />
+              <el-link :underline="false" type="info">
+                Status<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
@@ -147,11 +153,13 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column prop="id" label="#" width="50" />
+      <el-table-column prop="id" label="#" width="46" fixed="left" />
       <el-table-column
         :label="messageTranslates('question', 'titleTable')"
         prop="title"
         sortable
+        fixed="left"
+        min-width="200"
       >
         <template slot-scope="scope">
           <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.title }}</span>
@@ -160,6 +168,7 @@
       <el-table-column
         label="Test"
         prop="test"
+        width="75"
         sortable
       >
         <template slot-scope="scope">
@@ -167,8 +176,9 @@
         </template>
       </el-table-column>
       <el-table-column
-        :label="messageTranslates('question', 'testSectionTable')"
+        label="Section"
         prop="section"
+        width="200"
         sortable
       >
         <template slot-scope="scope">
@@ -178,6 +188,7 @@
       <el-table-column
         :label="messageTranslates('question', 'typeTable')"
         prop="type"
+        width="190"
         sortable
       >
         <template slot-scope="scope">
@@ -200,7 +211,6 @@
       </el-table-column>
       <el-table-column :label="messageTranslates('question', 'statusTable')" prop="status" sortable width="110">
         <template slot-scope="scope">
-          <!-- <i v-if="scope.row.status == 'Completed'" class="el-icon-check check" /> -->
           <el-tag
             v-if="scope.row.status == 'Completed'"
             :key="scope.row.status"
@@ -561,32 +571,6 @@ export default {
   opacity: 0.5;
   right: 0;
 }
-
-.new-container {
-  padding: 0 200px;
-  margin-top: 10px;
-}
-
-@media only screen and (max-width: 1200px) {
-  .filter-container{
-    padding: 5px 0;
-  }
-  .new-container {
-    padding: 0 100px;
-    margin-top: 10px;
-  }
-}
-
-@media only screen and (max-width: 990px) {
-  .filter-container{
-    padding: 5px 0;
-  }
-  .new-container {
-    padding: 0 10px;
-    margin-top: 10px;
-  }
-}
-
 el-table{
   word-break: normal;
 }

@@ -440,7 +440,7 @@ namespace Reboost.DataAccess.Repositories
                                    QuestionName = q.Title,
                                    QuestionType = q.Type,
                                    TestSection = t.Name,
-                                   Status = rv.Status,
+                                   Status = rv.Status == "Rated" ? "Feedback Received" : rv.Status,
                                    Test = ts.Test.Name
                                }).OrderByDescending(r => r.Review.LastActivityDate).ToListAsync();
 

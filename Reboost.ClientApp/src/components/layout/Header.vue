@@ -1,56 +1,46 @@
 <template>
   <!-- Start Navbar Area -->
-  <div>
+  <div class="header-container">
     <header
       id="header"
       :class="['headroom navbar-style-two', {'is-sticky': isSticky}]"
-      style=" padding-top: 0px; padding-bottom: 0px; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);
-    position: relative; padding-right: 20px;z-index:1032"
     >
       <div class="startp-nav">
-        <div class="container" style=" max-width: 100%;">
-          <nav class="navbar navbar-expand-md navbar-light" style="height: 50px;">
-            <router-link class="navbar-brand" to="/" style="    margin-top: 0px; padding-top: 0px;">
-              <img src="../../assets/logo/green_logo.png" alt="logo" style="position: absolute; height: 22px; top: 11px;left: 20px; ">
+        <div class="nav-container" :class="{ 'full-size': fullSizeHeader }">
+          <nav class="navbar navbar-expand-md navbar-light">
+            <router-link class="navbar-brand" to="/questions" style="margin-top: 0px; padding-top: 0px;">
+              <img src="../../assets/logo/green_logo.png" alt="logo" class="main-header-logo">
             </router-link>
-
             <b-navbar-toggle target="navbarSupportedContent" />
-
             <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
-              <ul v-if="role == 'Learner' && selectedTest.length>0" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+              <ul v-if="role == 'Learner' && selectedTest.length>0" class="navbar-nav nav mr-auto nav-wrapper">
                 <li class="nav-item" style="padding-bottom: 12px;">
-                  <!-- <router-link to="/questions" class="nav-link">Questions</router-link> -->
-                  <a :href="$router.resolve({name: questionsPage}).href">Questions</a>
+                  <router-link to="/questions" class="nav-link">Questions</router-link>
                 </li>
                 <li class="nav-item" style="padding-bottom: 12px;">
-                  <!-- <router-link to="/submissions" class="nav-link">Submissions</router-link> -->
-                  <a :href="$router.resolve({name: submissionsPage}).href">Submissions</a>
+                  <router-link to="/submissions" class="nav-link">Submissions</router-link>
                 </li>
-                <!-- <li class="nav-item">
-                  <router-link to="/practice" class="nav-link">Practice</router-link>
-                </li> -->
                 <li class="nav-item" style="padding-bottom: 12px;">
-                  <!-- <router-link to="/reviews" class="nav-link">Reviews</router-link> -->
-                  <a :href="$router.resolve({name: reviewsPage}).href">Reviews</a>
+                  <router-link to="/reviews" class="nav-link">Reviews</router-link>
                 </li>
-                <!-- <li class="nav-item">
-                  <router-link to="/disputes" class="nav-link">Disputes</router-link>
-                </li> -->
-                <!-- <li class="nav-item" style="padding-bottom: 12px;">
-                  <a href="/articles" class="nav-link">Articles</a>
-                </li> -->
-
                 <li class="nav-item" style="padding-bottom: 12px;">
                   <a href="/" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
                 </li>
+                <li class="nav-item other-items" style="padding-bottom: 12px;">
+                  <a href="/" style="color: #4a6f8a;">
+                    <div style=" display: inline-grid; padding-top: 10px; border-top: #d2d2d2 solid 1px; border-top: 1px solid rgb(210, 210, 210); width: 420px;">
+                      <div style="padding:5px 0px;font-weight:700;font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">Hi, {{ displayName }}</div>
 
-              <!-- <li class="nav-item">
-                <router-link to="/revision" class="nav-link">Revision</router-link>
-              </li>
+                      <div>Review Rating: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></div>
+                      <div style="text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="selectTest()">
+                        Selected Test: {{ testsToText() }}
+                      </div>
+                      <div @click.prevent="openAddQuestionDialog()">Contribute Question</div>
+                      <div @click.prevent="logout()">Logout</div>
+                    </div>
+                  </a>
+                </li>
 
-              <li class="nav-item">
-                <router-link to="/dicuss" class="nav-link">Discuss</router-link>
-              </li> -->
               </ul>
               <ul v-if="role == 'Learner' && selectedTest.length==0" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
                 <li class="nav-item">
@@ -58,30 +48,17 @@
                 </li>
               </ul>
               <ul v-if="role == 'Rater'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
-
                 <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/rater/apply" class="nav-link">Application</router-link>
                 </li>
                 <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
-                  <!-- <router-link to="/reviews" class="nav-link">Reviews</router-link> -->
                   <a :href="$router.resolve({name: reviewsPage}).href">Reviews</a>
                 </li>
-                <!-- <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
-                  <router-link to="/rater/payout" class="nav-link">Balance</router-link>
-                </li> -->
                 <li class="nav-item">
                   <a href="/" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
                 </li>
-              <!-- <li class="nav-item">
-                <router-link to="/rater/evaluate" class="nav-link" style="pointer-events: none; color: #b7b7b7;">Evaluate</router-link>
-              </li>
-
-              <li class="nav-item">
-                <router-link to="/dicuss" class="nav-link">Discuss</router-link>
-              </li> -->
               </ul>
               <ul v-if="role == 'Admin'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
-
                 <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/admin/raters" class="nav-link">Raters</router-link>
                 </li>
@@ -100,28 +77,76 @@
                 <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/admin/disputes" class="nav-link">Disputes</router-link>
                 </li>
-              <!-- <li class="nav-item">
-                <router-link to="/admin/rubric" class="nav-link">Rubric</router-link>
-              </li>
-              <li class="nav-item">
-                <router-link to="/admin/topics" class="nav-link">Topics</router-link>
-              </li>
-              <li class="nav-item">
-                <router-link to="/admin/tips" class="nav-link">Tips & Guides</router-link>
-              </li>
-              <li class="nav-item">
-                <router-link to="/admin/payments" class="nav-link">Payments</router-link>
-              </li>
-              <li class="nav-item">
-                <router-link to="/admin/dispute" class="nav-link">Disputes</router-link>
-              </li> -->
               </ul>
             </b-collapse>
 
-            <div class="others-option">
-              <el-dropdown style="float: right; margin-top: 4px;" trigger="click" @command="handleCommand">
+            <!-- <div>
+              <ul v-if="role == 'Learner' && selectedTest.length>0" class="navbar-nav nav mr-auto nav-wrapper">
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <router-link to="/questions" class="nav-link">Questions</router-link>
+                </li>
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <router-link to="/submissions" class="nav-link">Submissions</router-link>
+                </li>
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <router-link to="/reviews" class="nav-link">Reviews</router-link>
+                </li>
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <a href="/" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
+                </li>
+              </ul>
+              <ul v-if="role == 'Learner' && selectedTest.length==0" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+                <li class="nav-item">
+                  <router-link to="/SelectYourTest" class="nav-link">Select Your Test</router-link>
+                </li>
+              </ul>
+              <ul v-if="role == 'Rater'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <router-link to="/rater/apply" class="nav-link">Application</router-link>
+                </li>
+                <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
+                  <a :href="$router.resolve({name: reviewsPage}).href">Reviews</a>
+                </li>
+                <li class="nav-item">
+                  <a href="/" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
+                </li>
+              </ul>
+              <ul v-if="role == 'Admin'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <router-link to="/admin/raters" class="nav-link">Raters</router-link>
+                </li>
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <router-link to="/admin/requests" class="nav-link">Requests</router-link>
+                </li>
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <router-link to="/admin/questions" class="nav-link">Questions</router-link>
+                </li>
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <router-link to="/admin/samples" class="nav-link">Samples</router-link>
+                </li>
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <router-link to="/admin/articles" class="nav-link">Articles</router-link>
+                </li>
+                <li class="nav-item" style="padding-bottom: 12px;">
+                  <router-link to="/admin/disputes" class="nav-link">Disputes</router-link>
+                </li>
+
+              </ul>
+            </div> -->
+
+            <div class="user-option">
+
+              <el-button
+                class="header-notification"
+                icon="el-icon-message-solid"
+                circle
+              />
+
+              <el-dropdown style="margin-top: 4px; margin-right: 2px;" trigger="click" @command="handleCommand">
                 <span class="el-dropdown-link" @click="getRaterRating">
-                  <i class="far fa-user-circle" style="font-size: 24px;" />
+                  <el-link :underline="false" type="info">
+                    <i class="far fa-user-circle" style="font-size: 24px;" />
+                  </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
                   <div style="padding:0px 20px; margin-bottom: 10px; display:inline-grid">
@@ -186,7 +211,8 @@ export default {
       lang: '',
       questionsPage: PageName.QUESTIONS,
       submissionsPage: PageName.SUBMISSIONS,
-      reviewsPage: PageName.REVIEWS
+      reviewsPage: PageName.REVIEWS,
+      fullSizeHeader: false
     }
   },
 
@@ -202,6 +228,15 @@ export default {
     },
     displayName() {
       return this.currentUser.firstName ?? this.currentUser.username
+    }
+  },
+  watch: {
+    $route(to, from) {
+      if (to.name == 'PracticeWriting' || to.name == 'Review') {
+        this.fullSizeHeader = true
+      } else {
+        this.fullSizeHeader = false
+      }
     }
   },
   mounted() {
@@ -221,9 +256,6 @@ export default {
       }
     })
 
-    // if (!this.currentUser.stripeCustomerId) {
-    //   this.$store.dispatch('auth/loadCustomerId')
-    // }
     var _lang = localStorage.getItem('language')
     if (_lang) {
       this.lang = _lang.charAt(0).toUpperCase() + _lang.slice(1)
@@ -232,9 +264,11 @@ export default {
     }
   },
   created() {
-    console.log(this.role)
-    const t = process.env.VUE_APP_BASE_URL
-    console.log('vue_app_const: ', t)
+    if (this.$router.currentRoute.name == 'PracticeWriting' || this.$router.currentRoute.name == 'Review') {
+      this.fullSizeHeader = true
+    } else {
+      this.fullSizeHeader = false
+    }
   },
   methods: {
     getRaterRating() {
@@ -247,14 +281,28 @@ export default {
     },
     handleCommand(action) {
       if (action === 'logout') {
-        this.$store.dispatch('auth/logout').then(rs => {
-          this.$router.push('/')
-        })
+        this.logout()
       } else if (action === 'selectTest') {
-        this.$router.push('/SelectYourTest')
+        this.selectTest()
       } else if (action === 'addQuestion') {
         this.openAddQuestionDialog()
       }
+    },
+    logout() {
+      var menu = document.getElementById('navbarSupportedContent')
+      if (menu) {
+        menu.style.display = ' none'
+      }
+      this.$store.dispatch('auth/logout').then(rs => {
+        this.$router.push('/')
+      })
+    },
+    selectTest() {
+      var menu = document.getElementById('navbarSupportedContent')
+      if (menu) {
+        menu.style.display = ' none'
+      }
+      this.$router.push('/SelectYourTest')
     },
     toFix(number) {
       return Number((number).toFixed(1))
@@ -280,6 +328,10 @@ export default {
       }
     },
     openAddQuestionDialog() {
+      var menu = document.getElementById('navbarSupportedContent')
+      if (menu) {
+        menu.style.display = ' none'
+      }
       this.$refs.questionDialog?.openDialog(true)
     },
     openContactDialog(e) {
@@ -295,8 +347,34 @@ export default {
 </script>
 
 <style scoped>
-
 .lang-dropdown-menu{
   z-index: 10000 !important;
+}
+
+.header-container, .navbar{
+  height: 50px;
+}
+
+.main-header-logo{
+  height: 22px;
+}
+
+.nav-wrapper {
+  margin-left: 20px;
+  margin-top: 2px;
+}
+
+.header-notification {
+    border: none;
+    font-size: 19px;
+    padding: 5px !important;
+    position: absolute;
+    right: 45px;
+    top: 12px;
+    color: #909399;
+}
+.full-size {
+  max-width: 100%;
+  padding: 0 10px;
 }
 </style>

@@ -4,19 +4,19 @@
       <div>
         <div class="content-con">
           <div style="margin: 0 0 10px 5px">
-            <span class="title">Rating </span>
-            <el-rate v-model="rateValue" style="margin-top:10px" :allow-half="true" :disabled="isRated" />
+            <span class="title">Review Rating </span>
+            <el-rate v-model="rateValue" style="margin-top:10px;     color: rgb(177 177 177);" :allow-half="true" :disabled="isRated" />
           </div>
           <div style="padding-left: 5px;">
-            <span class="title">Comment </span>
+            <!-- <span class="title">Comment </span> -->
             <el-input
               id="rubric-rating"
               v-model="rateComment"
               type="textarea"
+              :rows="10"
               style="margin-top:5px; margin-bottom: 5px;"
               :maxlength="8000"
-              placeholder="Please input your comment"
-              autosize
+              placeholder="Provide feedback to your rater"
               :disabled="isRated"
             />
           </div>
@@ -79,14 +79,14 @@ export default ({
 </script>
 <style>
 #rubric-rating{
-  max-height: calc(100vh - 300px); overflow: auto;
+   overflow: auto;
 }
 </style>
 <style scoped>
 @import '../../styles/review.css';
 .title {
   font-size: 16px;
-  /* font-weight: bold; */
+  font-weight: 500;
 }
 
 </style>

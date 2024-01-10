@@ -1,5 +1,9 @@
 <template>
-  <div id="reviewContainer" :style="{cursor: activeButton== 'text'||activeButton== 'rectangle' || activeButton== 'point' ? 'crosshair':''}" style="border-top: 1px solid rgb(223 224 238); padding: 5px; background: rgb(248, 249, 250);">
+  <div
+    id="reviewContainer"
+    :style="{cursor: activeButton== 'text'||activeButton== 'rectangle' || activeButton== 'point' ? 'crosshair':''}"
+    style="border-top: 1px solid rgb(223 224 238); background: rgb(248, 249, 250);"
+  >
 
     <div id="content-wrapper" style="background: rgb(248, 249, 250); height: inherit; width: 100%;position: absolute; overflow: unset;">
       <div id="left-panel" :class="{'hideQuestion': !showQuestion}" style="height: calc(100vh - 50px);">
@@ -16,7 +20,7 @@
           <el-tab-pane name="rubric" label="Rubric">
             <tabRubric ref="tabRubric" :current-user="currentUser" :questionid="questionId" :reviewid="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
-          <el-tab-pane v-if="isRate && !isDisputed" name="rate" label="Rate">
+          <el-tab-pane v-if="isRate && !isDisputed && !isAIReview" name="rate" label="Rate">
             <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
           </el-tab-pane>
         </el-tabs>
@@ -412,7 +416,8 @@ export default {
       isDisputed: false,
       showRubric: true,
       isAddingNewComment: false,
-      completeLoading: false
+      completeLoading: false,
+      isAIReview: false
     }
   },
   computed: {
@@ -599,7 +604,7 @@ export default {
       self.viewer.innerHTML = ''
       self.NUM_PAGES = pdf.numPages
 
-      var docWidth = document.getElementById('right-panel').offsetWidth - document.getElementById('comment-wrapper').offsetWidth - 15
+      var docWidth = document.getElementById('right-panel').offsetWidth - document.getElementById('comment-wrapper').offsetWidth
 
       for (let i = 0; i < self.NUM_PAGES; i++) {
         const page = UI.createPage(i + 1)
@@ -2925,6 +2930,7 @@ export default {
 
           if (rs.review.reviewerId === 'AI') {
             this.selectedTab = 'rubric'
+            this.isAIReview = true
           }
         }
 

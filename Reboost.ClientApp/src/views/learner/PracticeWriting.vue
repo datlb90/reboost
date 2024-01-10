@@ -862,7 +862,7 @@ export default {
         this.isTesting = false
         clearInterval(this.timeSpentInterval)
       }
-      this.isShowQuestion = !this.isShowQuestion
+      // this.isShowQuestion = !this.isShowQuestion
       this.showStartTestButton = !this.showStartTestButton
       // if (!this.isTest) {
       //   this.isShowReading = true
@@ -926,9 +926,9 @@ export default {
     startTest() {
       // const time = +this.getDataQuestion.time.slice(0, 2)
       this.isTesting = true
-      this.minute = 0 // time
-      this.second = 10
-      this.isShowQuestion = true
+      this.minute = 19 // time
+      this.second = 59
+      // this.isShowQuestion = true
 
       this.timeSpentInterval = setInterval(() => {
         this.second--

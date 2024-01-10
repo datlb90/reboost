@@ -65,3 +65,45 @@ export default {
   }
 }
 </script>
+
+<style>
+
+@media only screen and (min-width:  480px) {
+  .nav-container {
+    padding-left: 10px;
+  }
+  .list-container {
+    padding-left: 5px;
+  }
+}
+
+@media only screen and (min-width: 680px) {
+  .list-container, .nav-container {
+    max-width: 100%;
+    margin: auto;
+    padding: 0 10px;
+  }
+}
+
+@media only screen and (min-width: 920px) {
+  .list-container, .nav-container {
+    max-width: 1200px;
+    margin: auto;
+  }
+}
+
+.list-container {
+  margin-top: 10px;
+}
+
+.other-items {
+  display: none;
+}
+
+@media only screen and (max-width: 768px) {
+  .other-items {
+    display: block;
+  }
+}
+
+</style>

@@ -1,6 +1,6 @@
 <template>
-  <div class="new-container">
-    <div class="top-navigator">
+  <div class="list-container">
+    <div class="top-navigator" style="height: 35px;">
       <el-button
         v-if="showLeftArrow"
         type="text"
@@ -54,7 +54,9 @@
             @command="onFilterChange"
           >
             <span class="el-dropdown-link" style="cursor: pointer;">
-              Test Sections<i class="el-icon-arrow-down el-icon--right" />
+              <el-link :underline="false" type="info">
+                Test Sections<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
@@ -73,7 +75,9 @@
             @command="onFilterChange"
           >
             <span class="el-dropdown-link" style="cursor: pointer;">
-              Types<i class="el-icon-arrow-down el-icon--right" />
+              <el-link :underline="false" type="info">
+                Types<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
@@ -92,7 +96,9 @@
             @command="onFilterChange"
           >
             <span class="el-dropdown-link" style="cursor: pointer;">
-              Status<i class="el-icon-arrow-down el-icon--right" />
+              <el-link :underline="false" type="info">
+                Status<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
@@ -141,20 +147,23 @@
       ref="filterTable"
       :data="reviews"
       stripe
-      style="width: 100%"
+      style="width: 100%; margin-top: 5px;"
+      border
       @sort-change="sortChange"
     >
-      <el-table-column prop="id" label="#" width="50" />
+      <el-table-column prop="id" label="#" width="46" fixed="left" />
       <el-table-column
         prop="questionName"
-        :label="messageTranslates('review', 'questionTable')"
+        label="Topic"
         sortable
+        fixed="left"
+        min-width="200"
       >
         <template slot-scope="scope">
           <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.questionName }}</span>
         </template>
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         label="Test"
         prop="test"
         sortable
@@ -163,11 +172,12 @@
         <template slot-scope="scope">
           <span style="word-break: break-word">{{ scope.row.test }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         prop="testSection"
-        :label="messageTranslates('review', 'testSectionTable')"
+        label="Section"
         sortable
+        width="200"
       >
         <template slot-scope="scope">
           <span style="word-break: break-word"> {{ scope.row.testSection }}</span>
@@ -176,8 +186,9 @@
 
       <el-table-column
         prop="questionType"
-        :label="messageTranslates('review', 'questionTypeTable')"
+        label="Type"
         sortable
+        width="190"
       >
         <template slot-scope="scope">
           <span style="word-break: break-word">{{ scope.row.questionType }}</span>
@@ -186,24 +197,29 @@
 
       <el-table-column
         prop="status"
-        :label="messageTranslates('review', 'statusTypeTable')"
+        label="Status"
+        width="160"
       >
         <template slot-scope="scope">
-          <el-tag :type="getStatusVariant(scope.row.status)">{{ scope.row.status }}</el-tag>
+          <el-link :underline="false" :type="getStatusVariant(scope.row.status)">{{ scope.row.status }}</el-link>
         </template>
       </el-table-column>
       <el-table-column
         :label="messageTranslates('review', 'lastActivityTable')"
-        align="center"
+        width="165"
       >
         <template slot-scope="scope">
           <span>{{ getTimeFromDateCreateToNow(scope.row.review.lastActivityDate) }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" :label="messageTranslates('review', 'actionsTable')">
+      <el-table-column
+        :label="messageTranslates('review', 'actionsTable')"
+        width="130"
+        align="center"
+      >
         <template slot-scope="scope">
           <el-button size="mini" @click="navigateToReviewRequest(scope.row)">
-            View
+            View Review
           </el-button>
         </template>
       </el-table-column>
@@ -234,7 +250,7 @@ export default {
       reviewsCached: [],
       reviews: [],
       listReviewsPerPage: [],
-      pageSize: 15,
+      pageSize: 10,
       total: 0,
       page: 1,
       currentPage: 1,
@@ -493,8 +509,7 @@ export default {
       let type = 'primary'
       switch (status.trim()) {
         case 'In Progress': type = 'warning'; break
-        case 'Completed': type = 'info'; break
-
+        case 'Completed': type = 'success'; break
         default:
           type = 'primary'
       }

@@ -495,9 +495,13 @@ Navbar CSS
 }
 
 #header.headroom.navbar-style-two {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);
+  position: relative;
+  z-index:1032;
   background-color: #ffffff;
-  padding-top: 15px;
-  padding-bottom: 15px;
 }
 
 #header.headroom--pinned {
