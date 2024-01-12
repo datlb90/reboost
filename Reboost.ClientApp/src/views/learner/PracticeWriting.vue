@@ -44,8 +44,7 @@
                   <el-row style="margin-bottom: 8px;">
                     <el-col :span="24" class="question-con">
                       <div>
-                        <div style="font-size: 13px;">
-                          <!-- <span style="font-weight: 600;word-break: keep-all;">Question: </span> -->
+                        <div style="font-size: 14px;">
                           <div id="questionContent" v-html="getQuestion.content" />
                         </div>
                       </div>
@@ -115,7 +114,15 @@
                 </div>
               </div>
             </div>
-
+          </el-tab-pane>
+          <el-tab-pane label="Idea" name="idea" style="height: 100%; position: relative;">
+            <div class="par-content">
+              <div v-if="getTip != ''">
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div id="tipContent" v-html="getTip.content" />
+                </el-card>
+              </div>
+            </div>
           </el-tab-pane>
           <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
             <div class="par-content">
@@ -127,13 +134,6 @@
               <tab-samples />
             </div>
           </el-tab-pane>
-
-          <!-- <el-tab-pane label="Discussions" style="height: 100%; position: relative;">
-            <div class="par-content" style="padding-right: 10px;">
-              <tab-discussion />
-            </div>
-          </el-tab-pane> -->
-
           <el-tab-pane label="Submissions" name="submissions" style="height: 100%; position: relative;">
             <div class="par-content" style="padding-right: 10px;">
               <el-table
@@ -239,69 +239,11 @@
               </div>
             </el-card>
           </el-tab-pane>
-
-          <!-- <el-tab-pane label="Similiar">Similiar</el-tab-pane> -->
-          <!-- <el-tab-pane>
-            <template #label>
-              <div style="position: relative; top: -2px; width: 220px;">
-                <span>
-                  Submissions
-                </span>
-                <el-select v-model="selectedSubmission" placeholder="Select Submission" size="mini" style="margin-left:10px" @change="onSubmissionChange">
-                  <el-option
-                    v-for="item in userSubmissions"
-                    :key="item.reviewId"
-                    :label="`Submission on ${item.submittedDate}`"
-                    :value="item.reviewId"
-                  />
-                </el-select>
-                <el-radio-group v-model="submissionsTabs" size="mini" style="margin-left:10px" @change="onCommentOrRubric">
-                  <el-radio-button label="Comments" />
-                  <el-radio-button label="Rubric" />
-                </el-radio-group>
-              </div>
-            </template>
-            <div class="par-content" style="padding-right: 10px;">
-              <iframe ref="ifReview" style="width: 100%; height: 100%" src="http://localhost:3011/review-plain/3/277/282?plain=true" />
-            </div>
-          </el-tab-pane> -->
         </el-tabs>
       </pane>
       <pane v-if="!tabDisCussionShowed">
         <div style="height: 100%; display: flex; flex-direction: column;">
           <div class="header-passage">
-            <!-- <el-dropdown
-              v-if="userSubmissions.length > 0"
-              style="float: left; margin-right: 5px;"
-              placemen="bottom-start"
-              @command="onSubmissionChange"
-            >
-              <el-button type="primary" plain size="mini">
-                Submissions<i class="el-icon-arrow-down el-icon--right" />
-              </el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-for="submission in userSubmissions" :key="submission.id" :command="submission.id">
-                  {{ submission.submittedDate }}
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown> -->
-
-            <!-- <el-dropdown
-              v-if="writingSubmitted || hasSubmitionForThisQuestion "
-              size="mini"
-              style="float: left; margin-right: 5px;"
-              @command="checkoutVisibles"
-            >
-              <el-button size="mini" type="success" plain>
-                Get Writing Review
-              </el-button>
-              <el-dropdown-menu slot="dropdown" size="mini">
-                <el-dropdown-item :disabled="isProRequested||isFreeRequested || unRatedList.length > 0" command="free">Free Peer Review</el-dropdown-item>
-                <el-dropdown-item :disabled="isProRequested" command="checkout">Pro Rater Review</el-dropdown-item>
-                <el-dropdown-item divided>View Review Sample</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown> -->
-
             <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
               <el-tag
                 v-if="isShowCountWord && countWord != 0"
@@ -381,14 +323,10 @@
 </template>
 
 <script>
-// @ is an alias to /src
-// import http from '@/utils/axios'
 import documentService from '../../services/document.service'
 import userService from '../../services/user.service'
 import reviewService from '../../services/review.service'
-// import submissionService from '../../services/submission.service'
 import questionService from '../../services/question.service'
-// import TabDisCussion from '../learner/PracticeWriting_TabDiscussion.vue'
 import TabRubric from '../learner/PracticeWriting_TabRubric.vue'
 import TabSamples from '../learner/PracticeWriting_TabSamples.vue'
 import CheckOut from '../../components/controls/CheckOut.vue'
@@ -404,7 +342,6 @@ export default {
   components: {
     'splitpanes': Splitpanes,
     'pane': Pane,
-    // 'tab-discussion': TabDisCussion,
     'tab-rubric': TabRubric,
     'tab-samples': TabSamples,
     'checkout': CheckOut
@@ -472,6 +409,14 @@ export default {
     },
     getDataQuestionParts() {
       return this.$store.getters['question/getSelected']['questionsPart']
+    },
+    getTip() {
+      if (typeof (this.getDataQuestionParts) != 'undefined') {
+        if (this.getDataQuestionParts.find(u => u.name == 'Tip')) {
+          return this.getDataQuestionParts.find(u => u.name == 'Tip')
+        }
+      }
+      return ''
     },
     getReading() {
       if (typeof (this.getDataQuestionParts) != 'undefined') {

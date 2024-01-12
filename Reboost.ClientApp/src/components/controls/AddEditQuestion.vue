@@ -4,7 +4,7 @@
     :title="messageTranslates('addEditQuestion', 'title')"
     :visible.sync="dialogVisible"
     :before-close="handleClose"
-    width="800px"
+    width="1000px"
   >
     <div id="addQuestionDialog" class="dialog-content">
       <el-form
@@ -37,12 +37,6 @@
             </el-select>
           </el-form-item>
         </div>
-
-        <!-- <div class="el-dialog__header" style="padding:0 0 20px 0;">
-          <span class="el-dialog__title">
-            Question
-          </span>
-        </div> -->
         <el-form-item prop="content" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'question')">
           <el-tiptap
             v-model="form.content"
@@ -52,10 +46,9 @@
             :char-counter-count="false"
           />
         </el-form-item>
-
         <el-form-item id="questionPart" prop="part" size="mini" label="">
-          <div v-if="form.test && (form.task!==2 && form.task!==3)" style="margin-left:120px">{{ messageTranslates('addEditQuestion', 'noPart') }}
-          </div>
+          <!-- <div v-if="form.test && (form.task!==2 && form.task!==3)" style="margin-left:120px">{{ messageTranslates('addEditQuestion', 'noPart') }}
+          </div> -->
           <div v-if="form.test && form.task===2">
             <el-form-item prop="" size="mini" :label="messageTranslates('addEditQuestion', 'reading')">
               <el-tiptap
@@ -110,6 +103,17 @@
                 <el-button size="small" type="primary">{{ messageTranslates('addEditQuestion', 'uploadButton') }}</el-button>
                 <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateImgUpload') }}</div>
               </el-upload>
+            </el-form-item>
+          </div>
+          <div>
+            <el-form-item prop="" size="mini" label="Tip">
+              <el-tiptap
+                v-model="questionTip"
+                lang="en"
+                placeholder="Write something …"
+                :extensions="extensions"
+                :char-counter-count="false"
+              />
             </el-form-item>
           </div>
         </el-form-item>
@@ -195,7 +199,8 @@ export default {
       fileList: [],
       isLearnerContributed: false,
       chartFileList: [],
-      questionExist: null
+      questionExist: null,
+      questionTip: null
     }
   },
   computed: {
@@ -207,25 +212,25 @@ export default {
     }
   },
   mounted() {
-    // questionService.getAddEditQuestionData().then(rs => {
-    //   this.tasks = rs.tasks
-    //   this.tests = rs.tests
-    //   this.types = rs.types
-    // })
+    questionService.getAddEditQuestionData().then(rs => {
+      this.tasks = rs.tasks
+      this.tests = rs.tests
+      this.types = rs.types
+    })
   },
   methods: {
     openDialog() {
       this.resetData()
       this.isEdit = false
       this.dialogVisible = true
-      this.$refs['questionForm'].resetFields()
+      // this.$refs['questionForm'].resetFields()
       // Load add/edit question data
-      questionService.getAddEditQuestionData().then(rs => {
-        console.log(rs)
-        this.tasks = rs.tasks
-        this.tests = rs.tests
-        this.types = rs.types
-      })
+      // questionService.getAddEditQuestionData().then(rs => {
+      //   console.log(rs)
+      //   this.tasks = rs.tasks
+      //   this.tests = rs.tests
+      //   this.types = rs.types
+      // })
     },
     openEditDialog(question) {
       this.fileList = []
@@ -238,6 +243,7 @@ export default {
         this.form.type = rs.type
         this.form.task = rs.taskId
         this.form.content = rs.questionsPart.filter(r => r.name == 'Question')[0]?.content
+        this.questionTip = rs.questionsPart.filter(r => r.name == 'Tip')[0]?.content
         this.toeflReading = rs.questionsPart.filter(r => r.name == 'Reading')[0]?.content
         this.toeflListening = rs.questionsPart.filter(r => r.name == 'Listening')[0]?.content
         this.toeflTranscript = rs.questionsPart.filter(r => r.name == 'Transcript')[0]?.content
@@ -310,9 +316,9 @@ export default {
           formData.set('QuestionParts[0][Order]', 1)
           formData.set(`QuestionParts[0][QuestionId]`, this.questionExist ? this.questionExist?.id : 0)
 
+          let order = 2
+          let count = 1
           if (this.form.part) {
-            let order = 2
-            let count = 1
             for (var p in this.form.part) {
               if (this.form.part[p]?.raw) {
                 formData.set(`QuestionParts[${count}][Content]`, this.form.part[p].raw.name)
@@ -332,6 +338,13 @@ export default {
               order += 1
               count += 1
             }
+          }
+
+          if (this.questionTip) {
+            formData.set('QuestionParts[' + count + '][Name]', 'Tip')
+            formData.set('QuestionParts[' + count + '][Content]', this.questionTip)
+            formData.set('QuestionParts[' + count + '][Order]', order)
+            formData.set(`QuestionParts['+ count +'][QuestionId]`, this.questionExist ? this.questionExist?.id : 0)
           }
 
           if (this.isEdit) {
@@ -460,7 +473,7 @@ export default {
       this.form.task = null
       this.form.content = ''
       this.form.part = null
-
+      this.questionTip = ''
       this.toeflReading = ''
       this.toeflListening = null
       this.toeflTranscript = ''

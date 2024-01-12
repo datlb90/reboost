@@ -1472,6 +1472,11 @@
     <Content Remove="wwwroot\static\test1.pdf" />
     <Content Remove="wwwroot\static\Tasks.pdf" />
     <Content Remove="wwwroot\img\ielts-logo-1.61797df8.png" />
+    <Content Remove="wwwroot\js\chunk-vendors.3f6eab7d.js.map" />
+    <Content Remove="wwwroot\js\chunk-vendors.3f6eab7d.js" />
+    <Content Remove="wwwroot\img\Topics.9600b40d.png" />
+    <Content Remove="wwwroot\img\Practice 1.d2495b69.png" />
+    <Content Remove="wwwroot\img\AI Rater 3.691c0843.jpeg" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 </Project>
