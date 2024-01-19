@@ -99,7 +99,8 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.UpdateStatusAsync(id, status);
             var user = await _userService.GetByIdAsync(rs.UserId);
 
-            await _mailService.SendEmailAsync(user.Email, "Application's Status Updated", "Your application has just been " + rs.Status + ". Please visit your application page for more infomation.");
+            await _mailService.SendEmailAsync(user.Email, "Application's Status Updated",
+                "Your application has just been " + rs.Status + ". Please visit your application page for more infomation.");
 
             return rs;
         }
@@ -139,24 +140,7 @@ namespace Reboost.WebApi.Controllers
 
             return Ok(rs);
         }
-
-        [HttpPost("contact")]
-        public async Task<IActionResult> SendContactRequestAsync([FromForm] ContactRequestModel model)
-        {
-            var currentUserClaim = HttpContext.User;
-            var email = currentUserClaim.FindFirst("Email");
-
-            var userName = "Quest";
-            if(email != null)
-            {
-                var user = await _userService.GetByEmailAsync(email.Value);
-                userName = user.Username;
-            }
-
-            var rs = await _service.SendContactRequestAsync(userName, model);
-
-            return Ok(rs);
-        }
+        
         [Authorize]
         [HttpGet]
         [Route("master")]

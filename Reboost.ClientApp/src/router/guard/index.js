@@ -103,7 +103,7 @@ export default async(router) => {
       const role = currentUser.role
       if (to.name === PageName.AFTER_LOGIN) {
         if (role === UserRole.ADMIN) {
-          return next({ name: PageName.QUESTIONS })
+          return next({ name: PageName.ADMIN_QUESTIONS })
         } else if (role === UserRole.RATER) {
           const check = await isApprovedRater()
           switch (check.code) {

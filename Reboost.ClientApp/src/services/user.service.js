@@ -12,6 +12,9 @@ const userService = {
   },
   hasSubmissionOnTaskOf(userId, questionId) {
     return http.get(`/user/hasSubmissionOnTaskOf/${userId}/${questionId}`).then(rs => rs.data)
+  },
+  supportRequest(data) {
+    return http.post('/user/support', data, { headers: { 'Content-Type': 'multipart/form-data' }}).then(rs => rs.data)
   }
 }
 

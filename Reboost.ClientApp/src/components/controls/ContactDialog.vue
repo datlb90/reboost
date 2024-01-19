@@ -10,59 +10,44 @@
         <div class="title-container">
           {{ messageTranslates('contactDialog', 'title') }}
         </div>
-        <div class="divider--horizontal divider" />
+        <!-- <div class="divider--horizontal divider" /> -->
       </div>
       <div class="body-container">
         <el-form
           ref="contactForm"
           :model="formData"
           label-position="right"
-          label-width="160px"
+          label-width="150px"
           style="width:100%;"
         >
           <el-form-item
             size="mini"
             :label="messageTranslates('contactDialog', 'fullName')"
             prop="fullName"
-            :rules="[{ required: true, message: 'Full Name is required'}]"
+            :rules="[{ required: true, message: 'Please enter your full name'}]"
           >
-            <el-input v-model="formData.fullName" :disabled="currentUser.id" type="text" />
+            <el-input v-model="formData.fullName" :disabled="currentUser.id" type="text" placeholder="Enter your full name" style="width: 90%;" />
           </el-form-item>
           <el-form-item
             size="mini"
             :label="messageTranslates('contactDialog', 'email')"
             prop="email"
-            :rules="[{ required: true, message: 'Email is required'}]"
+            :rules="[{ required: true, message: 'Please enter your email address'}]"
           >
-            <el-input v-model="formData.email" :disabled="currentUser.id" type="text" />
+            <el-input v-model="formData.email" :disabled="currentUser.id" type="text" placeholder="Enter your email address" style="width: 90%;" />
           </el-form-item>
           <el-form-item
             size="mini"
             :label="messageTranslates('contactDialog', 'reason')"
             prop="reason"
-            :rules="[{ required: true, message: 'Reason is required' }]"
+            :rules="[{ required: true, message: 'Please select a reason' }]"
           >
-            <el-select v-model="formData.reason" :placeholder="messageTranslates('contactDialog', 'reason')">
+            <el-select v-model="formData.reason" placeholder="Select a reason" style="width: 180px;">
               <el-option
                 v-for="reason in reasons"
                 :key="reason"
                 :label="reason"
                 :value="reason"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item
-            size="mini"
-            :label="messageTranslates('contactDialog', 'userRole')"
-            prop="role"
-            :rules="[{ required: true, message: 'Role is required'}]"
-          >
-            <el-select v-model="formData.role" :disabled="currentUser.id" placeholder="User Role">
-              <el-option
-                v-for="role in roles"
-                :key="role"
-                :label="role"
-                :value="role"
               />
             </el-select>
           </el-form-item>
@@ -76,6 +61,8 @@
               v-model="formData.message"
               type="textarea"
               :autosize="{ minRows: 5, maxRows: 8}"
+              placeholder="Detail your enquiry here"
+              style="width: 90%;"
             />
           </el-form-item>
           <el-form-item
@@ -90,22 +77,34 @@
               :on-remove="handleRemoveFile"
               :file-list="formData.files"
               :auto-upload="false"
+              :multiple="true"
+              :limit="3"
+              :on-exceed="handleExceed"
+              accept=".jpg,.png,.jpeg,.JPG,.PGN,.JPEG"
             >
-              <el-button type="primary">{{ messageTranslates('contactDialog', 'clickToUpload') }}</el-button>
+              <el-button>{{ messageTranslates('contactDialog', 'clickToUpload') }}</el-button>
+              <div slot="tip" class="el-upload__tip">jpg/png files with a size less than 3mb</div>
             </el-upload>
+          </el-form-item>
+
+          <el-form-item
+            size="mini"
+          >
+            <el-button size="mini" type="primary" :disabled="isLoading" style="margin-top: 10px;" @click="submitMessage">{{ messageTranslates('contactDialog', 'submit') }}</el-button>
+            <el-button size="mini" :disabled="isLoading" style="margin-top: 10px;" @click="dialogVisible=false">{{ messageTranslates('contactDialog', 'cancel') }}</el-button>
           </el-form-item>
         </el-form>
       </div>
-      <div slot="footer" style="text-align: center;">
+      <!-- <div slot="footer" style="text-align: center;">
         <el-button size="mini" @click="dialogVisible=false">{{ messageTranslates('contactDialog', 'cancel') }}</el-button>
         <el-button size="mini" type="primary" @click="submitMessage">{{ messageTranslates('contactDialog', 'submit') }}</el-button>
-      </div>
+      </div> -->
     </el-dialog>
   </div>
 </template>
 <script>
 import * as stringUtil from '@/utils/string'
-import raterService from '../../services/rater.service'
+import userService from '../../services/user.service'
 
 export default {
   name: 'ContactDialog',
@@ -116,12 +115,11 @@ export default {
         fullName: null,
         email: null,
         reason: '',
-        role: '',
         message: '',
         files: []
       },
-      reasons: ['Report Bug', 'Reason 2', 'Reason 3'],
-      roles: ['Student', 'Teacher', 'Pupil']
+      reasons: ['Report a problem', 'Suggest new features', 'Other reasons'],
+      isLoading: false
     }
   },
   computed: {
@@ -133,7 +131,6 @@ export default {
     if (this.currentUser.id) {
       this.formData.fullName = this.currentUser.firstName + this.currentUser.lastName
       this.formData.email = this.currentUser.email
-      this.formData.role = this.currentUser.role
     }
     // console.log('', this.reasons, this.roles)
   },
@@ -151,7 +148,6 @@ export default {
           postData.set('Fullname', this.formData.fullName)
           postData.set('Email', this.formData.email)
           postData.set('Reason', this.formData.reason)
-          postData.set('Role', this.formData.role)
           postData.set('Message', this.formData.message)
 
           for (const p of this.formData.files) {
@@ -162,20 +158,18 @@ export default {
             }
           }
 
-          raterService.contactRequest(postData).then(rs => {
+          userService.supportRequest(postData).then(rs => {
             if (rs) {
               this.$notify.success({
-                title: 'Contact Reported!',
-                message: 'Contact Reported!',
+                title: 'Support Request Submitted',
+                message: 'Your inquiry has been submitted successfully',
                 type: 'success',
                 duration: 2000
               })
               this.dialogVisible = false
-              this.dialogVisible = false
               this.formData.fullName = null
               this.formData.email = null
               this.formData.reason = ''
-              this.formData.role = ''
               this.formData.message = ''
               this.formData.files = []
               this.$refs['contactForm'].resetFields()
@@ -185,10 +179,28 @@ export default {
       })
     },
     handleChangeFile(file, fileList) {
+      if (file.size > 3e6) {
+        this.$notify.error({
+          title: 'File size exceed',
+          message: 'Please upload file files with a size less than 3mb.',
+          type: 'error',
+          duration: 2000
+        })
+        const index = fileList.findIndex(f => f.uid === file.uid)
+        fileList.splice(index, 1)
+      }
       this.formData.files = fileList
     },
     handleRemoveFile(file, fileList) {
       this.formData.files = fileList
+    },
+    handleExceed(files, fileList) {
+      this.$notify.error({
+        title: 'File limit exceed',
+        message: 'Please upload no more than 3 files.',
+        type: 'error',
+        duration: 2000
+      })
     }
   }
 
