@@ -344,7 +344,7 @@ export default {
             formData.set('QuestionParts[' + count + '][Name]', 'Tip')
             formData.set('QuestionParts[' + count + '][Content]', this.questionTip)
             formData.set('QuestionParts[' + count + '][Order]', order)
-            formData.set(`QuestionParts['+ count +'][QuestionId]`, this.questionExist ? this.questionExist?.id : 0)
+            formData.set('QuestionParts[' + count + '][QuestionId]', this.questionExist ? this.questionExist?.id : 0)
           }
 
           if (this.isEdit) {

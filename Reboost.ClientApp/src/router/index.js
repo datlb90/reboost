@@ -2,6 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import About from '../views/About.vue'
+import Privacy from '../views/PrivacyPolicy.vue'
+import DataDeletion from '../views/DataDeletion.vue'
 import Document from '../views/Document.vue'
 import Test from '../views/Test.vue'
 import RaterApply from '../views/rater/Application.vue'
@@ -64,7 +66,7 @@ import Questions from '../views/learner/Questions.vue'
 import RaterApplication from '../views/rater/Application.vue'
 import ApplicationDetail from '../views/admin/ApplicationDetail.vue'
 import PracticeWriting from '../views/learner/PracticeWriting'
-import SelectYourTest from '../views/learner/SelectYourTest'
+// import SelectYourTest from '../views/learner/SelectYourTest'
 import ApplicationStatus from '../views/rater/ApplicationStatus'
 import DiscussionDetail from '../views/learner/PracticeWriting_TabDiscussion_Detail.vue'
 import DiscussionList from '../views/learner/PracticeWriting_TabDiscussion_List.vue'
@@ -124,6 +126,24 @@ const router = new VueRouter({
       meta: {
         plainLayout: false,
         loginRequired: true
+      }
+    },
+    {
+      path: '/privacy',
+      name: 'Privacy Policy',
+      component: Privacy,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
+      path: '/data/deletion',
+      name: 'Data Deletion',
+      component: DataDeletion,
+      meta: {
+        plainLayout: true,
+        landingPage: false
       }
     },
     {
@@ -384,15 +404,15 @@ const router = new VueRouter({
         loginRequired: true
       }
     },
-    {
-      path: '/SelectYourTest',
-      component: SelectYourTest,
-      name: PageName.SELECT_YOUR_TEST,
-      meta: {
-        loginRequired: true,
-        role: UserRole.LEARNER
-      }
-    },
+    // {
+    //   path: '/SelectYourTest',
+    //   component: SelectYourTest,
+    //   name: PageName.SELECT_YOUR_TEST,
+    //   meta: {
+    //     loginRequired: true,
+    //     role: UserRole.LEARNER
+    //   }
+    // },
     {
       path: '/Subscribe',
       component: Subscribe,

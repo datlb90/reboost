@@ -58,16 +58,8 @@ namespace Reboost.WebApi.Identity
         public async Task<UserManagerResponse> RegisterUserAsync(RegisterViewModel model)
         {
             if (model == null)
-                throw new NullReferenceException("Reigster Model is null");
-
-            //if (model.Password != model.ConfirmPassword)
-            //    return new UserManagerResponse
-            //    {
-            //        Message = "Confirm password doesn't match the password",
-            //        IsSuccess = false,
-            //    };
-
-
+                throw new NullReferenceException("Invalid data!");
+            
             var identityUser = new ApplicationUser
             {
                 Email = model.Email,
@@ -75,40 +67,23 @@ namespace Reboost.WebApi.Identity
                 FirstName = model.FirstName,
                 LastName = model.LastName
             };
-
             var result = await _userManger.CreateAsync(identityUser, model.Password);
             if (result.Succeeded)
             {
-
                 var roleResult = await _userManger.AddToRoleAsync(identityUser, model.Role);
 
                 if (roleResult.Succeeded)
                 {
-                    var confirmEmailToken = await _userManger.GenerateEmailConfirmationTokenAsync(identityUser);
-
-                    var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
-                    var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
-
-
-
-                    string url = $"{_configuration["AppUrl"]}/api/auth/confirmemail?userid={identityUser.Id}&token={validEmailToken}";
-
-                    await _mailService.SendEmailAsync(identityUser.Email, "Verify your email address", $"<h1>Welcome to Reboost</h1>" +
-                        $"<p>To finish setting up your Reboost account, we just need to make sure this email address is yours.</p>" +
-                        $"<p>To verify your email address, please click on this link: <a href='{url}'>{url}</a></p>" +
-                        $"<p>If you didn't make this request, you can safely ignore this email.</p>" +
-                        $"<p>Thanks,</p><p>The Reboost Support Team</p>");
-
-
+                    // Send account verificaton email
+                    await SendEmailVerification(identityUser);
+                    
                     var claims = new[]
                     {
                         new Claim("Email", model.Email),
                         new Claim(ClaimTypes.NameIdentifier, identityUser.Id),
                         new Claim("Role", model.Role)
                     };
-
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AuthSettings:JwtSecret"]));
-
                     var token = new JwtSecurityToken(
                         issuer: _configuration["AuthSettings:JwtIssuer"],
                         audience: _configuration["AuthSettings:JwtAudience"],
@@ -127,7 +102,6 @@ namespace Reboost.WebApi.Identity
                             IsSuccess = false,
                         };
                     }
-
                     UserLoginModel userModel = new UserLoginModel
                     {
                         Id = identityUser.Id,
@@ -139,124 +113,94 @@ namespace Reboost.WebApi.Identity
                         FirstName = model.FirstName,
                         LastName = model.LastName
                     };
-
                     return new UserManagerResponse
                     {
                         user = userModel,
                         Message = "Account Registration Success!",
                         IsSuccess = true,
                     };
-
-
                 }
-
-               
             }
-
             return new UserManagerResponse
             {
                 Message = "User did not create",
                 IsSuccess = false,
                 Errors = result.Errors.Select(e => e.Description)
             };
-
         }
-
         public async Task<UserManagerResponse> LoginExternalAsync(AuthenticateResult authResult)
         {
-            // lookup our user and external provider info
+            // Lookup our user and external provider info
             var externalUser = authResult.Principal;
-
-            // try to determine the unique email
-            var emailClaim = externalUser.FindFirst(ClaimTypes.Email);// ?? throw new Exception("Unknown email");
-
+            var emailClaim = externalUser.FindFirst(ClaimTypes.Email);
             if (emailClaim != null)
             {
-                // remove the user id claim so we don't include it as an extra claim if/when we provision the user
-                var claims = externalUser.Claims.ToList();
-                var provider = authResult.Properties.Items["scheme"];
+                var role = authResult.Properties.Items["role"];
                 var email = emailClaim.Value;
-
-                // find the external user
+                // Find the external user in db
                 var user = await _userManger.FindByEmailAsync(email);
-
-                string userId = null;
                 if (user == null)
                 {
+                    var claims = externalUser.Claims.ToList();
                     string firstName = claims.FirstOrDefault(x => x.Type == ClaimTypes.GivenName)?.Value;
                     string lastName = claims.FirstOrDefault(x => x.Type == ClaimTypes.Surname)?.Value;
-
-                    // Create new user
+                    string username = GetUsernameFromEmail(email);
+                    // Create the new user
                     var identityUser = new ApplicationUser
                     {
                         Email = email,
-                        UserName = GetUsernameFromEmail(email)
-                        //FirstName = firstName == null ? email : firstName,
-                        //LastName = lastName == null ? "" : lastName
+                        UserName = username,
+                        FirstName = firstName == null ? username : firstName,
+                        LastName = lastName == null ? "" : lastName
                     };
-
                     var result = await _userManger.CreateAsync(identityUser);
                     if (result.Succeeded)
                     {
-                        userId = identityUser.Id;
                         user = identityUser;
+                        // Assign role to user
+                        await _userManger.AddToRoleAsync(user, role);
+                        // Send account verification email
+                        await SendEmailVerification(user);
                     }
-                        
-                }
-                else
-                {
-                    userId = user.Id;
-                }
-                var role = authResult.Properties.Items["role"];
-                var roles = await _userManger.GetRolesAsync(user);
-
-                var roleResult = await _userManger.AddToRoleAsync(user, role);
-
-                if (roleResult.Succeeded || roles.Contains(role))
-                {
-                    var userClaims = new[]
-                    {
-                        new Claim("Email", email),
-                        new Claim(ClaimTypes.NameIdentifier, userId)
-                    };
-
-                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AuthSettings:JwtSecret"]));
-
-                    var token = new JwtSecurityToken(
-                        issuer: _configuration["AuthSettings:JwtIssuer"],
-                        audience: _configuration["AuthSettings:JwtAudience"],
-                        claims: userClaims,
-                        expires: DateTime.UtcNow.AddDays(30),
-                        signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
-
-                    string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
-                    if (roles == null)
+                    else
                     {
                         return new UserManagerResponse
                         {
-                            Message = "User has no role",
-                            IsSuccess = false,
+                            IsSuccess = false
                         };
                     }
-
-                    UserLoginModel userModel = new UserLoginModel
-                    {
-                        Id = user.Id,
-                        Username = user.UserName,
-                        Email = user.Email,
-                        Role = roles.FirstOrDefault(), // Each user has only one role
-                        Token = tokenAsString,
-                        ExpireDate = token.ValidTo
-                    };
-
-                    return new UserManagerResponse
-                    {
-                        user = userModel,
-                        Message = tokenAsString,
-                        IsSuccess = true,
-                    };
                 }
-                
+                var userClaims = new[]
+                    {
+                        new Claim("Email", email),
+                        new Claim(ClaimTypes.NameIdentifier,  user.Id),
+                        new Claim("Role", role)
+                    };
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AuthSettings:JwtSecret"]));
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["AuthSettings:JwtIssuer"],
+                    audience: _configuration["AuthSettings:JwtAudience"],
+                    claims: userClaims,
+                    expires: DateTime.UtcNow.AddDays(30),
+                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+                string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
+                UserLoginModel userModel = new UserLoginModel
+                {
+                    Id = user.Id,
+                    Username = user.UserName,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Role = role,
+                    Token = tokenAsString,
+                    ExpireDate = token.ValidTo
+                };
+                return new UserManagerResponse
+                {
+                    user = userModel,
+                    Message = tokenAsString,
+                    IsSuccess = true,
+                };
             }
 
             return new UserManagerResponse
@@ -264,8 +208,22 @@ namespace Reboost.WebApi.Identity
                 IsSuccess = false
             };
         }
+        public async Task SendEmailVerification(ApplicationUser user)
+        {
+            // Send email with account confirmation
+            var confirmEmailToken = await _userManger.GenerateEmailConfirmationTokenAsync(user);
 
+            var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+            var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
 
+            string url = $"{_configuration["AppUrl"]}/api/auth/confirmemail?userid={user.Id}&token={validEmailToken}";
+
+            await _mailService.SendEmailAsync(user.Email, "Verify your email address", $"<h1>Welcome to Reboost</h1>" +
+                $"<p>To finish setting up your Reboost account, we just need to make sure this email address is yours.</p>" +
+                $"<p>To verify your email address, please click on this link: <a href='{url}'>Confirm My Email</a></p>" +
+                $"<p>If you didn't make this request, you can safely ignore this email.</p>" +
+                $"<p>Thanks,</p><p>The Reboost Support Team</p>");
+        }
         private async Task<(IdentityUser user, string provider, string email, IEnumerable<Claim> claims)>
             FindUserFromExternalProviderAsync(AuthenticateResult result)
         {
@@ -330,7 +288,7 @@ namespace Reboost.WebApi.Identity
             {
                 return new UserManagerResponse
                 {
-                    Message = "Please confirm your Email address.",
+                    Message = "Please verify your email address in mailbox.",
                     IsSuccess = false,
                 };
             }

@@ -18,6 +18,7 @@ using Stripe;
 using System.Text;
 using Hangfire;
 using Hangfire.MemoryStorage;
+using Microsoft.AspNetCore.Http;
 
 namespace Reboost.WebApi
 {
@@ -191,6 +192,12 @@ namespace Reboost.WebApi
             app.UseCors(MyAllowSpecificOrigins);
             //app.UseSpaStaticFiles();
             //app.UseRouting();
+
+            app.UseCookiePolicy(new CookiePolicyOptions
+            {
+                Secure = CookieSecurePolicy.Always
+            });
+
             app.UseAuthentication();
             app.UseAuthorization();
 

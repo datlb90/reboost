@@ -112,7 +112,7 @@ export default {
             Password: this.form.password,
             FirstName: this.form.firstName,
             LastName: this.form.lastName,
-            Role: 'Learner'
+            Role: 'learner'
           })
 
           if (user) {

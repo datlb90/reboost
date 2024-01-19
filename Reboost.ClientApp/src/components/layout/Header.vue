@@ -13,7 +13,7 @@
             </router-link>
             <b-navbar-toggle target="navbarSupportedContent" />
             <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
-              <ul v-if="role == 'Learner' && selectedTest.length>0" class="navbar-nav nav mr-auto nav-wrapper">
+              <ul v-if="role == userRole.LEARNER" class="navbar-nav nav mr-auto nav-wrapper">
                 <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/questions" class="nav-link">Questions</router-link>
                 </li>
@@ -32,9 +32,9 @@
                       <div style="padding:5px 0px;font-weight:700;font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">Hi, {{ displayName }}</div>
 
                       <div>Review Rating: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></div>
-                      <div style="text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="selectTest()">
+                      <!-- <div style="text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="selectTest()">
                         Selected Test: {{ testsToText() }}
-                      </div>
+                      </div> -->
                       <div @click.prevent="openAddQuestionDialog()">Contribute Question</div>
                       <div @click.prevent="logout()">Logout</div>
                     </div>
@@ -42,12 +42,12 @@
                 </li>
 
               </ul>
-              <ul v-if="role == 'Learner' && selectedTest.length==0" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+              <!-- <ul v-if="role == UserRole.LEARNER && selectedTest.length==0" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
                 <li class="nav-item">
                   <router-link to="/SelectYourTest" class="nav-link">Select Your Test</router-link>
                 </li>
-              </ul>
-              <ul v-if="role == 'Rater'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+              </ul> -->
+              <ul v-if="role == userRole.RATER" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
                 <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/rater/apply" class="nav-link">Application</router-link>
                 </li>
@@ -58,7 +58,7 @@
                   <a href="/" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
                 </li>
               </ul>
-              <ul v-if="role == 'Admin'" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
+              <ul v-if="role == userRole.ADMIN" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
                 <li class="nav-item" style="padding-bottom: 12px;">
                   <router-link to="/admin/raters" class="nav-link">Raters</router-link>
                 </li>
@@ -141,7 +141,6 @@
                 icon="el-icon-message-solid"
                 circle
               />
-
               <el-dropdown style="margin-top: 4px; margin-right: 2px;" trigger="click" @command="handleCommand">
                 <span class="el-dropdown-link" @click="getRaterRating">
                   <el-link :underline="false" type="info">
@@ -151,12 +150,7 @@
                 <el-dropdown-menu slot="dropdown">
                   <div style="padding:0px 20px; margin-bottom: 10px; display:inline-grid">
                     <span style="padding:5px 0px;font-weight:700;font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap; max-width: 200px;">Hi, {{ displayName }}</span>
-                    <span style="text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap; max-width: 200px;">
-                      Email: {{ currentUser.email }}
-                    </span>
-                    <!-- <span>Role: {{ currentUser.role }}</span> -->
-                    <!-- <span>TOEFL Score: 20/30</span>
-                    <span>IELTS Score: 7.0/9.0</span> -->
+                    <span>Band score:  Undefined</span>
                     <span>Review Rating: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></span>
                   </div>
 
@@ -170,8 +164,6 @@
                       </el-dropdown-menu>
                     </el-dropdown>
                   </div>
-
-                  <el-dropdown-item command="selectTest" divided>Selected Test: {{ testsToText() }}</el-dropdown-item>
                   <el-dropdown-item command="addQuestion">Contribute Question</el-dropdown-item>
                   <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
                 </el-dropdown-menu>
@@ -194,7 +186,7 @@ import reviewService from '../../services/review.service'
 import { RATER_STATUS } from '../../app.constant'
 import AddEditQuestion from '../../components/controls/AddEditQuestion.vue'
 import ContactDialog from '../../components/controls/ContactDialog.vue'
-import { PageName } from '@/app.constant'
+import { PageName, UserRole } from '@/app.constant'
 export default {
   name: 'HeaderTwo',
   components: {
@@ -212,19 +204,16 @@ export default {
       questionsPage: PageName.QUESTIONS,
       submissionsPage: PageName.SUBMISSIONS,
       reviewsPage: PageName.REVIEWS,
-      fullSizeHeader: false
+      fullSizeHeader: false,
+      userRole: UserRole
     }
   },
-
   computed: {
     shoppingCart() {
       return this.$store.state.cart
     },
     currentUser() {
       return this.$store.getters['auth/getUser']
-    },
-    selectedTest() {
-      return this.$store.getters['auth/getSelectedTest']
     },
     displayName() {
       return this.currentUser.firstName ?? this.currentUser.username
@@ -240,22 +229,6 @@ export default {
     }
   },
   mounted() {
-    const that = this
-    // if (this.currentUser?.id) {
-    //   this.$store.dispatch('auth/setSelectedTest')
-    // }
-    console.log('current user', this.currentUser)
-    this.checkApprovedRater()
-    window.addEventListener('scroll', () => {
-      const scrollPos = window.scrollY
-      // eslint-disable-next-line no-console
-      if (scrollPos >= 300) {
-        that.isSticky = true
-      } else {
-        that.isSticky = false
-      }
-    })
-
     var _lang = localStorage.getItem('language')
     if (_lang) {
       this.lang = _lang.charAt(0).toUpperCase() + _lang.slice(1)
@@ -319,7 +292,7 @@ export default {
       return rs
     },
     checkApprovedRater() {
-      if (this.currentUser.role === 'Rater') {
+      if (this.currentUser.role === UserRole.RATER) {
         reviewService.raterApprovedCheck().then(r => {
           if (r && r.status === RATER_STATUS.APPROVED) {
             this.isApprovedRater = true

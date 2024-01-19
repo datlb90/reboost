@@ -70,12 +70,12 @@ namespace Reboost.DataAccess.Repositories
             return dicTask;
         }
         public async Task<List<QuestionModel>> GetAllByUserAsync(string userId) {
-            var tests = await GetTestForCurrentUsers(userId);
+            //var tests = await GetTestForCurrentUsers(userId);
             var allQuestions = from quest in ReboostDbContext.Questions
                         join task in ReboostDbContext.Tasks on quest.TaskId equals task.Id
                         join sec in ReboostDbContext.TestSections on task.SectionId equals sec.Id
                         join test in ReboostDbContext.Tests on sec.TestId equals test.Id
-                       where tests.Contains(test.Name) && quest.Status == QuestionStatus.ACTIVE
+                       where quest.Status == QuestionStatus.ACTIVE
                         select new QuestionModel
                         {
                             Id = quest.Id,
@@ -126,8 +126,6 @@ namespace Reboost.DataAccess.Repositories
                              Like = all.Like,
                              Status = allComp.Status != null ? allComp.Status : allSave.Status != null ? allSave.Status : all.Status
                          };
-
-
 
             return await result.ToListAsync();
         }

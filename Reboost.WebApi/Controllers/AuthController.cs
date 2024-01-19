@@ -75,7 +75,6 @@ namespace Reboost.WebApi.Controllers
         {
             var props = new AuthenticationProperties
             {
-
                 RedirectUri = Url.Action(nameof(Callback)),
                 Items =
                     {
@@ -107,6 +106,8 @@ namespace Reboost.WebApi.Controllers
                 HttpContext.Response.Cookies.Append("userId", response.user.Id, new CookieOptions { IsEssential = true });
                 HttpContext.Response.Cookies.Append("username", response.user.Username, new CookieOptions { IsEssential = true });
                 HttpContext.Response.Cookies.Append("email", response.user.Email, new CookieOptions { IsEssential = true });
+                HttpContext.Response.Cookies.Append("firstName", response.user.FirstName, new CookieOptions { IsEssential = true });
+                HttpContext.Response.Cookies.Append("lastName", response.user.LastName, new CookieOptions { IsEssential = true });
                 HttpContext.Response.Cookies.Append("role", response.user.Role, new CookieOptions { IsEssential = true });
                 HttpContext.Response.Cookies.Append("token", response.Message, new CookieOptions { IsEssential = true });
                 HttpContext.Response.Cookies.Append("expireDate", response.user.ExpireDate.ToString(), new CookieOptions { IsEssential = true });
@@ -118,6 +119,7 @@ namespace Reboost.WebApi.Controllers
                 }
                 else if (Url.IsLocalUrl(returnUrl))
                 {
+                    //return Redirect("http://localhost:3011/");
                     return Redirect(returnUrl);
                 }
                 else
@@ -132,7 +134,6 @@ namespace Reboost.WebApi.Controllers
                 HttpContext.Response.Cookies.Append("auth_error", "Unable to login");
                 return Redirect("/auth/error");
             }
-           
         }
 
         [HttpGet("external/user")]

@@ -71,9 +71,9 @@ export const PageName = {
 }
 
 export const UserRole = {
-  ADMIN: 'Admin',
-  LEARNER: 'Learner',
-  RATER: 'Rater'
+  ADMIN: 'admin',
+  LEARNER: 'learner',
+  RATER: 'rater'
 }
 
 export const SubmissionStatus = {

@@ -9,7 +9,9 @@ const state = {
     email: null,
     role: null,
     token: null,
-    expireDate: null
+    expireDate: null,
+    firstName: null,
+    lastName: null
   },
   selectedTest: []
 }

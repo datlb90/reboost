@@ -1477,6 +1477,29 @@
     <Content Remove="wwwroot\img\Topics.9600b40d.png" />
     <Content Remove="wwwroot\img\Practice 1.d2495b69.png" />
     <Content Remove="wwwroot\img\AI Rater 3.691c0843.jpeg" />
+    <Content Remove="wwwroot\img\avatar-large.77904896.svg" />
+    <Content Remove="wwwroot\img\gu.d4375e9d.svg" />
+    <Content Remove="wwwroot\img\gw.f0742332.svg" />
+    <Content Remove="wwwroot\img\gt.4eea9e03.svg" />
+    <Content Remove="wwwroot\img\gu.beb28cdd.svg" />
+    <Content Remove="wwwroot\img\gu.d4375e9d.svg" />
+    <Content Remove="wwwroot\img\gu.beb28cdd.svg" />
+    <Content Remove="wwwroot\img\gw.f0742332.svg" />
+    <Content Remove="wwwroot\img\gt.4eea9e03.svg" />
+    <Content Remove="wwwroot\img\gs.21f7c99f.svg" />
+    <Content Remove="wwwroot\img\gr.334890b6.svg" />
+    <Content Remove="wwwroot\img\gq.c095a0d4.svg" />
+    <Content Remove="wwwroot\img\gq.88946f8a.svg" />
+    <Content Remove="wwwroot\img\gp.8fc39c39.svg" />
+    <Content Remove="wwwroot\img\gp.0dcdf966.svg" />
+    <Content Remove="wwwroot\img\gn.0798100e.svg" />
+    <Content Remove="wwwroot\img\es.361eda2a.svg" />
+    <Content Remove="wwwroot\img\eh.780a0a9e.svg" />
+    <Content Remove="wwwroot\img\er.b4ea80f7.svg" />
+    <Content Remove="wwwroot\img\eh.44d97903.svg" />
+    <Content Remove="wwwroot\img\ee.9b43910c.svg" />
+    <Content Remove="wwwroot\img\eg.4137f108.svg" />
+    <Content Remove="wwwroot\img\ec.3bafd071.svg" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 </Project>

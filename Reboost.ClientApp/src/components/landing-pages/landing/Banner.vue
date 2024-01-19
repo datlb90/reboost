@@ -45,7 +45,7 @@
 
               <div style="padding-bottom: 40px;">
                 <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
-                  <el-button type="primary" :disabled="true" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
                     Facebook
                   </el-button>
                 </form>
@@ -109,27 +109,21 @@ export default {
     }
   },
   async created() {
-    // console.log(encodeURIComponent(this.returnUrl))
-    // this.googleFormAction = 'api/auth/external/google/Learner/' // + encodeURIComponent(this.returnUrl)
-    // this.facebookFormAction = 'api/auth/external/facebook/Learner/' // + encodeURIComponent(this.returnUrl)
-
     if (this.$router.currentRoute.query?.returnUrl) {
-      this.googleFormAction = 'api/auth/external/google/Learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
-      this.facebookFormAction = 'api/auth/external/facebook/Learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
+      this.googleFormAction = 'api/auth/external/google/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
+      this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
     } else {
-      this.googleFormAction = 'api/auth/external/google/Learner?returnUrl=/'
-      this.facebookFormAction = 'api/auth/external/facebook/Learner?returnUrl=/'
+      this.googleFormAction = 'api/auth/external/google/learner?returnUrl=/'
+      this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=/'
     }
   },
   methods: {
     ...mapActions('auth', ['login']),
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
-      // authService.loginFacebook(encodeURIComponent(this.returnUrl)).then(rs => { console.log('login facebook', rs) })
     },
     submitGoogleLoginForm() {
       this.$refs.googleLoginForm.submit()
-      // authService.loginGoogle(encodeURIComponent(this.returnUrl))
     },
     async signIn() {
       this.loading = true
@@ -139,10 +133,7 @@ export default {
         Password: this.password
       })
       if (user) {
-        // this.$router.push({ name: PageName.AFTER_LOGIN })
-        this.$store.dispatch('auth/setSelectedTest').then(rs => {
-          this.$router.push({ name: PageName.AFTER_LOGIN }).catch(() => {})
-        })
+        this.$router.push({ name: PageName.AFTER_LOGIN }).catch(() => {})
       }
     }
   }
