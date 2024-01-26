@@ -115,7 +115,7 @@
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Idea" name="idea" style="height: 100%; position: relative;">
+          <el-tab-pane label="Help" name="help" style="height: 100%; position: relative;">
             <div class="par-content">
               <div v-if="getTip != ''">
                 <el-card class="box-card" style="font-size: 14px; padding: 20px;">
@@ -304,6 +304,7 @@
         :visible="checkoutVisible"
         :submission-id="+submissionId"
         :question-id="+questionId"
+        :unrated-count="unRatedList.length"
         @proReviewRequested="isProRequested=true"
         @closed="checkoutVisible=false"
       />
@@ -335,7 +336,6 @@ import {
   Pane
 } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
-import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 import moment from 'moment-timezone'
 export default {
   name: 'PracticeWriting',
@@ -688,64 +688,87 @@ export default {
       // this.isEdit = true // Edit button should not be visible after submitting?
 
       if (this.submissionId) {
-        data.status = this.unRatedList.length > 0 ? 'Pending' : 'Submitted'
+        // data.status = this.unRatedList.length > 0 ? 'Pending' : 'Submitted'
+        data.status = 'Submitted'
         documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
-            if (this.unRatedList.length > 0) {
-              this.$notify.warning({
-                title: 'Warning',
-                dangerouslyUseHTMLString: true,
-                message: `<p>Your submission is currently pending because you have unrated reviews. The submission will be automatically submitted after all of the unrated reviews are rated. You can find them in the <a href='/submissions'>Submissions page</a></p>`,
-                type: 'warning',
-                duration: 0
-              })
-            } else {
-              this.$notify.success({
-                title: 'Success',
-                message: 'Your writing has been successfully submitted!',
-                type: 'success',
-                duration: 3000
-              })
-            }
+            // if (this.unRatedList.length > 0) {
+            //   this.$notify.warning({
+            //     title: 'Warning',
+            //     dangerouslyUseHTMLString: true,
+            //     message: `<p>Your submission is currently pending because you have unrated reviews. The submission will be automatically submitted after all of the unrated reviews are rated. You can find them in the <a href='/submissions'>Submissions page</a></p>`,
+            //     type: 'warning',
+            //     duration: 0
+            //   })
+            // } else {
+            //   this.$notify.success({
+            //     title: 'Success',
+            //     message: 'Your writing has been successfully submitted!',
+            //     type: 'success',
+            //     duration: 3000
+            //   })
+            // }
+            this.$notify.success({
+              title: 'Success',
+              message: 'Your writing has been successfully submitted!',
+              type: 'success',
+              duration: 3000
+            })
             this.writingSubmitted = true
             this.checkoutVisible = true
           }
         })
       } else {
-        if (this.unRatedList.length > 0) {
-          data.status = 'Pending'
-          documentService.submitPendingDocument(data).then(rs => {
-            if (rs) {
-              this.$notify.warning({
-                title: 'Warning',
-                dangerouslyUseHTMLString: true,
-                message: `<p>Your submission is currently pending because you have unrated reviews. The submission will be automatically submitted after all of the unrated reviews are rated. You can find them in the <a href='/submissions'>Submissions page</a></p>`,
-                type: 'warning',
-                duration: 0
-              })
-              this.hasSubmitionForThisQuestion = true
-              this.submissionId = rs.submissions[0]?.id
-              this.writingSubmitted = true
-              this.checkoutVisible = true
-            }
-          })
-        } else {
-          data.status = 'Submitted'
-          documentService.submitDocument(data).then(rs => {
-            if (rs) {
-              this.$notify.success({
-                title: 'Success',
-                message: 'Your writing has been successfully submitted!',
-                type: 'success',
-                duration: 3000
-              })
-              this.hasSubmitionForThisQuestion = true
-              this.submissionId = rs.submissions[0]?.id
-              this.writingSubmitted = true
-              this.checkoutVisible = true
-            }
-          })
-        }
+        data.status = 'Submitted'
+        documentService.submitDocument(data).then(rs => {
+          if (rs) {
+            this.$notify.success({
+              title: 'Success',
+              message: 'Your writing has been successfully submitted!',
+              type: 'success',
+              duration: 3000
+            })
+            this.hasSubmitionForThisQuestion = true
+            this.submissionId = rs.submissions[0]?.id
+            this.writingSubmitted = true
+            this.checkoutVisible = true
+          }
+        })
+
+        // if (this.unRatedList.length > 0) {
+        //   data.status = 'Pending'
+        //   documentService.submitPendingDocument(data).then(rs => {
+        //     if (rs) {
+        //       this.$notify.warning({
+        //         title: 'Warning',
+        //         dangerouslyUseHTMLString: true,
+        //         message: `<p>Your submission is currently pending because you have unrated reviews. The submission will be automatically submitted after all of the unrated reviews are rated. You can find them in the <a href='/submissions'>Submissions page</a></p>`,
+        //         type: 'warning',
+        //         duration: 0
+        //       })
+        //       this.hasSubmitionForThisQuestion = true
+        //       this.submissionId = rs.submissions[0]?.id
+        //       this.writingSubmitted = true
+        //       this.checkoutVisible = true
+        //     }
+        //   })
+        // } else {
+        //   data.status = 'Submitted'
+        //   documentService.submitDocument(data).then(rs => {
+        //     if (rs) {
+        //       this.$notify.success({
+        //         title: 'Success',
+        //         message: 'Your writing has been successfully submitted!',
+        //         type: 'success',
+        //         duration: 3000
+        //       })
+        //       this.hasSubmitionForThisQuestion = true
+        //       this.submissionId = rs.submissions[0]?.id
+        //       this.writingSubmitted = true
+        //       this.checkoutVisible = true
+        //     }
+        //   })
+        // }
       }
     },
     toggleBtnShowTab() {
@@ -831,42 +854,8 @@ export default {
         this.tabDisCussionShowed = false
       }
     },
-    checkoutVisibles(e) {
-      if (e == 'checkout') {
-        this.checkoutVisible = true
-      } else if (e == 'free') {
-        this.createReview()
-      }
-    },
     logSmt(e) {
       console.log(e)
-    },
-    createReview() {
-      if (this.unRatedList.length > 0) {
-        this.$notify.error({
-          title: 'Unrated Reviews',
-          message: 'Please rate all of your unrated reviews before requesting for a free peer review',
-          type: 'error',
-          duration: 0
-        })
-      } else {
-        reviewService.createReviewRequest({
-          UserId: this.currentUser.id,
-          SubmissionId: this.submissionId,
-          FeedbackType: 'Free',
-          Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
-        }).then(rs => {
-          if (rs) {
-            this.$notify.success({
-              title: 'Submission Requested',
-              message: 'Requested!',
-              duration: 1500
-            })
-            this.isFreeRequested = true
-          }
-          console.log('requested', rs)
-        })
-      }
     },
     startTest() {
       // const time = +this.getDataQuestion.time.slice(0, 2)
@@ -1038,6 +1027,7 @@ export default {
 }
 
 .header-passage {
+  height: 40px;
   font-size: 13px;
   background-color: #f5f7fa;
   border: 1px solid #e2e2e2;

@@ -62,7 +62,6 @@ namespace Reboost.WebApi
                 //                  });
                 //});
             }
-            
 
             // Configure Entityframecore with SQL SErver
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -119,8 +118,8 @@ namespace Reboost.WebApi
             services.AddAuthentication()
                 .AddFacebook("facebook", opt => {
                     var facebookAuth = Configuration.GetSection("Authentication:Facebook");
-                    if (_currentEnvironment.IsDevelopment())
-                        facebookAuth = Configuration.GetSection("Authentication:FacebookDev");
+                    //if (_currentEnvironment.IsDevelopment())
+                    //    facebookAuth = Configuration.GetSection("Authentication:FacebookDev");
                     opt.AppId = facebookAuth["AppId"];
                     opt.AppSecret = facebookAuth["AppSecret"];
                     opt.SignInScheme = IdentityConstants.ExternalScheme;
@@ -182,8 +181,8 @@ namespace Reboost.WebApi
             }
 
             // Add Hangfire
-            app.UseHangfireDashboard();
-            app.UseHangfireServer();
+            //app.UseHangfireDashboard();
+            //app.UseHangfireServer();
 
             app.UseGlobalExceptionHandler();
 

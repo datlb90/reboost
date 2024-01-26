@@ -10,7 +10,6 @@
   >
     <div slot="title">
       <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Get Writing Feedback & Score</div>
-      <!-- <div class="divider--horizontal divider" /> -->
     </div>
     <div class="dialog-body">
       <div style="padding: 20px; padding-top: 5px;">
@@ -31,7 +30,6 @@
             <div class="review-price">$15</div>
           </div>
         </div>
-
         <div v-if="selectedReview == '' || selectedReview == 'ai'" id="ai-review-card" class="box-card review-card" @click="onReviewSelect('ai')">
           <div>
             <div class="review-icon-wrapper"><i class="fas fa-robot review-icon" /></div>
@@ -42,6 +40,17 @@
               </div>
             </div>
             <div class="review-price">$2</div>
+          </div>
+        </div>
+
+        <div v-if="selectedReview == 'peer'">
+          <div style="padding-top: 20px; text-align: center;">
+            <el-alert
+              v-if="unratedCount > 0"
+              title="Please review all feedback before requesting for a free peer review"
+              type="error"
+              :closable="false"
+            />
           </div>
         </div>
 
@@ -58,35 +67,22 @@
           </div>
         </div>
       </div>
-
       <div v-if="selectedReview == 'peer'">
-        <!-- <div class="tip" style="margin: 20px;">
-          <span style="font-size: 15px; color: #6084a4;">We will notify you when the feedback is available</span>
-        </div> -->
         <div style="padding-top: 10px; text-align: center;">
-          <!-- <span style="font-weight: 600;"> Select Payment Method</span> -->
-          <el-button type="primary" @click="requestPeerReview()">Confirm Selection</el-button>
+          <el-button type="primary" :disabled="unratedCount > 0" @click="requestPeerReview()">Confirm Selection</el-button>
         </div>
       </div>
-
-      <!-- <div class="co-header">
-        <img style="width: 50px; height: 40px; margin-bottom: 2px; margin-left: 18px;" src="@/assets/img/checkout-icon-premium.png" alt="">
-        <div class="title-container">
-          <span>Writing Review Service</span>
-          <span class="title-price">${{ total }}.00</span>
-        </div>
-      </div>
-
-      <div style="padding: 2px 20px;">
-        <span style="font-size: 12px; color: grey;">A certified rater will review your writing and provide feedback within 24 hours</span>
-      </div> -->
       <div v-show="selectedReview == 'pro' || selectedReview == 'ai'" class="co-form" :class="{ active: activeStep == 1 }">
         <div class="co-form__section" :class="{ inactive: activeStep == 2 }">
           <div class="co-form__title" style="padding-top: 10px">
-            <!-- <span style="font-weight: 600;"> Select Payment Method</span> -->
             <el-button v-if="activeStep == 2" style="position: absolute;right: 1rem;" size="mini" type="primary" @click="editCheckOutInfo">Edit</el-button>
           </div>
-          <div v-if="!paid" id="paypal-button-container" />
+          <!-- <div class="pay-button-container">
+            <el-button type="danger" style="width: 100%; color: #006BC2; font-size: 18px; padding: 15px;" @click="submitVNPayRequest()">
+              Pay with VNPay
+            </el-button>
+          </div> -->
+          <div v-if="!paid" id="paypal-button-container" class="pay-button-container" />
         </div>
         <div v-if="activeStep == 1" class="saperator" />
       </div>
@@ -94,31 +90,19 @@
     </div>
     <div slot="footer" class="dialog-footer" />
   </el-dialog>
-
 </template>
 
-<!-- <script src="https://www.paypal.com/sdk/js?client-id=Aa5nScHY-XCvNuR8KYRHA4BySu_7-91JTnBfvZ0vj9Zto8107b40nHn8-vGADPJBx5XAJS_IHL_WWK3I"></script> -->
-
 <script>
-// const PayPalButton = window.paypal.Buttons.driver('vue', window.Vue)
-// @ is an alias to /src
-// import http from '@/utils/axios'
-// import { loadStripe } from '@stripe/stripe-js'
+
 import { loadScript } from '@paypal/paypal-js'
 import paymentService from '../../services/payment.service'
-import { REVIEW_REQUEST_STATUS, SUBSCRIPTION_PLANS } from '../../app.constant'
+import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 import reviewService from '../../services/review.service'
-import moment from 'moment-timezone'
-// import { openPayment } from '../../assets/epay/js/paymentClient'
-// import { configs } from '../../app.constant'
+
 export default {
   name: 'Checkout',
-  // components: {
-  //   'paypal-buttons': PayPalButton
-  // },
   props: {
     visible: { type: Boolean, default: true },
-    subcribe: { type: Object, default: null },
     submissionId: { type: Number, default: null },
     questionId: { type: Number, default: null },
     unratedCount: { type: Number, default: 0 }
@@ -126,12 +110,6 @@ export default {
   data() {
     return {
       dlVisible: false,
-      value: '0',
-      firstName: '',
-      lastName: '',
-      email: null,
-      credit: '**** **** **** 1234',
-      promotionCode: '',
       activeStep: 1,
       card: null,
       stripe: null,
@@ -141,7 +119,6 @@ export default {
       selectedMethod: null,
       amount: 15.00,
       paymentIntent: null,
-      total: null,
       epaySelected: false,
       paid: false,
       selectedReview: '',
@@ -152,9 +129,6 @@ export default {
     currentUser() {
       return this.$store.getters['auth/getUser']
     },
-    currentMethods() {
-      return this.$store.getters['payment/getAllPaymentMethods']
-    },
     currentPrices() {
       return this.$store.getters['payment/getAllPrices']
     }
@@ -163,15 +137,6 @@ export default {
   watch: {
     visible: function(newVal, oldVal) {
       this.dlVisible = newVal
-    },
-    currentMethods: function(val) {
-      if (!val || val.length == 0) {
-        this.changeMethod('0')
-      } else {
-        console.log('CURRENT MENOTH CHANGED', val[0].id)
-        this.changeMethod(val[0].id)
-        this.value = val[0].id
-      }
     }
   },
   async mounted() {
@@ -180,32 +145,25 @@ export default {
   async created() {
   },
   methods: {
-    goBack() {
-      this.selectedReview = ''
-    },
-    onReviewSelect(reviewType) {
-      if (reviewType === 'pro') {
-        this.amount = 15.00
-        this.selectedReview = reviewType
-      } else if (reviewType === 'ai') {
-        this.amount = 2.00
-        this.selectedReview = reviewType
-      } else {
-        if (this.unratedCount > 0) {
-          this.$notify.error({
-            title: 'Unrated Reviews',
-            message: 'Please rate all of your unrated reviews before requesting a free peer review',
-            type: 'error',
-            duration: 2000
-          })
-        } else {
-          this.amount = 0.00
-          this.selectedReview = reviewType
-        }
+    submitVNPayRequest() {
+      const model = {
+        submmissionId: this.submissionId,
+        amount: this.amount
       }
+      paymentService.submitVNPayRequest(model)
+    },
+    async dialogOpened() {
+      // Load paypal button
+      loadScript({ 'client-id': 'Aa5nScHY-XCvNuR8KYRHA4BySu_7-91JTnBfvZ0vj9Zto8107b40nHn8-vGADPJBx5XAJS_IHL_WWK3I' }).then((paypal) => {
+        paypal
+          .Buttons({
+            createOrder: this.createOrder,
+            onApprove: this.onApprove
+          })
+          .render('#paypal-button-container')
+      })
     },
     createOrder: function(data, actions) {
-      console.log('Creating order...')
       return actions.order.create({
         purchase_units: [
           {
@@ -217,7 +175,6 @@ export default {
       })
     },
     onApprove: function(data, actions) {
-      console.log('Order approved...')
       return actions.order.capture().then(order => {
         console.log(order)
         const purchaseUnits = order.purchase_units
@@ -231,20 +188,20 @@ export default {
         }
       })
     },
-    async dialogOpened() {
-      if (this.subcribe) {
-        this.amount = this.subcribe.price
+    goBack() {
+      this.selectedReview = ''
+    },
+    onReviewSelect(reviewType) {
+      if (reviewType === 'pro') {
+        this.amount = 15.00
+        this.selectedReview = reviewType
+      } else if (reviewType === 'ai') {
+        this.amount = 2.00
+        this.selectedReview = reviewType
+      } else {
+        this.amount = 0.00
+        this.selectedReview = reviewType
       }
-      this.total = this.amount
-
-      loadScript({ 'client-id': 'Aa5nScHY-XCvNuR8KYRHA4BySu_7-91JTnBfvZ0vj9Zto8107b40nHn8-vGADPJBx5XAJS_IHL_WWK3I' }).then((paypal) => {
-        paypal
-          .Buttons({
-            createOrder: this.createOrder,
-            onApprove: this.onApprove
-          })
-          .render('#paypal-button-container')
-      })
     },
     handleClose(done) {
       this.$confirm('Are you sure to exit?')
@@ -255,262 +212,11 @@ export default {
         })
         .catch(_ => {})
     },
-    checkoutVisibles(e) {
-      if (e == 'checkout') {
-        this.checkoutVisible = true
-      }
-    },
-    nextStep() {
-      if (this.newMethod) {
-        this.stripe.createPaymentMethod({
-          type: 'card',
-          card: this.card,
-          billing_details: {
-            name: this.firstName + ' ' + this.lastName
-          }
-        })
-          .then(rs => {
-            console.log('create payment method result', rs)
-            this.selectedMethod = rs.paymentMethod
-            this.lastName = this.selectedMethod.billing_details.name
-            this.credit = '**** **** **** ' + this.selectedMethod.card.last4
-            this.activeStep = this.activeStep == 1 ? 2 : 1
-          })
-      } else {
-        this.activeStep = this.activeStep == 1 ? 2 : 1
-      }
-    },
-    completeCheckout() {
-      // var paymentMethod = null
-      if (this.newMethod) {
-        // paymentMethod = {
-        //   card: this.card,
-        //   billing_details: {
-        //     name: this.firstName + ' ' + this.lastName
-        //   }
-        // }
-        // this.stripe.createPaymentMethod({
-        //   type: 'card',
-        //   card: this.card,
-        //   billing_details: {
-        //     name: this.firstName + ' ' + this.lastName
-        //   }
-        // })
-        //   .then(result => {
-
-        //   })
-
-        // console.log('create payment method result', result)
-        paymentService.attachMethod(this.selectedMethod.id).then(rs => {
-          // paymentMethod = rs.id
-          console.log('attach pm result', rs)
-          this.selectedMethod = rs
-
-          if (this.subcribe == null) {
-            this.confirmPayment(this.selectedMethod.id)
-          } else {
-            this.$emit('subscribed', this.selectedMethod)
-          }
-        })
-      } else {
-        // paymentMethod = this.selectedMethod.id
-        if (this.subcribe == null) {
-          this.confirmPayment(this.selectedMethod.id)
-          this.clearSection()
-        } else {
-          this.$emit('subscribed', this.selectedMethod)
-          this.clearSection()
-        }
-      }
-    },
-    confirmPayment(paymentMethod) {
-      this.stripe.confirmCardPayment(this.clientSecret, {
-        payment_method: paymentMethod
-      })
-        .then((result) => {
-          if (result.error) {
-            console.error(result)
-            this.$notify.error({
-              title: 'Error',
-              message: result.error.message,
-              type: 'error',
-              duration: 5000
-            })
-          } else {
-            // The payment succeeded!
-            paymentService.insertPayment({
-              UserId: this.currentUser.id,
-              PaymentId: result.paymentIntent.id,
-              Description: result.paymentIntent.description ? result.paymentIntent.description : 'No Description',
-              Amount: 35,
-              Currency: result.paymentIntent.currency,
-              Status: result.paymentIntent.status,
-              PaymentDate: moment().format('YYYY-MM-DD') })
-            this.clearSection()
-          }
-        })
-    },
-    clearSection() {
-      this.firstName = ''
-      this.lastName = ''
-      this.credit = '**** **** **** 1234'
-      this.promotionCode = ''
-      this.activeStep = 1
-      this.card = null
-      this.stripe = null
-      this.clientSecret = null
-      this.newMethod = false
-      this.selectedMethod = null
-    },
     dialogClosed() {
       this.$emit('closed')
     },
     editCheckOutInfo() {
       this.activeStep = this.activeStep == 2 ? 1 : 2
-    },
-    changeMethod(e) {
-      if (+e == 0) {
-        this.newMethod = true
-        this.checkoutDisable = true
-        this.selectedMethod = null
-      } else {
-        this.newMethod = false
-        this.checkoutDisable = false
-        this.selectedMethod = this.currentMethods.find(m => m.id == e)
-        this.lastName = this.selectedMethod.billing_details.name
-        this.credit = '**** **** **** ' + this.selectedMethod.card.last4
-      }
-    },
-    loadPaypalBtn() {
-      console.log(window.paypal)
-      if (document.getElementById('paypal-button') && !document.getElementById('paypal-button').childNodes.length > 0) {
-        if (!this.subcribe) {
-          window.paypal.Button.render({
-            // Configure environment
-            env: 'sandbox',
-            client: {
-              sandbox: 'Aa5nScHY-XCvNuR8KYRHA4BySu_7-91JTnBfvZ0vj9Zto8107b40nHn8-vGADPJBx5XAJS_IHL_WWK3I',
-              production: 'demo_production_client_id'
-            },
-            // Customize button (optional)
-            locale: 'en_US',
-            style: {
-              shape: 'pill',
-              color: 'gold',
-              layout: 'horizontal',
-              label: 'paypal',
-              tagline: false
-            },
-
-            // Enable Pay Now checkout flow (optional)
-            commit: true,
-
-            // Set up a payment
-            payment: function(data, actions) {
-              return actions.payment.create({
-                transactions: [{
-                  amount: {
-                    total: '90.50',
-                    currency: 'USD'
-                  }
-                }]
-              })
-            },
-            // Execute the payment
-            onAuthorize: e => {
-              this.createPaymentHistory(e.paymentID)
-              this.paymentSuccessed()
-            }
-          }, '#paypal-button')
-        }
-      }
-      if (SUBSCRIPTION_PLANS.filter(r => r.name === this.subcribe?.name).length > 0) {
-        const btnExisted = document.getElementById('paypal-subscribe-button-container')
-
-        if (btnExisted.childNodes.length > 0) {
-          btnExisted.childNodes.forEach(e => {
-            e.remove()
-          })
-        }
-
-        setTimeout(() => {
-          if (this.subcribe.id === 1) {
-            this.createYearSubcribePaypalBtn()
-          } else {
-            this.createMonthSubcribePaypalBtn()
-          }
-        }, 50)
-      }
-    },
-    createYearSubcribePaypalBtn() {
-      window.paypal_sdk.Buttons({
-        style: {
-          shape: 'pill',
-          color: 'gold',
-          layout: 'horizontal',
-          label: 'subscribe'
-        },
-
-        createSubscription: function(data, actions) {
-          return actions.subscription.create({
-            // Pass a const to plan_id, can not use variable
-            'plan_id': 'P-6N9586386D9350704MFFTCIQ'
-          })
-        },
-
-        onApprove: (data, actions) => {
-          this.subscribed(data)
-        }
-      }).render('#paypal-subscribe-button-container')
-    },
-    createMonthSubcribePaypalBtn() {
-      window.paypal_sdk.Buttons({
-        style: {
-          shape: 'pill',
-          color: 'gold',
-          layout: 'horizontal',
-          label: 'subscribe'
-        },
-
-        createSubscription: function(data, actions) {
-          return actions.subscription.create({
-            // Pass a const to plan_id, can not use variable
-            'plan_id': 'P-2XC42867D76575918MFFP53Q'
-          })
-        },
-
-        onApprove: (data, actions) => {
-          this.subscribed(data)
-        }
-      }).render('#paypal-subscribe-button-container')
-    },
-    subscribed(data) {
-      if (this.subcribe.name === 'month') {
-        const postData = {
-          MonthSubs: data.subscriptionID
-        }
-        paymentService.createUpdateLearnerSubscriptions(postData).then(rs => {
-          this.$notify.success({
-            title: 'Subcribe Successed!',
-            message: 'Successed!',
-            type: 'success',
-            duration: 1500
-          })
-        })
-      }
-      if (this.subcribe.name === 'year') {
-        const postData = {
-          YearSubs: data.subscriptionID
-        }
-        paymentService.createUpdateLearnerSubscriptions(postData).then(rs => {
-          this.$notify.success({
-            title: 'Subcribe Successed!',
-            message: 'Successed!',
-            type: 'success',
-            duration: 1500
-          })
-        })
-      }
     },
     paymentSuccessed() {
       if (this.selectedReview == 'pro') {
@@ -537,21 +243,23 @@ export default {
       })
     },
     requestPeerReview() {
-      reviewService.createReviewRequest({
-        UserId: this.currentUser.id,
-        SubmissionId: +this.submissionId,
-        FeedbackType: 'Free',
-        Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
-      }).then(rs => {
-        this.dialogClosed()
-        this.$notify.success({
-          title: 'Peer Review Request',
-          message: 'The peer review request has been successfully submitted!',
-          type: 'success',
-          duration: 1500
+      if (this.unratedCount == 0) {
+        reviewService.createReviewRequest({
+          UserId: this.currentUser.id,
+          SubmissionId: +this.submissionId,
+          FeedbackType: 'Free',
+          Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
+        }).then(rs => {
+          this.dialogClosed()
+          this.$notify.success({
+            title: 'Peer Review Request',
+            message: 'The peer review request has been successfully submitted!',
+            type: 'success',
+            duration: 1500
+          })
+          this.$emit('reviewRequested')
         })
-        this.$emit('reviewRequested')
-      })
+      }
     },
     requestAutomatedReview() {
       const loading = this.$loading({
@@ -652,7 +360,7 @@ export default {
   margin-top: 5px;
 }
 
-#paypal-button-container{
+.pay-button-container{
   width: 90%;
   margin: auto;
   overflow: auto;

@@ -1,8 +1,13 @@
 <template>
   <!-- Start Footer Area -->
-  <footer class="footer-area bg-f7fafd">
-    <div class="container">
-      <div class="row">
+  <footer
+    class="bg-f7fafd"
+    style="border-top: 1px solid #d8ebfd; text-align: center; padding-top: 14px;
+    padding-bottom: 1px;"
+  >
+    <p>Copyright &copy; 2024 Reboost. All Rights Reserved</p>
+    <!-- <div class="container">
+      <div>
         <div class="col-lg-3 col-md-6 col-sm-6">
           <div class="single-footer-widget">
             <div class="logo">
@@ -49,7 +54,6 @@
             </ul>
           </div>
         </div>
-
         <div class="col-lg-3 col-md-6 col-sm-6">
           <div class="single-footer-widget">
             <h3>Address</h3>
@@ -67,20 +71,18 @@
             </ul>
           </div>
         </div>
-
-        <div class="col-lg-12 col-md-12">
+        <div>
           <div class="copyright-area">
             <p>Copyright &copy; 2024 Reboost. All Rights Reserved</p>
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
-    <img src="../../assets/img/map.png" class="map" alt="map">
+    <!-- <img src="../../assets/img/map.png" class="map" alt="map"> -->
     <div class="shape1"><img src="../../assets/img/shape1.png" alt="shape"></div>
     <div class="shape8 rotateme"><img src="../../assets/img/shape2.svg" alt="shape"></div>
     <!-- <div class="go-top"><feather type="arrow-up"></feather></div> -->
-
     <back-to-top bottom="50px" right="50px">
       <div class="go-top"><feather type="arrow-up" /></div>
     </back-to-top>

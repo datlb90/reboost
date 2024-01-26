@@ -1,5 +1,5 @@
 export const ContactDialog = {
-  title: 'Contact Support',
+  title: 'Customer Support Request',
   fullName: 'Full Name',
   email: 'Email Address',
   reason: 'Reason',

@@ -10,7 +10,7 @@ namespace Reboost.Service.Services
 {
     public interface IUserService
     {
-        Task<ContactRequestModel> SendSupportEmail(string userName, ContactRequestModel model);
+        Task<ContactRequestModel> SendSupportEmail(ContactRequestModel model);
         Task<List<User>> GetAllAsync();
         Task<User> GetByIdAsync(string id);
         Task<User> GetByEmailAsync(string email);
@@ -28,7 +28,7 @@ namespace Reboost.Service.Services
         {
             mailService = _mailService;
         }
-        public async Task<ContactRequestModel> SendSupportEmail(string userName, ContactRequestModel model)
+        public async Task<ContactRequestModel> SendSupportEmail(ContactRequestModel model)
         {
             List<string> listPaths = new List<string>();
 
@@ -36,7 +36,7 @@ namespace Reboost.Service.Services
             {
                 foreach (var item in model.UploadedFiles)
                 {
-                    // File size must not exceed 5MB
+                    // File size must not exceed 3MB
                     if (item.Length > 3000000)
                     {
                         return null;
@@ -45,13 +45,13 @@ namespace Reboost.Service.Services
             }
             string subject = "Reboost Customer Support Ticket";
 
-            var content = $"<h1>Thank you for contacting us!</h1>" +
+            var content = $"<p>Hi " + model.Fullname + ",</p>" +
+                            $"<p>Thank you for contacting us!</p>" +
                             $"<p>We will respond as soon as we can with the following query:</p>" +
-                            $"<p><strong>Customer name: </strong>" + model.Fullname + "/<p>" +
-                            $"<p><strong>Email address: </strong> " + model.Email + "/<p>" +
-                            $"<p><strong>Reason: </strong>" + model.Reason + "/<p>" +
+                            $"<p><strong>Reason: </strong>" + model.Reason + "</p>" +
                             $"<p><strong>Message: </strong>" + model.Message + "</p>" +
-                            $"<p>Sincerely,</p><p>The Reboost Support Team</p>";
+                            $"<p>Please reply to this email directly if you want to add any additional information.</p>" +
+                            $"<p>Sincerely,</p><p>Reboost Support Team</p>";
 
             await mailService.SendSupportEmail(model.Email, model.Fullname, subject, content, model.UploadedFiles);
 

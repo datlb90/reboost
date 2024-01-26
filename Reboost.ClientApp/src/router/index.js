@@ -9,7 +9,6 @@ import Test from '../views/Test.vue'
 import RaterApply from '../views/rater/Application.vue'
 import Login from '../views/account/Login.vue'
 import Logout from '../views/account/Logout.vue'
-
 import Register from '../views/account/Register.vue'
 import RaterRegister from '../views/account/RaterRegister.vue'
 import Redirect from '../views/account/Redirect.vue'
@@ -438,7 +437,6 @@ const router = new VueRouter({
         role: UserRole.RATER
       }
     },
-
     {
 
       path: '/paymentInfo',

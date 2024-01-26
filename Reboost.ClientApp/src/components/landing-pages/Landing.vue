@@ -3,14 +3,12 @@
     <Banner />
     <BoxesArea />
     <HowItWorks2 />
-    <WhyChooseUs />
     <Funfacts />
     <FeaturesArea />
     <Features />
     <UnlimitedTopics />
     <ProRater />
     <Matching />
-
   </div>
 </template>
 
@@ -25,7 +23,6 @@ import HowItWorks2 from './landing/HowItWorks2'
 import Funfacts from './landing/Funfacts'
 import ProRater from './landing/ProRater'
 // import WhyChooseUs from './landing/WhyChooseUs'
-
 // import Blog from './landing/Blog'
 // import Feedback from './landing/Feedback'
 // import FAQ from './landing/FAQ'
@@ -52,14 +49,18 @@ export default {
     $('.navbar').find('a').click(function() {
       var $href = $(this).attr('href')
       var $anchor = $('#' + $href).offset()
-      window.scrollTo($anchor.left, $anchor.top)
+      if ($anchor) {
+        window.scrollTo($anchor.left, $anchor.top - 20)
+      }
       return false
     })
 
     $('ul.nav').find('a').click(function() {
       var $href = $(this).attr('href')
       var $anchor = $('#' + $href).offset()
-      window.scrollTo($anchor.left, $anchor.top)
+      if ($anchor) {
+        window.scrollTo($anchor.left, $anchor.top - 20)
+      }
       return false
     })
 

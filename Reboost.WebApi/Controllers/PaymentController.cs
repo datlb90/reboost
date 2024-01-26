@@ -9,6 +9,8 @@ using Stripe;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Reboost.Shared;
+
 
 namespace Reboost.WebApi.Controllers
 {
@@ -25,6 +27,14 @@ namespace Reboost.WebApi.Controllers
             _mapper = mapper;
             _userService = userService;
             _stripeService = stripeService;
+        }
+
+        [HttpPost("vnpay/request")]
+        public IActionResult RedirectToVNPay(VNPayRequestModel model)
+        {
+            model.ipAddress = "35.142.187.143"; // Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            string vnpUrl =  _service.GetVNPayUrl(model);
+            return Redirect(vnpUrl);
         }
         
         private async Task<string> GetCustomerId()

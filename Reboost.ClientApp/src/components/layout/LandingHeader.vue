@@ -1,7 +1,7 @@
 <template>
   <!-- Start Navbar Area -->
   <header id="header" :class="['headroom', {'is-sticky': isSticky}]">
-    <div class="startp-nav">
+    <div id="navigation-bar" class="startp-nav">
       <div class="container">
         <nav class="navbar navbar-expand-md navbar-light">
           <router-link class="navbar-brand" to="/" href="banner" style="padding-top: 0px;">
@@ -12,15 +12,12 @@
 
           <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu justify-content-center" is-nav>
             <ul id="top-menu" class="navbar-nav nav">
-
               <li class="nav-item">
                 <a href="howItWorks" class="nav-link">How It Works</a>
               </li>
-
               <li class="nav-item">
                 <a href="features" class="nav-link">Features </a>
               </li>
-
               <!-- <li class="nav-item">
                 <a href="whyUs" class="nav-link">Why Us</a>
               </li> -->
@@ -35,7 +32,7 @@
                 <a href="faq" class="nav-link">FAQs</a>
               </li> -->
               <li class="nav-item">
-                <a class="nav-link" @click.prevent="openContactDialog()">Contact Us</a>
+                <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">Contact Us</a>
               </li>
             </ul>
           </b-collapse>
@@ -49,7 +46,6 @@
                 <el-dropdown-item command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
-
             <a href="/rater" class="btn btn-light">Become A Rater</a>
             <!-- <a href="/login" class="btn btn-primary">Sign In</a> -->
           </div>

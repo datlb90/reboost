@@ -139,13 +139,13 @@
       </el-tag>
     </div>
 
-    <el-tag
+    <!-- <el-tag
       v-if="unRatedList.length > 0"
       style="margin: 0 0 10px 0"
       type="warning"
     >
       You currently have unrated reviews, please rate all of your unrated reviews
-    </el-tag>
+    </el-tag> -->
 
     <el-table
       v-if="submissions"
@@ -513,7 +513,7 @@ export default {
         case 'Completed': type = 'success'; break
         case 'Submitted': type = 'primary'; break
         case 'Review Requested': type = 'warning'; break
-        case 'Reviewed': type = 'success'; break
+        case 'Reviewed': type = 'danger'; break
 
         default:
           type = 'primary'
@@ -521,7 +521,7 @@ export default {
       return type
     },
     getStatusName(status) {
-      if (status.trim() === 'Reviewed') return 'Review and Un-Rated'
+      if (status.trim() === 'Reviewed') return 'Unrated'
       return status
     },
     getTimeFromDateCreateToNow(time) {

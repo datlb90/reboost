@@ -1,10 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Asn1.X9;
 using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using Reboost.Shared;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -13,6 +16,7 @@ namespace Reboost.Service.Services
 {
     public interface IPaymentService
     {
+        string GetVNPayUrl(VNPayRequestModel model);
         Task<IEnumerable<Payments>> GetAllAsync();
         Task<List<Payments>> GetAllPaymentByUserIdAsync(string id);
         Task<Payments> CreatePaymentAsync(Payments pm);
@@ -33,10 +37,41 @@ namespace Reboost.Service.Services
     {
         private IStripeService mStripeService;
         private IRaterService mRaterService;
-        public PaymentService(IUnitOfWork unitOfWork, IStripeService stripeService, IRaterService raterService): base(unitOfWork)
+        private IConfiguration _configuration;
+        public PaymentService(IUnitOfWork unitOfWork, IStripeService stripeService, IRaterService raterService, IConfiguration configuration) : base(unitOfWork)
         {
             mStripeService = stripeService;
             mRaterService = raterService;
+            _configuration = configuration;
+        }
+        public string GetVNPayUrl(VNPayRequestModel model)
+        {
+            //Get configuration info
+            var vnpData = _configuration.GetSection("PaymentGateway:VNPay");
+            string vnp_Returnurl = vnpData["vnp_Returnurl"]; //URL nhan ket qua tra ve 
+            string vnp_Url = vnpData["vnp_Url"]; //URL thanh toan cua VNPAY 
+            string vnp_TmnCode = vnpData["vnp_TmnCode"]; //Ma định danh merchant kết nối (Terminal Id)
+            string vnp_HashSecret = vnpData["vnp_HashSecret"]; //Secret Key
+
+            //Build URL for VNPAY
+            VnPayLibrary vnpay = new VnPayLibrary();
+            vnpay.AddRequestData("vnp_Version", VnPayLibrary.VERSION);
+            vnpay.AddRequestData("vnp_Command", "pay");
+            vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
+            //Số tiền thanh toán. Số tiền không mang các ký tự phân tách thập phân, phần nghìn, ký tự tiền tệ.
+            //Để gửi số tiền thanh toán là 100,000 VND (một trăm nghìn VNĐ) thì merchant cần nhân thêm 100 lần (khử phần thập phân), sau đó gửi sang VNPAY là: 10000000
+            vnpay.AddRequestData("vnp_Amount", (model.amount * 10000).ToString());
+            vnpay.AddRequestData("vnp_CreateDate", DateTime.Now.AddHours(12).ToString("yyyyMMddHHmmss"));
+            vnpay.AddRequestData("vnp_CurrCode", "VND");
+            vnpay.AddRequestData("vnp_IpAddr", model.ipAddress);
+            vnpay.AddRequestData("vnp_Locale", "vn");
+            vnpay.AddRequestData("vnp_OrderInfo", "Thanh toán dịch vụ chấm bài với mã nộp bài: " + model.submmissionId);
+            //default value: other
+            vnpay.AddRequestData("vnp_OrderType", "other"); 
+            vnpay.AddRequestData("vnp_ReturnUrl", vnp_Returnurl);
+            // Mã tham chiếu của giao dịch tại hệ thống của merchant. Mã này là duy nhất dùng để phân biệt các đơn hàng gửi sang VNPAY. Không được trùng lặp trong ngày
+            vnpay.AddRequestData("vnp_TxnRef", model.submmissionId.ToString()); 
+            return vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
         }
 
         public async Task<IEnumerable<Payments>> GetAllAsync()

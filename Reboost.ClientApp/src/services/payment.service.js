@@ -2,6 +2,9 @@ import http from '@/utils/axios'
 import Axios from 'axios'
 
 const paymentService = {
+  submitVNPayRequest(model) {
+    return http.post('/payment/vnpay/request', model).then(rs => rs.data)
+  },
   getIntent(data) {
     console.log('amount: ', data)
     return http.post('/payment/intent', { amount: data }).then(rs => rs.data)

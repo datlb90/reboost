@@ -132,6 +132,7 @@ export default {
         Email: this.email,
         Password: this.password
       })
+      this.loading = false
       if (user) {
         this.$router.push({ name: PageName.AFTER_LOGIN }).catch(() => {})
       }

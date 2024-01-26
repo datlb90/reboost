@@ -216,14 +216,15 @@ namespace Reboost.WebApi.Identity
             var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
             var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
 
-            string url = $"{_configuration["AppUrl"]}/api/auth/confirmemail?userid={user.Id}&token={validEmailToken}";
+            string url = $"{_configuration["AppUrl"]}/api/auth/confirm/email?id={user.Id}&code={validEmailToken}";
 
-            await _mailService.SendEmailAsync(user.Email, "Verify your email address", $"<h1>Welcome to Reboost</h1>" +
+            await _mailService.SendEmailAsync(user.Email, "Verify Your Email Address", $"<h3>Welcome to Reboost!</h3>" +
                 $"<p>To finish setting up your Reboost account, we just need to make sure this email address is yours.</p>" +
-                $"<p>To verify your email address, please click on this link: <a href='{url}'>Confirm My Email</a></p>" +
+                $"<p>To verify your email address, please click on this link: <a href='{url}'>confirm my email</a></p>" +
                 $"<p>If you didn't make this request, you can safely ignore this email.</p>" +
-                $"<p>Thanks,</p><p>The Reboost Support Team</p>");
+                $"<p>Thanks,</p><p>Reboost Support Team</p>");
         }
+
         private async Task<(IdentityUser user, string provider, string email, IEnumerable<Claim> claims)>
             FindUserFromExternalProviderAsync(AuthenticateResult result)
         {

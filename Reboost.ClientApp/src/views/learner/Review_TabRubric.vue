@@ -118,10 +118,9 @@ export default ({
   },
   methods: {
     async loadRubric() {
-      console.log(this.reviewid)
       const rs = await rubricService.getByQuestionId(this.questionid)
       if (rs) {
-        this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, isFocused: false, comment: '' }))
+        this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: criteria.name == 'Critical Errors' ? 0 : null, isFocused: false, comment: '' }))
         // Get rubric data from localstorage first
         var hasComment = false
         var retrievedComment = localStorage.getItem('reviewRubricComment')
@@ -150,13 +149,14 @@ export default ({
                 this.rubricCriteria.map(criteria => {
                   if (criteria.id == rc.criteriaId) {
                     criteria.comment = rc.comment
-                    criteria.mark = rc.score
+                    criteria.mark = criteria.name == 'Critical Errors' ? 0 : rc.score
                   }
                 })
+                console.log(this.rubricCriteria)
                 var cmt = { id: rc.criteriaId, content: rc.comment, reviewid: this.reviewid, questionid: this.questionid }
                 retrievedComment.push(cmt)
 
-                var ms = { id: rc.criteriaId, content: rc.score, reviewid: this.reviewid, questionid: this.questionid }
+                var ms = { id: rc.criteriaId, content: rc.name == 'Critical Errors' ? 0 : rc.score, reviewid: this.reviewid, questionid: this.questionid }
                 retrievedScore.push(ms)
               })
               if (this.currentUser.role !== 'Admin') { this.readOnly = false } else {
@@ -227,7 +227,7 @@ export default ({
       retrievedScore?.forEach(rc => {
         this.rubricCriteria.map(criteria => {
           if (criteria.id == rc.id && rc.reviewid == this.reviewid) {
-            criteria.mark = rc.content
+            criteria.mark = criteria.name == 'Critical Errors' ? 0 : rc.content
           }
         })
       })
@@ -300,6 +300,7 @@ export default ({
       this.$emit('setStatusText')
     },
     getRubricData() {
+      console.log(this.rubricCriteria)
       var invalidData = this.rubricCriteria.filter(r => { return r.comment === '' || r.mark == null })
       if (invalidData.length > 0) {
         console.log('invalid data')

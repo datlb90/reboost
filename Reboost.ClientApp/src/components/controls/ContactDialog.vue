@@ -3,8 +3,9 @@
     <el-dialog
       id="contactDialog"
       :visible.sync="dialogVisible"
-      width="35%"
-      @opened="dialogOpened()"
+      width="650px"
+      @opened="dialogOpened"
+      @closed="dialogClosed"
     >
       <div slot="title">
         <div class="title-container">
@@ -26,7 +27,7 @@
             prop="fullName"
             :rules="[{ required: true, message: 'Please enter your full name'}]"
           >
-            <el-input v-model="formData.fullName" :disabled="currentUser.id" type="text" placeholder="Enter your full name" style="width: 90%;" />
+            <el-input v-model="formData.fullName" :disabled="currentUser.id != undefined" type="text" placeholder="Enter your full name" style="width: 90%;" />
           </el-form-item>
           <el-form-item
             size="mini"
@@ -34,7 +35,7 @@
             prop="email"
             :rules="[{ required: true, message: 'Please enter your email address'}]"
           >
-            <el-input v-model="formData.email" :disabled="currentUser.id" type="text" placeholder="Enter your email address" style="width: 90%;" />
+            <el-input v-model="formData.email" :disabled="currentUser.id != undefined" type="text" placeholder="Enter your email address" style="width: 90%;" />
           </el-form-item>
           <el-form-item
             size="mini"
@@ -42,7 +43,7 @@
             prop="reason"
             :rules="[{ required: true, message: 'Please select a reason' }]"
           >
-            <el-select v-model="formData.reason" placeholder="Select a reason" style="width: 180px;">
+            <el-select v-model="formData.reason" placeholder="Select a reason" style="width: 180px; z-index: 9999 !important;">
               <el-option
                 v-for="reason in reasons"
                 :key="reason"
@@ -60,7 +61,7 @@
             <el-input
               v-model="formData.message"
               type="textarea"
-              :autosize="{ minRows: 5, maxRows: 8}"
+              :autosize="{ minRows: 6, maxRows: 8}"
               placeholder="Detail your enquiry here"
               style="width: 90%;"
             />
@@ -129,17 +130,18 @@ export default {
   },
   mounted() {
     if (this.currentUser.id) {
-      this.formData.fullName = this.currentUser.firstName + this.currentUser.lastName
+      this.formData.fullName = this.currentUser.firstName + ' ' + this.currentUser.lastName
       this.formData.email = this.currentUser.email
     }
-    // console.log('', this.reasons, this.roles)
   },
   methods: {
     openDialog() {
       this.dialogVisible = true
-      this.$refs['contactForm'].resetFields()
     },
     dialogOpened() {
+    },
+    dialogClosed() {
+      this.$refs['contactForm'].resetFields()
     },
     submitMessage() {
       this.$refs['contactForm'].validate((valid) => {
@@ -207,24 +209,35 @@ export default {
 }
 </script>
 <style scoped>
+
 .title-container {
     width: 100%;
     text-align: center;
     font-size: 16px;
-}
-.divider--horizontal {
-    display: block;
-    height: 1px;
-    width: 100%;
-    background-color: rgb(202 203 205);
-}
-.divider {
-  margin: 10px 0 0 0;
-  position: relative;
+    font-weight: 500;
 }
 </style>
 <style>
-.el-select-dropdown {
-  z-index: 30000 !important;
+.el-select-dropdown{
+  z-index: 99999 !important;
 }
+.el-popup-parent--hidden > div > div > header{
+  width: calc(100% + 15px) !important;
+  position: static !important;
+  padding-right: 15px;
+}
+.el-popup-parent--hidden > div > div > div > header{
+  width: calc(100% + 15px) !important;
+  padding-right: 15px;
+}
+
+.el-popup-parent--hidden > div > div > div > .ml-main-section{
+  padding-top: 82px !important;
+}
+
+.el-popup-parent--hidden > div > div > #header.headroom.is-sticky + div > #banner{
+  padding-top: 67px !important;
+}
+
 </style>
+

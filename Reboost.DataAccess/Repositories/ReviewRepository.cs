@@ -719,6 +719,7 @@ namespace Reboost.DataAccess.Repositories
                                           join rt in db.ReviewRatings on rv.Id equals rt.ReviewId into completedReviews
                                           from rated in completedReviews.DefaultIfEmpty()
                                           where rv.RevieweeId == userId && rq.Status == ReviewRequestStatus.COMPLETED && rated == null
+                                          && rv.ReviewerId != "AI" && rv.ReviewerId != userId // Exclude AI review & self review
                                           select rv).ToListAsync();
             for (int i=0; i<unRateds.Count; i++)
             {

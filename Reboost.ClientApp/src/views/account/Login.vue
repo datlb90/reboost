@@ -1,6 +1,7 @@
 <template>
   <div>
     <div>
+      <el-alert v-if="emailConfirmed" title="You email has been verified. You can log in now." type="success" center show-icon />
       <div class="wrapper">
         <div>
           <el-form :model="form">
@@ -21,6 +22,7 @@
                 type="primary"
                 class="login-btn"
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
+                :loading="loading"
                 @click="signIn()"
               >
                 {{ messageTranslates('login', 'signIn') }}
@@ -87,7 +89,9 @@ export default {
       googleExternalLogin: null,
       returnUrl: '',
       googleFormAction: null,
-      facebookFormAction: null
+      facebookFormAction: null,
+      emailConfirmed: false,
+      loading: false
     }
   },
   computed: {
@@ -107,6 +111,9 @@ export default {
     next()
   },
   async created() {
+    if (this.$router.currentRoute.query?.email && this.$router.currentRoute.query?.email == 'confirmed') {
+      this.emailConfirmed = true
+    }
     if (this.$router.currentRoute.query?.returnUrl) {
       this.googleFormAction = 'api/auth/external/google/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
       this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
@@ -125,10 +132,12 @@ export default {
     },
     async signIn() {
       this.$store.dispatch('auth/logout')
+      this.loading = true
       const user = await this.login({
         Email: this.form.username,
         Password: this.form.password
       })
+      this.loading = false
       if (user) {
         if (this.$router.currentRoute.query?.returnUrl) {
           this.$router.push({ path: this.$router.currentRoute.query?.returnUrl })

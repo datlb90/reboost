@@ -21,17 +21,8 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("support")]
         public async Task<IActionResult> SendSupportEmail([FromForm] ContactRequestModel model)
         {
-            var currentUserClaim = HttpContext.User;
-            var email = currentUserClaim.FindFirst("Email");
-
-            var userName = "Quest";
-            if (email != null)
-            {
-                var user = await _service.GetByEmailAsync(email.Value);
-                userName = user.Username;
-            }
-
-            var rs = await _service.SendSupportEmail(userName, model);
+            // To do: prevent bot attack
+            var rs = await _service.SendSupportEmail(model);
 
             return Ok(rs);
         }
