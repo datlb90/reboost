@@ -25,6 +25,12 @@ namespace Reboost.WebApi.Controllers
         {
             return Ok();
         }
+
+        [HttpGet("question/difficulty")]
+        public async Task GetDifficultyLevel()
+        {
+            await _service.GetDifficultyLevelForAllQuestions();
+        }
     }
 }
 

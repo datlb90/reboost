@@ -12,6 +12,9 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IQuestionPartRepository : IRepository<QuestionParts>
     {
+        Task<QuestionParts> GetQuestionContentById(int id);
+        Task<QuestionParts> GetReadingByQuestionId(int id);
+        Task<QuestionParts> GetTranscriptByQuestionId(int id);
         Task<List<QuestionParts>> DeleteByQuestionIdAsync(int id);
     }
 
@@ -23,6 +26,20 @@ namespace Reboost.DataAccess.Repositories
          : base(context)
         {
             db = context;
+        }
+
+        public async Task<QuestionParts> GetReadingByQuestionId(int id) {
+            return await db.QuestionParts.Where(p => p.QuestionId == id && p.Name == "Reading").FirstOrDefaultAsync();
+        }
+
+        public async Task<QuestionParts> GetTranscriptByQuestionId(int id)
+        {
+            return await db.QuestionParts.Where(p => p.QuestionId == id && p.Name == "Transcript").FirstOrDefaultAsync();
+        }
+
+        public async Task<QuestionParts> GetQuestionContentById(int id)
+        {
+            return await db.QuestionParts.Where(p => p.QuestionId == id && p.Name == "Question").FirstOrDefaultAsync();
         }
 
         public async Task<List<QuestionParts>> DeleteByQuestionIdAsync(int id)

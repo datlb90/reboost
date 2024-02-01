@@ -32,14 +32,14 @@
             <el-table-column
               prop="comment"
               :label="messageTranslates('adminSamples', 'comment')"
-              align="center"
-              width="400"
-            />
+            >
+              <template slot-scope="scope">
+                <div v-html="scope.row.comment" />
+              </template>
+            </el-table-column>
             <el-table-column
               prop="sampleText"
-              :label="messageTranslates('adminSamples', 'text')"
-              align="center"
-              width="650"
+              label="Sample"
             >
               <template slot-scope="scope">
                 <div v-html="scope.row.sampleText" />
@@ -47,14 +47,15 @@
             </el-table-column>
             <el-table-column
               :label="messageTranslates('adminSamples', 'action')"
-              align="center"
+              width="100"
             >
               <template slot-scope="scope">
-                <el-button v-if="scope.row.status===sampleStatus.CONTRIBUTED" size="mini" @click="approveSample(scope.row.id)"> {{ messageTranslates('adminSamples', 'approve') }} </el-button>
+                <!-- <el-button v-if="scope.row.status===sampleStatus.CONTRIBUTED" size="mini" @click="approveSample(scope.row.id)"> {{ messageTranslates('adminSamples', 'approve') }} </el-button> -->
+                <el-button size="mini" type="danger" @click="deleteSample(scope.$index, scope.row.id)"> Delete </el-button>
               </template>
             </el-table-column>
           </el-table>
-          <div class="pagination">
+          <!-- <div class="pagination">
             <el-pagination
               background
               layout="prev, pager, next"
@@ -62,7 +63,7 @@
               :page-size="pageSize"
               @current-change="handleCurrentChange"
             />
-          </div>
+          </div> -->
         </el-main>
       </el-col>
     </el-row>
@@ -97,10 +98,30 @@ export default {
     this.$store.dispatch('question/loadAllSamples').then(rs => {
       this.samples.sort((a, b) => b.id - a.id)
       this.samplesListCached = [...this.samples]
+
+      console.log(this.samplesListCached)
       this.loadList()
     })
   },
   methods: {
+    deleteSample(index, id) {
+      this.$confirm('Are you sure you want to delete this sample?').then(() => {
+        sampleService.deleteSampleById(id).then(rs => {
+          if (rs) {
+            this.samplesListCached.splice(index, 1)
+            this.$notify.success({
+              title: 'Success',
+              message: 'Deleted successfully',
+              type: 'success',
+              duration: 2000
+            })
+
+            this.loadList()
+          }
+        })
+      }).catch(() => {
+      })
+    },
     approveSample(id) {
       sampleService.approveSampleById(id).then(rs => {
         if (rs) {
@@ -118,7 +139,7 @@ export default {
       })
     },
     loadList() {
-      this.listSamplesPerPage = this.samplesListCached.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
+      this.listSamplesPerPage = this.samplesListCached // .slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
       this.total = this.samplesListCached.length
     },
     handleCurrentChange(val) {

@@ -15,11 +15,13 @@ using OpenAI_API;
 using OpenAI_API.Chat;
 using OpenAI_API.Models;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace Reboost.Service.Services
 {
     public interface IChatGPTService
     {
+        Task GetDifficultyLevelForAllQuestions();
         Task<NewTOEFLEssayFeedbackModel> GetTOEFLIndependentEssayFeedback(string question, string essay);
         Task<NewTOEFLEssayFeedbackModel> GetTOEFLIntegratedEssayFeedback(string question, string essay);
         Task<NewIELTSEssayFeedbackModel> GetIELTSEssayFeedback(string question, string essay);
@@ -35,6 +37,90 @@ namespace Reboost.Service.Services
            
             configuration = _configuration;
         }
+
+        public static string StripHTML(string input)
+        {
+            return Regex.Replace(input, "<.*?>", String.Empty);
+        }
+
+        public async Task GetDifficultyLevelForAllQuestions()
+        {
+            OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+            string task1Criteria = "You will be given a IELTS academic writing task 1 topic, your job is to classify the difficulty level of the topic into easy, medium, and hard based on the following criteria:\n\n•\tEasy: Topics are common, widely recognized, and relatable to the general public. Specialized knowledge is not required, and test takers can generate ideas just by critical thinking about the topic. \n•\tMedium: Topics are moderately familiar, where having some background knowledge is beneficial but not essential. Data or processes may include some unfamiliar elements but are generally accessible.\n•\tHard: Topics may be quite specialized or technical. Often includes data, or processes that are not commonly encountered in everyday contexts.\n\nJust response with: ‘Easy’, ‘Medium’, or ‘Hard’.\n";
+            string task2Criteria = "You will be given a IELTS academic writing task 2 topic, your job is to classify the difficulty level of the topic into easy, medium, and hard based on the following criteria:\n\n•\tEasy: Topics are common, widely recognized, and relatable to the general public. Specialized knowledge is not required, and test takers can readily generate ideas and examples from their personal experiences or common knowledge.\n•\tMedium: Topics are moderately familiar, where having some background knowledge is beneficial but not essential. More critical thinking is needed to develop coherent arguments and counterarguments.\n•\tHard: Topics are specialized or abstract, demanding in-depth knowledge or a deep understanding. These subjects often involve complex concepts, technical details, or nuanced perspectives that go beyond general knowledge.\n\nJust response with: ‘Easy’, ‘Medium’, or ‘Hard’.\n";
+            string independentCriteria = "You will be given a TOEFL independent writing topic, your job is to classify the difficulty level of the topic into easy, medium, and hard based on the following criteria:\n\nFamiliarity:\n•\tEasy: Topics are very common and frequently encountered in everyday life. These subjects require minimal specialized knowledge and are broadly relatable.\n•\tMedium: Topics are moderately familiar, where having some background knowledge is beneficial but not essential.\n•\tHard: Topics are specialized or abstract, demanding in-depth knowledge or a deep understanding. These subjects often involve complex concepts, technical details, or nuanced perspectives that go beyond general knowledge.\n\nSimplicity:\n•\tEasy: Questions are straightforward, typically asking for a personal preference or opinion. Easier to organize thoughts and structure the essay into introduction, body paragraphs, and conclusion.\n•\tMedium: Questions may involve a bit more complexity, such as comparing two viewpoints or analyzing a trend. Requires more developed skills in structuring arguments and supporting them with reasons and examples.\n•\tHard: Questions are more complex and might involve abstract thinking or sophisticated arguments. High level of planning, organization, and critical thinking is needed to construct a coherent and persuasive essay.\n\nLanguage Demand:\n•\tEasy: Basic vocabulary and simple grammatical structures are often sufficient. The focus is on clear and coherent expression of personal opinions and experiences.\n•\tMedium: Requires a mix of basic and advanced vocabulary and varied sentence structures. The ability to articulate and support slightly complex ideas is important.\n•\tHard: High proficiency in language use is required, with a wide range of vocabulary and complex sentence structures. The ability to express and justify complex ideas and arguments clearly and effectively is crucial.\n\nResource Availability:\n•\tEasy: There are abundant study materials, sample essays, and practice prompts available. It's relatively easy to find model essays and guidelines for these common topics.\n•\tMedium: A fair amount of practice materials and examples are available but might require more analytical skills. Candidates may need to seek specific examples or more detailed study guides.\n•\tHard: There are fewer ready-made resources and sample essays at this level. Extensive reading and research might be needed to effectively tackle these topics.\n\nJust response with: ‘Easy’, ‘Medium’, or ‘Hard’.\n";
+            string integratedCriteria = "You will be given a TOEFL integrated writing topic, your job is to classify the difficulty level of the topic into easy, medium, and hard based on the following criteria:\n\nFamiliarity:\n•\tEasy: Topics are very common and frequently encountered in everyday life. These subjects require minimal specialized knowledge and are broadly relatable. Information presented in both the reading and the listening is straightforward and clear.\n•\tMedium: Topics are moderately familiar, where having some background knowledge is beneficial but not essential. Information may have more depth compared to the easy level, requiring attentive reading, and listening.\n•\tHard: Topics are specialized or abstract, demanding in-depth knowledge or a deep understanding. Both the reading and listening passages contain dense and intricate information.\n\nSimplicity:\n•\tEasy: The relationship between the reading and listening materials is relatively clear and direct. Easier to identify the main points and how they either contrast with or support each other.\n•\tMedium: The connections between the reading and listening materials might be less direct, with more subtle points of comparison or contrast. Requires more critical thinking to identify and articulate the key relationships.\n•\tHard: Relationships between the reading and listening materials are complex, often involving nuanced arguments or detailed analysis. High level of skill in organizing, integrating, and presenting information coherently and concisely is needed.\n\nLanguage Demand:\n•\tEasy: Requires basic vocabulary and simple sentence structures for summarizing and comparing information. Focus is more on accuracy in conveying information than on using complex language.\n•\tMedium: Requires a balance of basic and more advanced vocabulary, along with varied sentence structures. Ability to express relationships between more complex ideas and details is important.\n•\tHard: High proficiency in language use is required, with a wide range of vocabulary and complex sentence structures. The ability to synthesize and analyze intricate details and viewpoints is crucial.\n\nResource Availability:\n•\tEasy: Plenty of practice materials and sample responses are available, including texts and lectures on familiar topics. Easy to find resources that demonstrate how to integrate and summarize key points.\n•\tMedium: A fair amount of practice materials are available but may require more analytical skills to dissect. Might need to seek specific examples or more detailed guides on notetaking and synthesis.\n•\tHard: Fewer ready-made resources and model responses are available at this higher level of complexity. Requires extensive research and practice with advanced materials to develop proficiency.\n\nJust response with: ‘Easy’, ‘Medium’, or ‘Hard’.\n";
+            string criteria = task2Criteria;
+
+            var questions = await _unitOfWork.Questions.GetAllActiveQuestions();
+
+            foreach(Questions question in questions)
+            {
+                QuestionParts questionContent = await _unitOfWork.QuestionParts.GetQuestionContentById(question.Id);
+                if(questionContent != null)
+                {
+                    string content = ""; // StripHTML(questionContent.Content);
+                    Tasks questionTask = await _unitOfWork.Questions.GetTaksById(question.TaskId);
+                    string task = questionTask.Name;
+
+                    if (task == "Independent Writing")
+                    {
+                        criteria = independentCriteria;
+                        content = "Classify the difficulty level of the following TOEFL independent writing topic: " + StripHTML(questionContent.Content) + "";
+                    }
+                    else if (task == "Integrated Writing")
+                    {
+                        criteria = integratedCriteria;
+                        string reading = "";
+                        QuestionParts readingPart = await _unitOfWork.QuestionParts.GetReadingByQuestionId(question.Id);
+                        if (readingPart != null)
+                            reading = StripHTML(readingPart.Content);
+
+                        string transcript = "";
+                        QuestionParts transcriptPart = await _unitOfWork.QuestionParts.GetTranscriptByQuestionId(question.Id);
+                        if (transcriptPart != null)
+                            transcript = StripHTML(transcriptPart.Content);
+
+                        content = "Classify the difficulty level of the following TOEFL integrated writing topic: \nQuesiton: " + StripHTML(questionContent.Content) + "\nReading: " + reading + "\nListening Transcript: " + transcript + "";
+
+                    }
+                    else if (task == "Academic Writing Task 1")
+                    {
+                        criteria = task1Criteria;
+                        content = "Classify the difficulty level of the following IELTS academic writing task 1 topic: " + StripHTML(questionContent.Content) + "";
+                    }
+                    else
+                    {
+                        criteria = task2Criteria;
+                        content = "Classify the difficulty level of the following IELTS academic writing task 2 topic: " + StripHTML(questionContent.Content) + "";
+                    }
+                    string difficulty = "Medium";
+                    ChatMessage prerequisite = new ChatMessage(ChatMessageRole.User, criteria);
+                    ChatMessage request = new ChatMessage(ChatMessageRole.User, content);
+                    List<ChatMessage> messages = new List<ChatMessage>();
+                    messages.Add(prerequisite);
+                    messages.Add(request);
+
+                    var result = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                    {
+                        Model = Model.GPT4_Turbo,
+                        Temperature = 0.1,
+                        MaxTokens = 2000,
+                        ResponseFormat = ChatRequest.ResponseFormats.Text,
+                        Messages = messages
+
+                    });;
+
+                    difficulty = result.Choices[0].Message.TextContent;
+                    question.Difficulty = difficulty;
+                    question.LastActivityDate = DateTime.UtcNow;
+                    await _unitOfWork.Questions.Update(question);
+                }
+                
+            }
+           
+        }
+
         public async Task<NewTOEFLEssayFeedbackModel> GetTOEFLIndependentEssayFeedback(string question, string essay)
         {
             OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));

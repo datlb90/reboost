@@ -46,5 +46,13 @@ namespace Reboost.WebApi.Controllers
             return Ok(rs);
         }
 
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteSample([FromRoute] int id)
+        {
+            var rs = await _service.DeleteAsync(id);
+            return Ok(rs);
+        }
+
     }
 }

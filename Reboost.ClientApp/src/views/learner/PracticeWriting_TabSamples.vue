@@ -1,29 +1,32 @@
 <template>
   <div>
-    <div class="d-flex justify-content-end mb-2">
-      <el-button size="mini" @click="openAddNewSampleDialog()">Add sample</el-button>
-    </div>
-
-    <ul>
-      <li v-for="(item, index) in samples" :key="item.id">
-        <el-card class="box-card">
-          <div slot="header" class="box-card__title">
-            <div>
-              <span>Sample Response #{{ index+1 }}</span>
+    <div v-if="samples && samples.length > 0">
+      <div v-for="(item, index) in samples" :key="item.id">
+        <el-card class="box-card sample-box">
+          <div style="height: 50px; border-bottom: 1px solid rgb(220 223 229); margin-bottom: 20px; ">
+            <div style="float: left; margin-top: 5px;">
+              <span style="font-size: 16px; font-weight: 600;">Sample Response #{{ index+1 }}</span>
             </div>
-            <div class="box-card__title__right">
-              <span>Band Score: {{ item.bandScore ? item.bandScore : "Not Available" }}</span>
+            <div style="float: right;">
+              <el-tag>Band Score: {{ item.bandScore ? item.bandScore.toFixed(1) : "Not Available" }}</el-tag>
             </div>
           </div>
           <div class="box-card__content">
-            <div class="sample-container" v-html="item.sampleText" />
-            <!-- <pre>{{ item.sampleText }}</pre> -->
+            <div>
+              <div class="sample-container" v-html="item.sampleText" />
+            </div>
+            <div v-if="item.comment" style="border-top: 1px solid rgb(220 223 229); margin-top: 20px; padding-top: 20px;">
+              <div class="sample-container" v-html="item.comment" />
+            </div>
+
           </div>
         </el-card>
-      </li>
-    </ul>
-    <div v-if="samples.length == 0" style="width: 100%; text-align: center;">
-      <span class="no-content">No sample</span>
+      </div>
+    </div>
+    <div v-else>
+      <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+        <div> We are working on collecting samples for this writing topic, please check back soon.</div>
+      </el-card>
     </div>
     <add-sample ref="sampleDialog" />
   </div>
@@ -67,6 +70,11 @@ export default {
 }
 </style>
 <style scoped>
+.sample-box {
+  padding: 20px;
+  padding-top: 10px;
+  margin-bottom: 20px;
+}
   pre{
     white-space: break-spaces;
     font-family: inherit !important;

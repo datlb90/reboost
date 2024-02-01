@@ -315,7 +315,7 @@ export default {
 
 .par-content {
   position: absolute;
-  padding-right: 10px;
+  /* padding-right: 10px; */
   top: 0;
   left: 0;
   /* overflow-y: scroll; */

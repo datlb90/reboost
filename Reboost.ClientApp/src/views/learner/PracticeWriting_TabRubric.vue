@@ -4,7 +4,7 @@
       <li v-for="item in tableData" :key="item.name">
         <el-card class="box-card" style="width: 100%">
           <div slot="header" class="clearfix">
-            <span class="card-title">{{ item.name }}</span>
+            <b class="card-title">{{ item.name }}</b>
             <i v-if="!listExpand.includes(item.name)" class="el-icon-arrow-down" style="position: absolute;right: 25px;" @click="toggleExpand(item.name)" />
             <i v-if="listExpand.includes(item.name)" class="el-icon-arrow-up" style="position: absolute;right: 25px;" @click="toggleExpand(item.name)" />
           </div>

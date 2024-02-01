@@ -12,6 +12,7 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface ISampleRepository : IRepository<Samples>
     {
+        Task<List<Samples>> GetSamplesByQuestionId(int id);
         Task<Samples> ApproveSampleByIdAsync(int id);
         Task<List<Samples>> DeleteByQuestionIdAsync(int id);
     }
@@ -23,7 +24,10 @@ namespace Reboost.DataAccess.Repositories
         {
             db = context;
         }
-
+        public async Task<List<Samples>> GetSamplesByQuestionId(int id)
+        {
+            return await db.Samples.Where(s => s.QuestionId == id).ToListAsync();
+        }
         public async Task<Samples> ApproveSampleByIdAsync(int id)
         {
             var sample = await db.Samples.FindAsync(id);

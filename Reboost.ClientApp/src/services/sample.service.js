@@ -9,6 +9,9 @@ const sampleService = {
   },
   approveSampleById(id) {
     return http.get(`/sample/approve/${id}`).then(rs => rs.data)
+  },
+  deleteSampleById(id) {
+    return http.delete(`/sample/${id}`).then(rs => rs.data)
   }
 }
 

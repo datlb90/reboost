@@ -4,110 +4,153 @@
       <pane>
         <el-tabs v-model="activeTab" type="border-card" style="height: 100%;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
           <el-tab-pane label="Description" name="description">
-            <div style="height: 100%;display: flex; flex-direction: column">
+            <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
               <div style="margin-bottom: 8px;">
                 <el-row>
                   <el-col>
-                    <div style="display: flex; justify-content: space-between;">
+                    <div style="">
                       <div>
-                        <div class="title-tab">1. {{ getDataQuestion.title }}</div>
-                        <div style="display: flex;">
-                          <div style="font-size: 13px; color: #44ce6f; margin-right: 25px;">{{ getDataQuestion.test }} {{ getDataQuestion.section }}</div>
-                          <div style="display: flex;  margin-right: 20px;">
+                        <div style="height: 32px;">
+                          <div class="title-tab">
+                            {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
+                          </div>
+                          <div style="float: right;">
+                            <div>
+                              <el-tag v-if="isTesting" class="mr-2" type="danger" size="medium" style="height: 30px; line-height: 28px;"><i class="el-icon-timer" style="font-size: 14px; margin-right: 4px;" />{{ minute }} : {{ second }}</el-tag>
+                              <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" style="padding: 8px 15px;" @click="startTest()">Start Test</el-button>
+                              <el-checkbox v-model="isTest" size="mini" border style="height: 30px; margin-bottom: 0px;" @change="changedOption()"> Test Mode</el-checkbox>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <el-tag
+                            v-if="getDataQuestion.difficulty == 'Medium'"
+                            type="warning"
+                            size="medium"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            {{ getDataQuestion.difficulty }}
+                          </el-tag>
+                          <el-tag
+                            v-else-if="getDataQuestion.difficulty == 'Hard'"
+                            type="danger"
+                            size="medium"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            {{ getDataQuestion.difficulty }}
+                          </el-tag>
+                          <el-tag
+                            v-else-if="getDataQuestion.difficulty == 'Easy'"
+                            size="medium"
+                            type="success"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            {{ getDataQuestion.difficulty }}
+                          </el-tag>
+
+                          <el-tag
+                            v-else
+                            size="medium"
+                            type="info"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            Undefined
+                          </el-tag>
+
+                          <el-tag
+                            size="medium"
+                            type="info"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            {{ getDataQuestion.section }}
+                          </el-tag>
+
+                          <el-tag
+                            size="medium"
+                            type="info"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            {{ getDataQuestion.type }}
+                          </el-tag>
+
+                          <!-- <div style="font-size: 13px; color: #44ce6f; margin-right: 25px;">{{ getDataQuestion.test }} {{ getDataQuestion.section }}</div> -->
+                          <!-- <div style="display: flex; margin-left: 5px; margin-right: 20px;">
                             <img class="img-icon" src="../../assets/img/like.png" alt="">
                             <label for="" style="font-weight: 200; font-size: 13px;">{{ getDataQuestion.like }}</label>
                           </div>
                           <div style="display: flex;  margin-right: 20px;">
                             <img class="img-icon" src="../../assets/img/dislike.png" alt="">
                             <label for="" style="font-weight: 200; font-size: 13px;">{{ getDataQuestion.dislike }}</label>
-                          </div>
+                          </div> -->
                         </div>
                       </div>
-                      <div>
-                        <!-- <el-tag v-if="isTesting" class="mr-2" type="warning" size="medium">In test mode</el-tag> -->
-                        <el-tag v-if="isTesting" class="mr-2" type="warning" size="medium" style="height: 30px; line-height: 28px;">The test will end in {{ minute }} : {{ second }}</el-tag>
-                        <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" style="padding: 8px 15px;" @click="startTest()">Start Test</el-button>
-                        <!-- <el-switch v-model="isTest" style="display: block" active-color="#13ce66" inactive-color="#ff4949" active-text="Test" inactive-text="Practice" @change="changedOption()" /> -->
-                        <el-checkbox v-model="isTest" size="mini" border style="height: 30px;" @change="changedOption()"> Test Mode</el-checkbox>
-                      </div>
+
                     </div>
-                    <hr style="margin: 0; margin-bottom: 8px;">
-                    <div class="tip">
-                      <pre style="font-size: 13px; color: #6084a4;"> <span style="font-weight: 600;">Direction: </span> <span v-if="hideDirection == 'Hide'" v-html="getDataQuestion.direction" /> <span class="hide-direction" @click="toggleDirection()">{{ hideDirection }}</span></pre>
-                    </div>
+                    <div class="info" style="margin-top: 5px; font-size: 14px;" v-html="getDataQuestion.direction" />
                   </el-col>
                 </el-row>
 
               </div>
-              <div id="parent-scroll" style="flex-grow: 1;position: relative;">
-                <div id="child-scroll" class="par-content default">
+              <div>
+
+                <div>
                   <el-row style="margin-bottom: 8px;">
-                    <el-col :span="24" class="question-con">
-                      <div>
-                        <div style="font-size: 14px;">
-                          <div id="questionContent" v-html="getQuestion.content" />
-                        </div>
-                      </div>
-                    </el-col>
+                    <div id="questionContent" class="tip" style="font-size: 14px;" v-html="getQuestion.content" />
                   </el-row>
                   <el-row v-if="isShowQuestion">
                     <div v-if="!isShowListeningTab && getReading != ''">
-                      <div class="header-practice" style="margin-bottom: 8px; display: flex;">
-                        <div style="flex-grow: 1; display: flex; align-items: center;">
-                          Reading Passage
-                        </div>
-                        <div v-if="!isShowTimer">
-                          <el-button size="mini" @click="toggleBtnShowTab()">Go to listening</el-button>
-                        </div>
-                      </div>
-                      <div v-if="!closeTimer" class="body-practice" style="margin-bottom: 8px;">
-                        <div class="tip" style="display: flex; align-items: center; justify-content: space-between;">
-                          <div style="flex-grow: 1;">
-                            <pre style="font-size: 13px; color: #6084a4;"> <span style="font-weight: 600;">Direction: </span>Give yourseft 3 minutes to read the passage.</pre>
+                      <el-card class="box-card sample-box">
+                        <div style="height: 40px; border-bottom: 1px solid rgb(220 223 229); margin-bottom: 10px; ">
+                          <div style="float: left; margin-top: 2px;">
+                            <span style="font-size: 16px; font-weight: 600;"> Reading Passage</span>
                           </div>
-                          <div v-if="getListening != ''" style="margin-left: 14px;">
-                            <div v-if="isShowTimer && !closeTimer">
-                              {{ minute }} : {{ second }}
-                            </div>
+                          <div style="float: right;">
+                            <el-button size="mini" @click="toggleBtnShowTab()">Go to listening</el-button>
                           </div>
                         </div>
-                      </div>
+                        <div class="box-card__content">
+                          <div>
+                            <div v-html="getReading.content" />
+                          </div>
+                        </div>
+                      </el-card>
                     </div>
+
                     <el-col v-if="getReading =='' && getListening != '' || isShowListeningTab || getReading == ''" :span="24">
                       <div v-if="isShowListeningTab" style="width: 100%;">
-                        <div class="header-practice" style="display:flex; justify-content: space-between;margin-bottom: 8px; ">
-                          <div style="display: flex; align-items: center;">
-                            LISTEN TO PART OF LECTURE ON THE SAME TOPIC
-                          </div>
-                          <div v-if="getReading != ''">
-                            <el-button size="mini" @click="backClick()">Back</el-button>
-                          </div>
-                        </div>
-                        <hr style="margin:0; margin-bottom: 8px; ">
-                        <div>
-                          <audio v-if="getListening != ''" controls style="width: 100%; height: 35px; margin-bottom: 3px;">
-                            <source :src="'/audio/'+getListening.content" type="audio/mpeg">
-                          </audio>
-                          <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
-                            <div style="flex-grow: 1;">
-                              <i class="el-icon-document-copy" />
-                              Audio Script
+                        <el-card class="box-card sample-box">
+                          <div style="height: 40px; border-bottom: 1px solid rgb(220 223 229); margin-bottom: 10px; ">
+                            <div style="float: left; margin-top: 2px;">
+                              <span style="font-size: 16px; font-weight: 600;"> Listen to part of the lecture on the same topic</span>
                             </div>
-                            <div :class="{'rotate-icon' : isShowScript}">
-                              <i class="fas fa-caret-down" />
+                            <div style="float: right;">
+                              <el-button size="mini" @click="backClick()">Back to Reading</el-button>
                             </div>
                           </div>
-
-                        </div>
+                          <div class="box-card__content">
+                            <div>
+                              <audio v-if="getListening != ''" controls style="width: 100%; height: 35px; margin-bottom: 3px;">
+                                <source :src="'/audio/'+getListening.content" type="audio/mpeg">
+                              </audio>
+                              <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
+                                <div style="flex-grow: 1;">
+                                  <i class="el-icon-document-copy" />
+                                  Audio Script
+                                </div>
+                                <div :class="{'rotate-icon' : isShowScript}">
+                                  <i class="fas fa-caret-down" />
+                                </div>
+                              </div>
+                              <div v-if="isShowQuestion && isShowScript && isShowListeningTab" class="body-transcript" style="margin: 0;">
+                                <pre id="transcriptContent" v-html="getTranscript.content" />
+                              </div>
+                            </div>
+                          </div>
+                        </el-card>
                       </div>
                     </el-col>
                   </el-row>
-                  <div v-if="isShowQuestion && getReading != '' && !isShowListeningTab && isShowReading" style="margin: 0;">
-                    <pre id="readingContent" v-html="getReading.content" />
-                  </div>
-                  <div v-if="isShowQuestion && isShowScript && isShowListeningTab" class="body-transcript" style="margin: 0;">
-                    <pre id="transcriptContent" v-html="getTranscript.content" />
-                  </div>
                   <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))">
                     <img :src="'/photo/' + getChart.content" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
                   </div>
@@ -122,16 +165,22 @@
                   <div id="tipContent" v-html="getTip.content" />
                 </el-card>
               </div>
-            </div>
-          </el-tab-pane>
-          <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
-            <div class="par-content">
-              <tab-rubric />
+              <div v-else>
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div> We are working on this section, please check back soon for help on the writing topic including suggesstions on development ideas,
+                    instructions on how to structure your eassy, and useful vocabulary that could be used to improve your band score.</div>
+                </el-card>
+              </div>
             </div>
           </el-tab-pane>
           <el-tab-pane label="Samples" name="sample" style="height: 100%; position: relative;">
             <div class="par-content">
               <tab-samples />
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
+            <div class="par-content">
+              <tab-rubric />
             </div>
           </el-tab-pane>
           <el-tab-pane label="Submissions" name="submissions" style="height: 100%; position: relative;">
@@ -400,7 +449,6 @@ export default {
       var data = this.$store.getters['question/getSelected']
       if (data.direction) {
         data.direction = data.direction.trim()
-
         if (data.direction.substr(data.direction.length - 1) == '\n') {
           data.direction = data.direction.substring(0, data.direction.length - 1)
         }
@@ -477,9 +525,9 @@ export default {
       }
     })
     window.addEventListener('resize', this.calculateContainerHeight.bind(this))
-    this.setIntervalForScroll = setInterval(() => {
-      this.calculateStylePaddingScroll()
-    }, 80)
+    // this.setIntervalForScroll = setInterval(() => {
+    //   this.calculateStylePaddingScroll()
+    // }, 80)
     if (this.submissionId) {
       this.idSubmissionStorage = this.currentUser.username + '_QuestionId' + this.questionId + '_SubmissionId' + this.submissionId
       this.isEdit = true
@@ -520,7 +568,6 @@ export default {
           }
         } else {
           const savedSubmission = this.submissions.find(s => s.status == 'Saved')
-          console.log('Saved Submission: ', savedSubmission)
           if (savedSubmission) {
             this.submissionId = savedSubmission.id
             this.timeSpent = savedSubmission.timeTaken
@@ -686,28 +733,10 @@ export default {
       this.timeSpent = 0
       this.timeStart = moment()
       // this.isEdit = true // Edit button should not be visible after submitting?
-
       if (this.submissionId) {
-        // data.status = this.unRatedList.length > 0 ? 'Pending' : 'Submitted'
         data.status = 'Submitted'
         documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
-            // if (this.unRatedList.length > 0) {
-            //   this.$notify.warning({
-            //     title: 'Warning',
-            //     dangerouslyUseHTMLString: true,
-            //     message: `<p>Your submission is currently pending because you have unrated reviews. The submission will be automatically submitted after all of the unrated reviews are rated. You can find them in the <a href='/submissions'>Submissions page</a></p>`,
-            //     type: 'warning',
-            //     duration: 0
-            //   })
-            // } else {
-            //   this.$notify.success({
-            //     title: 'Success',
-            //     message: 'Your writing has been successfully submitted!',
-            //     type: 'success',
-            //     duration: 3000
-            //   })
-            // }
             this.$notify.success({
               title: 'Success',
               message: 'Your writing has been successfully submitted!',
@@ -734,41 +763,6 @@ export default {
             this.checkoutVisible = true
           }
         })
-
-        // if (this.unRatedList.length > 0) {
-        //   data.status = 'Pending'
-        //   documentService.submitPendingDocument(data).then(rs => {
-        //     if (rs) {
-        //       this.$notify.warning({
-        //         title: 'Warning',
-        //         dangerouslyUseHTMLString: true,
-        //         message: `<p>Your submission is currently pending because you have unrated reviews. The submission will be automatically submitted after all of the unrated reviews are rated. You can find them in the <a href='/submissions'>Submissions page</a></p>`,
-        //         type: 'warning',
-        //         duration: 0
-        //       })
-        //       this.hasSubmitionForThisQuestion = true
-        //       this.submissionId = rs.submissions[0]?.id
-        //       this.writingSubmitted = true
-        //       this.checkoutVisible = true
-        //     }
-        //   })
-        // } else {
-        //   data.status = 'Submitted'
-        //   documentService.submitDocument(data).then(rs => {
-        //     if (rs) {
-        //       this.$notify.success({
-        //         title: 'Success',
-        //         message: 'Your writing has been successfully submitted!',
-        //         type: 'success',
-        //         duration: 3000
-        //       })
-        //       this.hasSubmitionForThisQuestion = true
-        //       this.submissionId = rs.submissions[0]?.id
-        //       this.writingSubmitted = true
-        //       this.checkoutVisible = true
-        //     }
-        //   })
-        // }
       }
     },
     toggleBtnShowTab() {
@@ -984,7 +978,7 @@ export default {
 
 .par-content {
   position: absolute;
-  padding-right: 10px;
+  /* padding-right: 10px; */
   top: 0;
   left: 0;
   /* overflow-y: scroll; */
@@ -1073,7 +1067,8 @@ export default {
 }
 
 .title-tab {
-  font-size: 14px;
+  float: left;
+  font-size: 18px;
   font-weight: 600;
   color: rgb(23, 56, 82);
 }
@@ -1090,6 +1085,14 @@ export default {
   background-color: #ecf8ff;
   border-radius: 4px;
   border-left: 5px solid #50bfff;
+}
+
+.info {
+  padding: 5px 10px;
+  font-size: 12px;
+  background-color: #f4f4f5;
+  border-radius: 4px;
+  border-left: 5px solid #afafaf;
 }
 
 .script-select:hover {

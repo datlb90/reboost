@@ -20,6 +20,7 @@ namespace Reboost.Shared
         public int Like { get; set; }
         public int Dislike { get; set; }
         public string Status { get; set; }
+        public string Difficulty { get; set; }
         public string Direction { get; set; }
         public string UserId { get; set; }
         public string CreatedBy { get; set; }

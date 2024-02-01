@@ -3,7 +3,7 @@
     id="addEditSampleDialog"
     :title="messageTranslates('addQuestionSampleDialog', 'title')"
     :visible.sync="sampleDialogVisible"
-    width="40%"
+    width="800px"
   >
     <el-form
       ref="form"
@@ -22,10 +22,10 @@
         <el-tiptap
           v-model="form.sample"
           lang="en"
-          :placeholder="messageTranslates('addQuestionSampleDialog', 'placeholderSample')"
-          height="230px"
+          placeholder="Add the sample"
           :extensions="extensions"
           :char-counter-count="false"
+          style="width: 95%;"
         />
       </el-form-item>
       <el-form-item
@@ -34,9 +34,6 @@
         :label="messageTranslates('addQuestionSampleDialog', 'bandScore')"
         :rules="[{ required: true, message: 'Band score is required' }]"
       >
-        <!-- <el-radio-group v-model="form.bandScore">
-          <el-radio-button v-for="score in bandScore" :key="score" :label="score" />
-        </el-radio-group> -->
         <el-select v-model="form.bandScore" :placeholder="messageTranslates('addQuestionSampleDialog', 'placeholderBandScore')">
           <el-option
             v-for="score in bandScore"
@@ -47,6 +44,21 @@
         </el-select>
       </el-form-item>
       <el-form-item
+        label="Comment"
+        size="mini"
+        prop="comment"
+      >
+        <el-tiptap
+          v-model="form.comment"
+          lang="en"
+          placeholder="Add comment for the sample"
+          :extensions="extensions"
+          :char-counter-count="false"
+          style="width: 95%;"
+        />
+      </el-form-item>
+
+      <!-- <el-form-item
         prop="source"
         :label="messageTranslates('addQuestionSampleDialog', 'source')"
         size="mini"
@@ -60,7 +72,7 @@
             :value="item.value"
           />
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button size="mini" @click="sampleDialogVisible = false">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
@@ -70,7 +82,6 @@
 </template>
 <script>
 import {
-  // necessary extensions
   Doc,
   Text,
   Paragraph,
@@ -80,11 +91,15 @@ import {
   Italic,
   Strike,
   ListItem,
-  BulletList, // use with ListItem
-  OrderedList // use with ListItem
+  BulletList,
+  OrderedList,
+  FontSize,
+  Indent,
+  LineHeight,
+  TextColor
 } from 'element-tiptap'
 
-import { TEST_TYPES } from '../../app.constant'
+// import { TEST_TYPES } from '../../app.constant'
 import sampleService from '../../services/sample.service'
 import { UserRole, SAMPLE_STATUS } from '../../app.constant'
 
@@ -99,10 +114,12 @@ export default {
       form: {
         sample: null,
         bandScore: 0,
-        source: null
+        source: null,
+        comment: null
       },
       optionsSource: [
-        { value: 'self', label: 'Self' },
+        { value: 'google', label: 'Google' },
+        { value: 'chatGPT', label: 'Chat GPT' },
         { value: 'other', label: 'Other' }
       ],
       extensions: [
@@ -116,14 +133,19 @@ export default {
         new Strike(),
         new ListItem(),
         new BulletList(),
-        new OrderedList()
+        new OrderedList(),
+        new FontSize(),
+        new TextColor(),
+        new Indent(),
+        new LineHeight()
       ]
     }
   },
   computed: {
     bandScore() {
-      var data = this.$store.getters['question/getSelected']
-      return data.test === TEST_TYPES.IELTS ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] : [0, 1, 2, 3, 4, 5]
+      // var data = this.$store.getters['question/getSelected']
+      // return data.test === TEST_TYPES.IELTS ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] : [0, 1, 2, 3, 4, 5]
+      return [0.0, 1.0, 2.0, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0]
     },
     currentUser() {
       return this.$store.getters['auth/getUser']
@@ -150,6 +172,7 @@ export default {
             QuestionId: this.questionId,
             SampleText: this.form.sample,
             BandScore: this.form.bandScore,
+            Comment: this.form.comment,
             Status: this.currentUser.role === UserRole.ADMIN ? SAMPLE_STATUS.APPROVED : SAMPLE_STATUS.CONTRIBUTED
           }
           sampleService.createQuestionSample(postData).then(rs => {
@@ -163,6 +186,7 @@ export default {
               this.sampleDialogVisible = false
               this.resetFields()
               this.loadSamples()
+              this.$emit('refreshQuestion')
             }
           })
         }

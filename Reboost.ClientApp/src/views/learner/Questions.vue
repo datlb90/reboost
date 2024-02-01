@@ -1,6 +1,6 @@
 <template>
   <div class="list-container">
-    <div class="top-navigator">
+    <div class="top-navigator" style="height: 30px;">
       <el-button
         v-if="showLeftArrow"
         type="text"
@@ -47,7 +47,7 @@
       </div>
     </div>
     <div style="height: 40px;">
-      <div class="filter-container" style="width: 310px; float: left;">
+      <div class="filter-container" style="width: 400px; float: left;">
         <div class="filter-toolbar" style="margin-top: 10px;">
           <el-dropdown
             placement="bottom-start"
@@ -91,6 +91,29 @@
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
+
+          <el-dropdown
+            placement="bottom-start"
+            :hide-on-click="false"
+            style="float: left; margin-right: 15px;"
+            @command="onFilterChange"
+          >
+            <span class="el-dropdown-link" style="cursor: pointer;">
+              <el-link :underline="false" type="info">
+                Difficulty<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-for="item in filterDifficulties"
+                :key="item.text"
+                :command="item"
+                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+              >{{ item.text }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+
           <el-dropdown
             placement="bottom-start"
             :hide-on-click="false"
@@ -116,7 +139,7 @@
         </div>
       </div>
 
-      <div class="filter-container" style="width: calc(100% - 310px); float: right;">
+      <div class="filter-container" style="width: calc(100% - 400px); float: right;">
         <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
           {{ messageTranslates('question', 'resetAll') }}
         </el-button>
@@ -138,7 +161,7 @@
         type="info"
         closable
         :disable-transitions="false"
-        style="margin-right: 5px; margin-bottom: 5px;"
+        style="margin-right: 5px; margin-top: 5px;"
         @close="handleClose(tag)"
       >
         {{ tag }}
@@ -153,7 +176,23 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column prop="id" label="#" width="46" fixed="left" />
+      <el-table-column
+        label="Status"
+        prop="status"
+        fixed="left"
+        width="67"
+      >
+        <template slot-scope="scope">
+          <div style="width: 100%; text-align: center;">  <el-tooltip class="item" :content="scope.row.status" placement="bottom" style="text-align: center;">
+            <i v-if="scope.row.status == 'Completed'" class="el-icon-success" style="font-size: 18px;" />
+            <i v-else-if="scope.row.status == 'Saved'" class="el-icon-folder-checked" style="font-size: 18px;" />
+            <i v-else-if="scope.row.status == 'Attempted'" class="el-icon-edit" style="font-size: 18px;" />
+            <i v-else class="el-icon-remove-outline" style="font-size: 18px;" />
+          </el-tooltip>
+          </div>
+        </template>
+      </el-table-column>
+
       <el-table-column
         :label="messageTranslates('question', 'titleTable')"
         prop="title"
@@ -162,7 +201,7 @@
         min-width="200"
       >
         <template slot-scope="scope">
-          <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.title }}</span>
+          <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.id }}. {{ scope.row.title }}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -209,38 +248,31 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column :label="messageTranslates('question', 'statusTable')" prop="status" sortable width="110">
+      <el-table-column label="Difficulty" prop="difficulty" sortable width="110">
         <template slot-scope="scope">
           <el-tag
-            v-if="scope.row.status == 'Completed'"
-            :key="scope.row.status"
-            :type="typeSuccess"
-            size="mini"
-          >
-            {{ scope.row.status }}
-          </el-tag>
-          <el-tag
-            v-else-if="scope.row.status == 'Attempted'"
-            :key="scope.row.status"
+            v-if="scope.row.difficulty == 'Medium'"
+            :key="scope.row.difficulty"
             type="warning"
             size="mini"
           >
-            {{ scope.row.status }}
+            {{ scope.row.difficulty }}
           </el-tag>
           <el-tag
-            v-else-if="scope.row.status == 'Saved'"
-            :key="scope.row.status"
-            type="info"
+            v-else-if="scope.row.difficulty == 'Hard'"
+            :key="scope.row.difficulty"
+            type="danger"
             size="mini"
           >
-            {{ scope.row.status }}
+            {{ scope.row.difficulty }}
           </el-tag>
           <el-tag
             v-else
-            :key="scope.row.status"
+            :key="scope.row.difficulty"
             size="mini"
+            type="success"
           >
-            {{ scope.row.status }}
+            {{ scope.row.difficulty }}
           </el-tag>
         </template>
       </el-table-column>
@@ -280,6 +312,8 @@ export default {
       selectedTypes: [],
       filterStatuses: [],
       selectedStatus: [],
+      filterDifficulties: [],
+      selectedDifficulty: [],
       countQuestions: null,
       loadTest: [],
       loadStatus: [],
@@ -317,6 +351,13 @@ export default {
       this.filterSections = Object.keys(_.groupBy(this.questionCached, 'section')).map(k => ({ text: k, checked: false }))
       this.filterTypes = Object.keys(_.groupBy(this.questionCached, 'type')).map(k => ({ text: k, checked: false }))
       this.filterStatuses = Object.keys(_.groupBy(this.questionCached, 'status')).map(k => ({ text: k, checked: false }))
+      this.filterDifficulties = Object.keys(_.groupBy(this.questionCached, 'difficulty')).map(k => ({ text: k, checked: false }))
+      // Sort difficulty
+      var order = ['Easy', 'Medium', 'Hard']
+      this.filterDifficulties = this.filterDifficulties.sort(function(a, b) {
+        return order.indexOf(a.text) - order.indexOf(b.text)
+      })
+
       this.loadTable()
       this.loadSummary()
       this.$nextTick(function() {
@@ -337,8 +378,9 @@ export default {
       const _filteredSection = this.filterSections.filter(s => s.checked).map(s => s.text)
       const _filteredType = this.filterTypes.filter(s => s.checked).map(s => s.text)
       const _filteredStatus = this.filterStatuses.filter(s => s.checked).map(s => s.text)
+      const _filteredDifficulty = this.filterDifficulties.filter(s => s.checked).map(s => s.text)
 
-      this.selectionTag = _filteredSection.concat(_filteredType, _filteredStatus)
+      this.selectionTag = _filteredSection.concat(_filteredType, _filteredStatus, _filteredDifficulty)
 
       for (const q of this.questionCached) {
         let pass = true
@@ -349,6 +391,9 @@ export default {
           pass = false
         }
         if (_filteredStatus.length > 0 && !_filteredStatus.includes(q.status)) {
+          pass = false
+        }
+        if (_filteredDifficulty.length > 0 && !_filteredDifficulty.includes(q.difficulty)) {
           pass = false
         }
         if (pass) {
@@ -416,6 +461,7 @@ export default {
       this.filterSections = this.filterSections.map(i => ({ ...i, checked: false }))
       this.filterTypes = this.filterTypes.map(i => ({ ...i, checked: false }))
       this.filterStatuses = this.filterStatuses.map(i => ({ ...i, checked: false }))
+      this.filterDifficulties = this.filterDifficulties.map(i => ({ ...i, checked: false }))
       this.loadTable()
     },
     filterHandler(value, row, column) {
@@ -475,13 +521,15 @@ export default {
       const _filteredSection = this.filterSections.filter(s => s.text == tag)
       const _filteredType = this.filterTypes.filter(s => s.text == tag)
       const _filteredStatus = this.filterStatuses.filter(s => s.text == tag)
+      const _filteredDifficulty = this.filterDifficulties.filter(s => s.text == tag)
       if (_filteredSection.length > 0) {
         this.filterSections.find(s => s.text == tag).checked = false
       } else if (_filteredType.length > 0) {
         this.filterTypes.find(s => s.text == tag).checked = false
       } else if (_filteredStatus.length > 0) {
-        console.log(this.filterStatuses, tag)
         this.filterStatuses.find(s => s.text == tag).checked = false
+      } else if (_filteredDifficulty.length > 0) {
+        this.filterDifficulties.find(s => s.text == tag).checked = false
       }
       this.loadTable()
     },
@@ -495,6 +543,10 @@ export default {
     },
     resetFilterStatus() {
       this.filterStatuses = this.filterStatuses.map(i => ({ ...i, checked: false }))
+      this.loadTable()
+    },
+    resetFilterDifficulty() {
+      this.filterDifficulties = this.filterDifficulties.map(i => ({ ...i, checked: false }))
       this.loadTable()
     },
     filterSample() {
@@ -542,6 +594,7 @@ export default {
         this.textSearch = ''
         this.filterTypes = this.filterTypes.map(i => ({ ...i, checked: false }))
         this.filterStatuses = this.filterStatuses.map(i => ({ ...i, checked: false }))
+        this.filterDifficulties = this.filterDifficulties.map(i => ({ ...i, checked: false }))
         // Set section filters
         this.filterSections.forEach((e) => { e.checked = false })
         this.filterSections.find(s => s.text == topic.section).checked = true
@@ -636,15 +689,14 @@ el-table{
   display: flex;
   align-items: center;
 }
-.title-row{
-  /* font-weight: bold; */
-  text-overflow: ellipsis;
-    word-break: break-word;
-    overflow: hidden;
-    white-space: nowrap;
-}
-.title-row:hover{
+.hover-row > .el-table__cell > .cell > .title-row{
   color: #409EFF
+}
+.title-row{
+  text-overflow: ellipsis;
+  word-break: break-word;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .el-pagination {
   width: 100%;

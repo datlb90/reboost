@@ -17,23 +17,35 @@
             v-model="form.name"
             type="textinput"
             :placeholder="messageTranslates('addEditQuestion', 'placeholderName')"
+            style="width: 95%;"
           />
         </el-form-item>
+
         <div style="display:flex">
           <el-form-item prop="test" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'test')">
-            <el-select v-model="form.test" :placeholder="messageTranslates('addEditQuestion', 'test')" @change="testChange()">
+            <el-select v-model="form.test" :placeholder="messageTranslates('addEditQuestion', 'test')" style="width: 95%;" @change="testChange()">
               <el-option v-for="item in tests" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
 
           <el-form-item prop="task" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'task')">
-            <el-select v-model="form.task" :placeholder="messageTranslates('addEditQuestion', 'task')">
+            <el-select v-model="form.task" :placeholder="messageTranslates('addEditQuestion', 'task')" style="width: 95%;">
               <el-option v-for="item in tasksList" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
+
+        </div>
+        <div style="display:flex">
           <el-form-item prop="type" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'type')">
-            <el-select v-model="form.type" :placeholder="messageTranslates('addEditQuestion', 'type')" allow-create :filterable="true">
+            <el-select v-model="form.type" :placeholder="messageTranslates('addEditQuestion', 'type')" allow-create :filterable="true" style="width: 95%;">
               <el-option v-for="item in types" :key="item" :label="item" :value="item" />
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="difficulty" :rules="[{ required: true }]" size="mini" label="Difficulty">
+            <el-select v-model="form.difficulty" placeholder="Select Difficulty">
+              <el-option key="Easy" label="Easy" value="Easy" />
+              <el-option key="Medium" label="Medium" value="Medium" />
+              <el-option key="Hard" label="Hard" value="Hard" />
             </el-select>
           </el-form-item>
         </div>
@@ -44,6 +56,7 @@
             placeholder="Write something …"
             :extensions="extensions"
             :char-counter-count="false"
+            style="width: 95%;"
           />
         </el-form-item>
         <el-form-item id="questionPart" prop="part" size="mini" label="">
@@ -57,6 +70,7 @@
                 placeholder="Write something …"
                 :extensions="extensions"
                 :char-counter-count="false"
+                style="width: 95%;"
               />
             </el-form-item>
 
@@ -84,6 +98,7 @@
                 placeholder="Write something …"
                 :extensions="extensions"
                 :char-counter-count="false"
+                style="width: 95%;"
               />
             </el-form-item>
           </div>
@@ -113,17 +128,19 @@
                 placeholder="Write something …"
                 :extensions="extensions"
                 :char-counter-count="false"
+                style="width: 95%;"
               />
             </el-form-item>
           </div>
         </el-form-item>
+
+        <el-form-item>
+          <el-button v-if="isLearnerContributed" type="success" size="mini" @click="approveQuestion">{{ messageTranslates('addEditQuestion', 'approve') }}</el-button>
+          <el-button size="mini" type="primary" @click="submit">{{ messageTranslates('addEditQuestion', 'submit') }}</el-button>
+          <el-button size="mini" @click="dialogVisible = false">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
+        </el-form-item>
       </el-form>
     </div>
-    <span slot="footer" class="dialog-footer">
-      <el-button size="mini" @click="dialogVisible = false">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
-      <el-button v-if="isLearnerContributed" type="success" size="mini" @click="approveQuestion">{{ messageTranslates('addEditQuestion', 'approve') }}</el-button>
-      <el-button size="mini" type="primary" @click="submit">{{ messageTranslates('addEditQuestion', 'submit') }}</el-button>
-    </span>
 
   </el-dialog>
 </template>
@@ -139,7 +156,11 @@ import {
   Strike,
   ListItem,
   BulletList,
-  OrderedList
+  OrderedList,
+  FontSize,
+  Indent,
+  LineHeight,
+  TextColor
 } from 'element-tiptap'
 import questionService from '../../services/question.service'
 import * as stringUtil from '@/utils/string'
@@ -163,6 +184,7 @@ export default {
         test: null,
         task: null,
         type: null,
+        difficulty: null,
         content: `<p>Content here...</p>
         <p></p>`,
         part: null
@@ -194,7 +216,11 @@ export default {
         new Strike(),
         new ListItem(),
         new BulletList(),
-        new OrderedList()
+        new OrderedList(),
+        new FontSize(),
+        new TextColor(),
+        new Indent(),
+        new LineHeight()
       ],
       fileList: [],
       isLearnerContributed: false,
@@ -223,14 +249,6 @@ export default {
       this.resetData()
       this.isEdit = false
       this.dialogVisible = true
-      // this.$refs['questionForm'].resetFields()
-      // Load add/edit question data
-      // questionService.getAddEditQuestionData().then(rs => {
-      //   console.log(rs)
-      //   this.tasks = rs.tasks
-      //   this.tests = rs.tests
-      //   this.types = rs.types
-      // })
     },
     openEditDialog(question) {
       this.fileList = []
@@ -240,6 +258,7 @@ export default {
         this.form.id = rs.id
         this.form.test = rs.testId
         this.form.name = rs.title
+        this.form.difficulty = rs.difficulty
         this.form.type = rs.type
         this.form.task = rs.taskId
         this.form.content = rs.questionsPart.filter(r => r.name == 'Question')[0]?.content
@@ -308,6 +327,7 @@ export default {
           formData.set('Title', this.form.name)
           formData.set('Test', this.form.test)
           formData.set('TaskId', this.form.task)
+          formData.set('Difficulty', this.form.difficulty)
           formData.set('Type', this.form.type)
           formData.set('Status', this.currentUser.role == UserRole.ADMIN ? QUESTION_STATUS.APPROVED : QUESTION_STATUS.CONTRIBUTED)
 
@@ -368,12 +388,22 @@ export default {
           } else {
             questionService.createQuestion(formData).then(rs => {
               if (rs) {
-                this.$notify.success({
-                  title: 'Question added.',
-                  message: 'Question added successfully.',
-                  type: 'success',
-                  duration: 2000
-                })
+                if (this.currentUser.role == UserRole.ADMIN) {
+                  this.$notify.success({
+                    title: 'Question added.',
+                    message: 'Question added successfully.',
+                    type: 'success',
+                    duration: 2000
+                  })
+                } else {
+                  this.$notify.success({
+                    title: 'Success',
+                    message: 'Youe question has been submitted for review. Thank you for your contribution!',
+                    type: 'success',
+                    duration: 3000
+                  })
+                }
+
                 this.resetData()
                 this.dialogVisible = false
                 this.$emit('refreshQuestion')
@@ -467,12 +497,14 @@ export default {
     resetData() {
       this.fileList = []
       this.chartFileList = []
-      this.form.name = null
-      this.form.type = null
-      this.form.test = null
-      this.form.task = null
-      this.form.content = ''
-      this.form.part = null
+      if (this.form) {
+        this.form.name = null
+        this.form.type = null
+        this.form.test = null
+        this.form.task = null
+        this.form.content = ''
+        this.form.part = null
+      }
       this.questionTip = ''
       this.toeflReading = ''
       this.toeflListening = null

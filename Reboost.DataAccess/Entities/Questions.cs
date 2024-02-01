@@ -16,6 +16,7 @@ namespace Reboost.DataAccess.Entities
         public bool HasSample { get; set; }
         public string AverageScore { get; set; }
         public string Status { get; set; }
+        public string Difficulty { get; set; }
         public System.DateTime AddedDate { get; set; }
         public System.DateTime LastActivityDate { get; set; }
         public string UserId { get; set; }

@@ -109,7 +109,8 @@ a:focus {
 }
 
 p {
-  color: #6084a4;
+  /* color: #6084a4; */
+  color: black;
   line-height: 1.9;
 }
 
