@@ -25,7 +25,7 @@
           placeholder="Add the sample"
           :extensions="extensions"
           :char-counter-count="false"
-          style="width: 95%;"
+          style="width: 95%; overflow: auto; height: 600px;"
         />
       </el-form-item>
       <el-form-item
@@ -54,7 +54,7 @@
           placeholder="Add comment for the sample"
           :extensions="extensions"
           :char-counter-count="false"
-          style="width: 95%;"
+          style="width: 95%; overflow: auto; height: 600px;"
         />
       </el-form-item>
 

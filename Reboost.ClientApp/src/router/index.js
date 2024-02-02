@@ -65,7 +65,7 @@ import Questions from '../views/learner/Questions.vue'
 import RaterApplication from '../views/rater/Application.vue'
 import ApplicationDetail from '../views/admin/ApplicationDetail.vue'
 import PracticeWriting from '../views/learner/PracticeWriting'
-// import SelectYourTest from '../views/learner/SelectYourTest'
+import SelectYourTest from '../views/learner/SelectYourTest'
 import ApplicationStatus from '../views/rater/ApplicationStatus'
 import DiscussionDetail from '../views/learner/PracticeWriting_TabDiscussion_Detail.vue'
 import DiscussionList from '../views/learner/PracticeWriting_TabDiscussion_List.vue'
@@ -216,7 +216,7 @@ const router = new VueRouter({
       path: '/review/:questionId/:docId/:reviewId',
       name: PageName.REVIEW,
       component: Review,
-      beforeEnter: async(to, from, next) => {
+      beforeEnter: async (to, from, next) => {
         const check = await userReviewAuthentication(to.params.reviewId)
         if (check) {
           next({ name: PageName.NOT_FOUND })
@@ -234,7 +234,7 @@ const router = new VueRouter({
       path: '/review-plain/:questionId/:docId/:reviewId',
       name: PageName.REVIEW,
       component: Review,
-      beforeEnter: async(to, from, next) => {
+      beforeEnter: async (to, from, next) => {
         const check = await userReviewAuthentication(to.params.reviewId)
         if (check) {
           next({ name: PageName.NOT_FOUND })
@@ -252,7 +252,7 @@ const router = new VueRouter({
       path: '/review/:questionId/:docId/:reviewId/:isViewOrRate',
       name: PageName.REVIEW,
       component: Review,
-      beforeEnter: async(to, from, next) => {
+      beforeEnter: async (to, from, next) => {
         next()
         // if (to.params.isViewOrRate === 'view' || to.params.isViewOrRate === 'rate') {
         //   const check = await revieweeReviewAuthentication(to.params.reviewId)
@@ -381,12 +381,12 @@ const router = new VueRouter({
       component: PracticeWriting,
       name: 'PracticeWriting',
       children: [{
-      	path: 'discuss/:discussId',
+        path: 'discuss/:discussId',
         component: DiscussionDetail,
         name: 'DiscussionDetail'
       },
       {
-      	path: 'discuss',
+        path: 'discuss',
         component: DiscussionList,
         name: 'DiscussionList'
       }],
@@ -403,15 +403,15 @@ const router = new VueRouter({
         loginRequired: true
       }
     },
-    // {
-    //   path: '/SelectYourTest',
-    //   component: SelectYourTest,
-    //   name: PageName.SELECT_YOUR_TEST,
-    //   meta: {
-    //     loginRequired: true,
-    //     role: UserRole.LEARNER
-    //   }
-    // },
+    {
+      path: '/select/test',
+      component: SelectYourTest,
+      name: PageName.SELECT_YOUR_TEST,
+      meta: {
+        loginRequired: true,
+        role: UserRole.LEARNER
+      }
+    },
     {
       path: '/Subscribe',
       component: Subscribe,

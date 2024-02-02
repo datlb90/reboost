@@ -23,13 +23,13 @@
 
         <div style="display:flex">
           <el-form-item prop="test" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'test')">
-            <el-select v-model="form.test" :placeholder="messageTranslates('addEditQuestion', 'test')" style="width: 95%;" @change="testChange()">
+            <el-select v-model="form.test" :placeholder="messageTranslates('addEditQuestion', 'test')" style="width: 200px;" @change="testChange()">
               <el-option v-for="item in tests" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
 
           <el-form-item prop="task" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'task')">
-            <el-select v-model="form.task" :placeholder="messageTranslates('addEditQuestion', 'task')" style="width: 95%;">
+            <el-select v-model="form.task" :placeholder="messageTranslates('addEditQuestion', 'task')" style="width: 200px;">
               <el-option v-for="item in tasksList" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -37,12 +37,12 @@
         </div>
         <div style="display:flex">
           <el-form-item prop="type" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'type')">
-            <el-select v-model="form.type" :placeholder="messageTranslates('addEditQuestion', 'type')" allow-create :filterable="true" style="width: 95%;">
+            <el-select v-model="form.type" :placeholder="messageTranslates('addEditQuestion', 'type')" allow-create :filterable="true" style="width: 200px;">
               <el-option v-for="item in types" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
           <el-form-item prop="difficulty" :rules="[{ required: true }]" size="mini" label="Difficulty">
-            <el-select v-model="form.difficulty" placeholder="Select Difficulty">
+            <el-select v-model="form.difficulty" placeholder="Select Difficulty" style="width: 200px;">
               <el-option key="Easy" label="Easy" value="Easy" />
               <el-option key="Medium" label="Medium" value="Medium" />
               <el-option key="Hard" label="Hard" value="Hard" />
@@ -128,7 +128,7 @@
                 placeholder="Write something …"
                 :extensions="extensions"
                 :char-counter-count="false"
-                style="width: 95%;"
+                style="width: 95%; overflow: auto; height: 600px;"
               />
             </el-form-item>
           </div>
@@ -217,7 +217,9 @@ export default {
         new ListItem(),
         new BulletList(),
         new OrderedList(),
-        new FontSize(),
+        new FontSize({
+          fontSizes: ['8', '10', '12', '14', '16', '18', '20', '22', '24', '26', '28', '30', '32', '34', '36']
+        }),
         new TextColor(),
         new Indent(),
         new LineHeight()

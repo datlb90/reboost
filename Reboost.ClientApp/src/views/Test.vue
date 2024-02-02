@@ -4,7 +4,7 @@
     <ul>
       <li><router-link target="_blank" to="/register">Register</router-link></li>
       <li><router-link target="_blank" to="/login">Login</router-link></li>
-      <li><router-link target="_blank" to="/SelectYourTest">Select your test</router-link></li>
+      <li><router-link target="_blank" to="/select/test">Select your test</router-link></li>
       <li><router-link target="_blank" to="/questions">List questions</router-link></li>
       <li><router-link target="_blank" to="/rater/apply">Rater Apply</router-link></li>
       <li><router-link target="_blank" to="/reviews">My reviews</router-link></li>

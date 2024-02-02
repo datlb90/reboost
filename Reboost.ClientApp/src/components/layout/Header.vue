@@ -30,6 +30,9 @@
                   <div style=" display: inline-grid; padding-top: 10px; border-top: #d2d2d2 solid 1px; border-top: 1px solid rgb(210, 210, 210); width: 420px;">
                     <div style="padding:5px 0px;font-weight:700;font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">Hi, {{ displayName }}</div>
                     <div>Review Rating: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></div>
+                    <div style="text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="selectTest()">
+                      Selected Test: {{ testsToText() }}
+                    </div>
                     <div @click.prevent="openAddQuestionDialog()">Contribute Question</div>
                     <div @click.prevent="logout()">Logout</div>
                   </div>
@@ -158,6 +161,7 @@
                     </el-dropdown-menu>
                   </el-dropdown>
                 </div>
+                <el-dropdown-item command="selectTest" divided>Selected Test: {{ testsToText() }}</el-dropdown-item>
                 <el-dropdown-item command="addQuestion">Contribute Question</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
               </el-dropdown-menu>
@@ -212,6 +216,9 @@ export default {
     },
     currentUser() {
       return this.$store.getters['auth/getUser']
+    },
+    selectedTest() {
+      return this.$store.getters['auth/getSelectedTest']
     },
     displayName() {
       return this.currentUser.firstName ?? this.currentUser.username
@@ -273,7 +280,7 @@ export default {
       if (menu) {
         menu.style.display = ' none'
       }
-      this.$router.push('/SelectYourTest')
+      this.$router.push('/select/test')
     },
     toFix(number) {
       return Number((number).toFixed(1))

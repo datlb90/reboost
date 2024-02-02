@@ -14,8 +14,8 @@ function deleteCookie(name) {
   document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
 }
 
-export default async(router) => {
-  router.beforeEach(async(to, from, next) => {
+export default async (router) => {
+  router.beforeEach(async (to, from, next) => {
     // Check if the user has been externally authenticated
     const externalUserId = decodeURIComponent(getCookie('userId'))
     if (externalUserId != 'undefined') {
@@ -108,7 +108,7 @@ export default async(router) => {
           const check = await isApprovedRater()
           switch (check.code) {
             case -1:
-              next({ name: PageName.RATER_STATUS, params: { id: check.rater.id }})
+              next({ name: PageName.RATER_STATUS, params: { id: check.rater.id } })
               break
             case 0:
               next({ name: PageName.RATER_APPLY })
@@ -124,7 +124,13 @@ export default async(router) => {
           }
           return
         } else if (role === UserRole.LEARNER) {
-          return next({ name: PageName.QUESTIONS })
+          await store.dispatch('auth/setSelectedTest').then(rs => {
+            const tests = store.getters['auth/getSelectedTest']
+            if (tests.length > 0) {
+              return next({ name: PageName.QUESTIONS })
+            }
+            return next({ name: PageName.SELECT_YOUR_TEST })
+          })
         } else {
           next({ name: PageName.NOT_FOUND })
           return

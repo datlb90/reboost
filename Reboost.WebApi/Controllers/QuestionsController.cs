@@ -33,7 +33,6 @@ namespace Reboost.WebApi.Controllers
         [Route("")]
         public async Task<IEnumerable<QuestionModel>> GetAllAsync()
         {
-            //return await _service.GetAllAsync();
             return await _service.GetAllExAsync();
         }
         [Authorize]

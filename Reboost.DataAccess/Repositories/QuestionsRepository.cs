@@ -88,12 +88,12 @@ namespace Reboost.DataAccess.Repositories
             return dicTask;
         }
         public async Task<List<QuestionModel>> GetAllByUserAsync(string userId) {
-            //var tests = await GetTestForCurrentUsers(userId);
+            var tests = await GetTestForCurrentUsers(userId);
             var allQuestions = from quest in ReboostDbContext.Questions
                         join task in ReboostDbContext.Tasks on quest.TaskId equals task.Id
                         join sec in ReboostDbContext.TestSections on task.SectionId equals sec.Id
                         join test in ReboostDbContext.Tests on sec.TestId equals test.Id
-                       where quest.Status == QuestionStatus.ACTIVE
+                        where quest.Status == QuestionStatus.ACTIVE && tests.Contains(test.Name)
                         select new QuestionModel
                         {
                             Id = quest.Id,
@@ -171,8 +171,9 @@ namespace Reboost.DataAccess.Repositories
                         Like = quest.LikeCount,
                         Status = quest.Status,
                         Difficulty = quest.Difficulty,
-                        AddedDate = quest.AddedDate
-                    }).ToListAsync();
+                        AddedDate = quest.AddedDate,
+                        LastActivityDate = quest.LastActivityDate,
+                    }).OrderByDescending(q => q.LastActivityDate).ToListAsync();
 
             //using (var command = context.Database.GetDbConnection().CreateCommand())
             //{
@@ -542,13 +543,15 @@ namespace Reboost.DataAccess.Repositories
             exist.Title = q.Title;
             exist.Type = q.Type;
             exist.Difficulty = q.Difficulty;
+            exist.LastActivityDate = DateTime.UtcNow;
             await ReboostDbContext.SaveChangesAsync();
 
-            var parts = await ReboostDbContext.QuestionParts.Where(p => p.QuestionId == q.Id).ToListAsync();
-            ReboostDbContext.QuestionParts.RemoveRange(parts);
-
+            
             if (model.UploadedFile != null && model.UploadedFile.Count > 0)
-            {                
+            {
+                var parts = await ReboostDbContext.QuestionParts.Where(p => p.QuestionId == q.Id).ToListAsync();
+                ReboostDbContext.QuestionParts.RemoveRange(parts);
+
                 foreach (var item in model.UploadedFile)
                 {
                     if (item.ContentType == "video/mp4" || item.ContentType == "audio/mpeg")
@@ -605,10 +608,21 @@ namespace Reboost.DataAccess.Repositories
                         }
                     }
                 }
-            }
 
-            await ReboostDbContext.QuestionParts.AddRangeAsync(model.QuestionParts);
-            await ReboostDbContext.SaveChangesAsync();
+                await ReboostDbContext.QuestionParts.AddRangeAsync(model.QuestionParts);
+                await ReboostDbContext.SaveChangesAsync();
+            }
+            else
+            {
+                // Get parts that are not chart, or listening 
+                var parts = await ReboostDbContext.QuestionParts.Where(p => p.QuestionId == q.Id && p.Name != "Listening" && p.Name != "Chart").ToListAsync();
+                // Delete these parts
+                ReboostDbContext.QuestionParts.RemoveRange(parts);
+
+                // Add all parts that are not chart, or listening 
+                await ReboostDbContext.QuestionParts.AddRangeAsync(model.QuestionParts.Where(p => p.Name != "Listening" && p.Name != "Chart"));
+                await ReboostDbContext.SaveChangesAsync();
+            }
 
             return model;
         }

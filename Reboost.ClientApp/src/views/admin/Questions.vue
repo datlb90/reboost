@@ -321,216 +321,7 @@
         <el-button size="mini" type="primary" @click="deleteConfirmed()">Confirm</el-button>
       </span>
     </el-dialog>
-
   </div>
-
-  <!-- <div class="container">
-    <div class="title">
-      <h2>{{ messageTranslates('adminQuestions', 'allQuestion') }}</h2>
-    </div>
-    <div style="height: 40px;">
-      <div class="filter-container" style="width: 310px; float: left;">
-        <div class="filter-toolbar" style="margin-top: 10px;">
-          <el-dropdown
-            v-if="filterSections && filterSections.length > 0"
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              Test Sections<i class="el-icon-arrow-down el-icon--right" />
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterSections"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-
-          <el-dropdown
-            v-if="filterTypes && filterTypes.length > 0"
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              Types<i class="el-icon-arrow-down el-icon--right" />
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterTypes"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-
-          <el-dropdown
-            v-if="filterStatuses && filterStatuses.length > 0"
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              Status<i class="el-icon-arrow-down el-icon--right" />
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterStatuses"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </div>
-      </div>
-
-      <div class="filter-container" style="width: calc(100% - 310px); float: right;">
-        <el-button size="mini" style="float: right;  margin-top: 5px;" @click="openAddQuestionDialog">{{ messageTranslates('adminQuestions', 'addQuestion') }}</el-button>
-
-        <el-button size="mini" style="float: right; margin-right: 5px; margin-top: 5px;" @click="clearFilter">
-          {{ messageTranslates('question', 'resetAll') }}
-        </el-button>
-
-        <el-input
-          v-model="textSearch"
-          size="mini"
-          :placeholder="messageTranslates('question', 'placeholderSearch')"
-          style="float: right; width: 200px; margin-top: 5px;"
-          @input="search()"
-        />
-      </div>
-    </div>
-
-    <div v-if="selectionTag && selectionTag.length > 0" class="tag-selection">
-      <el-tag
-        v-for="tag in selectionTag"
-        :key="tag"
-        size="small"
-        type="info"
-        closable
-        :disable-transitions="false"
-        style="margin-right: 5px; margin-bottom: 5px;"
-        @close="handleClose(tag)"
-      >
-        {{ tag }}
-      </el-tag>
-    </div>
-    <el-table ref="filterTable" :data="questions" stripe style="width: 100%;">
-      <el-table-column prop="id" sortable label="#" width="60" />
-      <el-table-column prop="title" sortable :label="messageTranslates('adminQuestions', 'questionName')">
-        <template slot-scope="scope">
-          <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.title }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        :label="messageTranslates('adminQuestions', 'testSection')"
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ scope.row.test }} {{ scope.row.section }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        :label="messageTranslates('adminQuestions', 'questionType')"
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ scope.row.type }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        :label="messageTranslates('adminQuestions', 'createdBy')"
-        width="120"
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ scope.row.createdBy }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column :label="messageTranslates('adminQuestions', 'status')" prop="status" width="110">
-        <template slot-scope="scope">
-          <el-tag
-            v-if="scope.row.status == 'Completed'"
-            :key="scope.row.status"
-            :type="typeSuccess"
-            size="mini"
-            effect="dark"
-          >
-            {{ constantTranslate('QUESTION_STATUS', scope.row.status) }}
-          </el-tag>
-          <el-tag
-            v-else
-            :key="scope.row.status"
-            size="mini"
-            effect="dark"
-          >
-            {{ constantTranslate('QUESTION_STATUS', scope.row.status) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-
-      <el-table-column
-        :label="messageTranslates('adminQuestions', 'addedDate')"
-        sortable
-        prop="addedDate"
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ getTimeFromDateCreateToNow(scope.row.addedDate) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        :label="messageTranslates('adminQuestions', 'action')"
-        width="180"
-      >
-        <template slot-scope="scope">
-          <div style="display: flex; flex-direction: column;">
-            <el-button style="margin-left:10px;" class="action-button" size="mini" @click="publishQuestion(scope.row)">{{ messageTranslates('adminQuestions', 'publish') }}</el-button>
-            <el-button class="action-button" size="mini" @click="handleEdit(scope.row)">{{ messageTranslates('adminQuestions', 'edit') }}</el-button>
-            <el-button class="action-button" size="mini" @click="previewQuestion(scope.row)">{{ messageTranslates('adminQuestions', 'preview') }}</el-button>
-            <el-button class="action-button" size="mini" @click="openAddNewSampleDialog(scope.row)">{{ messageTranslates('adminQuestions', 'addNewSample') }}</el-button>
-            <el-button class="action-button" size="mini" @click="deleteQuestion(scope.row)">{{ messageTranslates('adminQuestions', 'delete') }}</el-button>
-          </div>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <div class="pagination">
-      <el-pagination
-        background
-        layout="total, sizes, prev, pager, next, jumper"
-        :page-size="pageSize"
-        :total="totalRow"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
-    <div>
-      <add-edit-question ref="questionDialog" @refreshQuestion="getQuestionsData" />
-      <question-preview ref="questionPreviewDialog" />
-      <add-sample ref="sampleDialog" />
-    </div>
-    <el-dialog
-      title="Delete"
-      :visible.sync="deleteDialogVisible"
-      width="30%"
-    >
-      <span>Delete this question will delete all of its samples. Do you want to continue ? This process can not be undone.</span>
-      <span slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="deleteDialogVisible = false">Cancel</el-button>
-        <el-button size="mini" type="primary" @click="deleteConfirmed()">Confirm</el-button>
-      </span>
-    </el-dialog>
-  </div> -->
 </template>
 <script>
 import _ from 'lodash'
@@ -660,7 +451,7 @@ export default {
       if (this.textSearch) {
         result = result.filter(q => q.title.toLowerCase().indexOf(this.textSearch.toLowerCase()) >= 0)
       }
-      result = result.sort((a, b) => a.id - b.id)
+      result = result.sort((a, b) => a.lastActivityDate - b.lastActivityDate)
       return result
     },
     loadSummary() {
@@ -747,7 +538,12 @@ export default {
       console.log(index, data)
     },
     rowClicked(e) {
-      console.log('question: ', e)
+      // this.$router.push({
+      //   name: 'PracticeWriting',
+      //   params: {
+      //     id: e.id
+      //   }
+      // })
     },
     search() {
       this.page = 1
