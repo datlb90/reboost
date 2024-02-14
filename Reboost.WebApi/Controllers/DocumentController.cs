@@ -43,8 +43,9 @@ namespace Reboost.WebApi.Controllers
                 TimeSpentInSeconds = model.TimeSpentInSeconds,
                 Status = "Submitted",
                 UpdatedDate = DateTime.UtcNow
-            });;
+            });
 
+            // Why do we create a new review at this point?
             await _reviewService.Create(new { revieweeId = model.UserId, submissionId = newSub.Id });
 
             return newDoc;

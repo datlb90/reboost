@@ -30,15 +30,23 @@
               </div>
 
               <!-- <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" @click="signUp()">Sign Up</button> -->
-              <el-button
+              <!-- <el-button
                 type="primary"
-                class="login-btn"
+                class="btn btn-gradient"
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
                 :loading="loading"
                 @click="signIn()"
               >
                 {{ messageTranslates('banner', 'signIn') }}
+              </el-button> -->
+              <el-button
+                class="btn btn-gradient"
+                style="width: 100%; margin-right: 20px; padding: 12px 20px;"
+                :loading="loading"
+                @click="signIn()"
+              >{{ messageTranslates('banner', 'signIn') }}
               </el-button>
+
               <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
                 {{ messageTranslates('banner', 'signInOther') }}
               </div>
@@ -58,10 +66,10 @@
 
               <div style="font-size: 14px; text-align: center; padding-top: 20px; height: 10px;">
                 {{ messageTranslates('banner', 'byLogging') }}
-                <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+                <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
                   {{ messageTranslates('banner', 'terms') }}
                 </a> {{ messageTranslates('banner', 'and') }}
-                <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+                <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
                   {{ messageTranslates('banner', 'policies') }}
                 </a>
               </div>

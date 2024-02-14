@@ -527,6 +527,7 @@ namespace Reboost.DataAccess.Repositories
             await ReboostDbContext.QuestionParts.AddRangeAsync(model.QuestionParts);
             await ReboostDbContext.SaveChangesAsync();
 
+            model.QuestionId = q.Id;
             return model;
         }
 

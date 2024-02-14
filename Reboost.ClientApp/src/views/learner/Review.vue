@@ -18,9 +18,9 @@
             />
           </el-tab-pane>
           <el-tab-pane name="rubric" label="Rubric">
-            <tabRubric ref="tabRubric" :current-user="currentUser" :questionid="questionId" :reviewid="reviewId" @setStatusText="setStatusText" />
+            <tabRubric v-if="review" ref="tabRubric" :current-user="currentUser" :questionid="questionId" :is-ai-review="isAiReview" :reviewid="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
-          <el-tab-pane v-if="isRate && !isDisputed && !isAIReview" name="rate" label="Rate">
+          <el-tab-pane v-if="isRate && !isDisputed && !isAiReview" name="rate" label="Rate">
             <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
           </el-tab-pane>
         </el-tabs>
@@ -38,6 +38,7 @@
           :is-rated="isRated"
           :is-author="isReviewAuth"
           :is-submit="isSubmit"
+          :is-loading="isLoading"
           @expandColorPickerToggle="expandColorPicker=$event"
           @hideQuestion="hideQuestion($event)"
           @submit="submitReview"
@@ -313,7 +314,7 @@ import { enableEdit, disableEdit } from '@/pdfjs/UI/edit'
 import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
-import { RATER_STATUS, REVIEW_REQUEST_STATUS, UserRole, SubmissionStatus } from '../../app.constant'
+import { REVIEW_REQUEST_STATUS, UserRole, SubmissionStatus } from '../../app.constant'
 import moment from 'moment-timezone'
 // import Rubric from '@/components/controls/Rubric'
 // import { highlightText } from '../../pdfjs/UI/highlight-text.js'
@@ -417,7 +418,9 @@ export default {
       showRubric: true,
       isAddingNewComment: false,
       completeLoading: false,
-      isAIReview: false
+      isAiReview: false,
+      isLoading: false,
+      review: null
     }
   },
   computed: {
@@ -1141,7 +1144,6 @@ export default {
       this.hideDeleteToolBar()
     },
     async handleCommentPositionsRestore(e) {
-      const documentId = document.getElementById('viewer').getAttribute('document-id')
       const highlights = document.querySelectorAll("g[data-pdf-annotate-type='comment-highlight']")
       const points = document.querySelectorAll("svg[data-pdf-annotate-type='point']")
       const commentAreas = document.querySelectorAll("rect[data-pdf-annotate-type='comment-area']")
@@ -1157,8 +1159,13 @@ export default {
       })
       this.hideDeleteToolBar()
       this.handleCommentAnnotationClick(combineArr[0])
-      const comments = await this.updateCommentAnnotations(documentId, e)
-      await PDFJSAnnotate.getStoreAdapter().updateComments(documentId, comments)
+
+      var viewer = document.getElementById('viewer')
+      if (viewer) {
+        const documentId = viewer.getAttribute('document-id')
+        const comments = await this.updateCommentAnnotations(documentId, e)
+        await PDFJSAnnotate.getStoreAdapter().updateComments(documentId, comments)
+      }
       const selected = document.getElementsByClassName('comment-card-selected')
       if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
       const annoSelected = document.querySelector('.comment-highlight-selected')
@@ -2277,6 +2284,7 @@ export default {
       return false
     },
     async submitReview() {
+      this.isLoading = true
       this.rubricCriteria = this.$refs.tabRubric?.getRubricData()
       if (!this.rubricCriteria) {
         this.$notify.error({
@@ -2356,8 +2364,9 @@ export default {
               duration: 2000
             })
 
-            if (this.currentUser?.role == UserRole.RATER && this.statusRater === RATER_STATUS.APPROVED) {
-              // this.$router.push('/reviews')
+            if (this.currentUser?.role == UserRole.RATER) {
+              // Send email to admin and student
+              this.$router.push('/reviews')
             } else {
               this.$store.dispatch('review/loadReviewsById')
               this.$router.push('/rater/application')
@@ -2380,6 +2389,7 @@ export default {
           localStorage.removeItem('reviewComment')
         })
       }
+      this.loading = false
     },
     async countAnnotations() {
       var count = 0
@@ -2903,7 +2913,8 @@ export default {
     },
     async loadReview() {
       const result = await reviewService.getById(this.$route.params.reviewId).then(async rs => {
-        console.log('Rater:', rs)
+        console.log('Review:', rs)
+
         if (this.currentUser.role === UserRole.ADMIN) {
           this.$store.dispatch('rater/setSelectedRater', rs.rater)
         }
@@ -2913,26 +2924,15 @@ export default {
             this.isView = true
             this.isSubmit = true
           }
-          // Disable dispute for now
-          // if (rs.review.status === REVIEW_REQUEST_STATUS.COMPLETED && (this.currentUser.role === UserRole.ADMIN || this.currentUser.id == rs.review.revieweeId)) {
-          //   reviewService.getDisputeByReviewId(rs.review.id).then(rs => {
-          //     if (rs) {
-          //       this.isDisputed = true
-          //       this.$refs.toolBar?.loadDisputeData(rs)
-          //       this.$refs.tabQuestion?.getDisputeData(rs)
-          //       // if (rs.adminNote) {
-          //       //   this.disputeNote.note = rs.adminNote
-          //       // }
-          //     }
-          //   })
-          // }
           this.$refs.toolBar?.loadReviewData(rs)
 
           if (rs.review.reviewerId === 'AI') {
             this.selectedTab = 'rubric'
-            this.isAIReview = true
+            this.isAiReview = true
           }
         }
+
+        this.review = rs
 
         if (rs.submission?.status.trim() === SubmissionStatus.REVIEWED) {
           this.selectedTab = 'rubric'

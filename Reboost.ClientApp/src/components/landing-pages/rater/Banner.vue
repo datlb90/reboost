@@ -65,10 +65,10 @@
 
               <div style="font-size: 14px; text-align: center; padding-top: 20px; height: 10px;">
                 By logging in, I agree to the
-                <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+                <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
                   terms
                 </a> and
-                <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+                <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
                   policies
                 </a>
               </div>

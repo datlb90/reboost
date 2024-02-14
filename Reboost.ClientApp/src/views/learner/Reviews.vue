@@ -151,7 +151,7 @@
       border
       @sort-change="sortChange"
     >
-      <el-table-column prop="id" label="#" width="46" fixed="left" />
+      <el-table-column prop="id" label="#" width="48" fixed="left" />
       <el-table-column
         prop="questionName"
         label="Topic"

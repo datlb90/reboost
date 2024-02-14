@@ -4,4 +4,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="BouncyCastle" />
+    <None Remove="Newtonsoft.Json" />
+    <None Remove="QRCoder" />
+  </ItemGroup>
 </Project>

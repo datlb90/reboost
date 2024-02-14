@@ -30,6 +30,7 @@ import { Samples } from './admin/samples'
 import { AdminArticles } from './admin/articles'
 import { AddArticle } from './admin/addArticle'
 import { LandingHeader } from './home/landingHeader'
+import { Checkout } from './checkout/checkout'
 
 const langES = {
   question: Question,
@@ -63,7 +64,8 @@ const langES = {
   adminSamples: Samples,
   adminArticles: AdminArticles,
   addArticle: AddArticle,
-  landingHeader: LandingHeader
+  landingHeader: LandingHeader,
+  checkout: Checkout
 }
 
 export default langES

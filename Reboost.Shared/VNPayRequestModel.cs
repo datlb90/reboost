@@ -8,14 +8,23 @@ using System.Text;
 
 namespace Reboost.Shared
 {
+    public class VNPayVerifyResultModel
+    {
+        public string orderId { get; set; }
+        public string vnpAmount { get; set; }
+        public string vnpayTranId { get; set; }
+        public string vnpResponseCode { get; set; }
+        public string vnpTransactionStatus { get; set; }
+        public string vnpSecureHash { get; set; }
+        public string queryString { get; set; }
+    }
     public class VNPayRequestModel
     {
-        public int submmissionId { get; set; }
+        public int orderId { get; set; }
         public int amount { get; set; }
         public string returnUrl { get; set; }
         public string ipAddress { get; set; }
     }
-
     public class VnPayLibrary
     {
         public const string VERSION = "2.1.0";

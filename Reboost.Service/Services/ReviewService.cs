@@ -227,6 +227,7 @@ namespace Reboost.Service.Services
             // Create the review with review data
             var newReview =  await _unitOfWork.Review.Create(review);
             GetReviewsModel result = new GetReviewsModel();
+            result.QuestionId = submission.QuestionId;
             result.Review = newReview;
             result.ReviewId = newReview.Id;
             result.DocId = document.Id;
@@ -583,7 +584,7 @@ namespace Reboost.Service.Services
             {
                 string url = $"{configuration["ClientUrl"]}/review/pro/" + requestId;
                 // Send mail to rater with confirm link
-                await mailService.SendEmailAsync(rater.User.Email, "New Writing Review Request!", $"You have a new pro request. Please complete the review within 24 hours using the following link: <a href='{url}'>Clicking here</a>");
+                await mailService.SendEmailAsync(rater.User.Email, "Yêu Cầu Chấm Bài Mới Từ Reboost", $"Hi {rater.User.FirstName},<p>Bạn đã nhận được 1 yêu cầu chấm bài mới từ học viên của Reboost.</p> <p>Hãy hoàn thành bài chấm trong vòng 24h sử dụng đường link sau đây: <a href='{url}'>link chấm bài</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>");
             }
             return rater;
         }

@@ -1,6 +1,7 @@
 <template>
   <div>
     <div>
+      <el-alert v-if="reviewRequested" title="Sign up free now to request review for your writing" type="success" center show-icon />
       <div class="wrapper">
         <div>
           <el-form ref="formSignUp" :model="form">
@@ -22,10 +23,18 @@
               <el-input id="password" v-model="form.password" type="password" autocomplete="off" :placeholder="messageTranslates('register', 'password')" />
             </el-form-item>
             <el-form-item>
-              <el-button
+              <!-- <el-button
                 type="primary"
                 class="login-btn"
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
+                @click="signUp()"
+              >
+                {{ messageTranslates('register', 'createAccount') }}
+              </el-button> -->
+              <el-button
+                class="btn btn-gradient"
+                style="width: 100%; margin-right: 20px; padding: 12px 20px;"
+                :loading="loading"
                 @click="signUp()"
               >
                 {{ messageTranslates('register', 'createAccount') }}
@@ -59,10 +68,10 @@
             </el-form-item>
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
               {{ messageTranslates('register', 'byLoggingIn') }}
-              <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+              <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
                 {{ messageTranslates('register', 'terms') }}
               </a> {{ messageTranslates('register', 'and') }}
-              <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+              <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
                 {{ messageTranslates('register', 'policies') }}
               </a>
             </div>
@@ -95,6 +104,9 @@ export default {
     }
   },
   async created() {
+    if (this.$router.currentRoute.query?.review && this.$router.currentRoute.query?.review == 'requested') {
+      this.reviewRequested = true
+    }
     this.googleFormAction = 'api/auth/external/google/' + encodeURIComponent(this.returnUrl)
     this.facebookFormAction = 'api/auth/external/facebook/' + encodeURIComponent(this.returnUrl)
     // this.oauthSignIn()

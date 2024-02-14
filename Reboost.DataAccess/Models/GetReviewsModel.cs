@@ -13,6 +13,7 @@ namespace Reboost.DataAccess.Models
         public Raters? Rater { get; set; }
         public Reviews Review { get; set; }
         public Submissions Submission { get; set; }
+        public int QuestionId { get; set; }
         public int ReviewId { get; set; }
         public int DocId { get; set; }
         public string Status { get; set; }

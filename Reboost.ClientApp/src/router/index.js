@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import About from '../views/About.vue'
+import Terms from '../views/Terms.vue'
 import Privacy from '../views/PrivacyPolicy.vue'
 import DataDeletion from '../views/DataDeletion.vue'
 import Document from '../views/Document.vue'
@@ -125,6 +126,15 @@ const router = new VueRouter({
       meta: {
         plainLayout: false,
         loginRequired: true
+      }
+    },
+    {
+      path: '/terms',
+      name: 'Terms',
+      component: Terms,
+      meta: {
+        plainLayout: true,
+        landingPage: false
       }
     },
     {

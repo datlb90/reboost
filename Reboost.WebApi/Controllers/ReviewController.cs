@@ -12,6 +12,8 @@ using Reboost.DataAccess.Models;
 using Reboost.Service.Services;
 using Reboost.Shared;
 using Hangfire;
+using Org.BouncyCastle.Asn1.Ocsp;
+using Microsoft.Extensions.Configuration;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -24,12 +26,15 @@ namespace Reboost.WebApi.Controllers
         private IRaterService _raterService;
         private IMailService _mailService;
         private ReboostDbContext db;
+        IConfiguration configuration;
 
-        public ReviewController(IReviewService service, IUserService userService, IRaterService raterService, IMailService mailService, ReboostDbContext ctx ) : base(service)
+        public ReviewController(IReviewService service, IUserService userService, IRaterService raterService, IMailService mailService,
+            IConfiguration _configuration, ReboostDbContext ctx ) : base(service)
         {
             _userService = userService;
             _raterService = raterService;
             _mailService = mailService;
+            configuration = _configuration;
             db = ctx;
         }
         [Authorize]
@@ -154,7 +159,7 @@ namespace Reboost.WebApi.Controllers
             var rs = await _service.SaveFeedback(id, data);
 
             // Send mail if review is not a training review
-            if(rs != null && rs.RequestId!=0)
+            if(rs != null && rs.RequestId != 0)
             {
                 // Get reviewee's Id
                 var reviewee = await _userService.GetByIdAsync(rs.RevieweeId);
@@ -162,8 +167,31 @@ namespace Reboost.WebApi.Controllers
                 // Get review's info by reviewee's Id
                 var result = await _service.GetOrCreateReviewByReviewRequestAsync(rs.RequestId, reviewee.Id);
 
-                // Send mail to reviewee
-                await _mailService.SendEmailAsync(reviewee.Email, "Review Update", "Your submission has just been updated! Follow the link at: localhost:3011/review/"+result.ReviewRequest.Submission.QuestionId+"/"+result.ReviewRequest.Submission.DocId+"/"+result.ReviewId);
+                // Send email to rater
+                string raterSubject = "Hoàn Tất Đánh Giá";
+                string raterUrl = $"{configuration["ClientUrl"]}/review/" + result.ReviewRequest.Submission.QuestionId + "/" + result.ReviewRequest.Submission.DocId + "/" + result.ReviewId;
+                string raterContent = $"Hi {currentUser.FirstName},<p> Cảm ơn bạn đã hoàn tất đánh giá cho bài viết.</p> <p>Bạn có thể xem lại hđánh giá của mình sử dụng link sau đây: <a href='{raterUrl}'>link tới bài viết</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>";
+                await _mailService.SendEmailAsync(currentUser.Email, raterSubject, raterContent);
+
+                string raterRole = "học viên";
+                if(isProRequest == 1)
+                {
+                    raterRole = "giáo viên";
+                }
+                // Send email to reviewee
+                string revieweeSubject = "Bài Viết Của Bạn Đã Được Đánh Giá Bởi Reboost";
+                string url = $"{configuration["ClientUrl"]}/review/" + result.ReviewRequest.Submission.QuestionId + "/" + result.ReviewRequest.Submission.DocId + "/" + result.ReviewId;
+                string revieweeContent = $"Hi {reviewee.FirstName},<p>Bài viết của bạn đã được đánh giá bởi " + raterRole + " của Reboost.</p> <p>Bạn có thể xem đánh giá cho bài viết của bạn sử dụng link sau đây: <a href='{url}'>link tới bài viết</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>";
+                await _mailService.SendEmailAsync(reviewee.Email, revieweeSubject, revieweeContent);
+
+                // Send email to admin
+                if (isProRequest == 1)
+                {
+                    string subject = "Giáo Viên Đã Cung Cấp Đánh Giá Cho Bài Viết";
+                    string adminUrl = $"{configuration["ClientUrl"]}/review/" + result.ReviewRequest.Submission.QuestionId + "/" + result.ReviewRequest.Submission.DocId + "/" + result.ReviewId;
+                    string content = $"Hi Admin, <p>{currentUser.FirstName} đã cung cấp đánh giá cho bài viết của học viên Reboost.</p> <p>Bạn có thể xem đánh giá cho bài viết sử dụng link sau đây: <a href='{adminUrl}'>link tới bài viết</a></p><p>Reboost Support</p>";
+                    await _mailService.SendEmailAsync("support@reboost.vn", subject, content);
+                }
             }
 
             return Ok(rs);

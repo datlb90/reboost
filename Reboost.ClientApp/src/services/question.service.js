@@ -1,6 +1,9 @@
 import http from '@/utils/axios'
 
 const questionService = {
+  createPersonalSubmission(model) {
+    return http.post('/questions/peronsal/submission', model).then(rs => rs.data)
+  },
   getAll() {
     return http.get('/questions').then(rs => { return rs ? rs.data : [] })
   },

@@ -626,13 +626,13 @@ namespace Reboost.DataAccess.Repositories
         }
         public async Task<GetReviewsModel> CreateReviewFromQueue(string userID)
         {
-            decimal rate = 0;
-            var userRate = await db.UserRanks.Where(r => r.UserId == userID).FirstOrDefaultAsync();
+            //decimal rate = 0;
+            //var userRate = await db.UserRanks.Where(r => r.UserId == userID).FirstOrDefaultAsync();
 
-            if(userRate != null)
-            {
-                rate = userRate.AverageReviewRate;
-            }
+            //if(userRate != null)
+            //{
+            //    rate = userRate.AverageReviewRate;
+            //}
 
             var tests = await GetTestForCurrentUsers(userID);
 
@@ -641,18 +641,12 @@ namespace Reboost.DataAccess.Repositories
                                  join question in db.Questions on rq.Submission.QuestionId equals question.Id
                                  join sec in db.TestSections on question.Task.SectionId equals sec.Id
                                  join test in db.Tests on sec.TestId equals test.Id
-                                 where queue.MinimumRate <= rate && queue.Status == 0 && rq.Status != SubmissionStatus.PENDING
+                                 where queue.Status == 0 && rq.Status != SubmissionStatus.PENDING // && queue.MinimumRate <= rate
                                  && tests.Contains(test.Name) && rq.UserId != userID && rq.FeedbackType == ReviewRequestType.FREE
-                                 orderby queue.Priority descending, queue.RequestedDatetime ascending
+                                 orderby
+                                 //queue.Priority descending,
+                                 queue.RequestedDatetime ascending
                                  select queue).FirstOrDefaultAsync();
-
-            //var request = db.RequestQueue
-            //    .FromSqlRaw(@"UPDATE TOP(1) RequestQueue WITH (UPDLOCK, READPAST)
-            //                SET Status = 1
-            //                OUTPUT inserted.*
-            //                FROM RequestQueue rq
-            //                INNER JOIN ReviewRequests rr ON rq.RequestId = rr.Id 
-            //                WHERE rq.Status = 0 AND minimumRate <= " + rate + " AND rr.Status != 'Pending'").AsEnumerable().FirstOrDefault();
 
             if (request != null)
             {

@@ -50,6 +50,7 @@ namespace Reboost.DataAccess
         public virtual DbSet<Articles> Articles { get; set; }
         public virtual DbSet<ArticleLabels> ArticleLabels { get; set; }
         public virtual DbSet<ArticleRelations> ArticleRelations { get; set; }
+        public virtual DbSet<Orders> Orders { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
             : base(options)

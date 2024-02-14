@@ -1,29 +1,39 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Hangfire.Dashboard;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OpenAI_API.Moderation;
+using Org.BouncyCastle.Asn1.Ocsp;
 using Org.BouncyCastle.Asn1.X9;
 using Reboost.DataAccess;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
+using Reboost.Service.ZaloPay;
 using Reboost.Shared;
+using Stripe;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Net;
+using System.Security.Policy;
 using System.Threading.Tasks;
 
 namespace Reboost.Service.Services
 {
     public interface IPaymentService
     {
+        Task<Orders> VerifyZaloPayStatus(ZaloPayVerifyResultModel model);
+        Task<ZaloCallbackResultModel> ZaloPaymentCallback(CallbackRequest cbdata);
+        Task<string> GetZaloPayUrl(ZaloPayRequestModel model);
+        Task<Orders> VerifyVnPayStatus(VNPayVerifyResultModel model);
         string GetVNPayUrl(VNPayRequestModel model);
         Task<IEnumerable<Payments>> GetAllAsync();
         Task<List<Payments>> GetAllPaymentByUserIdAsync(string id);
         Task<Payments> CreatePaymentAsync(Payments pm);
         Task<User> UpdateStripeId(User user, string id);
         Task<IEnumerable<Payments>> GetOutPaymentByUserId(string userId);
-        //Task<List<PaymentHistory>> GetAllPaymentHistory();
-        //Task<PaymentHistory> CreateNewPaymentAsync(PaymentHistory ph);
         Task<string> RaterPayout(string userId);
         Task<List<RaterBalances>> GetRaterPayableBalanceAsync(string userId);
         Task<List<RaterBalances>> GetAllRaterBalanceAsync(string userId);
@@ -37,13 +47,223 @@ namespace Reboost.Service.Services
     {
         private IStripeService mStripeService;
         private IRaterService mRaterService;
+        private IOrderService _orderService;
         private IConfiguration _configuration;
-        public PaymentService(IUnitOfWork unitOfWork, IStripeService stripeService, IRaterService raterService, IConfiguration configuration) : base(unitOfWork)
+        public PaymentService(IUnitOfWork unitOfWork, IStripeService stripeService, IRaterService raterService,
+            IOrderService orderService, IConfiguration configuration) : base(unitOfWork)
         {
             mStripeService = stripeService;
             mRaterService = raterService;
             _configuration = configuration;
+            _orderService = orderService;
         }
+
+        public async Task<Orders> VerifyZaloPayStatus(ZaloPayVerifyResultModel model)
+        {
+            var checksumData = model.appid + "|" + model.apptransid + "|" + model.pmcid + "|" +
+                model.bankcode + "|" + model.amount + "|" + model.discountamount + "|" + model.status;
+            var checksum = HmacHelper.Compute(ZaloPayHMAC.HMACSHA256, _configuration.GetSection("PaymentGateway:ZaloPay")["key2"], checksumData);
+
+            if (checksum.Equals(model.checksum))
+            {
+                // Kiểm tra xem đã nhận được callback hay chưa,
+                // nếu chưa thì tiến hành gọi API truy vấn trạng thái thanh toán của đơn hàng để lấy kết quả cuối cùng
+
+                // Kiểm tra đã nhận được callback hay chưa bằng cách try vấn trạng thái đơn hàng của Reboost
+                // Nếu trạng thái đơn hàng là 1, và có transaction id, nghĩa là đã nhận được callback
+                // Nếu trạng thái đơn hàng là 0, nghĩa là chưa nhận đượallbackc callback hoặc có nhận được nhưng không xử lý đ
+                string transactionId = model.apptransid;
+                string[] transPlited = transactionId.Split('_');
+                // Get the orderId from transaction id
+                int orderId = Int32.Parse(transPlited[1]);
+
+                Orders order = await _orderService.GetById(orderId);
+                // Sanity check to make sure this is the right order
+                if (order != null && order.Amount == Int32.Parse(model.amount))
+                {
+                    if(order.Status == PaymentStatus.COMPLETED && !String.IsNullOrEmpty(order.TransactionCode)) // Đã nhận callback
+                    {
+                        return order;
+                    }
+                    else // Chưa nhận được callback
+                    {
+                        // Gọi API truy vấn trạng thái thanh toán của đơn hàng để lấy kết quả cuối cùng
+                        var param = new Dictionary<string, string>();
+                        string appId = _configuration.GetSection("PaymentGateway:ZaloPay")["app_id"];
+                        string key1 = _configuration.GetSection("PaymentGateway:ZaloPay")["key1"];
+                        param.Add("app_id", appId);
+                        param.Add("app_trans_id", model.apptransid);
+                        var data = appId + "|" + model.apptransid + "|" + key1;
+
+                        param.Add("mac", HmacHelper.Compute(ZaloPayHMAC.HMACSHA256, key1, data));
+
+                        var orderStatusResult = await HttpHelper.PostFormAsync(_configuration.GetSection("PaymentGateway:ZaloPay")["query_order_url"], param);
+                        int orderStatus = Int32.Parse(orderStatusResult["return_code"].ToString());
+                        if (orderStatus == 1)
+                        {
+                            // Update Reboost's order and return the order
+                            order.Status = PaymentStatus.COMPLETED;
+                            order.TransactionCode = orderStatusResult["zp_trans_id"].ToString();
+                            order.LastActivityDate = DateTime.UtcNow;
+                            return await _orderService.Update(order);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+
+        public async Task<ZaloCallbackResultModel> ZaloPaymentCallback(CallbackRequest cbdata)
+        {
+            ZaloCallbackResultModel result = new ZaloCallbackResultModel();
+            result.return_code = -1;
+            result.return_message = "Error";
+            try
+            {
+                var dataStr = Convert.ToString(cbdata.Data);
+                var reqMac = Convert.ToString(cbdata.Mac);
+                var mac = HmacHelper.Compute(ZaloPayHMAC.HMACSHA256, _configuration.GetSection("PaymentGateway:ZaloPay")["key2"], dataStr);
+                Console.WriteLine("mac = {0}", mac);
+                // kiểm tra callback hợp lệ (đến từ ZaloPay server)
+                if (!reqMac.Equals(mac))
+                {
+                    // Callback không hợp lệ
+                    result.return_code = -1;
+                    result.return_message = "Mac not equal";
+                }
+                else
+                {
+                    // Thanh toán thành công
+                    // Merchant cập nhật trạng thái cho đơn hàng
+                    var dataJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(dataStr);
+                    string transactionId = dataJson["app_trans_id"].ToString();
+                    string[] transPlited = transactionId.Split('_');
+                    // Get the orderId from transaction id
+                    int orderId = Int32.Parse(transPlited[1]);
+                    int amount = Int32.Parse(dataJson["amount"].ToString());
+                    Orders order = await _orderService.GetById(orderId);
+                    if (order != null)
+                    {
+                        if (order.Amount == amount)
+                        {
+                            if (order.Status == PaymentStatus.PENDING)
+                            {
+                                // Cập nhật trạng thái cho đơn hàng
+                                order.Status = PaymentStatus.COMPLETED;
+                                order.TransactionCode = dataJson["zp_trans_id"].ToString();
+                                order.LastActivityDate = DateTime.UtcNow;
+                                await _orderService.Update(order);
+                                result.return_code = 1;
+                                result.return_message = "success";
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // ZaloPay server sẽ callback lại (tối đa 3 lần)
+                result.return_code = 0; 
+                result.return_message = ex.Message;
+            }
+            // thông báo kết quả cho ZaloPay server
+            return result;
+        }
+
+        public async Task<string> GetZaloPayUrl(ZaloPayRequestModel model)
+        {
+            var embed_data = new { preferred_payment_method = new string[] {  } };
+            var items = new[] { new { } };
+            var app_trans_id = model.orderId;
+            var param = new Dictionary<string, string>();
+
+            param.Add("app_id", _configuration.GetSection("PaymentGateway:ZaloPay")["app_id"]);
+            param.Add("app_user", model.userId);
+            param.Add("app_time", Util.GetTimeStamp().ToString());
+            param.Add("amount", model.amount.ToString());
+            param.Add("app_trans_id", DateTime.Now.ToString("yyMMdd") + "_" + app_trans_id); // mã giao dich có định dạng yyMMdd_xxxx
+            param.Add("embed_data", JsonConvert.SerializeObject(embed_data));
+            param.Add("item", JsonConvert.SerializeObject(items));
+            param.Add("description", "Reboost - Thanh toán dịch vụ chấm bài viết chuyên nghiệp, mã đơn hàng #" + app_trans_id);
+            param.Add("bank_code", "");
+            param.Add("callback_url", _configuration["AppUrl"] + "/api/payment/zalopay/callback");
+            param.Add("redirect_url", _configuration["ClientUrl"] + "/submissions"); // Replace with the actual redirect_url
+
+            var data = _configuration.GetSection("PaymentGateway:ZaloPay")["app_id"] + "|" + param["app_trans_id"] + "|" + param["app_user"] + "|" + param["amount"] + "|"
+                + param["app_time"] + "|" + param["embed_data"] + "|" + param["item"];
+            param.Add("mac", HmacHelper.Compute(ZaloPayHMAC.HMACSHA256, _configuration.GetSection("PaymentGateway:ZaloPay")["key1"], data));
+
+            var result = await HttpHelper.PostFormAsync(_configuration.GetSection("PaymentGateway:ZaloPay")["create_order_url"], param);
+
+            // Create schedule to check callback after 15 minute?
+
+            // Send the order_url to the front end for redirection
+            int return_code = Int32.Parse(result["return_code"].ToString());
+            if(return_code == 1)
+            {
+                return result["order_url"].ToString();
+            }
+            return null;
+        }
+
+        public async Task<Orders> VerifyVnPayStatus(VNPayVerifyResultModel model)
+        {
+            var vnpData = _configuration.GetSection("PaymentGateway:VNPay");
+            string vnp_HashSecret = vnpData["vnp_HashSecret"];
+            int orderId = Convert.ToInt32(model.orderId);
+            int vnp_Amount = Convert.ToInt32(model.vnpAmount) / 100;
+            string vnp_ResponseCode = model.vnpResponseCode;
+            string vnp_TransactionStatus = model.vnpTransactionStatus;
+            String vnp_SecureHash = model.vnpSecureHash;
+
+            VnPayLibrary vnpay = new VnPayLibrary();
+
+            string[] queryStrings = model.queryString.Split("&");
+            foreach (string s in queryStrings)
+            {
+                string[] sParameterName = s.Split("=");
+                //get all querystring data
+                if (!string.IsNullOrEmpty(sParameterName[0]) && sParameterName[0].StartsWith("vnp_"))
+                {
+                    vnpay.AddResponseData(sParameterName[0], sParameterName[1]);
+                }
+            }
+
+            bool checkSignature = vnpay.ValidateSignature(vnp_SecureHash, vnp_HashSecret);
+            if (checkSignature)
+            {
+                // Cap nhat order
+                Orders order = await _orderService.GetById(orderId);
+                if(order != null)
+                {
+                    if(order.Amount == vnp_Amount)
+                    {
+                        if(order.Status == PaymentStatus.PENDING)
+                        {
+                            if (vnp_ResponseCode == "00" && vnp_TransactionStatus == "00")
+                            {
+                                // Payment success
+                                order.Status = PaymentStatus.COMPLETED;
+                                order.TransactionCode = model.vnpayTranId;
+                                order.LastActivityDate = DateTime.UtcNow;
+                                return await _orderService.Update(order);
+                            }
+                            else
+                            {
+                                // Payment failure
+                                order.Status = PaymentStatus.ERROR;
+                                order.TransactionCode = model.vnpayTranId;
+                                order.LastActivityDate = DateTime.UtcNow;
+                                await _orderService.Update(order);
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
         public string GetVNPayUrl(VNPayRequestModel model)
         {
             //Get configuration info
@@ -60,17 +280,17 @@ namespace Reboost.Service.Services
             vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
             //Số tiền thanh toán. Số tiền không mang các ký tự phân tách thập phân, phần nghìn, ký tự tiền tệ.
             //Để gửi số tiền thanh toán là 100,000 VND (một trăm nghìn VNĐ) thì merchant cần nhân thêm 100 lần (khử phần thập phân), sau đó gửi sang VNPAY là: 10000000
-            vnpay.AddRequestData("vnp_Amount", (model.amount * 10000).ToString());
+            vnpay.AddRequestData("vnp_Amount", (model.amount * 100).ToString());
             vnpay.AddRequestData("vnp_CreateDate", DateTime.Now.AddHours(12).ToString("yyyyMMddHHmmss"));
             vnpay.AddRequestData("vnp_CurrCode", "VND");
             vnpay.AddRequestData("vnp_IpAddr", model.ipAddress);
             vnpay.AddRequestData("vnp_Locale", "vn");
-            vnpay.AddRequestData("vnp_OrderInfo", "Thanh toán dịch vụ chấm bài với mã nộp bài: " + model.submmissionId);
+            vnpay.AddRequestData("vnp_OrderInfo", "Thanh toán dịch vụ chấm bài với mã đơn : " + model.orderId);
             //default value: other
             vnpay.AddRequestData("vnp_OrderType", "other"); 
             vnpay.AddRequestData("vnp_ReturnUrl", vnp_Returnurl);
             // Mã tham chiếu của giao dịch tại hệ thống của merchant. Mã này là duy nhất dùng để phân biệt các đơn hàng gửi sang VNPAY. Không được trùng lặp trong ngày
-            vnpay.AddRequestData("vnp_TxnRef", model.submmissionId.ToString()); 
+            vnpay.AddRequestData("vnp_TxnRef", model.orderId.ToString()); 
             return vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
         }
 

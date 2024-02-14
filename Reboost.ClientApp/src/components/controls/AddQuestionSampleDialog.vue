@@ -4,6 +4,8 @@
     :title="messageTranslates('addQuestionSampleDialog', 'title')"
     :visible.sync="sampleDialogVisible"
     width="800px"
+    top="10vh"
+    :close-on-click-modal="false"
   >
     <el-form
       ref="form"
@@ -25,7 +27,7 @@
           placeholder="Add the sample"
           :extensions="extensions"
           :char-counter-count="false"
-          style="width: 95%; overflow: auto; height: 600px;"
+          style="width: 95%; overflow: auto; height: 400px;"
         />
       </el-form-item>
       <el-form-item
@@ -54,30 +56,14 @@
           placeholder="Add comment for the sample"
           :extensions="extensions"
           :char-counter-count="false"
-          style="width: 95%; overflow: auto; height: 600px;"
+          style="width: 95%; overflow: auto; height: 400px;"
         />
       </el-form-item>
-
-      <!-- <el-form-item
-        prop="source"
-        :label="messageTranslates('addQuestionSampleDialog', 'source')"
-        size="mini"
-        :rules="[{ required: true, message: 'Source is required' }]"
-      >
-        <el-select v-model="form.source" clearable placeholder="Select source" style="width: 100%">
-          <el-option
-            v-for="item in optionsSource"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item> -->
+      <el-form-item>
+        <el-button size="mini" @click="sampleDialogVisible = false">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
+        <el-button size="mini" type="primary" @click="onAddSample">{{ messageTranslates('addEditQuestion', 'submit') }}</el-button>
+      </el-form-item>
     </el-form>
-    <span slot="footer" class="dialog-footer">
-      <el-button size="mini" @click="sampleDialogVisible = false">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
-      <el-button size="mini" type="primary" @click="onAddSample">{{ messageTranslates('addEditQuestion', 'submit') }}</el-button>
-    </span>
   </el-dialog>
 </template>
 <script>
@@ -160,10 +146,12 @@ export default {
       this.$store.dispatch('question/loadSampleByQuestion', +this.questionId)
     },
     resetFields() {
-      console.log('reset')
-      this.form.sample = null
-      this.form.bandScore = 0
-      this.form.source = null
+      this.form = {
+        sample: null,
+        bandScore: 0,
+        source: null,
+        comment: null
+      }
     },
     onAddSample() {
       this.$refs['form'].validate((valid) => {

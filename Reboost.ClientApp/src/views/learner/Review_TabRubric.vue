@@ -12,12 +12,38 @@
             >
               <div slot="header" class="clearfix">
                 <div>
-                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 65px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 90px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
                     {{ criteria.name }}
                   </div>
-                  <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="float: right;">
-                    <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
+                  <div style="float: right;">
+                    <el-tooltip placement="right" effect="light" popper-class="rubric-description" sty>
+                      <div slot="content">
+                        <div>
+                          <el-table
+                            :data="criteria.bandScoreDescriptions"
+                            border
+                            style="width: 650px;"
+                            height="800"
+                          >
+                            <el-table-column
+                              prop="bandScore"
+                              label="Band"
+                              width="70"
+                            />
+                            <el-table-column
+                              prop="description"
+                              label="Desciption"
+                            />
+                          </el-table>
+                        </div>
+                      </div>
+                      <el-button :id="'save-btn-' + criteria.id" type="info" plain icon="el-icon-info" size="mini">Rubric</el-button>
+                    </el-tooltip>
+
                   </div>
+                  <!-- <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="float: right;">
+                    <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
+                  </div> -->
                 </div>
 
                 <!-- <div style="font-size: 14px;">
@@ -89,6 +115,36 @@
         </div>
       </div>
     </div>
+
+    <el-dialog
+      v-if="selectedCriteria"
+      title="Rubric Criteria Description"
+      :visible.sync="dialogVisible"
+      width="50%"
+      :before-close="handleClose"
+      style="z-index: 100000;"
+    >
+      <span>RubricName</span>
+      <div>
+        <el-table
+          :data="selectedCriteria.bandScoreDescriptions"
+          border
+          style="width: 900px"
+        >
+          <el-table-column
+            prop="bandScore"
+            label="Band"
+            width="70"
+          />
+          <el-table-column
+            prop="description"
+            label="Desciption"
+          />
+        </el-table>
+      </div>
+
+    </el-dialog>
+
   </div>
 </template>
 <script>
@@ -103,24 +159,34 @@ export default ({
   props: {
     questionid: { type: Number, default: null },
     reviewid: { type: Number, default: null },
-    currentUser: { type: Object, default: null }
+    currentUser: { type: Object, default: null },
+    isAiReview: {type: Boolean, default: false}
   },
   data() {
     return {
       rubricCriteria: [],
-      readOnly: false
+      readOnly: false,
+      dialogVisible: false,
+      selectedCriteria: null
     }
   },
   computed: {
   },
   async mounted() {
+    console.log(this.isAiReview)
     this.loadRubric()
   },
   methods: {
+    showDescriptionDialog(criteria) {
+      var rightPanel = document.getElementById('right-panel')
+      rightPanel.style.display = 'none'
+      this.selectedCriteria = criteria
+      this.dialogVisible = true
+    },
     async loadRubric() {
       const rs = await rubricService.getByQuestionId(this.questionid)
       if (rs) {
-        this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: criteria.name == 'Critical Errors' ? 0 : null, isFocused: false, comment: '' }))
+        this.rubricCriteria = rs.filter(r => this.isAiReview ? true : r.name != 'Critical Errors').map(criteria => ({ ...criteria, mark: criteria.name == 'Critical Errors' ? 0 : null, isFocused: false, comment: '' }))
         // Get rubric data from localstorage first
         var hasComment = false
         var retrievedComment = localStorage.getItem('reviewRubricComment')
@@ -152,7 +218,6 @@ export default ({
                     criteria.mark = criteria.name == 'Critical Errors' ? 0 : rc.score
                   }
                 })
-                console.log(this.rubricCriteria)
                 var cmt = { id: rc.criteriaId, content: rc.comment, reviewid: this.reviewid, questionid: this.questionid }
                 retrievedComment.push(cmt)
 
@@ -300,7 +365,6 @@ export default ({
       this.$emit('setStatusText')
     },
     getRubricData() {
-      console.log(this.rubricCriteria)
       var invalidData = this.rubricCriteria.filter(r => { return r.comment === '' || r.mark == null })
       if (invalidData.length > 0) {
         console.log('invalid data')
@@ -329,5 +393,8 @@ export default ({
   border-color: #409EFF !important;
   -webkit-box-shadow: -1px 0 0 0 #409EFF !important;
   box-shadow: -1px 0 0 0 #409EFF !important;
+}
+.rubric-description > table{
+  width: 800px;
 }
 </style>

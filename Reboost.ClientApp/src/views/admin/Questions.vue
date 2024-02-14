@@ -283,10 +283,10 @@
               <i class="el-icon-menu" style="font-size: 16px; padding: 10px;" />
             </span>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="publish"> Publish</el-dropdown-item>
               <el-dropdown-item command="edit"> Edit</el-dropdown-item>
-              <el-dropdown-item command="preview"> Preview</el-dropdown-item>
               <el-dropdown-item command="sample"> Add Sample</el-dropdown-item>
+              <el-dropdown-item command="preview"> Preview</el-dropdown-item>
+              <el-dropdown-item command="publish"> Publish</el-dropdown-item>
               <el-dropdown-item command="delete"> Delete</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>

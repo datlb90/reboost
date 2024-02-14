@@ -11,10 +11,10 @@ const rubricService = {
     return http.get(`/rubric/getByQuestionId/${id}`).then(rs => rs.data)
   },
   insert(data) {
-    return http.post('/rubric/create', data, { headers: { 'Content-Type': 'multipart/form-data' }}).then(rs => rs.data)
+    return http.post('/rubric/create', data, { headers: { 'Content-Type': 'multipart/form-data' } }).then(rs => rs.data)
   },
   update(data) {
-    return http.post('/rubric/update', data, { headers: { 'Content-Type': 'multipart/form-data' }}).then(rs => rs.data)
+    return http.post('/rubric/update', data, { headers: { 'Content-Type': 'multipart/form-data' } }).then(rs => rs.data)
   }
 }
 

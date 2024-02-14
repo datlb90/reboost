@@ -67,6 +67,18 @@ export default {
 </script>
 
 <style>
+.el-dialog__header  {
+  background: #ecf5ff;
+  padding-bottom: 15px !important;
+}
+@media only screen and (max-width:  780px) {
+  #header {
+    position: fixed !important;
+  }
+  .list-container {
+    padding-top: 50px;
+  }
+}
 
 @media only screen and (min-width:  480px) {
   .nav-container {
@@ -77,7 +89,7 @@ export default {
   }
 }
 
-@media only screen and (min-width: 680px) {
+@media only screen and (min-width: 780px) {
   .list-container, .nav-container {
     max-width: 100%;
     margin: auto;

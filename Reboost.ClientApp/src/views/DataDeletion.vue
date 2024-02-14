@@ -1,7 +1,7 @@
 
 <template>
   <div id="data-deletion">
-    <h1>Delete Your Data Instructions</h1>
+    <h1 style="margin-bottom: 20px;">Delete Your Data Instructions</h1>
     <p>Thank you for using our app. If you wish to delete your data, you can follow the instructions below:</p>
     <p>
       - Send an email to our support team at <a href="mailto:reboost.ad@gmail.com">reboost.ad@gmail.com</a> requesting your data to be deleted
@@ -21,9 +21,10 @@ export default {
 </script>
 <style>
 #data-deletion {
-  width: 800px;
+  width: 900px;
   margin: auto;
-  padding: 20px;
+  padding: 40px;
+  background: #edeeef;
 }
 </style>
 

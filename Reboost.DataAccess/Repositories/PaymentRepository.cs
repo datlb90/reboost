@@ -36,6 +36,7 @@ namespace Reboost.DataAccess.Repositories
         {
             _context = context;
         }
+
         public async Task<Payments> GetDetailByPaymentId(string id)
         {
             return await (from q in ReboostDbContext.Payments

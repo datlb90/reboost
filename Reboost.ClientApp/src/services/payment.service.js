@@ -2,6 +2,18 @@ import http from '@/utils/axios'
 import Axios from 'axios'
 
 const paymentService = {
+  verifyZaloPayStatus(model) {
+    return http.post('/payment/zalopay/verify', model).then(rs => rs.data)
+  },
+  submitZaloPayRequest(model) {
+    return http.post('/payment/zalopay/request', model).then(rs => rs.data)
+  },
+  verifyVnPayStatus(model) {
+    return http.post('/payment/vnpay/verify', model).then(rs => rs.data)
+  },
+  createNewOrder(order) {
+    return http.post('/payment/order', order).then(rs => rs.data)
+  },
   submitVNPayRequest(model) {
     return http.post('/payment/vnpay/request', model).then(rs => rs.data)
   },

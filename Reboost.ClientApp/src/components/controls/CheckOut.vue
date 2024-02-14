@@ -2,7 +2,7 @@
   <el-dialog
     id="practiceWritingCheckoutContainer"
     :visible.sync="dlVisible"
-    width="600px"
+    width="800px"
     height="820px"
     :before-close="handleClose"
     @opened="dialogOpened"
@@ -16,21 +16,21 @@
         <div v-if="selectedReview == ''" class="tip">
           <span style="font-size: 15px; color: #6084a4;">Select the right review service for you:</span>
         </div>
-        <el-page-header v-if="selectedReview == 'pro' || selectedReview == 'ai'" class="tip" content="Select a payment method for your service" @back="goBack" />
-        <el-page-header v-if="selectedReview == 'peer'" class="tip" content="Confirm your selection" @back="goBack" />
-        <div v-if="selectedReview == '' || selectedReview == 'pro'" id="pro-review-card" class="box-card review-card" @click="onReviewSelect('pro')">
+        <el-page-header v-if="selectedReview == 'Pro' || selectedReview == 'AI'" class="tip" content="Select a payment method for your service" @back="goBack" />
+        <el-page-header v-if="selectedReview == 'Free'" class="tip" content="Confirm your selection" @back="goBack" />
+        <div v-if="selectedReview == '' || selectedReview == 'Pro'" id="pro-review-card" class="box-card review-card" @click="onReviewSelect('Pro')">
           <div>
             <div class="review-icon-wrapper" style="width: 62px; margin-left: 13px;"> <i class="fas fa-user-graduate review-icon" /></div>
             <div class="review-description-wrapper">
-              <div class="review-title">Pro Review Service</div>
+              <div class="review-title">{{ messageTranslates('checkout', 'proTitle') }}</div>
               <div class="review-description">
                 Our certified rater will score your essay and provide detailed feedback within 24 hours (<a href="#">sample feedback</a>)
               </div>
             </div>
-            <div class="review-price">$15</div>
+            <div class="review-price">200.000 VNĐ</div>
           </div>
         </div>
-        <div v-if="selectedReview == '' || selectedReview == 'ai'" id="ai-review-card" class="box-card review-card" @click="onReviewSelect('ai')">
+        <div v-if="selectedReview == '' || selectedReview == 'AI'" id="ai-review-card" class="box-card review-card" @click="onReviewSelect('AI')">
           <div>
             <div class="review-icon-wrapper"><i class="fas fa-robot review-icon" /></div>
             <div class="review-description-wrapper">
@@ -39,11 +39,11 @@
                 Get insighful feedback and score from our powerful writing review AI within seconds (<a href="#">sample feedback</a>)
               </div>
             </div>
-            <div class="review-price">$2</div>
+            <div class="review-price">30.000 VNĐ</div>
           </div>
         </div>
 
-        <div v-if="selectedReview == 'peer'">
+        <div v-if="selectedReview == 'Free'">
           <div style="padding-top: 20px; text-align: center;">
             <el-alert
               v-if="unratedCount > 0"
@@ -54,34 +54,41 @@
           </div>
         </div>
 
-        <div v-if="selectedReview == '' || selectedReview == 'peer'" id="peer-review-card" class="box-card review-card" @click="onReviewSelect('peer')">
+        <div v-if="selectedReview == '' || selectedReview == 'Free'" id="peer-review-card" class="box-card review-card" @click="onReviewSelect('Free')">
           <div>
             <div class="review-icon-wrapper"> <i class="fas fa-user-friends review-icon" /></div>
             <div class="review-description-wrapper">
               <div class="review-title">Free Peer Review</div>
+              <!-- <div class="review-title">Đánh Giá Miễn Phí Từ Học Viên Khác</div> -->
               <div class="review-description">
                 Get constructive feedback from another learner with similar or higher writing level (<a href="#">sample feedback</a>)
               </div>
             </div>
-            <div class="review-price">Free</div>
+            <div class="review-price">Miễn Phí</div>
           </div>
         </div>
       </div>
-      <div v-if="selectedReview == 'peer'">
+      <div v-if="selectedReview == 'Free'">
         <div style="padding-top: 10px; text-align: center;">
           <el-button type="primary" :disabled="unratedCount > 0" @click="requestPeerReview()">Confirm Selection</el-button>
         </div>
       </div>
-      <div v-show="selectedReview == 'pro' || selectedReview == 'ai'" class="co-form" :class="{ active: activeStep == 1 }">
+      <div v-show="selectedReview == 'Pro' || selectedReview == 'AI'" class="co-form" :class="{ active: activeStep == 1 }">
         <div class="co-form__section" :class="{ inactive: activeStep == 2 }">
           <div class="co-form__title" style="padding-top: 10px">
             <el-button v-if="activeStep == 2" style="position: absolute;right: 1rem;" size="mini" type="primary" @click="editCheckOutInfo">Edit</el-button>
           </div>
-          <!-- <div class="pay-button-container">
+          <div class="pay-button-container">
+            <el-button type="danger" style="width: 100%; color: #006BC2; font-size: 18px; padding: 15px;" @click="submitZaloPayRequest()">
+              Pay with ZaloPay
+            </el-button>
+          </div>
+
+          <div class="pay-button-container">
             <el-button type="danger" style="width: 100%; color: #006BC2; font-size: 18px; padding: 15px;" @click="submitVNPayRequest()">
               Pay with VNPay
             </el-button>
-          </div> -->
+          </div>
           <div v-if="!paid" id="paypal-button-container" class="pay-button-container" />
         </div>
         <div v-if="activeStep == 1" class="saperator" />
@@ -102,7 +109,6 @@ import reviewService from '../../services/review.service'
 export default {
   name: 'Checkout',
   props: {
-    visible: { type: Boolean, default: true },
     submissionId: { type: Number, default: null },
     questionId: { type: Number, default: null },
     unratedCount: { type: Number, default: 0 }
@@ -117,7 +123,7 @@ export default {
       checkoutDisable: true,
       newMethod: false,
       selectedMethod: null,
-      amount: 15.00,
+      amount: 200000,
       paymentIntent: null,
       epaySelected: false,
       paid: false,
@@ -132,25 +138,132 @@ export default {
     currentPrices() {
       return this.$store.getters['payment/getAllPrices']
     }
-
-  },
-  watch: {
-    visible: function(newVal, oldVal) {
-      this.dlVisible = newVal
-    }
   },
   async mounted() {
     this.email = this.currentUser.email
+    console.log(this.questionId)
+    console.log(this.submissionId)
   },
   async created() {
+    this.getVnPayResultParams()
+    this.getZaloPayResultParams()
+    const status = this.getUrlParameter('vnp_BankCode')
+    console.log(status)
   },
   methods: {
-    submitVNPayRequest() {
-      const model = {
-        submmissionId: this.submissionId,
-        amount: this.amount
+    openDialog() {
+      this.dlVisible = true
+    },
+    async getZaloPayResultParams() {
+      const apptransid = this.getUrlParameter('apptransid')
+      if (apptransid) {
+        const model = {
+          appid: this.getUrlParameter('appid'),
+          apptransid: this.getUrlParameter('apptransid'),
+          pmcid: this.getUrlParameter('pmcid'),
+          bankcode: this.getUrlParameter('bankcode'),
+          amount: this.getUrlParameter('amount'),
+          discountamount: this.getUrlParameter('discountamount'),
+          status: this.getUrlParameter('status'),
+          checksum: this.getUrlParameter('checksum')
+        }
+        console.log('Request model', model)
+        const order = await paymentService.verifyZaloPayStatus(model)
+        console.log('Updated order:', order)
+        if (order) {
+          if (order.status == 1) {
+            if (order.reviewType == 'Pro') {
+              this.requestProReview(order.userId, order.submissionId)
+            } else if (order.reviewType == 'AI') {
+              this.requestAutomatedReview(order.userId, order.submissionId)
+            }
+          }
+        } else {
+          // Return error message
+        }
       }
-      paymentService.submitVNPayRequest(model)
+    },
+    async submitZaloPayRequest() {
+      // Create a new order
+      const order = {
+        UserId: this.currentUser.id,
+        SubmissionId: this.submissionId,
+        ReviewType: this.selectedReview,
+        Amount: this.amount,
+        Status: 0 // Payment pending
+      }
+      const newOrder = await paymentService.createNewOrder(order)
+      if (newOrder) {
+        // Submit zalopay request
+        const model = {
+          userId: this.currentUser.id,
+          orderId: newOrder.id,
+          amount: this.amount
+        }
+        const orderUrl = await paymentService.submitZaloPayRequest(model)
+
+        window.location.href = orderUrl
+      }
+    },
+    async getVnPayResultParams() {
+      const orderId = this.getUrlParameter('vnp_TxnRef')
+      if (orderId) {
+        const model = {
+          orderId: orderId,
+          vnpAmount: this.getUrlParameter('vnp_Amount'),
+          vnpayTranId: this.getUrlParameter('vnp_TransactionNo'),
+          vnpResponseCode: this.getUrlParameter('vnp_ResponseCode'),
+          vnpTransactionStatus: this.getUrlParameter('vnp_TransactionStatus'),
+          vnpSecureHash: this.getUrlParameter('vnp_SecureHash'),
+          queryString: decodeURIComponent(window.location.search.substring(1))
+        }
+        console.log('Request model', model)
+        const order = await paymentService.verifyVnPayStatus(model)
+        console.log('Updated order:', order)
+        if (order) {
+          if (order.status == 1) {
+            if (order.reviewType == 'Pro') {
+              this.requestProReview(order.userId, order.submissionId)
+            } else if (order.reviewType == 'AI') {
+              this.requestAutomatedReview(order.userId, order.submissionId)
+            }
+          }
+        } else {
+          // Return error message
+        }
+      }
+    },
+    getUrlParameter(sParam) {
+      const sPageURL = decodeURIComponent(window.location.search.substring(1))
+      const sURLVariables = sPageURL.split('&')
+      let sParameterName
+      let i
+      for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=')
+
+        if (sParameterName[0] === sParam) {
+          return sParameterName[1] === undefined ? true : sParameterName[1]
+        }
+      }
+    },
+    async submitVNPayRequest() {
+      // Create a new order
+      const order = {
+        UserId: this.currentUser.id,
+        SubmissionId: this.submissionId,
+        ReviewType: this.selectedReview,
+        Amount: this.amount,
+        Status: 0 // Payment pending
+      }
+      const newOrder = await paymentService.createNewOrder(order)
+      if (newOrder) {
+        // Submit vnpay request
+        const model = {
+          orderId: newOrder.id,
+          amount: this.amount
+        }
+        paymentService.submitVNPayRequest(model)
+      }
     },
     async dialogOpened() {
       // Load paypal button
@@ -168,7 +281,7 @@ export default {
         purchase_units: [
           {
             amount: {
-              value: this.amount
+              value: Math.round(this.amount * 0.000041)
             }
           }
         ]
@@ -182,7 +295,7 @@ export default {
           const captures = purchaseUnits[0].payments.captures
           if (captures.length > 0) {
             this.paid = true
-            this.createPaymentHistory(captures[0].id)
+            this.completeOrder(captures[0].id)
             this.paymentSuccessed()
           }
         }
@@ -192,14 +305,14 @@ export default {
       this.selectedReview = ''
     },
     onReviewSelect(reviewType) {
-      if (reviewType === 'pro') {
-        this.amount = 15.00
+      if (reviewType === 'Pro') {
+        this.amount = 200000
         this.selectedReview = reviewType
-      } else if (reviewType === 'ai') {
-        this.amount = 2.00
+      } else if (reviewType === 'AI') {
+        this.amount = 30000
         this.selectedReview = reviewType
       } else {
-        this.amount = 0.00
+        this.amount = 0
         this.selectedReview = reviewType
       }
     },
@@ -219,28 +332,11 @@ export default {
       this.activeStep = this.activeStep == 2 ? 1 : 2
     },
     paymentSuccessed() {
-      if (this.selectedReview == 'pro') {
-        this.requestProReview()
-      } else if (this.selectedReview == 'ai') {
-        this.requestAutomatedReview()
+      if (this.selectedReview == 'Pro') {
+        this.requestProReview(this.currentUser.id, this.submissionId)
+      } else if (this.selectedReview == 'AI') {
+        this.requestAutomatedReview(this.currentUser.id, this.submissionId)
       }
-    },
-    requestProReview() {
-      reviewService.createProReviewRequest({
-        UserId: this.currentUser.id,
-        SubmissionId: +this.submissionId,
-        FeedbackType: 'Pro',
-        Status: REVIEW_REQUEST_STATUS.WAITING
-      }).then(rs => {
-        this.dialogClosed()
-        this.$notify.success({
-          title: 'Pro Review Request',
-          message: 'The pro review request has been successfully submitted!',
-          type: 'success',
-          duration: 1500
-        })
-        this.$emit('reviewRequested')
-      })
     },
     requestPeerReview() {
       if (this.unratedCount == 0) {
@@ -261,7 +357,24 @@ export default {
         })
       }
     },
-    requestAutomatedReview() {
+    requestProReview(userId, submissionId) {
+      reviewService.createProReviewRequest({
+        UserId: userId,
+        SubmissionId: submissionId,
+        FeedbackType: 'Pro',
+        Status: REVIEW_REQUEST_STATUS.WAITING
+      }).then(rs => {
+        this.dialogClosed()
+        this.$notify.success({
+          title: 'Pro Review Request',
+          message: 'The pro review request has been successfully submitted!',
+          type: 'success',
+          duration: 1500
+        })
+        this.$emit('reviewRequested')
+      })
+    },
+    requestAutomatedReview(userId, submissionId) {
       const loading = this.$loading({
         lock: true,
         text: 'Please wait while our AI rater scores your essay',
@@ -269,8 +382,8 @@ export default {
         background: 'rgba(0, 0, 0, 0.7)'
       })
       reviewService.createAutomatedReview({
-        UserId: this.currentUser.id,
-        SubmissionId: +this.submissionId
+        UserId: userId,
+        SubmissionId: submissionId
       }).then(rs => {
         this.$notify.success({
           title: 'Automated AI Review',
@@ -279,21 +392,21 @@ export default {
           duration: 2000
         })
         loading.close()
-        const url = `/review/${this.questionId}/${rs.docId}/${rs.reviewId}`
+        const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
         this.$router.push(url)
       })
     },
-    createPaymentHistory(transactionId) {
-      const data = {
+    async completeOrder(transactionId) {
+      const order = {
         UserId: this.currentUser.id,
-        QuestionId: this.questionId,
         SubmissionId: this.submissionId,
-        PaypalTransactionId: transactionId,
-        Amount: this.amount
+        ReviewType: this.selectedReview,
+        Amount: this.amount,
+        Status: 2, // Payment completed
+        TransactionCode: transactionId
       }
-      paymentService.createPaymentHistory(data).then(rs => {
-        console.log('payment history created: ', rs)
-      })
+      const orderCompleted = await paymentService.createNewOrder(order)
+      console.log('Order Completed: ', orderCompleted)
     }
   }
 }
@@ -335,11 +448,11 @@ export default {
 }
 .review-description-wrapper {
   float: left;
-  width: calc(100% - 115px);
+  width: calc(100% - 205px);
 }
 .review-price {
-  float: left;
-  width: 40px;
+  float: right;
+  width: 120px;
   font-size: 16px;
   color: #4a6f8a;
   text-align: center;

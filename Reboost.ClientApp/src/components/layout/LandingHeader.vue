@@ -38,14 +38,23 @@
           </b-collapse>
 
           <div class="others-option">
-            <el-dropdown class="lang-dropdown" style="margin-right: 20px" placement="bottom" @command="onChangeLanguage">
-              <flag v-if="lang == 'English'" iso="gb" style="border-radius: 2px;" />
-              <flag v-else iso="vn" style="border-radius: 2px;" />
+            <!-- <el-dropdown class="lang-dropdown" style="margin-right: 20px" placement="bottom" @command="onChangeLanguage">
+              <flag v-if="lang == 'English'" iso="gb" style="border-radius: 3px; height: 20px; width: 20px;" />
+              <flag v-else iso="vn" style="border-radius: 3px;  height: 20px; width: 20px;" />
               <el-dropdown-menu slot="dropdown" class="lang-dropdown-menu">
                 <el-dropdown-item command="vietnamese"><flag iso="vn" style="border-radius: 2px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
                 <el-dropdown-item command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
               </el-dropdown-menu>
-            </el-dropdown>
+            </el-dropdown> -->
+
+            <el-button
+              icon="el-icon-edit"
+              class="btn btn-gradient"
+              style="margin-right: 20px; padding: 13px 30px;"
+              @click.prevent="openRequestReviewDialog()"
+            >
+              Request Review
+            </el-button>
             <a href="/rater" class="btn btn-light">Become A Rater</a>
             <!-- <a href="/login" class="btn btn-primary">Sign In</a> -->
           </div>
@@ -54,17 +63,19 @@
     </div>
 
     <contact-dialog ref="contactDialog" />
+    <review-request-dialog ref="reviewRequestDialog" />
   </header>
   <!-- End Navbar Area -->
 </template>
 
 <script>
 import ContactDialog from '../../components/controls/ContactDialog.vue'
-
+import ReviewRequestDialog from '../../components/controls/ReviewRequestDialog.vue'
 export default {
   name: 'LandingHeader',
   components: {
-    'contact-dialog': ContactDialog
+    'contact-dialog': ContactDialog,
+    'review-request-dialog': ReviewRequestDialog
   },
   data() {
     return {
@@ -86,6 +97,9 @@ export default {
     })
   },
   methods: {
+    openRequestReviewDialog() {
+      this.$refs.reviewRequestDialog?.openDialog()
+    },
     openContactDialog(e) {
       this.$refs.contactDialog?.openDialog()
     },

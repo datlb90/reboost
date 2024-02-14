@@ -9,7 +9,7 @@ namespace Reboost.Service.Services
 {
     public interface ISubmissionService
     {
-        Task<Submissions> CreateAsync(Submissions rater);
+        Task<Submissions> CreateAsync(Submissions sub);
     }
     public class SubmissionService : BaseService, ISubmissionService
     {

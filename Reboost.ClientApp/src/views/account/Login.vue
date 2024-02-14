@@ -2,6 +2,7 @@
   <div>
     <div>
       <el-alert v-if="emailConfirmed" title="You email has been verified. You can log in now." type="success" center show-icon />
+
       <div class="wrapper">
         <div>
           <el-form :model="form">
@@ -18,7 +19,7 @@
               <el-input id="password" v-model="form.password" type="password" autocomplete="off" :placeholder="messageTranslates('login', 'password')" />
             </el-form-item>
             <el-form-item>
-              <el-button
+              <!-- <el-button
                 type="primary"
                 class="login-btn"
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
@@ -26,7 +27,16 @@
                 @click="signIn()"
               >
                 {{ messageTranslates('login', 'signIn') }}
+              </el-button> -->
+
+              <el-button
+                class="btn btn-gradient"
+                style="width: 100%; margin-right: 20px; padding: 12px 20px;"
+                :loading="loading"
+                @click="signIn()"
+              >{{ messageTranslates('login', 'signIn') }}
               </el-button>
+
             </el-form-item>
 
             <el-form-item style="text-align: left;">
@@ -57,10 +67,10 @@
 
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
               {{ messageTranslates('login', 'byLoggingIn') }}
-              <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+              <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
                 {{ messageTranslates('login', 'terms') }}
               </a> {{ messageTranslates('login', 'and') }}
-              <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+              <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
                 {{ messageTranslates('login', 'policies') }}
               </a>
             </div>
@@ -91,7 +101,8 @@ export default {
       googleFormAction: null,
       facebookFormAction: null,
       emailConfirmed: false,
-      loading: false
+      loading: false,
+      reviewRequested: false
     }
   },
   computed: {
@@ -114,6 +125,7 @@ export default {
     if (this.$router.currentRoute.query?.email && this.$router.currentRoute.query?.email == 'confirmed') {
       this.emailConfirmed = true
     }
+
     if (this.$router.currentRoute.query?.returnUrl) {
       this.googleFormAction = 'api/auth/external/google/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
       this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl

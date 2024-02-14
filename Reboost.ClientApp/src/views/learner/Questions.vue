@@ -494,7 +494,7 @@ export default {
       })
     },
     clickPickOne() {
-      var listNoCompleted = this.questionCached.filter(r => r.status.trim() !== 'Completed')
+      var listNoCompleted = this.questionCached.filter(r => r.status.trim() === 'To do')
       var chosenNumber = Math.floor(Math.random() * listNoCompleted.length)
       var id = listNoCompleted[chosenNumber].id
       this.$router.push({

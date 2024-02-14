@@ -61,10 +61,10 @@
             </el-form-item>
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
               {{ messageTranslates('raterRegister', 'byLoggingIn') }}
-              <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+              <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
                 {{ messageTranslates('raterRegister', 'terms') }}
               </a> {{ messageTranslates('raterRegister', 'and') }}
-              <a href="#" style="color: rgb(101 139 179); text-decoration: none;">
+              <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
                 {{ messageTranslates('raterRegister', 'policies') }}
               </a>
             </div>

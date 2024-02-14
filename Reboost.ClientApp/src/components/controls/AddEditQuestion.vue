@@ -5,6 +5,8 @@
     :visible.sync="dialogVisible"
     :before-close="handleClose"
     width="1000px"
+    top="10vh"
+    :close-on-click-modal="false"
   >
     <div id="addQuestionDialog" class="dialog-content">
       <el-form
@@ -128,7 +130,7 @@
                 placeholder="Write something …"
                 :extensions="extensions"
                 :char-counter-count="false"
-                style="width: 95%; overflow: auto; height: 600px;"
+                style="width: 95%; overflow: auto; height: 500px;"
               />
             </el-form-item>
           </div>

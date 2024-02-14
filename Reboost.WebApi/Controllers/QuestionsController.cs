@@ -28,6 +28,19 @@ namespace Reboost.WebApi.Controllers
             _userService = userService;
             _sampleService = sampleService;
         }
+
+        [HttpPost("peronsal/submission")]
+        public async Task<IActionResult> CreatePersonalSubmission([FromForm] RequestReviewForWriting model)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var submission = await _service.CreatePersonalSubmission(model);
+
+            return Ok(submission);
+        }
+
         [Authorize]
         [HttpGet]
         [Route("")]

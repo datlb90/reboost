@@ -10,7 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Reboost.Shared;
-
+using Reboost.Service.ZaloPay;
+using Newtonsoft.Json;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -21,22 +22,71 @@ namespace Reboost.WebApi.Controllers
         private readonly IMapper _mapper;
         private IUserService _userService;
         private IStripeService _stripeService;
-
-        public PaymentController(IPaymentService service, IMapper mapper, IUserService userService, IStripeService stripeService) : base(service)
+        private IOrderService _orderService;
+        public PaymentController(IPaymentService service, IMapper mapper, IUserService userService,
+            IStripeService stripeService, IOrderService orderService) : base(service)
         {
             _mapper = mapper;
             _userService = userService;
             _stripeService = stripeService;
+            _orderService = orderService;
+        }
+
+        [HttpPost("zalopay/verify")]
+        public async Task<IActionResult> VerifyZaloPayStatus(ZaloPayVerifyResultModel model)
+        {
+            Orders rs = await _service.VerifyZaloPayStatus(model);
+            if (rs != null)
+                return Ok(rs);
+            else
+                return BadRequest();
+        }
+
+        [HttpPost("zalopay/callback")]
+        public async Task<IActionResult> ZaloPaymentCallback(CallbackRequest cbdata)
+        {
+            ZaloCallbackResultModel rs = await _service.ZaloPaymentCallback(cbdata);
+            if (rs != null)
+                return Ok(rs);
+            else
+                return BadRequest();
+        }
+
+        [HttpPost("zalopay/request")]
+        public async Task<string> GetZaloPayUrl(ZaloPayRequestModel model)
+        {
+            return await _service.GetZaloPayUrl(model);
+        }
+
+        [HttpPost("vnpay/verify")]
+        public async Task<IActionResult> VerifyVnPayStatus(VNPayVerifyResultModel model)
+        {
+            Orders rs = await _service.VerifyVnPayStatus(model);
+            if (rs != null)
+                return Ok(rs);
+            else
+                return BadRequest();
         }
 
         [HttpPost("vnpay/request")]
         public IActionResult RedirectToVNPay(VNPayRequestModel model)
         {
-            model.ipAddress = "35.142.187.143"; // Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            //model.ipAddress = "35.142.187.143";
+            model.ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
             string vnpUrl =  _service.GetVNPayUrl(model);
             return Redirect(vnpUrl);
         }
-        
+
+        [Authorize]
+        [HttpPost("order")]
+        public async Task<IActionResult> AddNewOrder([FromBody] Orders order)
+        {
+            order.CreatedDate = DateTime.UtcNow;
+            order.LastActivityDate = DateTime.UtcNow;
+            var rs = await _orderService.Create(order);
+            return Ok(rs);
+        }
+
         private async Task<string> GetCustomerId()
         {
             var currentUserClaim = HttpContext.User;

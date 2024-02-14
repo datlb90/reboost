@@ -465,7 +465,7 @@ Preloader CSS
         height: 60px;
         background-color: $white-color;
         margin: 0 auto;
-        animation: sk-rotateplane 1.2s infinite ease-in-out;
+        animation: sk-rotateplane 1s infinite ease-in-out;
         position: absolute;
         right: 0;
         left: 0;
@@ -8506,7 +8506,7 @@ Agency CTA CSS
 /*btn-gradient*/
 .btn-gradient {
     color: $white-color;
-    background: linear-gradient(90deg, #ee0979 0, #ff6a00 100%);
+    background: linear-gradient(90deg, #338abb 0, #27bebe 100%); //linear-gradient(90deg, #ee0979 0, #ff6a00 100%);
     box-shadow: unset !important;
     transform: unset !important;
 
@@ -8518,7 +8518,7 @@ Agency CTA CSS
         opacity: 0;
         visibility: hidden;
         width: 100%;
-        background: linear-gradient(135deg, #23bdb8 0, #43e794 100%);
+        background: linear-gradient(135deg, #23bdb8 0, #46d18b 100%);
         left: 0;
         border-radius: 4px;
     }
@@ -8527,7 +8527,7 @@ Agency CTA CSS
     &:focus,
     &:active {
         color: $white-color;
-        background: linear-gradient(90deg, #ee0979 0, #ff6a00 100%);
+        background: linear-gradient(90deg, #338abb 0, #27bebe 100%); //linear-gradient(90deg, #ee0979 0, #ff6a00 100%);
         box-shadow: unset !important;
 
         &::before {
@@ -8541,7 +8541,7 @@ Agency CTA CSS
     &:not(:disabled):not(.disabled):active,
     .show>.btn-primary.dropdown-toggle {
         color: $white-color;
-        background: linear-gradient(90deg, #ee0979 0, #ff6a00 100%);
+        background: linear-gradient(90deg, #338abb 0, #27bebe 100%); //linear-gradient(90deg, #ee0979 0, #ff6a00 100%);
         box-shadow: unset !important;
 
         &::before {
@@ -8554,7 +8554,7 @@ Agency CTA CSS
     &.disabled,
     &:disabled {
         color: $white-color;
-        background: linear-gradient(90deg, #ee0979 0, #ff6a00 100%);
+        background: linear-gradient(90deg, #338abb 0, #27bebe 100%); //linear-gradient(90deg, #ee0979 0, #ff6a00 100%);
         box-shadow: unset !important;
 
         &::before {

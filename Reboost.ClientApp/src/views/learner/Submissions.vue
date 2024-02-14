@@ -156,7 +156,7 @@
       border
       @sort-change="sortChange"
     >
-      <el-table-column prop="questionId" label="#" width="46" fixed="left" />
+      <el-table-column prop="questionId" label="#" width="48" fixed="left" />
 
       <el-table-column
         :label="messageTranslates('submission', 'questionTable')"
@@ -166,7 +166,7 @@
         min-width="200"
       >
         <template slot-scope="scope">
-          <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.question }}</span>
+          <span class="title-row cursor" style="word-break: break-word">{{ scope.row.question }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column
@@ -247,7 +247,7 @@
     </div>
     <div>
       <checkout
-        :visible="checkoutVisible"
+        ref="checkoutDialog"
         :question-id="+selectedQuestionId"
         :submission-id="+selectedSubId"
         :unrated-count="unRatedList.length"
@@ -308,6 +308,9 @@ export default {
     }
   },
   mounted() {
+    const status = this.getUrlParameter('vnp_TransactionStatus')
+    console.log(status)
+
     questionService.getSubmissionsByUserId(this.currentUser.id).then(rs => {
       if (rs) {
         this.submissions = rs
@@ -333,6 +336,19 @@ export default {
     })
   },
   methods: {
+    getUrlParameter(sParam) {
+      const sPageURL = decodeURIComponent(window.location.search.substring(1))
+      const sURLVariables = sPageURL.split('&')
+      let sParameterName
+      let i
+      for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=')
+
+        if (sParameterName[0] === sParam) {
+          return sParameterName[1] === undefined ? true : sParameterName[1]
+        }
+      }
+    },
     loadTable() {
       this.sortedSubmission = null
       const filtered = this.filter()
@@ -579,7 +595,7 @@ export default {
         //   })
         // }
         this.selectedQuestionId = e.questionId
-        this.checkoutVisible = true
+        this.$refs.checkoutDialog?.openDialog()
       } else if (action == 'View Submission') {
         this.$router.push(`practice/${e.questionId}/${e.id}`)
       } else if (action == 'View Review') {
@@ -588,7 +604,7 @@ export default {
         })
       } else if (action == 'Request Pro Review') {
         this.selectedQuestionId = e.questionId
-        this.checkoutVisible = true
+        this.$refs.checkoutDialog?.openDialog()
       }
     },
     reviewRequested() {

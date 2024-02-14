@@ -49,18 +49,12 @@ namespace Reboost.WebApi
                                                             .AllowAnyHeader()
                                                             .AllowAnyMethod();
                                   });
-                });
 
-                //services.AddCors(options =>
-                //{
-                //    options.AddPolicy(name: MyAllowSpecificOrigins,
-                //                  builder =>
-                //                  {
-                //                      builder.WithOrigins("https://localhost:3011")
-                //                                            .AllowAnyHeader()
-                //                                            .AllowAnyMethod();
-                //                  });
-                //});
+                    options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin()
+                                                                .AllowAnyHeader()
+                                                                .AllowAnyMethod());
+
+                });
             }
 
             // Configure Entityframecore with SQL SErver
@@ -160,6 +154,7 @@ namespace Reboost.WebApi
             services.AddScoped<IReviewService, Reboost.Service.Services.ReviewService>();
             services.AddScoped<IArticlesService, ArticlesService>();
             services.AddScoped<IChatGPTService, ChatGPTService>();
+            services.AddScoped<IOrderService, Reboost.Service.Services.OrderService>();
 
             services.AddControllers().AddNewtonsoftJson(option => option.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
             services.AddRazorPages();
