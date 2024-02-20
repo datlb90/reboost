@@ -33,7 +33,7 @@
 
         <el-form-item v-if="selectedTask == 'TOEFL Integrated'" prop="reading" :rules="[{ required: true, message: 'The reading passage is required' }]" size="mini" label="Reading">
           <el-input
-            v-model="toeflReading"
+            v-model="form.reading"
             type="textarea"
             :rows="4"
             placeholder="Enter the reading passage for the TOEFL Integrated topic"
@@ -51,7 +51,8 @@
             :limit="1"
             :auto-upload="false"
             :on-exceed="handleExceed"
-            :file-list="fileList"
+            :file-list="listeningList"
+            style="width: 96%;"
           >
             <el-button size="small" type="primary">{{ messageTranslates('addEditQuestion', 'uploadButton') }}</el-button>
             <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateUpload') }}</div>
@@ -60,7 +61,7 @@
 
         <el-form-item v-if="selectedTask == 'TOEFL Integrated'" size="mini" label="Transcript">
           <el-input
-            v-model="toeflTranscript"
+            v-model="form.transcript"
             type="textarea"
             :rows="4"
             placeholder="Enter the transcript of the listening if available"
@@ -73,12 +74,13 @@
             action=""
             :on-preview="handlePreview"
             :on-change="handleIeltsChartChange"
-            :on-remove="handleRemove"
+            :on-remove="handleChartRemove"
             :multiple="false"
             :limit="1"
             :auto-upload="false"
             :on-exceed="handleExceed"
-            :file-list="chartFileList"
+            :file-list="chartList"
+            style="width: 96%;"
           >
             <el-button size="small" type="primary" plain>Upload chart for IELTS Task 1 (Optional)</el-button>
             <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateImgUpload') }}</div>
@@ -97,7 +99,7 @@
 
         <el-form-item>
           <el-button size="mini" type="primary" @click="submit">{{ messageTranslates('addEditQuestion', 'submit') }}</el-button>
-          <el-button size="mini" @click="dialogVisible = false">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
+          <el-button size="mini" @click="cancelRequest()">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -117,24 +119,23 @@ export default {
   },
   data() {
     return {
-      dialogVisible: false,
-      selectedTask: 'IELTS Task 2',
       form: {
         topic: null,
         response: null,
         reading: null,
+        transcript: null,
         part: null
       },
-      toeflReading: null,
-      toeflListening: null,
-      toeflTranscript: null,
-      ieltsChart: null,
+      personalQuestion: null,
+      dialogVisible: false,
+      selectedTask: 'IELTS Task 2',
+      fileUrl: null,
       LISTENING_FILE_MAX_SIZE: 10000000,
       CHART_FILE_MAX_SIZE: 3000000,
       LISTENING_TYPE_FILE: ['video/mp4', 'audio/mpeg'],
       CHART_TYPE_FILE: ['image/jpeg', 'image/png'],
-      fileList: [],
-      chartFileList: []
+      chartList: [],
+      listeningList: []
     }
   },
   computed: {
@@ -143,91 +144,164 @@ export default {
     }
   },
   mounted() {
-    console.log(this.currentUser)
+
   },
   methods: {
     openDialog() {
-      this.resetData()
+      this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
+      if (this.personalQuestion) {
+        this.selectedTask = this.personalQuestion.TaskName
+        const topic = this.personalQuestion.Parts.find(p => p.Name == 'Question')
+        if (topic) {
+          this.form.topic = topic.Content
+        }
+        this.form.response = this.personalQuestion.Text
+        if (this.personalQuestion.TaskName == 'IELTS Task 1') {
+          const chart = this.personalQuestion.Parts.find(p => p.Name == 'Chart')
+          if (chart) {
+            this.chartList.push({ name: chart.FileName, url: chart.Url})
+          }
+        }
+        if (this.personalQuestion.TaskName == 'TOEFL Integrated') {
+          const reading = this.personalQuestion.Parts.find(p => p.Name == 'Reading')
+          if (reading) {
+            this.form.reading = reading.Content
+          }
+          const listening = this.personalQuestion.Parts.find(p => p.Name == 'Listening')
+          if (listening) {
+            this.listeningList.push({ name: listening.FileName, url: listening.Url})
+          }
+          const transcript = this.personalQuestion.Parts.find(p => p.Name == 'Transcript')
+          if (transcript) {
+            this.form.transcript = transcript.Content
+          }
+        }
+      }
       this.dialogVisible = true
     },
     async submit() {
-      console.log('User:', this.currentUser)
-
       this.$refs['personalQuestionForm'].validate(async valid => {
         if (valid) {
-          if (this.selectedTasks == 'TOEFL Integrated') {
+          console.log('form validated')
+          if (this.selectedTask == 'TOEFL Integrated') {
             this.form.part = {
-              reading: this.toeflReading,
-              listening: this.fileList && this.fileList.length > 0 ? this.fileList[0] : null,
-              transcript: this.toeflTranscript
+              reading: this.form.reading,
+              listening: this.listeningList && this.listeningList.length > 0 ? this.listeningList[0] : null,
+              transcript: this.form.transcript
             }
-          } else if (this.selectedTasks == 'IELTS Task 1') {
+          } else if (this.selectedTask == 'IELTS Task 1') {
             this.form.part = {
-                chart: this.chartFileList && this.chartFileList.length > 0 ? this.chartFileList[0] : null
+                chart: this.chartList && this.chartList.length > 0 ? this.chartList[0] : null
             }
           } else {
             this.form.part = null
           }
           let taskId = 4
-          if (this.selectedTask == 'IELTS Task 1') { taskId = 3 } else if (this.selectedTask == 'TOEFL Independent') { taskId = 1 } else if (this.selectedTask == 'TOEFL Integrated') { taskId = 2 }
-          const formData = new FormData()
+          let test = 'IELTS'
+          if (this.selectedTask == 'IELTS Task 1') {
+            taskId = 3
+          } else if (this.selectedTask == 'TOEFL Independent') {
+            taskId = 1
+            test = 'TOEFL'
+          } else if (this.selectedTask == 'TOEFL Integrated') {
+            taskId = 2
+            test = 'TOEFL'
+          }
 
+          const formData = new FormData()
           formData.set('UserId', this.currentUser.id)
           formData.set('TaskName', this.selectedTask)
           formData.set('TaskId', taskId)
           formData.set('Text', this.form.response)
+          formData.set('Test', test)
+
+          var personalQuestion = {
+            UserId: this.currentUser.id,
+            TaskName: this.selectedTask,
+            TaskId: taskId,
+            Text: this.form.response,
+            Test: test,
+            Parts: []
+          }
+          const questionTopic = {
+            Name: 'Question',
+            Content: this.form.topic
+          }
+          personalQuestion.Parts.push(questionTopic)
 
           formData.set('Question.QuestionParts[0][Name]', 'Question')
           formData.set('Question.QuestionParts[0][Content]', this.form.topic)
           formData.set('Question.QuestionParts[0][Order]', 1)
           formData.set(`Question.QuestionParts[0][QuestionId]`, 0)
-
           let order = 2
           let count = 1
           if (this.form.part) {
             for (var p in this.form.part) {
+              const part = {}
+              part.Name = this.partNameFormat(p)
+
+              console.log(this.form.part[p])
               if (this.form.part[p]?.raw) {
+                // This is for Task 1's chart and Integrated's listenting
+                // Setting form data to send to the api
                 formData.set(`Question.QuestionParts[${count}][Content]`, this.form.part[p].raw.name)
                 formData.set(`Question.QuestionParts[${count}][FileName]`, this.form.part[p].raw.name)
                 formData.set(`Question.QuestionParts[${count}][FileExtension]`, stringUtil.getFileExtension(this.form.part[p]?.name))
                 formData.set(`Question.UploadedFile`, this.form.part[p]?.raw)
+                // Setting object to keep in the store
+                part.Content = this.form.part[p].raw.name
+                part.FileName = this.form.part[p].raw.name
+                part.FileExtension = stringUtil.getFileExtension(this.form.part[p]?.name)
+                part.UploadedFile = this.form.part[p]?.raw
+                part.Url = this.fileUrl
               } else {
+                // For integrated's reading and transcript only
                 formData.set(`Question.QuestionParts[${count}][Content]`, this.form.part[p])
+                part.Content = this.form.part[p]
               }
               formData.set(`Question.QuestionParts[${count}][Order]`, order)
               formData.set(`Question.QuestionParts[${count}][Name]`, this.partNameFormat(p))
               order += 1
               count += 1
+              personalQuestion.Parts.push(part)
             }
           }
-
-          if (!authService.isAuthenticated() || !this.currentUser?.id) {
-            // save to review request to store
-            return this.$router.push({ path: '/register?review=requested' })
-          } else {
-            var submission = await questionService.createPersonalSubmission(formData)
-            console.log(submission)
-            if (submission) {
-              this.$notify.success({
-                    title: 'Submission Created.',
-                    message: 'Your submission has been created. You can view it in the submissions page.',
-                    type: 'success',
-                    duration: 5000
+          console.log('question created')
+          // Save to review request to store
+          this.$store.dispatch('question/savePersonalQuestion', personalQuestion).then(rs => {
+            console.log('question saved')
+            if (!authService.isAuthenticated() || !this.currentUser?.id) {
+              console.log('redirecting')
+              // Redirect to the register page for authentication
+              return this.$router.push({ path: '/register' })
+            } else {
+              console.log('create submission')
+              questionService.createPersonalSubmission(formData).then(submission => {
+                if (submission) {
+                  // this.$notify.success({
+                  //   title: 'Submission Created.',
+                  //   message: 'Your submission has been created. You can view it in the submissions page.',
+                  //   type: 'success',
+                  //   duration: 5000
+                  // })
+                  this.resetData()
+                  this.dialogVisible = false
+                  this.$emit('openCheckoutDialog', {
+                    questionId: submission.questionId,
+                    submissionId: submission.id
                   })
-
-              this.resetData()
-              this.dialogVisible = false
-              this.$emit('openCheckoutDialog', {
-                questionId: submission.questionId,
-                submissionId: submission.id
+                }
               })
             }
-          }
+          })
         }
       })
     },
     handleRemove(file, fileList) {
-      this.fileList = fileList
+      this.listeningList = fileList
+    },
+    handleChartRemove(file, fileList) {
+      this.chartList = fileList
     },
     handlePreview(file) {
       console.log('file', typeof (file), file)
@@ -235,31 +309,46 @@ export default {
     handleExceed() {
       this.$message.warning(`The limit is 1 file.`)
     },
-    handleToeflListeningChange(file, fileList) {
+    async handleToeflListeningChange(file, fileList) {
       if (file.size > this.LISTENING_FILE_MAX_SIZE) {
         this.$message.warning(`The limit size is 10mb.`)
-        this.fileList = []
+        this.listeningList = []
       } else {
         if (this.LISTENING_TYPE_FILE.includes(file.raw.type)) {
-          this.fileList = fileList
+          this.fileUrl = await this.fileListToBase64(file.raw)
+          this.listeningList = fileList
+          console.log(this.listeningList)
         } else {
           this.$message.warning(`Please upload mp3/mp4 file.`)
-          this.fileList = []
+          this.listeningList = []
         }
       }
     },
-    handleIeltsChartChange(file, fileList) {
+    async handleIeltsChartChange(file, fileList) {
       if (file.size > this.CHART_FILE_MAX_SIZE) {
         this.$message.warning(`The limit size is 3mb.`)
-        this.chartFileList = []
+        this.chartList = []
       } else {
         if (this.CHART_TYPE_FILE.includes(file.raw.type)) {
-          this.chartFileList = fileList
+          this.fileUrl = await this.fileListToBase64(file.raw)
+          this.chartList = fileList
         } else {
           this.$message.warning(`Please upload png/jpeg file.`)
-          this.chartFileList = []
+          this.chartList = []
         }
       }
+    },
+     async fileListToBase64(file) {
+      return await Promise.resolve(this.getBase64(file))
+    },
+    getBase64(file) {
+      const reader = new FileReader()
+      return new Promise(resolve => {
+        reader.onload = ev => {
+          resolve(ev.target.result)
+        }
+        reader.readAsDataURL(file)
+      })
     },
     partNameFormat(str) {
       return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function(word, index) {
@@ -268,19 +357,34 @@ export default {
     },
     handleClose() {
       // Do not clear the data
+      // this.$store.dispatch('question/clearPersonalQuestion')
       this.dialogVisible = false
     },
+    cancelRequest() {
+      if (this.form.topic || this.form.response || this.form.reading || this.form.transcript ||
+      this.chartList.length > 0 || this.listeningList.length > 0) {
+        this.$confirm('All entered information will be deleted if you cancel this review request. Are you sure?')
+        .then(_ => {
+          this.resetData()
+          this.dialogVisible = false
+        })
+        .catch(_ => {})
+      } else {
+        this.resetData()
+        this.dialogVisible = false
+      }
+    },
     resetData() {
-      this.fileList = []
-      this.chartFileList = []
+      this.$refs['personalQuestionForm'].resetFields()
+      this.$store.dispatch('question/clearPersonalQuestion')
       if (this.form) {
         this.form.topic = null
         this.form.response = null
+        this.form.reading = null
+        this.form.transcript = null
       }
-      this.ieltsChart = null
-      this.toeflReading = null
-      this.toeflListening = null
-      this.toeflTranscript = null
+      this.chartList = []
+      this.listeningList = []
     }
   }
 }

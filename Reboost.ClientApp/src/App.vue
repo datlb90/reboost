@@ -54,10 +54,11 @@ export default {
   mounted() {
     this.currentUrl = window.location.pathname
     var lang = localStorage.getItem('language')
+    console.log(lang)
     if (lang) {
       this.$ml.change(lang)
     } else {
-      this.$ml.change('english')
+      this.$ml.change('vietnamese')
     }
     setTimeout(() => {
       this.isLoading = false

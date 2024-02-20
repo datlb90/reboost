@@ -31,6 +31,9 @@ import { AdminArticles } from './admin/articles'
 import { AddArticle } from './admin/addArticle'
 import { LandingHeader } from './home/landingHeader'
 import { Checkout } from './checkout/checkout'
+import { UnlimittedTopics } from './home/unlimittedTopics'
+import { ProRater } from './home/proRater'
+import { Pricing } from './home/pricing'
 
 const langVN = {
   question: Question,
@@ -65,7 +68,10 @@ const langVN = {
   adminArticles: AdminArticles,
   addArticle: AddArticle,
   landingHeader: LandingHeader,
-  checkout: Checkout
+  checkout: Checkout,
+  unlimittedTopics: UnlimittedTopics,
+  proRater: ProRater,
+  pricing: Pricing
 }
 
 export default langVN

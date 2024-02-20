@@ -2,19 +2,23 @@ import authService from '@/services/auth.service'
 import userService from '@/services/user.service'
 import paymentService from '@/services/payment.service'
 
-const state = {
-  user: {
-    id: null,
-    username: null,
-    email: null,
-    role: null,
-    token: null,
-    expireDate: null,
-    firstName: null,
-    lastName: null
-  },
-  selectedTest: []
+const getDefaultState = () => {
+  return {
+    user: {
+      id: null,
+      username: null,
+      email: null,
+      role: null,
+      token: null,
+      expireDate: null,
+      firstName: null,
+      lastName: null
+    },
+    selectedTest: []
+  }
 }
+
+const state = getDefaultState()
 
 const actions = {
   async login({ state, commit }, data) {
@@ -33,8 +37,15 @@ const actions = {
     }
     return null
   },
-  async logout({ state, commit }) {
-    commit('CLEAR_USER')
+  async logout({ state, commit, dispatch }) {
+    dispatch('question/clearState', null, { root: true })
+    dispatch('review/clearState', null, { root: true })
+    dispatch('rater/clearState', null, { root: true })
+    commit('RESET_AUTH_STATE')
+    window.localStorage.clear()
+  },
+  async clearUser({ state, commit }) {
+    commit('RESET_AUTH_STATE')
   },
   async setSelectedTest({ state, commit }) {
     await userService.getUserScore(state.user.id).then(rs => {
@@ -98,6 +109,9 @@ const mutations = {
   },
   SET_CUSTOMER_ID(state, id) {
     state.user.stripeCustomerId = id
+  },
+  RESET_AUTH_STATE(state) {
+    Object.assign(state, getDefaultState())
   }
 }
 

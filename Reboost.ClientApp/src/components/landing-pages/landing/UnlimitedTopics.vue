@@ -5,9 +5,9 @@
       <div class="row h-100 justify-content-center align-items-center">
         <div class="col-lg-4 col-md-12 services-content">
           <div class="section-title">
-            <h2>{{ messageTranslates('revisionCenter', 'title') }}</h2>
+            <h2>{{ messageTranslates('unlimittedTopics', 'title') }}</h2>
             <div class="bar" />
-            <p>{{ messageTranslates('revisionCenter', 'description') }}</p>
+            <p>{{ messageTranslates('unlimittedTopics', 'description') }}</p>
           </div>
         </div>
 

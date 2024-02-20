@@ -7,8 +7,8 @@
     <div class="startp-nav">
       <div class="nav-container" :class="{ 'full-size': fullSizeHeader }">
         <nav class="navbar navbar-expand-md navbar-light">
-          <router-link class="navbar-brand" to="/questions" style="margin-top: 0px; padding-top: 0px;">
-            <img src="../../assets/logo/green_logo.png" alt="logo" class="main-header-logo">
+          <router-link to="/questions" style="margin-top: 0px; padding-top: 0px;">
+            <img src="../../assets/logo/logo.png" alt="logo" class="main-header-logo">
           </router-link>
           <b-navbar-toggle target="navbarSupportedContent" />
           <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
@@ -28,9 +28,15 @@
 
               <li class="nav-item other-items" style="padding-bottom: 12px;">
                 <a href="/" style="color: #4a6f8a;">
-                  <el-button type="primary" icon="el-icon-edit" size="small" @click="openRequestReviewDialog">Request Review</el-button>
+                  <el-button
+                    icon="el-icon-edit"
+                    class="btn btn-gradient"
+                    style="margin-right: 20px; padding: 6px 20px; font-size: 12px;"
+                    @click="openRequestReviewDialog"
+                  >Request Review
+                  </el-button>
                   <div style=" display: inline-grid; padding-top: 10px; width: 420px;">
-                    <div style="padding:12px 0px;font-weight:700;font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">Hi, {{ displayName }}</div>
+                    <div style="padding:12px 0px;  text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">Hi, {{ displayName }}</div>
                     <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">Review Rating: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></div>
                     <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="selectTest()">
                       Selected Test: {{ testsToText() }}
@@ -214,7 +220,10 @@ export default {
     }
     // Check if user is requesting a review
     // Open the request review dialog
-    // this.$refs.reviewRequestDialog?.openDialog()
+    this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
+    if (this.personalQuestion) {
+      this.$refs.reviewRequestDialog?.openDialog()
+    }
   },
   created() {
     if (this.$router.currentRoute.name == 'PracticeWriting' || this.$router.currentRoute.name == 'Review') {
@@ -317,7 +326,8 @@ export default {
 }
 
 .main-header-logo{
-  height: 22px;
+  height: 35px;
+  margin-top: 5px;
 }
 
 .nav-wrapper {

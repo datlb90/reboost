@@ -7,8 +7,9 @@
     <FeaturesArea />
     <Features />
     <UnlimitedTopics />
-    <ProRater />
     <Matching />
+    <ProRater />
+    <Pricing />
   </div>
 </template>
 
@@ -22,6 +23,7 @@ import Matching from './landing/Matching'
 import HowItWorks2 from './landing/HowItWorks2'
 import Funfacts from './landing/Funfacts'
 import ProRater from './landing/ProRater'
+import Pricing from './landing/Pricing'
 // import WhyChooseUs from './landing/WhyChooseUs'
 // import Blog from './landing/Blog'
 // import Feedback from './landing/Feedback'
@@ -39,30 +41,32 @@ export default {
     Matching,
     HowItWorks2,
     Funfacts,
-    ProRater
+    ProRater,
+    Pricing
     // WhyChooseUs,
     // Blog,
     // Feedback,
     // FAQ
   },
   mounted() {
-    $('.navbar').find('a').click(function() {
+    $('.nav-item').find('a').click(function(e) {
+      e.preventDefault()
       var $href = $(this).attr('href')
       var $anchor = $('#' + $href).offset()
       if ($anchor) {
         window.scrollTo($anchor.left, $anchor.top - 20)
       }
-      return false
+      // return false
     })
 
-    $('ul.nav').find('a').click(function() {
-      var $href = $(this).attr('href')
-      var $anchor = $('#' + $href).offset()
-      if ($anchor) {
-        window.scrollTo($anchor.left, $anchor.top - 20)
-      }
-      return false
-    })
+    // $('ul.nav').find('a').click(function() {
+    //   var $href = $(this).attr('href')
+    //   var $anchor = $('#' + $href).offset()
+    //   if ($anchor) {
+    //     window.scrollTo($anchor.left, $anchor.top - 20)
+    //   }
+    //   return false
+    // })
 
     // Cache selectors
     var topMenu = $('#top-menu')

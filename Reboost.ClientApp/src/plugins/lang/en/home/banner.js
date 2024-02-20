@@ -1,6 +1,6 @@
 export const Banner = {
-  bannerContentTitle: 'The Best Way To Boost Your Writing Test Score',
-  bannerContentDescription: 'Reboost is your premier platform for elevating language writing test scores! No matter which test you take, count on us for comprehensive preparation and assured score enhancement, with:',
+  slogan: 'A new way to improve your IELTS & TOEFL writing score',
+  bannerContentDescription: 'Reboost c is your premier platform for elevating language writing test scores! No matter which test you take, count on us for comprehensive preparation and assured score enhancement, with:',
   content1: 'Unlimited free practice tests',
   content2: 'Valuable, constructive feedback for your improvement',
   content3: 'Learning through giving and receiving feedback',
@@ -15,6 +15,7 @@ export const Banner = {
   byLogging: 'By logging in, I agree to the',
   terms: 'terms',
   policies: 'policies',
-  dontAccount: "Don't have an account?",
-  signUp: 'Sign Up'
+  noAccount: "Don't have an account yet?",
+  signUp: 'Sign Up',
+  forgotPassword: 'Forgot Password'
 }

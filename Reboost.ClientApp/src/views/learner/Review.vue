@@ -1,9 +1,5 @@
 <template>
-  <div
-    id="reviewContainer"
-    :style="{cursor: activeButton== 'text'||activeButton== 'rectangle' || activeButton== 'point' ? 'crosshair':''}"
-    style="border-top: 1px solid rgb(223 224 238); background: rgb(248, 249, 250);"
-  >
+  <div v-if="screenWidth > 780" id="reviewContainer" :style="{cursor: activeButton== 'text'||activeButton== 'rectangle' || activeButton== 'point' ? 'crosshair':''}" style="border-top: 1px solid rgb(223 224 238); background: rgb(248, 249, 250);">
 
     <div id="content-wrapper" style="background: rgb(248, 249, 250); height: inherit; width: 100%;position: absolute; overflow: unset;">
       <div id="left-panel" :class="{'hideQuestion': !showQuestion}" style="height: calc(100vh - 50px);">
@@ -272,21 +268,187 @@
       </span>
     </el-dialog>
   </div>
+  <!-- Optimize for mobile -->
+  <div v-else id="reviewContainer">
+    <div style="width: 100%; margin-top: 55px; height: calc(100vh - 60px); overflow: auto;">
+      <!-- Question, rubric, and rate tab -->
+      <div id="tabs-wrapper">
+        <el-tabs v-model="selectedTab" type="border-card" style="margin-bottom: 10px;">
+          <el-tab-pane name="question" label="Question">
+            <tabQuestion
+              ref="tabQuestion"
+              :questionid="questionId"
+              :reviewid="reviewId"
+              @openDisputeNote="onOpenDisputeNote"
+              @closeDisputeNote="disputeNoteDialogVisible=false"
+            />
+          </el-tab-pane>
+          <el-tab-pane name="rubric" label="Rubric">
+            <tabRubric v-if="review" ref="tabRubric" :current-user="currentUser" :questionid="questionId" :is-ai-review="isAiReview" :reviewid="reviewId" @setStatusText="setStatusText" />
+          </el-tab-pane>
+          <el-tab-pane v-if="isRate && !isDisputed && !isAiReview" name="rate" label="Rate">
+            <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+      <div id="document-wrapper">
+        <toolbar
+          ref="toolBar"
+          :review-page="this"
+          :expandcolorpicker.sync="expandColorPicker"
+          :documentid="documentId"
+          :reviewid="reviewId"
+          :renderoptions="RENDER_OPTIONS"
+          :is-rate="isRate"
+          :is-rated="isRated"
+          :is-author="isReviewAuth"
+          :is-submit="isSubmit"
+          :is-loading="isLoading"
+          @expandColorPickerToggle="expandColorPicker=$event"
+          @hideQuestion="hideQuestion($event)"
+          @submit="submitReview"
+          @redoAnnotation="redo($event)"
+          @undoAnnotation="undoAnnotation"
+          @scaleChange="handleScale($event)"
+          @highLightText="highlightEvent($event)"
+          @toolBarButtonChange="toolBarButtonClick($event)"
+          @rateBtnClick="rateReview"
+          @openDialogRevise="reviseDialogVisible = true"
+          @closeDialogRevise="reviseDialogVisible = false"
+          @dispute="openDisputeDialog"
+          @disputed="isDisputed=true"
+          @closeDisputeDialog="disputeDialogVisible = false"
+        />
+
+        <div id="viewerContainer">
+          <div v-if="!completeLoading">
+            <el-button type="info" plain :loading="true" style="width: 100%; border: none;">Loading Document</el-button>
+          </div>
+          <div
+            v-else
+            id="viewer"
+            :class="{'freeText': activeButton== 'text'}"
+            class="pdfViewer"
+            :document-id="documentId"
+          />
+        </div>
+      </div>
+      <div id="comment-wrapper">
+        <el-card id="add-new-comment" class="box-card add-new-comment" style="width: 100%; display: none;">
+          <div slot="header" class="clearfix">
+            <div>
+              <div style="font-size: 15px; text-align: left;">
+                {{ commentUserName() }}
+              </div>
+            </div>
+          </div>
+          <div>
+            <el-input
+              id="comment-text-area"
+              v-model="newComment"
+              type="textarea"
+              autosize
+              placeholder="Add comment"
+            />
+            <div style="height: 20px; margin-top: 10px;">
+              <el-button type="primary" :disabled="newComment.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="addCommentText(true)">
+                Comment
+              </el-button>
+              <el-button style="float: right; padding: 5px;" @click="cancelCommentText()">
+                Cancel
+              </el-button>
+            </div>
+          </div>
+        </el-card>
+        <el-card
+          v-for="(comment, idx) in comments"
+          :key="comment.uuid"
+          class="box-card comment-card"
+          :highlight-id="comment.uuid"
+          :top-position="comment.topPosition"
+          :top="comment.annotation.top"
+          :left="comment.annotation.left"
+          :page-num="comment.annotation.page"
+          :page-height="comment.annotation.pageHeight"
+          :style="{top: comment.topPosition + 'px', width: '100%'}"
+        >
+          <div slot="header" class="clearfix">
+            <div>
+              <div style="font-size: 15px; text-align: left;">
+                {{ commentUserName() }}
+              </div>
+            </div>
+            <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
+              <i class="far fa-trash-alt" />
+            </el-button>
+            <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
+              <i class="far fa-edit" />
+            </el-button>
+          </div>
+          <div>
+            <div
+              v-show="!comment.isSelected "
+              :id="'comment-text-' + comment.uuid"
+              :style="{'-webkit-line-clamp': isInShowMoreList(comment.uuid).value==0 ? '3':'inherit'}"
+              style="text-align: left; overflow-wrap: break-word; white-space: pre-wrap; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
+            >
+              {{ comment.content }}
+            </div>
+            <div v-if="isInShowMoreList(comment.uuid)" class="show__more-container" @click="toggleShowMore(comment.uuid)">
+              {{ isInShowMoreList(comment.uuid).value==0 ? 'Show more':'Show less' }}
+            </div>
+            <el-input
+              v-show="comment.isSelected == true || comment.isSaved == false"
+              :id="'comment-input-' + comment.uuid"
+              :ref="'comment' + comment.uuid"
+              v-model="comment.content"
+              type="textarea"
+              resize="none"
+              autosize
+            />
+            <div v-show="comment.isSelected == true || comment.isSaved == false" style="height: 20px; margin-top: 10px;">
+              <el-button type="primary" :disabled="comment.content.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="editCommentCard(comment)">
+                Save
+              </el-button>
+              <el-button style="float: right; padding: 5px;" @click="cancelCommentText('edit',comment)">
+                Cancel
+              </el-button>
+            </div>
+          </div>
+        </el-card>
+      </div>
+      <div id="text-tools-wrapper">
+        <textToolGroup ref="textToolGroup" @highLightText="highlightEvent($event)" />
+        <el-button-group id="rectTool" style="display: none;">
+          <el-button class="textToolBtn" @click="showColorPickerTool('area')">
+            <i class="fas fa-palette" />
+          </el-button>
+          <el-button :style="{'display': isTextbox ? 'block':'none'}" class="textToolBtn" @click="editFreeText()">
+            <i class="fas fa-edit" />
+          </el-button>
+          <el-button :style="{'display': isRect ? 'block':'none'}" class="textToolBtn" @click="addRectComment()">
+            <i class="fas fa-comment-alt" />
+          </el-button>
+          <el-button class="textToolBtn" @click="deleteAnnotation()">
+            <i class="fas fa-trash-alt" />
+          </el-button>
+        </el-button-group>
+        <el-button-group id="deleteTool" style="display: none;">
+          <el-button class="textToolBtn" @click="deleteAnnotation()">
+            <i class="fas fa-trash-alt" />
+          </el-button>
+        </el-button-group>
+        <div id="colorPickerTool" class="colorPicker">
+          <ul class="group-color" style="margin-top: 15px;">
+            <li v-for="item in listColor" :key="item.name" @click="changeColor(item.name)"><button :style="{'background-color': item.name, height:18+'px',width:18+'px', margin:'5px 5px 5px 5px', 'border-radius':'50%','outline': 'none','border': 'none'}" /></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-// @ is an alias to /src
-
-// import { PDFJS } from "@/shared/pdf.js";
-
-// PDFJS.workerSrc = "/src/shared/pdf.worker.js";
-// import {
-//   PDFLinkService,
-//   PDFPageView,
-//   PDFFindController,
-//   DefaultAnnotationLayerFactory,
-//   DefaultTextLayerFactory
-// } from "pdfjs-dist/web/pdf_viewer.js";
 import raterService from '../../services/rater.service'
 import PDFJS from 'pdf-dist/webpack.js'
 import ToolBar from '../../components/controls/Viewer_ToolBar'
@@ -420,7 +582,8 @@ export default {
       completeLoading: false,
       isAiReview: false,
       isLoading: false,
-      review: null
+      review: null,
+      screenWidth: window.innerWidth
     }
   },
   computed: {
@@ -444,6 +607,11 @@ export default {
       return moment.utc().tz(tz).format('DD/MM/YYYY LT')
     }
   },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
   async beforeMount() {
     if (this.$route.params.docId && this.$route.params.reviewId && this.$route.params.questionId) {
       this.questionId = +this.$route.params.questionId
@@ -458,17 +626,20 @@ export default {
     if (this.$route.query.plain) {
       this.showQuestion = false
     }
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
     window.component = this
     window['PDFJSAnnotate'] = PDFJSAnnotate
     window['APP'] = this
-    window.onmessage = function(e) {
-      console.log('receive message from parent', e.data)
-      if (e.data) {
-        if (typeof e.data === 'string' || e.data instanceof String) {
-          this.showRubric = e.data.toLowerCase() === 'rubric'
-        }
-      }
-    }
+    // window.onmessage = function(e) {
+    //   console.log('receive message from parent', e.data)
+    //   if (e.data) {
+    //     if (typeof e.data === 'string' || e.data instanceof String) {
+    //       this.showRubric = e.data.toLowerCase() === 'rubric'
+    //     }
+    //   }
+    // }
     // window.addEventListener('message', (e) => {
     //   console.log('receive message from parent iframe', e)
     // })
@@ -607,7 +778,8 @@ export default {
       self.viewer.innerHTML = ''
       self.NUM_PAGES = pdf.numPages
 
-      var docWidth = document.getElementById('right-panel').offsetWidth - document.getElementById('comment-wrapper').offsetWidth
+      var docWidth = 0
+      if (this.screenWidth > 780) { docWidth = document.getElementById('right-panel').offsetWidth - document.getElementById('comment-wrapper').offsetWidth } else docWidth = document.getElementById('document-wrapper').offsetWidth - document.getElementById('comment-wrapper').offsetWidth
 
       for (let i = 0; i < self.NUM_PAGES; i++) {
         const page = UI.createPage(i + 1)
@@ -2411,14 +2583,24 @@ export default {
       if (elContainer.style) {
         elContainer.style.height = containerHeight + 'px'
       }
-      const rightPanel = document.getElementById('right-panel')
-      const viewerContainer = document.getElementById('viewerContainer')
-      viewerContainer.style.height = rightPanel.offsetHeight - document.getElementById('tool-bar').offsetHeight - 5 + 'px'
+      if (this.screenWidth > 780) {
+        const rightPanel = document.getElementById('right-panel')
+        const viewerContainer = document.getElementById('viewerContainer')
+        viewerContainer.style.height = rightPanel.offsetHeight - document.getElementById('tool-bar').offsetHeight - 5 + 'px'
 
-      if (this.showQuestion) {
-        rightPanel.style.width = window.innerWidth - document.getElementById('left-panel').offsetWidth - 17 + 'px'
+        if (this.showQuestion) {
+          rightPanel.style.width = window.innerWidth - document.getElementById('left-panel').offsetWidth - 17 + 'px'
+        } else {
+          rightPanel.style.width = window.innerWidth - 10 + 'px'
+        }
       } else {
-        rightPanel.style.width = window.innerWidth - 10 + 'px'
+        // const documentWrapper = document.getElementById('document-wrapper')
+        // console.log(documentWrapper.offsetHeight)
+        // console.log(document.getElementById('tool-bar').offsetHeight)
+        // const viewerContainer1 = document.getElementById('viewerContainer')
+        // viewerContainer1.style.height = '800px'
+        // viewerContainer1.style.height = documentWrapper.offsetHeight - document.getElementById('tool-bar').offsetHeight - 5 + 'px'
+        // console.log(viewerContainer1.offsetHeight)
       }
     },
     calculateStylePaddingScroll() {
@@ -2440,7 +2622,8 @@ export default {
       if (container) {
         var docWidth = document.getElementById('pageContainer1').offsetWidth
         if (this.comments.length == 0) {
-          docWidth = document.getElementById('right-panel').offsetWidth - 20
+          if (this.screenWidth > 780) { docWidth = document.getElementById('right-panel').offsetWidth - 20 } else { docWidth = document.getElementById('document-wrapper').offsetWidth - 20 }
+
           document.getElementById('comment-wrapper').style.display = 'none'
           if (this.scaleText == 'Fit to width') {
             this.RENDER_OPTIONS.scale = docWidth / 612

@@ -31,8 +31,11 @@ import { AdminArticles } from './admin/articles'
 import { AddArticle } from './admin/addArticle'
 import { LandingHeader } from './home/landingHeader'
 import { Checkout } from './checkout/checkout'
+import { UnlimittedTopics } from './home/unlimittedTopics'
+import { ProRater } from './home/proRater'
 
 const langES = {
+  landingHeader: LandingHeader,
   question: Question,
   submission: Submissions,
   review: Review,
@@ -64,8 +67,9 @@ const langES = {
   adminSamples: Samples,
   adminArticles: AdminArticles,
   addArticle: AddArticle,
-  landingHeader: LandingHeader,
-  checkout: Checkout
+  checkout: Checkout,
+  unlimittedTopics: UnlimittedTopics,
+  proRater: ProRater
 }
 
 export default langES

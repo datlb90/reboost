@@ -20,7 +20,7 @@
     <div id="tool-bar__buttons__Con" class="tool-group-buttons-container">
 
       <!-- Colapse left panel -->
-      <div class="toolbar-btn-wrapper">
+      <div v-if="screenWidth > 780" class="toolbar-btn-wrapper">
         <el-tooltip class="item" effect="dark" content="Hide Question & Rubric (H)" placement="bottom">
           <button class="toolbar-btn" @click="hideQuestion">
             <div :class="{'hideQuestion':!showQuestion}" class="icon">
@@ -214,7 +214,8 @@ export default ({
       reviewData: null,
       dispute: null,
       UserRole: UserRole,
-      DISPUTE_STATUS: DISPUTE_STATUS
+      DISPUTE_STATUS: DISPUTE_STATUS,
+      screenWidth: window.innerWidth
     }
   },
   computed: {
@@ -225,9 +226,19 @@ export default ({
       return this.$store.getters['rater/getSelected']
     }
   },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
   async mounted() {
     this.initTextSizeTool()
     localStorage.removeItem(`${this.documentid}/tooltype`)
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
+
+    console.log(this.screenWidth)
   },
   beforeMount() {
   },

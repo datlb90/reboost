@@ -1,7 +1,7 @@
 <template>
   <div style="height: 100%;display: flex; flex-direction: column">
     <div id="parent-scroll" style="flex-grow: 1;position: relative;">
-      <div id="child-scroll" class="par-content default">
+      <div id="child-scroll">
         <div id="rubric">
           <div style="height: 100%; overflow: auto; padding-bottom: 20px;">
             <el-card

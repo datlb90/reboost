@@ -1,5 +1,5 @@
 <template>
-  <div id="practiceWritingContainer" :style="{ height: containerHeight, visibility: loadCompleted?'visible': 'hidden' }">
+  <div v-if="screenWidth > 780" id="practiceWritingContainer" :style="{ height: containerHeight, visibility: loadCompleted?'visible': 'hidden' }">
     <splitpanes class="default-theme" vertical style="height: 100%; width: 100%;">
       <pane>
         <el-tabs v-model="activeTab" type="border-card" style="height: 100%;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
@@ -122,7 +122,7 @@
                         <el-card class="box-card sample-box">
                           <div style="height: 40px; border-bottom: 1px solid rgb(220 223 229); margin-bottom: 10px; ">
                             <div style="float: left; margin-top: 2px;">
-                              <span style="font-size: 16px; font-weight: 600;"> Listen to part of the lecture on the same topic</span>
+                              <span style="font-size: 16px; font-weight: 600;"> Listening Lecture</span>
                             </div>
                             <div style="float: right;">
                               <el-button size="mini" @click="backClick()">Back to Reading</el-button>
@@ -370,6 +370,348 @@
       </span>
     </el-dialog>
   </div>
+  <div v-else id="practiceWritingContainer">
+    <div style="width: 100%; margin-top: 55px; height: calc(100vh - 60px); overflow: auto;">
+      <div id="tabs-wrapper">
+        <el-tabs v-model="activeTab" type="border-card" style="margin-bottom: 10px;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
+          <el-tab-pane label="Description" name="description">
+            <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
+              <div style="margin-bottom: 8px;">
+                <el-row>
+                  <el-col>
+                    <div style="">
+                      <div>
+                        <div style="height: 32px;">
+                          <div class="title-tab">
+                            {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
+                          </div>
+                          <div style="float: right;">
+                            <div>
+                              <el-tag v-if="isTesting" class="mr-2" type="danger" size="medium" style="height: 30px; line-height: 28px;"><i class="el-icon-timer" style="font-size: 14px; margin-right: 4px;" />{{ minute }} : {{ second }}</el-tag>
+                              <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" style="padding: 8px 15px;" @click="startTest()">Start Test</el-button>
+                              <el-checkbox v-model="isTest" size="mini" border style="height: 30px; margin-bottom: 0px;" @change="changedOption()"> Test Mode</el-checkbox>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <el-tag
+                            v-if="getDataQuestion.difficulty == 'Medium'"
+                            type="warning"
+                            size="medium"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            {{ getDataQuestion.difficulty }}
+                          </el-tag>
+                          <el-tag
+                            v-else-if="getDataQuestion.difficulty == 'Hard'"
+                            type="danger"
+                            size="medium"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            {{ getDataQuestion.difficulty }}
+                          </el-tag>
+                          <el-tag
+                            v-else-if="getDataQuestion.difficulty == 'Easy'"
+                            size="medium"
+                            type="success"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            {{ getDataQuestion.difficulty }}
+                          </el-tag>
+
+                          <el-tag
+                            v-else
+                            size="medium"
+                            type="info"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            Undefined
+                          </el-tag>
+
+                          <el-tag
+                            size="medium"
+                            type="info"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            {{ getDataQuestion.section }}
+                          </el-tag>
+
+                          <el-tag
+                            size="medium"
+                            type="info"
+                            style="margin-bottom: 5px; margin-right: 5px;"
+                          >
+                            {{ getDataQuestion.type }}
+                          </el-tag>
+                        </div>
+                      </div>
+
+                    </div>
+                    <div class="info" style="margin-top: 5px; font-size: 14px;" v-html="getDataQuestion.direction" />
+                  </el-col>
+                </el-row>
+
+              </div>
+              <div>
+
+                <div>
+                  <el-row style="margin-bottom: 8px;">
+                    <div id="questionContent" class="tip" style="font-size: 14px;" v-html="getQuestion.content" />
+                  </el-row>
+                  <el-row v-if="isShowQuestion">
+                    <div v-if="!isShowListeningTab && getReading != ''">
+                      <el-card class="box-card sample-box">
+                        <div style="height: 40px; border-bottom: 1px solid rgb(220 223 229); margin-bottom: 10px; ">
+                          <div style="float: left; margin-top: 2px;">
+                            <span style="font-size: 16px; font-weight: 600;"> Reading Passage</span>
+                          </div>
+                          <div style="float: right;">
+                            <el-button size="mini" @click="toggleBtnShowTab()">Go to listening</el-button>
+                          </div>
+                        </div>
+                        <div class="box-card__content">
+                          <div>
+                            <div v-html="getReading.content" />
+                          </div>
+                        </div>
+                      </el-card>
+                    </div>
+
+                    <el-col v-if="getReading =='' && getListening != '' || isShowListeningTab || getReading == ''" :span="24">
+                      <div v-if="isShowListeningTab" style="width: 100%;">
+                        <el-card class="box-card sample-box">
+                          <div style="height: 40px; border-bottom: 1px solid rgb(220 223 229); margin-bottom: 10px; ">
+                            <div style="float: left; margin-top: 2px;">
+                              <span style="font-size: 16px; font-weight: 600;"> Listening Lecture</span>
+                            </div>
+                            <div style="float: right;">
+                              <el-button size="mini" @click="backClick()">Back to Reading</el-button>
+                            </div>
+                          </div>
+                          <div class="box-card__content">
+                            <div>
+                              <audio v-if="getListening != ''" controls style="width: 100%; height: 35px; margin-bottom: 3px;">
+                                <source :src="'/audio/'+getListening.content" type="audio/mpeg">
+                              </audio>
+                              <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
+                                <div style="flex-grow: 1;">
+                                  <i class="el-icon-document-copy" />
+                                  Audio Script
+                                </div>
+                                <div :class="{'rotate-icon' : isShowScript}">
+                                  <i class="fas fa-caret-down" />
+                                </div>
+                              </div>
+                              <div v-if="isShowQuestion && isShowScript && isShowListeningTab" class="body-transcript" style="margin: 0;">
+                                <pre id="transcriptContent" v-html="getTranscript.content" />
+                              </div>
+                            </div>
+                          </div>
+                        </el-card>
+                      </div>
+                    </el-col>
+                  </el-row>
+                  <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))">
+                    <img :src="'/photo/' + getChart.content" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Help" name="help" style="height: 100%; position: relative;">
+            <div>
+              <div v-if="getTip != ''">
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div id="tipContent" v-html="getTip.content" />
+                </el-card>
+              </div>
+              <div v-else>
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div> We are working on this section, please check back soon for help on the writing topic including suggesstions on development ideas,
+                    instructions on how to structure your eassy, and useful vocabulary that could be used to improve your band score.</div>
+                </el-card>
+              </div>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Samples" name="sample" style="height: 100%; position: relative;">
+            <div>
+              <tab-samples />
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
+            <div>
+              <tab-rubric />
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Submissions" name="submissions" style="height: 100%; position: relative;">
+            <div style="padding-right: 10px;">
+              <el-table
+                :data="submissions"
+                stripe
+                style="width: 100%"
+                size="mini"
+                :row-style="{'cursor': 'pointer'}"
+                @row-click="onSubmissionRowClick"
+              >
+                <el-table-column
+                  prop="id"
+                  label="Id"
+                  width="50"
+                />
+                <el-table-column
+                  prop="submittedTimeStr"
+                  label="Submitted Date"
+                  min-width="155"
+                >
+                  <template slot-scope="scope">
+                    <span>{{ scope.row.submittedTimeStr }}</span>
+                  </template>
+                </el-table-column>
+
+                <el-table-column
+                  prop="status"
+                  label="Status"
+                  min-width="160"
+                >
+                  <template slot-scope="scope">
+                    <el-tag>{{ scope.row.status }}</el-tag>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </el-tab-pane>
+
+          <el-tab-pane
+            v-for="item in editableTabs"
+            :key="item.id"
+            :label="item.status"
+            :name="'submission' + item.id"
+            closable
+          >
+            <el-card class="box-card">
+              <div slot="header" class="box-card__title" style="min-width: 380px;">
+                <div style="height: 30px;">
+                  <div style="width: 260px; float: left; margin-top: 5px; font-size: 14px; font-weight: bold;">
+                    Submitted at {{ item.submittedTimeStr }}
+                  </div>
+                  <div style="float: right;">
+                    <el-tag size="medium">{{ item.status }}</el-tag>
+                  </div>
+                </div>
+                <div style="height: 30px;">
+                  <div style="float: left; margin-right: 5px;">
+                    <el-tag
+                      type="info"
+                      size="medium"
+                      effect="plain"
+                    >
+                      Time Taken: {{ getTimeTaken(item.timeTaken) }}
+                    </el-tag>
+                  </div>
+                  <div style="float: left; margin-right: 5px;">
+                    <el-tag
+                      type="info"
+                      size="medium"
+                      effect="plain"
+                    >
+                      Word count: {{ item.text ? item.text.trim().split(/\b\S+\b/).length - 1 : 0 }}
+                    </el-tag>
+                  </div>
+                  <div style="margin-top: 8px; float: right; " @click="copyTextToClipboard(item.text)">
+                    <i class="far fa-clone" style="font-size: 18px; color: #9b9898; cursor: pointer;" />
+                  </div>
+                </div>
+              </div>
+              <div class="box-card__content">
+                <div style="flex-grow: 1;">
+                  <textarea v-model="item.text" :disabled="true" spellcheck="false" class="textarea-style" style="height: calc(100vh - 220px); border-top: 1px solid #e2e2e2;" />
+                </div>
+              </div>
+            </el-card>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+
+      <div style="height: 100%; display: flex; flex-direction: column;">
+        <div style="height: 40px;  font-size: 13px; background-color: #f5f7fa;  border: 1px solid #e2e2e2; padding: 5px;">
+          <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
+            <el-tag
+              v-if="isShowCountWord && countWord != 0"
+              type="info"
+              size="medium"
+              closable
+              effect="plain"
+              :disable-transitions="true"
+              @close="toggleShowCount()"
+            >
+              Word count: {{ countWord }}
+            </el-tag>
+
+            <el-button v-if="!isShowCountWord" size="mini" plain @click="toggleShowCount()">
+              Show Word Count
+            </el-button>
+          </div>
+          <div v-if="getQuestion != ''">
+            <el-button
+              v-if="!writingSubmitted && hasSubmitionForThisQuestion && !isEdit"
+              style="float: right; margin-left: 5px"
+              size="mini"
+              :disabled="!(writingContent && writingContent.length > 0)"
+              type="primary"
+              @click="submit()"
+            >Submit</el-button>
+            <el-button
+              v-if="isEdit && !isFreeRequested && !isProRequested"
+              style="float: right; margin-left: 5px"
+              size="mini"
+              @click="isEdit=false"
+            >Edit</el-button>
+            <el-button
+              v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
+              size="mini"
+              :disabled="!(writingContent && writingContent.length > 0)"
+              type="primary"
+              style="float: right; margin-left: 5px;"
+              @click="submit()"
+            >Submit</el-button>
+            <el-button
+              v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
+              size="mini"
+              :disabled="!(writingContent && writingContent.length > 0)"
+              style="float: right;"
+              @click="save()"
+            >Save</el-button>
+          </div>
+        </div>
+        <div style="flex-grow: 1;">
+          <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Start your writing here ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
+        </div>
+      </div>
+      <div>
+        <checkout
+          :visible="checkoutVisible"
+          :submission-id="+submissionId"
+          :question-id="+questionId"
+          :unrated-count="unRatedList.length"
+          @proReviewRequested="isProRequested=true"
+          @closed="checkoutVisible=false"
+        />
+      </div>
+      <el-dialog
+        title="Time Out"
+        :visible.sync="dialogVisible"
+        width="30%"
+      >
+        <span>Your test time is over. Do you want to submit your current writing?</span>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisible = false">Cancel</el-button>
+          <el-button type="primary" @click="submit">Submit</el-button>
+        </span>
+      </el-dialog>
+    </div>
+
+  </div>
 </template>
 
 <script>
@@ -438,7 +780,8 @@ export default {
       isShowQuestion: true,
       submissions: [],
       editableTabs: [],
-      activeTab: 'description'
+      activeTab: 'description',
+      screenWidth: window.innerWidth
     }
   },
   computed: {
@@ -510,7 +853,15 @@ export default {
       return ''
     }
   },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
   async mounted() {
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
     window.component = this
     this.questionId = this.$route.params.id
     this.submissionId = this.$route.params.submissionId

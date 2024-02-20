@@ -1,18 +1,29 @@
 import questionService from '@/services/question.service'
 import sampleService from '../../services/sample.service'
 
-const state = {
-  questions: [],
-  selectedQuestion: {},
-  countQuestions: {},
-  countQuestionsByUser: {},
-  testByUser: {},
-  statusQuestion: {},
-  sampleByQuestion: [],
-  samples: []
+const getDefaultState = () => {
+  return {
+    questions: [],
+    selectedQuestion: {},
+    countQuestions: {},
+    countQuestionsByUser: {},
+    testByUser: {},
+    statusQuestion: {},
+    sampleByQuestion: [],
+    samples: [],
+    personalQuestion: null
+  }
 }
 
+const state = getDefaultState()
+
 const actions = {
+  savePersonalQuestion({ commit }, personalQuestion) {
+    commit('SET_PERSONAL_QUESTION', personalQuestion)
+  },
+  clearPersonalQuestion({ commit }) {
+    commit('CLEAR_PERSONAL_QUESTION')
+  },
   loadAllQuestionByUser({ commit }, userId) {
     return questionService.getAllByUser(userId).then(result => {
       commit('SET_QUESTIONS', result)
@@ -60,6 +71,9 @@ const actions = {
     return sampleService.getAllSamples().then(rs => {
       commit('SET_ALL_SAMPLE', rs)
     })
+  },
+  clearState({ commit }) {
+    commit('CLEAR_STATE')
   }
   // getAddEditQuestionData({ commit }) {
   //   questionService.getAddEditQuestionData().then(result => {
@@ -70,6 +84,7 @@ const actions = {
 }
 
 const mutations = {
+
   SET_QUESTIONS: (state, questions) => {
     state.questions = questions
   },
@@ -96,6 +111,15 @@ const mutations = {
   },
   SET_ALL_SAMPLE: (state, samples) => {
     state.samples = samples
+  },
+  SET_PERSONAL_QUESTION: (state, personalQuestion) => {
+    state.personalQuestion = personalQuestion
+  },
+  CLEAR_PERSONAL_QUESTION: (state) => {
+    state.personalQuestion = null
+  },
+  CLEAR_STATE(state) {
+    Object.assign(state, getDefaultState())
   }
 }
 
@@ -107,7 +131,8 @@ const getters = {
   getTestByUser: state => state.testByUser,
   getStatusQuestion: state => state.statusQuestion,
   getSampleByQuestion: state => state.sampleByQuestion,
-  getAllSample: state => state.samples
+  getAllSample: state => state.samples,
+  getPersonalQuestion: state => state.personalQuestion
   // getSelected: state => state.selectedRater
 }
 

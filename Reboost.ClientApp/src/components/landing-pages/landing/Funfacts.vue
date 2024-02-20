@@ -3,9 +3,9 @@
   <section id="features" class="funfacts-area ptb-80" style="padding-bottom: 20px;">
     <div class="container">
       <div class="section-title">
-        <h2>{{ messageTranslates('funfacts', 'title') }}</h2>
+        <h3>{{ messageTranslates('funfacts', 'title') }}</h3>
         <div class="bar" />
-        <p>{{ messageTranslates('funfacts', 'description') }}</p>
+        <!-- <p>{{ messageTranslates('funfacts', 'description') }}</p> -->
       </div>
     </div>
   </section>

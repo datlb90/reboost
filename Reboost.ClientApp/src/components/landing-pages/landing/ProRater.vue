@@ -5,9 +5,9 @@
       <div class="row h-100 justify-content-center align-items-center">
         <div class="col-lg-4 col-md-12 services-content">
           <div class="section-title">
-            <h2>Certified Pro Raters</h2>
+            <h2>{{ messageTranslates('proRater', 'title') }}</h2>
             <div class="bar" />
-            <p>{{ messageTranslates('featuresArea', 'description') }}</p>
+            <p>{{ messageTranslates('proRater', 'description') }}</p>
           </div>
         </div>
 

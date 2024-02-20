@@ -1,43 +1,42 @@
 
 <template>
   <div id="terms-of-service">
-    <h1 style="margin-bottom: 20px;"><a href="/" style="font-weight: 300">Reboost</a> Terms of Service</h1>
-    <p>Effective Date: 15/11/2023</p>
+    <h1 style="margin-bottom: 20px;"><a href="/" style="font-weight: 300">Reboost</a> Điều Khoản Dịch Vụ</h1>
+    <p>Ngày có hiệu lực: 15/11/2023</p>
+    <p>Reboost là một nền tảng trực tuyến dành riêng cho việc giúp người tham gia kỳ thi TOEFL và IELTS luyện tập và cải thiện kỹ năng viết của họ. Bằng cách truy cập vào trang web, ứng dụng di động hoặc bất kỳ dịch vụ nào được cung cấp (gọi chung là "Dịch Vụ"), bạn đồng ý rằng mình sẽ bị ràng buộc bởi các Điều Khoản Dịch Vụ này ("Điều Khoản"). Nếu bạn không đồng ý với tất cả các điều khoản và điều kiện, bạn không được phép sử dụng Dịch Vụ.</p>
 
-    <p>Reboost is an online platform dedicated to helping TOEFL and IELTS test takers practice and improve their writing skills. By accessing our website, mobile application, or any services provided (collectively, the "Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to all the terms and conditions, you may not use the Service.</p>
+    <h2>1. Dịch Vụ Được Cung Cấp</h2>
+    <p>Reboost cung cấp không giới hạn các chủ đề viết với dữ liệu hỗ trợ và mẫu cho từng chủ đề. Người dùng có thể luyện viết trong ứng dụng và gửi bài viết của mình để được xem xét, có thể được thực hiện bởi các đánh giá viên được chứng nhận hoặc phần mềm đánh giá viết tự động. Sau khi hoàn tất 1 bài viết, người dùng có thể yêu cầu bài viết của mình được chấm và thanh toán trực tiếp trên hệ thống. Phản hồi sẽ được cung cấp trên hệ thống trong vòng 48 giờ.</p>
 
-    <h3>1. Services Provided</h3>
-    <p>Reboost offers unlimited writing topics with support data and samples for each topic. Users can practice writing in the app and submit their writings for review, which may be conducted by certified raters or automated writing assessment software. Feedback will be provided within the system.</p>
+    <h2>2. Tài Khoản Người Dùng</h2>
+    <p>Để truy cập hầu hết các tính năng của Dịch Vụ, bạn phải đăng ký và tạo một tài khoản. Bạn có trách nhiệm bảo mật tài khoản và mật khẩu của mình và hạn chế quyền truy cập vào máy tính hoặc thiết bị của bạn. Bạn đồng ý chấp nhận trách nhiệm về tất cả các hoạt động diễn ra dưới tài khoản hoặc mật khẩu của mình.</p>
 
-    <h3>2. User Accounts</h3>
-    <p>To access most features of the Service, you must register and create an account. You are responsible for maintaining the confidentiality of your account and password and for restricting access to your computer or device. You agree to accept responsibility for all activities that occur under your account or password.</p>
+    <h2>3. Sử Dụng Dịch Vụ</h2>
+    <p>Dịch Vụ chỉ dành cho mục đích cá nhân và không thương mại. Reboost cấp cho bạn một giấy phép hạn chế, không độc quyền, không thể chuyển nhượng và có thể thu hồi để sử dụng Dịch Vụ cho mục đích dự định tuân thủ các Điều Khoản này.</p>
 
-    <h3>3. Use of Service</h3>
-    <p>The Service is intended for personal and non-commercial use only. Reboost grants you a limited, non-exclusive, non-transferable, and revocable license to use the Service for its intended purpose subject to your compliance with these Terms.</p>
+    <h2>4. Hành Vi của Người Dùng</h2>
+    <p>Bạn đồng ý không lạm dụng Dịch Vụ hoặc giúp người khác làm như vậy. Bạn không được cố gắng làm suy yếu an ninh hoặc tính toàn vẹn của các hệ thống máy tính hoặc mạng của Reboost hoặc bất kỳ hệ thống máy tính và mạng nào của người dùng.</p>
 
-    <h3>4. User Conduct</h3>
-    <p>You agree not to misuse the Service or help anyone else do so. You must not attempt to undermine the security or integrity of the computing systems or networks of Reboost or any user's computing system and network.</p>
+    <h2>5. Sở Hữu Trí Tuệ</h2>
+    <p>Tất cả nội dung cung cấp trên Dịch Vụ, bao gồm văn bản, đồ họa, logo, hình ảnh, cũng như sự tổng hợp của chúng, và bất kỳ phần mềm nào được sử dụng trên trang web, là tài sản của Reboost hoặc các nhà cung cấp của nó và được bảo vệ bởi luật bản quyền và luật bản quyền quốc tế.</p>
 
-    <h3>5. Intellectual Property</h3>
-    <p>All content provided on the Service, including text, graphics, logos, images, as well as the compilation thereof, and any software used on the site, is the property of Reboost or its suppliers and protected by copyright and international copyright laws.</p>
+    <h2>6. Xem Xét Phản Hồi và Hoàn Tiền</h2>
+    <p>Người dùng sẽ nhận được phản hồi cho bài viết của mình được gửi qua Dịch Vụ. Nếu bạn gặp bất kỳ vấn đề nào với phản hồi, bạn có thể yêu cầu hoàn tiền bằng cách liên hệ với Hỗ trợ Reboost tại support@reboost.vn. Yêu cầu hoàn tiền sẽ được đánh giá trên cơ sở từng trường hợp.</p>
 
-    <h3>6. Feedback Review and Refunds</h3>
-    <p>Users will receive feedback for their writing submitted through the Service. If you encounter any issue with the feedback, you can request a refund by contacting Reboost Support at <a href="mailto:support@reboost.vn">support@reboost.vn</a>. Refund requests will be evaluated on a case-by-case basis.</p>
+    <h2>7. Từ Chối Bảo Đảm</h2>
+    <p>Reboost không đảm bảo rằng Dịch Vụ sẽ đáp ứng đúng yêu cầu cụ thể của bạn hoặc sẽ có sẵn một cách liên tục, an toàn hoặc không lỗi. Phản hồi được cung cấp chỉ mang tính chất thông tin và không được coi là lời khuyên chuyên nghiệp.</p>
 
-    <h3>7. Disclaimers</h3>
-    <p>Reboost does not guarantee that the Service will meet your specific requirements or be available on an uninterrupted, secure, or error-free basis. The feedback provided is for informational purposes only and is not intended as professional advice.</p>
+    <h2>8. Giới Hạn Trách Nhiệm</h2>
+    <p>Reboost sẽ không chịu trách nhiệm về bất kỳ tổn thất gián tiếp, ngẫu nhiên, đặc biệt, hậu quả hoặc phạt đền, hoặc bất kỳ tổn thất lợi nhuận hoặc doanh thu, dù là trực tiếp hay gián tiếp, hoặc bất kỳ mất mát dữ liệu, sử dụng, thiện chí, hoặc các tổn thất vô hình khác.</p>
 
-    <h3>8. Limitation of Liability</h3>
-    <p>Reboost shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses.</p>
+    <h2>9. Sửa Đổi Điều Khoản</h2>
+    <p>Reboost có quyền, theo quyết định duy nhất của mình, sửa đổi hoặc thay thế các Điều Khoản này vào bất kỳ thời điểm nào. Bằng cách tiếp tục truy cập hoặc sử dụng Dịch Vụ của chúng tôi sau khi các sửa đổi đó trở nên có hiệu lực, bạn đồng ý bị ràng buộc bởi các điều khoản đã được sửa đổi.</p>
 
-    <h3>9. Amendments to Terms</h3>
-    <p>Reboost reserves the right, at its sole discretion, to modify or replace these Terms at any time. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.</p>
+    <h2>10. Pháp Luật Điều Chỉnh</h2>
+    <p>Các Điều Khoản này sẽ được điều chỉnh và giải thích theo luật pháp Việt Nam, không quan tâm đến các quy định về xung đột pháp luật của nó.</p>
 
-    <h3>10. Governing Law</h3>
-    <p>These Terms shall be governed by and construed in accordance with the Vietnamese law, without regard to its conflict of law provisions.</p>
-
-    <h3>11. Contact Information</h3>
-    <p>For any questions about these Terms, please contact us at <a href="mailto:support@reboost.vn">support@reboost.vn</a>.</p>
+    <h2>11. Thông Tin Liên Hệ</h2>
+    <p>Đối với bất kỳ câu hỏi nào về các Điều Khoản này, vui lòng liên hệ với chúng tôi tại <a href="mailto:support@reboost.vn">support@reboost.vn</a>.</p>
 
   </div>
 </template>

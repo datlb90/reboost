@@ -1,5 +1,5 @@
 export const HowItWork2 = {
-  title: 'How It Work',
+  title: 'How It Works',
   description: 'At Reboost, we believe practice makes perfect. So we make every effort to encourage you to practice more and equip you with the best tools to make the most our of your practice.',
   titleBox1: 'Practice Writing Daily',
   contentBox1: 'Writing every day can help you become more aware of the limits of your vocabulary. The more you write, the more obvious that frequent word choices become. Once you know your limitations, you can expand your vocabulary by finding stronger words or experimenting with word order to see if there are other ways to get your message across. With our free, unlimited writing topics categorized into different writing tasks, you can practice writing using Reboost at your own pace.',

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <el-alert v-if="reviewRequested" title="Sign up free now to request review for your writing" type="success" center show-icon />
+      <el-alert v-if="personalQuestion" title="Sign up free now to request review for your writing" type="success" center show-icon />
       <div class="wrapper">
         <div>
           <el-form ref="formSignUp" :model="form">
@@ -56,7 +56,7 @@
 
             <el-form-item>
               <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
-                <el-button type="primary" :disabled="true" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
                   Facebook
                 </el-button>
               </form>
@@ -85,6 +85,9 @@
 <script>
 import { mapActions } from 'vuex'
 import { PageName } from '@/app.constant'
+import { SCORES } from '../../app.constant'
+import userService from '@/services/user.service'
+import moment from 'moment'
 export default {
   name: 'Login',
   data() {
@@ -100,13 +103,13 @@ export default {
       googleExternalLogin: null,
       returnUrl: '/',
       googleFormAction: null,
-      facebookFormAction: null
+      facebookFormAction: null,
+      loading: false,
+      personalQuestion: null
     }
   },
   async created() {
-    if (this.$router.currentRoute.query?.review && this.$router.currentRoute.query?.review == 'requested') {
-      this.reviewRequested = true
-    }
+    this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
     this.googleFormAction = 'api/auth/external/google/' + encodeURIComponent(this.returnUrl)
     this.facebookFormAction = 'api/auth/external/facebook/' + encodeURIComponent(this.returnUrl)
     // this.oauthSignIn()
@@ -119,6 +122,7 @@ export default {
     async signUp() {
       this.$refs['formSignUp'].validate(async valid => {
         if (valid) {
+          this.loading = true
           const user = await this.register({
             Email: this.form.username,
             Password: this.form.password,
@@ -126,9 +130,47 @@ export default {
             LastName: this.form.lastName,
             Role: 'learner'
           })
-
+          this.loading = false
           if (user) {
-            this.$router.push({ name: PageName.AFTER_LOGIN })
+            // Add user score to by bass select test requirement if review is requested
+            if (this.personalQuestion) {
+              var scores = []
+              const formData = {
+                ieltsTestScore: {
+                  WRITING: 0,
+                  READING: 0,
+                  LISTENING: 0,
+                  SPEAKING: 0
+                },
+                toeflTestScore: {
+                  WRITING: 0,
+                  READING: 0,
+                  LISTENING: 0,
+                  SPEAKING: 0
+                }
+              }
+              if (this.personalQuestion.Test == 'IELTS') {
+                for (const key in formData.ieltsTestScore) {
+                  scores.push({
+                    sectionId: SCORES.IELTS[key].sectionId,
+                    score: 0,
+                    updatedDate: moment().format('yyyy-MM-DD')
+                  })
+                }
+              }
+              if (this.personalQuestion.Test == 'TOEFL') {
+                for (const key in formData.toeflTestScore) {
+                  scores.push({
+                    sectionId: SCORES.TOEFL[key].sectionId,
+                    score: 0,
+                    updatedDate: moment().format('yyyy-MM-DD')
+                  })
+                }
+              }
+              userService.addScore(user.id, scores).then(rs => {
+                this.$router.push({ name: PageName.AFTER_LOGIN })
+              })
+            }
           }
         } else return false
       })

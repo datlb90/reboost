@@ -1,58 +1,58 @@
 
 <template>
   <div id="privacy-policy">
-    <h1 style="margin-bottom: 20px;"><a href="/" style="font-weight: 300">Reboost</a> Privacy Policy</h1>
-    <p>Effective Date: 15/11/2023</p>
-    <p>This Privacy Policy outlines how Reboost collects, uses, and protects your personal information when you use our website https://reboost.vn (the "Site") and the services provided by Reboost (the "Services"). By using our Site and Services, you agree to the terms outlined in this policy.</p>
+    <h1 style="margin-bottom: 20px;"><a href="/" style="font-weight: 300">Reboost</a> Chính Sách Bảo Mật</h1>
+    <p>Ngày có hiệu lực: 15/11/2023</p>
+    <p>Chính sách Bảo Mật này mô tả cách Reboost thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn khi bạn sử dụng trang web https://reboost.vn (gọi là "Trang") và các dịch vụ được cung cấp bởi Reboost (gọi là "Dịch Vụ"). Khi sử dụng Trang và Dịch Vụ của chúng tôi, bạn đồng ý với các điều khoản được nêu trong chính sách này.</p>
 
-    <h3>Information We Collect</h3>
+    <h2>Thông Tin Chúng Tôi Thu Thập</h2>
+    <h3>1. Thông Tin Tài Khoản Người Dùng</h3>
+    <p>Khi bạn tạo một tài khoản trên Reboost, chúng tôi thu thập các thông tin sau:</p>
+    <ul>
+      <p>Họ và Tên</p>
+      <p>Số Điện Thoại</p>
+      <p>Địa Chỉ Email</p>
+      <p>Mật Khẩu (được mã hóa)</p>
+    </ul>
 
-    <p><b>1. User Account Information</b></p>
-    <p>When you create an account on Reboost, we collect the following information:</p>
-    <p>- Full Name</p>
-    <p>- Phone Number</p>
-    <p>- Email Address</p>
-    <p>- Password (encrypted)</p>
+    <h3>2. Dữ Liệu Sử Dụng</h3>
+    <p>Chúng tôi tự động thu thập thông tin về cách bạn tương tác với Trang và Dịch Vụ của chúng tôi, bao gồm:</p>
+    <ul>
+      <p>Dữ liệu nhật ký (địa chỉ IP, loại trình duyệt, các trang đã truy cập)</p>
+      <p>Thông tin thiết bị (loại thiết bị, hệ điều hành)</p>
+    </ul>
 
-    <p><b>2. Usage Data</b></p>
-    <p>We automatically collect information about your interactions with our Site and Services, including:</p>
-    <p>- Log data (IP address, browser type, pages visited)</p>
-    <p>- Device information (device type, operating system)</p>
+    <h3>3. Dữ Liệu Luyện Viết</h3>
+    <p>Là một nền tảng tập trung vào việc cải thiện kỹ năng viết tiếng Anh, chúng tôi thu thập các văn bản bạn gửi để luyện tập và phản hồi được cung cấp bởi hệ thống của chúng tôi.</p>
 
-    <p><b>3. Writing Practice Data</b></p>
-    <p>As a platform focused on improving English writing skills, we collect the texts you submit for practice and the feedback provided by our system.</p>
+    <h2>Cách Chúng Tôi Sử Dụng Thông Tin Của Bạn</h2>
+    <p>Chúng tôi sử dụng thông tin đã thu thập cho các mục đích sau:</p>
+    <ul>
+      <p>Để cung cấp và cải thiện Dịch Vụ của chúng tôi</p>
+      <p>Để cá nhân hóa trải nghiệm của bạn</p>
+      <p>Để liên lạc với bạn (ví dụ, cập nhật, phản hồi)</p>
+    </ul>
 
-    <h3>How We Use Your Information</h3>
-    <p>We use the collected information for the following purposes:</p>
-    <p>- To provide and improve our Services</p>
-    <p>- To personalize your experience</p>
-    <p>-  To communicate with you (e.g., updates, feedback)</p>
+    <h2>Bảo Mật Dữ Liệu</h2>
+    <p>Chúng tôi coi trọng việc bảo mật thông tin cá nhân của bạn. Reboost thực hiện các biện pháp để bảo vệ dữ liệu khách hàng khỏi việc truy cập không được phép, thay đổi, tiết lộ hoặc phá hủy.</p>
+    <p>Chính sách bảo mật dữ liệu của chúng tôi nhằm đảm bảo tính bảo mật, toàn vẹn và sẵn có của thông tin cá nhân khách hàng được lưu trữ trong cơ sở dữ liệu Azure SQL bằng cách sử dụng mã hóa và các biện pháp bảo mật khác.</p>
 
-    <h3>Data Security</h3>
-    <p>We take the security of your personal information seriously. Reboost implements measures to protect customer data including  from unauthorized access, alteration, disclosure, or destruction.</p>
-    <p>Our data security policy aims to ensure the confidentiality, integrity, and availability of customer personal information stored in Azure SQL databases by employing encryption and other security measures.</p>
-    <p><strong>Data Encryption At Rest: </strong>All customer personal information stored in Azure SQL databases must be encrypted using Azure SQL Database Transparent Data Encryption (TDE) to ensure data at rest is encrypted.</p>
-    <p><strong>Data Encryption In Transit: </strong>Use Azure's built-in transport layer security (TLS) to encrypt data in transit between Azure services and clients accessing the database.</p>
-    <p><strong>Data Access Control: </strong>Implement Azure Active Directory (Azure AD) for identity and access management. Ensure strict access control policies are in place, granting access based on the principle of least privilege. Besides, we also use Azure SQL Database's built-in firewall and network security features to restrict access to the database.</p>
+    <h2>Chia Sẻ Thông Tin Của Bạn</h2>
+    <p>Chúng tôi không bán, trao đổi hoặc chuyển giao thông tin cá nhân của bạn cho bên thứ ba mà không có sự đồng ý của bạn, trừ như được nêu trong Chính Sách Bảo Mật này hoặc như được yêu cầu bởi pháp luật.</p>
 
-    <h3>Sharing Your Information</h3>
-    <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as outlined in this Privacy Policy or as required by law.
-    </p>
+    <h2>Sự Lựa Chọn của Bạn</h2>
+    <p>Bạn có thể quản lý sở thích tài khoản và từ chối nhận một số thông tin liên lạc. Tuy nhiên, một số thông tin liên lạc cần thiết liên quan đến Dịch Vụ có thể là bắt buộc.</p>
 
-    <h3>Your Choices</h3>
-    <p>You can manage your account preferences and opt-out of certain communications. However, some essential communications related to the Services may be necessary.
-    </p>
+    <h2>Cookies</h2>
+    <p>Reboost có thể sử dụng cookies để nâng cao trải nghiệm của bạn. Bạn có thể quản lý sở thích cookies thông qua cài đặt trình duyệt của mình.</p>
 
-    <h3>Cookies</h3>
-    <p> Reboost may use cookies to enhance your experience. You can manage your cookie preferences through your browser settings.
-    </p>
+    <h2>Thay Đổi Chính Sách Bảo Mật</h2>
+    <p>Reboost có quyền cập nhật Chính Sách Bảo Mật này. Chúng tôi sẽ thông báo cho bạn về bất kỳ thay đổi nào bằng cách đăng chính sách mới trên trang này.</p>
 
-    <h3>Changes to Privacy Policy</h3>
-    <p>Reboost reserves the right to update this Privacy Policy. We will notify you of any changes by posting the new policy on this page.
-    </p>
+    <h2>Liên Hệ Chúng Tôi</h2>
+    <p>Nếu bạn có bất kỳ câu hỏi hoặc lo ngại nào về Chính Sách Bảo Mật này, vui lòng liên hệ với chúng tôi tại <a href="mailto:support@reboost.vn">support@reboost.vn</a></p>
 
-    <h3> Contact Us</h3>
-    <p>If you have any questions or concerns about this Privacy Policy, please contact us at <a href="mailto:support@reboost.vn">support@reboost.vn</a></p>
+    <!-- <p>If you have any questions or concerns about this Privacy Policy, please contact us at <a href="mailto:support@reboost.vn">support@reboost.vn</a></p> -->
 
   </div>
 </template>

@@ -35,6 +35,7 @@ const authService = {
   },
   isAuthenticated() {
     const user = store.getters['auth/getUser']
+    console.log(user)
     return user && user.token
   },
   getCurrentUser() {

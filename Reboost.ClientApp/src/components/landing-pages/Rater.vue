@@ -33,15 +33,15 @@ export default {
       var $href = $(this).attr('href')
       var $anchor = $('#' + $href).offset()
       window.scrollTo($anchor.left, $anchor.top)
-      return false
+      // return false
     })
 
-    $('ul.nav').find('a').click(function() {
-      var $href = $(this).attr('href')
-      var $anchor = $('#' + $href).offset()
-      window.scrollTo($anchor.left, $anchor.top)
-      return false
-    })
+    // $('ul.nav').find('a').click(function() {
+    //   var $href = $(this).attr('href')
+    //   var $anchor = $('#' + $href).offset()
+    //   window.scrollTo($anchor.left, $anchor.top)
+    //   // return false
+    // })
 
     // Cache selectors
     var topMenu = $('#top-menu')

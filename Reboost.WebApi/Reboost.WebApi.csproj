@@ -1500,6 +1500,37 @@
     <Content Remove="wwwroot\img\ee.9b43910c.svg" />
     <Content Remove="wwwroot\img\eg.4137f108.svg" />
     <Content Remove="wwwroot\img\ec.3bafd071.svg" />
+    <Content Remove="wwwroot\img\hn.db7e3de4.svg" />
+    <Content Remove="wwwroot\img\fm.41b339f3.svg" />
+    <Content Remove="wwwroot\img\fo.c2f63475.svg" />
+    <Content Remove="wwwroot\img\ga.8629ddf5.svg" />
+    <Content Remove="wwwroot\img\fm.2c13a5d4.svg" />
+    <Content Remove="wwwroot\img\fo.32019da0.svg" />
+    <Content Remove="wwwroot\img\fk.1bffbf9f.svg" />
+    <Content Remove="wwwroot\img\dz.0477e542.svg" />
+    <Content Remove="wwwroot\img\dz.ff15f060.svg" />
+    <Content Remove="wwwroot\img\dm.b1635699.svg" />
+    <Content Remove="wwwroot\img\dk.59a9d25f.svg" />
+    <Content Remove="wwwroot\img\dm.fda8fe70.svg" />
+    <Content Remove="wwwroot\img\dk.302b4687.svg" />
+    <Content Remove="wwwroot\img\do.88a82fcc.svg" />
+    <Content Remove="wwwroot\img\es.361eda2a.svg" />
+    <Content Remove="wwwroot\img\eh.780a0a9e.svg" />
+    <Content Remove="wwwroot\img\er.8d5171c7.svg" />
+    <Content Remove="wwwroot\img\er.b4ea80f7.svg" />
+    <Content Remove="wwwroot\img\eg.b0aa9a4e.svg" />
+    <Content Remove="wwwroot\img\ec.8fb69b79.svg" />
+    <Content Remove="wwwroot\img\ee.03c3d564.svg" />
+    <Content Remove="wwwroot\img\eg.4137f108.svg" />
+    <Content Remove="wwwroot\img\ec.3bafd071.svg" />
+    <Content Remove="wwwroot\img\ee.9b43910c.svg" />
+    <Content Remove="wwwroot\img\eh.44d97903.svg" />
+    <Content Remove="wwwroot\img\cz.b325cced.svg" />
+    <Content Remove="wwwroot\img\de.74018f0a.svg" />
+    <Content Remove="wwwroot\img\cz.09a9b116.svg" />
+    <Content Remove="wwwroot\img\cy.dbf92cb8.svg" />
+    <Content Remove="wwwroot\img\NewReviewCenter.f817c0d6.png" />
+    <Content Remove="wwwroot\img\ProRater.052813bf.png" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 </Project>

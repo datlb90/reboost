@@ -24,8 +24,8 @@ export const base64ToArrayBuffer = (dataurl, fileName) => {
 }
 export const urltoFile = (url, filename, mimeType) => {
   return (fetch(url)
-    .then(function(res) { return res.arrayBuffer() })
-    .then(function(buf) { return new File([buf], filename, { type: mimeType }) })
+    .then(function (res) { return res.arrayBuffer() })
+    .then(function (buf) { return new File([buf], filename, { type: mimeType }) })
   )
 }
 export const dataURLtoFile = (dataurl, filename) => {
@@ -63,4 +63,17 @@ export const b64toBlob = (b64Data, contentType, sliceSize) => {
 
   var blob = new Blob(byteArrays, { type: contentType })
   return blob
+}
+
+export const getBase64FromFile = (file) => {
+  console.log(file)
+  var reader = new FileReader()
+  reader.readAsDataURL(file)
+  reader.onload = function () {
+    console.log(reader.result)
+    return reader.result
+  }
+  reader.onerror = function (error) {
+    console.log('Error: ', error)
+  }
 }

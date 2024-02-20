@@ -46,7 +46,7 @@
         <div class="filter-toolbar" style="margin-top: 10px;">
           <el-dropdown
             placement="bottom-start"
-            :hide-on-click="false"
+            :hide-on-click="true"
             style="float: left; margin-right: 15px;"
             @command="onFilterChange"
           >
@@ -228,6 +228,9 @@
         <template slot-scope="scope">
           <div class="action-column-cell">
             <el-button size="mini" style="width: 130px;" @click="actionClick(scope.row.action, scope.row)">{{ scope.row.action }}</el-button>
+          </div>
+          <div v-if="scope.row.status.trim() == 'Completed'" style="margin-top: 5px" class="action-column-cell">
+            <el-button size="mini" style="width: 130px;" @click="actionClick('View Submission', scope.row)">View Submission</el-button>
           </div>
           <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
             <el-button size="mini" style="width: 130px;" @click="actionClick('Request Review', scope.row)">Request Review</el-button>

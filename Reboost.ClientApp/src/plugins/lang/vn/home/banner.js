@@ -1,10 +1,10 @@
 export const Banner = {
-  bannerContentTitle: 'Một Phương Pháp Học Mới',
-  bannerContentDescription: 'Reboost là nền tảng tốt nhất để giúp bạn nâng cao điểm thi viết ngoại ngữ của mình. Bất kể bạn làm bài kiểm tra nào, chúng tôi sẽ giúp bạn chuẩn bị đầy đủ và đảm bảo cải thiện điểm số của bạn bằng cách cung cấp:',
-  content1: 'Bài kiểm tra thực hành không giới hạn',
-  content2: 'Cộng đồng năng động khuyến khích bạn luyện tập nhiều hơn',
-  content3: 'Cơ hội học hỏi bằng cách cung cấp phản hồi',
-  content4: 'Phản hồi hữu ích và mang tính xây dựng để giúp bạn cải thiện',
+  slogan: 'Một cách mới để nâng cao điểm viết IETLS & TOEFL',
+  bannerContentDescription: 'Reboost mang lại những công cụ hữu dụng và 1 phương pháp học mới khuyến khích bạn luyện tập và nâng cao điểm thi viết IETLS và TOEFL. Chúng tôi sẽ cùng bạn chuẩn bị cho bài thi và giúp bạn cải thiện điểm số của mình bằng cách cung cấp cho bạn:',
+  content1: 'Đa dạng các chủ đề viết đã được phân loại',
+  content2: 'Bài viết mẫu, ý tưởng phát triển, và từ vựng cho mỗi chủ đề',
+  content3: 'Cơ hội cải thiện kỹ năng viết bằng cách cung cấp phản hồi',
+  content4: 'Dịch vụ chấm bài nhanh và chất lượng giúp các bạn sớm tiến bộ',
   emailAddress: 'Địa chỉ email',
   placeholderEmail: 'Nhập địa chỉ email',
   password: 'Mật khẩu',
@@ -15,6 +15,7 @@ export const Banner = {
   byLogging: 'Bằng cách đăng nhập, tôi đồng ý với',
   terms: 'điều kiện',
   policies: 'chính sách',
-  dontAccount: 'Không có tài khoản',
-  signUp: 'Đăng ký'
+  noAccount: 'Chưa có tài khoản?',
+  signUp: 'Tạo tài khoản',
+  forgotPassword: 'Quên mật khẩu'
 }

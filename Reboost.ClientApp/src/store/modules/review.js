@@ -1,12 +1,16 @@
 import reviewService from '@/services/review.service.js'
 
-const state = {
-  annotations: {},
-  reviews: [],
-  reviewsById: [],
-  anno: null,
-  requests: []
+const getDefaultState = () => {
+  return {
+    annotations: {},
+    reviews: [],
+    reviewsById: [],
+    anno: null,
+    requests: []
+  }
 }
+
+const state = getDefaultState()
 
 const actions = {
   loadReviews({ commit }, obj) {
@@ -38,6 +42,9 @@ const actions = {
     return reviewService.getReviewRequestModel().then(result => {
       commit('SET_REQUESTS', result)
     })
+  },
+  clearState({ commit }) {
+    commit('CLEAR_STATE')
   }
 }
 
@@ -57,6 +64,9 @@ const mutations = {
   },
   SET_REQUESTS: (state, requests) => {
     state.requests = requests
+  },
+  CLEAR_STATE(state) {
+    Object.assign(state, getDefaultState())
   }
 }
 

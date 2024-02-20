@@ -1,7 +1,7 @@
 <template>
   <div style="height: 100%;display: flex; flex-direction: column">
     <div id="parent-scroll" style="flex-grow: 1;position: relative;">
-      <div id="child-scroll" class="par-content default">
+      <div id="child-scroll">
         <div v-if="showDirection" class="tip" transition="fade" style="margin-bottom: 10px;">
           <p style="width: 98%;">
             <b>Direction:</b> Read the question description and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review.

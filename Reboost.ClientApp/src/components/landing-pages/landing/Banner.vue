@@ -1,11 +1,12 @@
 <template>
   <!-- Start Main Banner -->
-  <div id="banner" class="ml-main-section" style=" padding-top: 150px; padding-bottom: 80px;">
+  <div v-if="screenWidth > 1200" id="banner" class="ml-main-section" style=" padding-top: 150px; padding-bottom: 80px;">
     <div class="container">
       <div class="row">
+
         <div class="col-lg-6 col-md-12">
-          <div class="ml-banner-content" style="margin-top: 50px;">
-            <h1>{{ messageTranslates('banner', 'bannerContentTitle') }}</h1>
+          <div class="ml-banner-content">
+            <span style="font-size: 40px; color: #4a6f8a; font-weight: 400;">{{ messageTranslates('banner', 'slogan') }}</span>
             <p style="margin-top: 30px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
             <ul>
               <li>{{ messageTranslates('banner', 'content1') }}</li>
@@ -28,17 +29,6 @@
                 <label>{{ messageTranslates('banner', 'password') }}</label>
                 <input v-model="password" type="password" class="form-control" :placeholder="messageTranslates('banner', 'placeholderPassword')">
               </div>
-
-              <!-- <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" @click="signUp()">Sign Up</button> -->
-              <!-- <el-button
-                type="primary"
-                class="btn btn-gradient"
-                style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
-                :loading="loading"
-                @click="signIn()"
-              >
-                {{ messageTranslates('banner', 'signIn') }}
-              </el-button> -->
               <el-button
                 class="btn btn-gradient"
                 style="width: 100%; margin-right: 20px; padding: 12px 20px;"
@@ -64,25 +54,181 @@
                 </form>
               </div>
 
-              <div style="font-size: 14px; text-align: center; padding-top: 20px; height: 10px;">
-                {{ messageTranslates('banner', 'byLogging') }}
-                <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
-                  {{ messageTranslates('banner', 'terms') }}
-                </a> {{ messageTranslates('banner', 'and') }}
-                <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
-                  {{ messageTranslates('banner', 'policies') }}
-                </a>
+              <div style="font-size: 14px; padding-top: 20px; height: 10px; padding-bottom: 20px;">
+
+                <div style="width: 50%; float: left;">
+                  <a style="text-decoration: none;" href="/register">{{ messageTranslates('banner', 'signUp') }}</a>
+                </div>
+
+                <div style="width: 50%; float: right; text-align: right;">
+                  <a style="text-decoration: none;" href="/forgot">{{ messageTranslates('banner', 'forgotPassword') }}</a>
+                </div>
+
               </div>
             </form>
-          </div>
-          <div class="banner-form ml-3 mt-3" style="padding: 30px">
-            {{ messageTranslates('banner', 'dontAccount') }} <a style="color: rgb(101 139 179); text-decoration: none;" href="/register">{{ messageTranslates('banner', 'signUp') }}</a>
           </div>
         </div>
 
       </div>
     </div>
+    <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
+    <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
+    <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+  </div>
 
+  <div v-else-if="screenWidth > 992" id="banner" class="ml-main-section" style=" padding-top: 150px; padding-bottom: 80px;">
+    <div class="container">
+      <div class="row">
+
+        <div class="col-lg-6 col-md-12">
+          <div class="ml-banner-content">
+            <h1>{{ messageTranslates('banner', 'bannerContentTitle') }}</h1>
+            <p style="margin-top: 30px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
+            <ul>
+              <li>{{ messageTranslates('banner', 'content1') }}</li>
+              <li>{{ messageTranslates('banner', 'content2') }}</li>
+              <li>{{ messageTranslates('banner', 'content3') }}</li>
+              <li>{{ messageTranslates('banner', 'content4') }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-5 offset-lg-1">
+          <div class="banner-form ml-3">
+            <form>
+              <div class="form-group">
+                <label>{{ messageTranslates('banner', 'emailAddress') }}</label>
+                <input v-model="email" type="text" class="form-control" :placeholder="messageTranslates('banner', 'placeholderEmail')">
+              </div>
+
+              <div class="form-group">
+                <label>{{ messageTranslates('banner', 'password') }}</label>
+                <input v-model="password" type="password" class="form-control" :placeholder="messageTranslates('banner', 'placeholderPassword')">
+              </div>
+              <el-button
+                class="btn btn-gradient"
+                style="width: 100%; margin-right: 20px; padding: 12px 20px;"
+                :loading="loading"
+                @click="signIn()"
+              >{{ messageTranslates('banner', 'signIn') }}
+              </el-button>
+
+              <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
+                {{ messageTranslates('banner', 'signInOther') }}
+              </div>
+
+              <div style="padding-bottom: 40px;">
+                <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
+                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                    Facebook
+                  </el-button>
+                </form>
+                <form ref="googleLoginForm" method="post" :action="googleFormAction">
+                  <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
+                    Google
+                  </el-button>
+                </form>
+              </div>
+
+              <div style="font-size: 14px; padding-top: 20px; height: 10px; padding-bottom: 20px;">
+
+                <div style="width: 50%; float: left;">
+                  <a style="text-decoration: none;" href="/register">{{ messageTranslates('banner', 'signUp') }}</a>
+                </div>
+
+                <div style="width: 50%; float: right; text-align: right;">
+                  <a style="text-decoration: none;" href="/forgot">{{ messageTranslates('banner', 'forgotPassword') }}</a>
+                </div>
+
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
+    <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
+    <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+  </div>
+
+  <div v-else id="banner" class="ml-main-section" style=" padding-top: 150px; padding-bottom: 80px;">
+    <div class="container">
+      <div class="row">
+
+        <div class="col-lg-6 col-md-12">
+          <div class="ml-banner-content">
+            <h1>{{ messageTranslates('banner', 'bannerContentTitle') }}</h1>
+            <p style="margin-top: 30px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
+            <ul>
+              <li>{{ messageTranslates('banner', 'content1') }}</li>
+              <li>{{ messageTranslates('banner', 'content2') }}</li>
+              <li>{{ messageTranslates('banner', 'content3') }}</li>
+              <li>{{ messageTranslates('banner', 'content4') }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-5 offset-lg-1">
+          <div class="banner-form ml-3">
+            <form>
+              <div class="form-group">
+                <label>{{ messageTranslates('banner', 'emailAddress') }}</label>
+                <input v-model="email" type="text" class="form-control" :placeholder="messageTranslates('banner', 'placeholderEmail')">
+              </div>
+
+              <div class="form-group">
+                <label>{{ messageTranslates('banner', 'password') }}</label>
+                <input v-model="password" type="password" class="form-control" :placeholder="messageTranslates('banner', 'placeholderPassword')">
+              </div>
+              <el-button
+                class="btn btn-gradient"
+                style="width: 100%; margin-right: 20px; padding: 12px 20px;"
+                :loading="loading"
+                @click="signIn()"
+              >{{ messageTranslates('banner', 'signIn') }}
+              </el-button>
+
+              <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
+                {{ messageTranslates('banner', 'signInOther') }}
+              </div>
+
+              <div style="padding-bottom: 40px;">
+                <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
+                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                    Facebook
+                  </el-button>
+                </form>
+                <form ref="googleLoginForm" method="post" :action="googleFormAction">
+                  <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
+                    Google
+                  </el-button>
+                </form>
+              </div>
+
+              <div style="font-size: 14px; padding-top: 20px; height: 10px; padding-bottom: 20px;">
+
+                <div style="width: 50%; float: left;">
+                  <a style="text-decoration: none;" href="/register">{{ messageTranslates('banner', 'signUp') }}</a>
+                </div>
+
+                <div style="width: 50%; float: right; text-align: right;">
+                  <a style="text-decoration: none;" href="/forgot">{{ messageTranslates('banner', 'forgotPassword') }}</a>
+                </div>
+
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
     <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
     <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
     <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
@@ -113,8 +259,19 @@ export default {
       returnUrl: 'rater/application/status/88',
       googleFormAction: null,
       facebookFormAction: null,
-      loading: false
+      loading: false,
+      screenWidth: window.innerWidth
     }
+  },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
+  ounted() {
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
   },
   async created() {
     if (this.$router.currentRoute.query?.returnUrl) {
@@ -174,7 +331,7 @@ export default {
   background: #ffffff;
     -webkit-box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.08);
     box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.08);
-    padding: 50px 30px;
+    padding: 30px 30px;
     border-radius: 5px;
 }
 

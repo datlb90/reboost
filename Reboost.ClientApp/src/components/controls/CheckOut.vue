@@ -9,12 +9,12 @@
     @closed="dialogClosed"
   >
     <div slot="title">
-      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Get Writing Feedback & Score</div>
+      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Nhận Phản Hồi Cho Bài Viết Của Bạn</div>
     </div>
     <div class="dialog-body">
-      <div style="padding: 20px; padding-top: 5px;">
+      <div style="padding: 20px; padding-top: 20px;">
         <div v-if="selectedReview == ''" class="tip">
-          <span style="font-size: 15px; color: #6084a4;">Select the right review service for you:</span>
+          <span style="font-size: 15px; color: #6084a4;">Để nhận phản hồi cho bài viết của mình, hãy chọn 1 trong các dịch vụ dưới đây:</span>
         </div>
         <el-page-header v-if="selectedReview == 'Pro' || selectedReview == 'AI'" class="tip" content="Select a payment method for your service" @back="goBack" />
         <el-page-header v-if="selectedReview == 'Free'" class="tip" content="Confirm your selection" @back="goBack" />
@@ -24,7 +24,8 @@
             <div class="review-description-wrapper">
               <div class="review-title">{{ messageTranslates('checkout', 'proTitle') }}</div>
               <div class="review-description">
-                Our certified rater will score your essay and provide detailed feedback within 24 hours (<a href="#">sample feedback</a>)
+                Đội ngũ giáo viên trình độ cao và giàu kinh nghiệm của Reboost sẽ chấm bài viết của bạn và cung cấp phản hồi chi tiết trong vòng 24 giờ. (<a href="#">sample feedback</a>)
+                <!-- Our certified rater will score your essay and provide detailed feedback within 24 hours (<a href="#">sample feedback</a>) -->
               </div>
             </div>
             <div class="review-price">200.000 VNĐ</div>
@@ -34,12 +35,14 @@
           <div>
             <div class="review-icon-wrapper"><i class="fas fa-robot review-icon" /></div>
             <div class="review-description-wrapper">
-              <div class="review-title">Instant Feedback from AI Rater</div>
+              <!-- <div class="review-title">Instant Feedback from AI Rater</div> -->
+              <div class="review-title">Phản Hồi Nhanh Từ AI </div>
               <div class="review-description">
-                Get insighful feedback and score from our powerful writing review AI within seconds (<a href="#">sample feedback</a>)
+                Nhận phản hồi ngay lập tức và chính xác về bài viết của mình từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4 (<a href="#">sample feedback</a>)
+                <!-- Get insighful feedback and score from our powerful writing review AI within seconds (<a href="#">sample feedback</a>) -->
               </div>
             </div>
-            <div class="review-price">30.000 VNĐ</div>
+            <div class="review-price">15.000 VNĐ</div>
           </div>
         </div>
 
@@ -58,10 +61,12 @@
           <div>
             <div class="review-icon-wrapper"> <i class="fas fa-user-friends review-icon" /></div>
             <div class="review-description-wrapper">
-              <div class="review-title">Free Peer Review</div>
+              <!-- <div class="review-title">Free Peer Review</div> -->
+              <div class="review-title">Đánh Giá Miễn Phí Từ Học Viên Khác</div>
               <!-- <div class="review-title">Đánh Giá Miễn Phí Từ Học Viên Khác</div> -->
               <div class="review-description">
-                Get constructive feedback from another learner with similar or higher writing level (<a href="#">sample feedback</a>)
+                Nhận phản hồi mang tính xây dựng từ một học viên khác có trình độ viết tương đương hoặc cao hơn bạn (<a href="#">sample feedback</a>)
+                <!-- Get constructive feedback from another learner with similar or higher writing level (<a href="#">sample feedback</a>) -->
               </div>
             </div>
             <div class="review-price">Miễn Phí</div>
@@ -141,14 +146,10 @@ export default {
   },
   async mounted() {
     this.email = this.currentUser.email
-    console.log(this.questionId)
-    console.log(this.submissionId)
   },
   async created() {
     this.getVnPayResultParams()
     this.getZaloPayResultParams()
-    const status = this.getUrlParameter('vnp_BankCode')
-    console.log(status)
   },
   methods: {
     openDialog() {
@@ -375,6 +376,7 @@ export default {
       })
     },
     requestAutomatedReview(userId, submissionId) {
+      this.dialogClosed()
       const loading = this.$loading({
         lock: true,
         text: 'Please wait while our AI rater scores your essay',

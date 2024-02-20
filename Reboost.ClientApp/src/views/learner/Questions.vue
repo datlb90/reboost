@@ -1,5 +1,5 @@
 <template>
-  <div class="list-container">
+  <div v-if="screenWidth > 780" class="list-container">
     <div class="top-navigator" style="height: 30px;">
       <el-button
         v-if="showLeftArrow"
@@ -57,7 +57,7 @@
           >
             <span class="el-dropdown-link" style="cursor: pointer;">
               <el-link :underline="false" type="info">
-                Test Sections<i class="el-icon-arrow-down el-icon--right" />
+                Tasks<i class="el-icon-arrow-down el-icon--right" />
               </el-link>
             </span>
             <el-dropdown-menu slot="dropdown">
@@ -288,6 +288,299 @@
       />
     </div>
   </div>
+  <div v-else class="list-container">
+    <div class="top-navigator" style="height: 30px; margin-left: 5px; margin-right: 5px;">
+      <el-button
+        v-if="showLeftArrow"
+        type="text"
+        size="medium"
+        icon="el-icon-d-arrow-left"
+        style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
+        @click="moveLeft()"
+      />
+      <div id="topic-container" style="display: flex; float: left; width: calc(100% - 20px); overflow: hidden;">
+        <el-tag
+          type="info"
+          :effect="allTopicEffect"
+          style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
+          @click="onTopicClick(null)"
+        >
+          All Topics: {{ questionsCount }}
+        </el-tag>
+        <el-tag
+          v-for="item in summary"
+          :key="item.section"
+          type="info"
+          :effect="item.effect"
+          style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
+          @click="onTopicClick(item)"
+        >
+          {{ item.section }}: {{ item.count }}
+        </el-tag>
+      </div>
+      <div>
+        <el-button
+          v-if="showRightArrow"
+          type="text"
+          size="medium"
+          icon="el-icon-d-arrow-right"
+          style="color: grey; padding-bottom: 8px; padding-top: 8px;"
+          @click="moveRight()"
+        />
+
+      </div>
+    </div>
+
+    <div style="margin-left: 5px; margin-right: 5px;">
+      <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px; color: #409EFF;" @click="clickPickOne">
+        <i class="fas fa-random" style="margin-right: 5px;" />
+        Pick One
+      </el-button>
+
+      <el-input
+        v-model="textSearch"
+        size="mini"
+        :placeholder="messageTranslates('question', 'placeholderSearch')"
+        style="float: left; width: 150px; margin-top: 5px;"
+        @input="search()"
+      />
+      <el-button size="mini" style="float: left; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
+        Reset
+      </el-button>
+    </div>
+
+    <div style="height: 40px; margin-left: 5px; margin-right: 5px;">
+      <div class="filter-container" style="width: 400px; float: left;">
+        <div class="filter-toolbar" style="margin-top: 10px;">
+          <el-dropdown
+            placement="bottom-start"
+            :hide-on-click="false"
+            style="float: left; margin-right: 15px;"
+            @command="onFilterChange"
+          >
+            <span class="el-dropdown-link" style="cursor: pointer;">
+              <el-link :underline="false" type="info">
+                Tasks<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-for="item in filterSections"
+                :key="item.text"
+                :command="item"
+                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+              >{{ item.text }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          <el-dropdown
+            placement="bottom-start"
+            :hide-on-click="false"
+            style="float: left; margin-right: 15px;"
+            @command="onFilterChange"
+          >
+            <span class="el-dropdown-link" style="cursor: pointer;">
+              <el-link :underline="false" type="info">
+                Types<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-for="item in filterTypes"
+                :key="item.text"
+                :command="item"
+                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+              >{{ item.text }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+
+          <el-dropdown
+            placement="bottom-start"
+            :hide-on-click="false"
+            style="float: left; margin-right: 15px;"
+            @command="onFilterChange"
+          >
+            <span class="el-dropdown-link" style="cursor: pointer;">
+              <el-link :underline="false" type="info">
+                Difficulty<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-for="item in filterDifficulties"
+                :key="item.text"
+                :command="item"
+                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+              >{{ item.text }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+
+          <el-dropdown
+            placement="bottom-start"
+            :hide-on-click="false"
+            style="float: left; margin-right: 15px;"
+            @command="onFilterChange"
+          >
+            <span class="el-dropdown-link" style="cursor: pointer;">
+              <el-link :underline="false" type="info">
+                Status<i class="el-icon-arrow-down el-icon--right" />
+              </el-link>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-for="item in filterStatuses"
+                :key="item.text"
+                :command="item"
+                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+              >{{ item.text }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          <i class="el-icon-document" style="cursor: pointer;" alt="Sample" @click="filterSample" />
+        </div>
+      </div>
+
+      <!-- <div class="filter-container" style="width: calc(100% - 400px); float: right;">
+        <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
+          {{ messageTranslates('question', 'resetAll') }}
+        </el-button>
+        <el-input
+          v-model="textSearch"
+          size="mini"
+          :placeholder="messageTranslates('question', 'placeholderSearch')"
+          style="float: right; width: 200px; margin-top: 5px;"
+          @input="search()"
+        />
+      </div> -->
+    </div>
+
+    <div v-if="selectionTag && selectionTag.length > 0" class="tag-selection">
+      <el-tag
+        v-for="tag in selectionTag"
+        :key="tag"
+        size="small"
+        type="info"
+        closable
+        :disable-transitions="false"
+        style="margin-right: 5px; margin-top: 5px;"
+        @close="handleClose(tag)"
+      >
+        {{ tag }}
+      </el-tag>
+    </div>
+
+    <el-table
+      v-if="questions"
+      ref="filterTable"
+      :data="questions"
+      stripe
+      style="width: 100%;"
+      @sort-change="sortChange"
+    >
+      <el-table-column
+        prop="status"
+        fixed="left"
+        width="30"
+      >
+        <template slot-scope="scope">
+          <div style="width: 100%; text-align: center;">  <el-tooltip class="item" :content="scope.row.status" placement="bottom" style="text-align: center;">
+            <i v-if="scope.row.status == 'Completed'" class="el-icon-success" style="font-size: 15px;" />
+            <i v-else-if="scope.row.status == 'Saved'" class="el-icon-folder-checked" style="font-size: 15px;" />
+            <i v-else-if="scope.row.status == 'Attempted'" class="el-icon-edit" style="font-size: 15px;" />
+            <i v-else class="el-icon-remove-outline" style="font-size: 15px;" />
+          </el-tooltip>
+          </div>
+        </template>
+      </el-table-column>
+
+      <el-table-column
+        :label="messageTranslates('question', 'titleTable')"
+        prop="title"
+        sortable
+        fixed="left"
+        min-width="120"
+      >
+        <template slot-scope="scope">
+          <span class="title-row cursor" style="word-break: break-word;" @click="rowClicked(scope.row)">{{ scope.row.id }}. {{ scope.row.title }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column
+        label="Task"
+        prop="section"
+        :width="questions.find(q => q.test == 'TOEFL') ? '110' : '80'"
+        sortable
+      >
+        <template slot-scope="scope">
+          <span v-if="scope.row.section == 'Independent Writing'" style="word-break: break-word;">
+            Independent
+          </span>
+          <span v-else-if="scope.row.section == 'Integrated Writing'" style="word-break: break-word;">
+            Integrated
+          </span>
+          <span v-else-if="scope.row.section == 'Academic Writing Task 1'" style="word-break: break-word">
+            Task 1
+          </span>
+          <span v-else-if="scope.row.section == 'Academic Writing Task 2'" style="word-break: break-word">
+            Task 2
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        width="35"
+        prop="sample"
+        sortable
+      >
+        <template slot-scope="scope">
+          <div v-if="scope.row.sample" class="show-title">
+            <el-tooltip class="item" effect="dark" content="Sample responses are available for this topic." placement="bottom">
+              <i class="el-icon-document" />
+            </el-tooltip>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="Level" prop="difficulty" sortable width="85">
+        <template slot-scope="scope">
+          <el-tag
+            v-if="scope.row.difficulty == 'Medium'"
+            :key="scope.row.difficulty"
+            type="warning"
+            size="mini"
+          >
+            {{ scope.row.difficulty }}
+          </el-tag>
+          <el-tag
+            v-else-if="scope.row.difficulty == 'Hard'"
+            :key="scope.row.difficulty"
+            type="danger"
+            size="mini"
+          >
+            {{ scope.row.difficulty }}
+          </el-tag>
+          <el-tag
+            v-else
+            :key="scope.row.difficulty"
+            size="mini"
+            type="success"
+          >
+            {{ scope.row.difficulty }}
+          </el-tag>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="pagination">
+      <el-pagination
+        background
+        layout="total, prev, pager, next"
+        :page-size="pageSize"
+        :total="totalRow"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
+  </div>
 </template>
 <script>
 import _ from 'lodash'
@@ -325,7 +618,8 @@ export default {
       showLeftArrow: false,
       showRightArrow: false,
       allTopicEffect: 'dark',
-      sortedQuestions: null
+      sortedQuestions: null,
+      screenWidth: window.innerWidth
     }
   },
   computed: {
@@ -336,7 +630,15 @@ export default {
       return this.summary.reduce((prev, cur) => (prev + cur.count), 0)
     }
   },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
   mounted() {
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
     this.$store.dispatch('question/loadAllQuestionByUser', this.currentUser.id).then(questions => {
       this.questionCached = this.$store.getters['question/getAll']
       // Get attempted questions
@@ -562,7 +864,7 @@ export default {
         behavior: 'smooth'
       })
       this.showLeftArrow = true
-      container.style.width = 'calc(100% - 226px)'
+      if (this.screenWidth > 780) { container.style.width = 'calc(100% - 226px)' } else { container.style.width = 'calc(100% - 50px)' }
     },
     moveLeft() {
       const container = document.getElementById('topic-container')
@@ -573,7 +875,7 @@ export default {
       })
       if (container.scrollLeft <= 100) {
         this.showLeftArrow = false
-        container.style.width = 'calc(100% - 200px)'
+        if (this.screenWidth > 780) { container.style.width = 'calc(100% - 200px)' } else { container.style.width = 'calc(100% - 20px)' }
       }
     },
     showArrow() {

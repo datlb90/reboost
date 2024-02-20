@@ -1,9 +1,13 @@
 import raterService from '@/services/rater.service'
 
-const state = {
-  raters: [],
-  selectedRater: {}
+const getDefaultState = () => {
+  return {
+    raters: [],
+    selectedRater: {}
+  }
 }
+
+const state = getDefaultState()
 
 const actions = {
   loadRaters({ commit }) {
@@ -27,6 +31,9 @@ const actions = {
   },
   updateRater({ commit }, rater) {
     commit('UPDATE_RATER', rater)
+  },
+  clearState({ commit }) {
+    commit('CLEAR_STATE')
   }
 }
 
@@ -39,6 +46,9 @@ const mutations = {
   },
   UPDATE_RATER: (state, rater) => {
     state.selectedRater = rater
+  },
+  CLEAR_STATE(state) {
+    Object.assign(state, getDefaultState())
   }
 }
 
