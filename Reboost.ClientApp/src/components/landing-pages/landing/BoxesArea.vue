@@ -3,7 +3,7 @@
   <section class="boxes-area" style="margin-top: 10px;">
     <div class="container">
       <div class="section-title">
-        <h2>{{ messageTranslates('boxesArea', 'benefit') }}</h2>
+        <h3>{{ messageTranslates('boxesArea', 'benefit') }}</h3>
         <div class="bar" />
       </div>
 

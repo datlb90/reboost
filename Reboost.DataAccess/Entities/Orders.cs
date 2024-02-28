@@ -12,6 +12,7 @@ namespace Reboost.DataAccess.Entities
         public int Amount { get; set; }
         public PaymentStatus Status { get; set; }
         public string TransactionCode { get; set; }
+        public string IpAddress { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime LastActivityDate { get; set; }
     }
@@ -19,8 +20,9 @@ namespace Reboost.DataAccess.Entities
     public enum PaymentStatus
     {
         PENDING = 0,
-        COMPLETED = 1,
-        ERROR = 2,
-        REFUNED = 3
+        CONFIRMED = 1,
+        COMPLETED = 2,
+        ERROR = 3,
+        REFUNDED = 4,
     }
 }

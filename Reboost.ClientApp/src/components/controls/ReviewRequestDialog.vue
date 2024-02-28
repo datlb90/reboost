@@ -266,7 +266,8 @@ export default {
               personalQuestion.Parts.push(part)
             }
           }
-          console.log('question created')
+          // clear initial test on review request submission
+          this.$store.dispatch('question/clearInitialSubmission')
           // Save to review request to store
           this.$store.dispatch('question/savePersonalQuestion', personalQuestion).then(rs => {
             console.log('question saved')
@@ -278,12 +279,6 @@ export default {
               console.log('create submission')
               questionService.createPersonalSubmission(formData).then(submission => {
                 if (submission) {
-                  // this.$notify.success({
-                  //   title: 'Submission Created.',
-                  //   message: 'Your submission has been created. You can view it in the submissions page.',
-                  //   type: 'success',
-                  //   duration: 5000
-                  // })
                   this.resetData()
                   this.dialogVisible = false
                   this.$emit('openCheckoutDialog', {

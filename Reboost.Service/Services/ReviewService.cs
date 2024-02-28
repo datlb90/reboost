@@ -18,6 +18,7 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<Submissions> GetSubmissionById(int submissionId);
         Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId);
         Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId);
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
@@ -69,22 +70,26 @@ namespace Reboost.Service.Services
     public class ReviewService : BaseService, IReviewService
     {
         IMailService mailService;
-        IPaymentService paymentService;
+        //IPaymentService paymentService;
         IUserService userService;
         IConfiguration configuration;
         IChatGPTService chatGPTService;
         public ReviewService(IUnitOfWork unitOfWork,
             IMailService _mailService,
-            IPaymentService _paymentService,
+            //IPaymentService _paymentService,
             IUserService _userService,
             IChatGPTService _chatGPTService,
             IConfiguration _configuration) : base(unitOfWork)
         {
             mailService = _mailService;
-            paymentService = _paymentService;
+            //paymentService = _paymentService;
             userService = _userService;
             chatGPTService = _chatGPTService;
             configuration = _configuration;
+        }
+        public async Task<Submissions> GetSubmissionById(int submissionId)
+        {
+            return await _unitOfWork.Submission.GetByIdAsync(submissionId);
         }
         public async Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId)
         {
@@ -414,8 +419,8 @@ namespace Reboost.Service.Services
             }
 
             string url = $"{configuration["ClientUrl"]}/review/pro/" + rs.Request.Id;
-
-            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Writing Review Request!", $"You have a new pro request. Please complete the review within 24 hours using the following link: <a href='{url}'>Clicking here</a>");
+            // Send mail to rater with confirm link
+            await mailService.SendEmailAsync(rs.Rater.User.Email, "Yêu Cầu Chấm Bài Mới Từ Reboost", $"Hi {rs.Rater.User.FirstName},<p>Bạn đã nhận được 1 yêu cầu chấm bài mới từ học viên của Reboost.</p> <p>Hãy hoàn thành bài chấm trong vòng 24h sử dụng đường link sau đây: <a href='{url}'>link chấm bài</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>");
 
             return rs;
         }
@@ -458,7 +463,9 @@ namespace Reboost.Service.Services
 
             string url = $"{configuration["ClientUrl"]}/review/pro/" + rs.Request.Id;
             // Send mail to rater with confirm link
-            await mailService.SendEmailAsync(rs.Rater.User.Email, "New Writing Review Request!", $"You have a new pro request. Please complete the review within 24 hours using the following link: <a href='{url}'>Clicking here</a>");
+            await mailService.SendEmailAsync(rs.Rater.User.Email, "Yêu Cầu Chấm Bài Mới Từ Reboost", $"Hi {rs.Rater.User.FirstName},<p>Bạn đã nhận được 1 yêu cầu chấm bài mới từ học viên của Reboost.</p> <p>Hãy hoàn thành bài chấm trong vòng 24h sử dụng đường link sau đây: <a href='{url}'>link chấm bài</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>");
+
+            //await mailService.SendEmailAsync(rs.Rater.User.Email, "New Writing Review Request!", $"You have a new pro request. Please complete the review within 24 hours using the following link: <a href='{url}'>Clicking here</a>");
 
             return rs;
         }
@@ -543,7 +550,7 @@ namespace Reboost.Service.Services
             {
                 if(rs.Status == DisputeStatus.ACCEPTED && reviewRequest.ReviewRequest.FeedbackType == ReviewRequestType.PRO)
                 {
-                    await paymentService.LearnerRefund(rs.UserId, rs.User.Email);
+                    //await paymentService.LearnerRefund(rs.UserId, rs.User.Email);
                     await ReRequestProRequestAsync(reviewRequest.ReviewRequest);
                 }
 

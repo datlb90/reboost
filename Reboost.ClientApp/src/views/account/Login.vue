@@ -8,7 +8,7 @@
           <el-form :model="form">
             <div style="margin: auto; width: 140px; padding-left: 10px; padding-bottom: 30px;">
               <router-link class="navbar-brand" to="/" style="padding-top: 0px;">
-                <img src="@/assets/logo/green_logo.png" alt="logo" style="width: 140px;">
+                <img src="@/assets/logo/logo.png" alt="logo" style="width: 140px;">
               </router-link>
             </div>
             <el-form-item style="text-align: left;">
@@ -40,11 +40,11 @@
             </el-form-item>
 
             <el-form-item style="text-align: left;">
-              <a href="/forgot/password" style="float: left; color: rgb(101 139 179); text-decoration: none;">
-                {{ messageTranslates('login', 'forgotPassword') }}
-              </a>
-              <a :href="linkToRegister" style="float: right; color: rgb(101 139 179); text-decoration: none;">
+              <a :href="linkToRegister" style="float: left; color: rgb(101 139 179); text-decoration: none;">
                 {{ messageTranslates('login', 'signUp') }}
+              </a>
+              <a href="/forgot/password" style="float: right; color: rgb(101 139 179); text-decoration: none;">
+                {{ messageTranslates('login', 'forgotPassword') }}
               </a>
             </el-form-item>
 

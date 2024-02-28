@@ -37,10 +37,12 @@ export default {
   components: {
     'add-sample': AddQuestionSample
   },
+  props: {
+    questionId: { type: Number, default: null }
+  },
   data() {
     return {
-      sampleDialogVisible: false,
-      questionId: null
+      sampleDialogVisible: false
     }
   },
   computed: {
@@ -49,12 +51,11 @@ export default {
     }
   },
   mounted() {
-    this.questionId = this.$route.params.id
     this.loadSamples()
   },
   methods: {
     loadSamples() {
-      this.$store.dispatch('question/loadSampleByQuestion', +this.questionId)
+      this.$store.dispatch('question/loadSampleByQuestion', this.questionId)
     },
     openAddNewSampleDialog() {
       this.$refs.sampleDialog?.openDialog(this.questionId)

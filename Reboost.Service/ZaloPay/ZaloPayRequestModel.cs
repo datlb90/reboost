@@ -4,9 +4,11 @@ namespace Reboost.Service.ZaloPay
     public class ZaloPayRequestModel
     {
         public string userId { get; set; }
-        public int orderId { get; set; }
         public int amount { get; set; }
-        public string returnUrl { get; set; }
+        public int submissionId { get; set; }
+        public string reviewType { get; set; }
+        public int status { get; set; }
+        public string ipAddress { get; set; }
     }
 }
 

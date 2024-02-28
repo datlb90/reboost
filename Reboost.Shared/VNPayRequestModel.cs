@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -10,6 +11,7 @@ namespace Reboost.Shared
 {
     public class VNPayVerifyResultModel
     {
+        public string userId { get; set; }
         public string orderId { get; set; }
         public string vnpAmount { get; set; }
         public string vnpayTranId { get; set; }
@@ -17,12 +19,26 @@ namespace Reboost.Shared
         public string vnpTransactionStatus { get; set; }
         public string vnpSecureHash { get; set; }
         public string queryString { get; set; }
+        public string ipAddress { get; set; }
+    }
+    public class VnPayCallbackResultModel
+    {
+        public string RspCode { get; set; }
+        public string Message { get; set; }
+    }
+    public class VnPayTransactionStatusModel
+    {
+        public string vnp_TransactionStatus { get; set; }
+        public string vnp_ResponseCode { get; set; }
+        public string vnp_TransactionNo { get; set; }
     }
     public class VNPayRequestModel
     {
-        public int orderId { get; set; }
+        public string userId { get; set; }
         public int amount { get; set; }
-        public string returnUrl { get; set; }
+        public int submissionId { get; set; }
+        public string reviewType { get; set; }
+        public int status { get; set; }
         public string ipAddress { get; set; }
     }
     public class VnPayLibrary

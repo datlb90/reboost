@@ -157,6 +157,7 @@
 <script>
 import raterService from '../../services/rater.service'
 import reviewService from '../../services/review.service'
+import documentService from '@/services/document.service'
 import { RATER_STATUS } from '../../app.constant'
 import AddEditQuestion from '../../components/controls/AddEditQuestion.vue'
 import ContactDialog from '../../components/controls/ContactDialog.vue'
@@ -185,7 +186,8 @@ export default {
       fullSizeHeader: false,
       userRole: UserRole,
       questionId: null,
-      submissionId: null
+      submissionId: null,
+      initialSubmission: null
     }
   },
   computed: {
@@ -218,11 +220,18 @@ export default {
     } else {
       this.lang = 'English'
     }
-    // Check if user is requesting a review
-    // Open the request review dialog
-    this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
-    if (this.personalQuestion) {
-      this.$refs.reviewRequestDialog?.openDialog()
+    // Check if user is submitting an initial test
+    this.initialSubmission = this.$store.getters['question/getInitialSubmission']
+    if (this.initialSubmission) {
+      // create the new submission and ask AI to review
+      this.processInitialSubmission(this.currentUser, this.initialSubmission)
+    } else {
+      // Check if user is requesting a review
+      // Open the request review dialog
+      this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
+      if (this.personalQuestion) {
+        this.$refs.reviewRequestDialog?.openDialog()
+      }
     }
   },
   created() {
@@ -233,6 +242,33 @@ export default {
     }
   },
   methods: {
+    processInitialSubmission(user, submissionData) {
+      const loading = this.$loading({
+        lock: true,
+        text: 'Xin vui lòng chờ trong giây lát trong khi hệ thống chấm bài kiểm tra đầu vào của bạn',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
+      submissionData.userId = user.id
+      // Create a new submission
+      documentService.submitDocument(submissionData).then(rs => {
+        // clear the initial test submission
+        this.$store.dispatch('question/clearInitialSubmission')
+        if (rs) {
+          const submissionId = rs.submissions[0]?.id
+          // process AI review
+          reviewService.createAutomatedReview({
+            UserId: user.id,
+            SubmissionId: submissionId
+          }).then(rs => {
+            // Todo: update user score
+            loading.close()
+            const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
+            this.$router.push(url)
+          })
+        }
+      })
+    },
     getRaterRating() {
       if (this.currentUser.id) {
         raterService.getRaterRating().then(rs => {

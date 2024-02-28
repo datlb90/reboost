@@ -44,8 +44,7 @@ namespace Reboost.WebApi.Controllers
                 Status = "Submitted",
                 UpdatedDate = DateTime.UtcNow
             });
-
-            // Why do we create a new review at this point?
+            // Why do we create a new review for every submission?
             await _reviewService.Create(new { revieweeId = model.UserId, submissionId = newSub.Id });
 
             return newDoc;

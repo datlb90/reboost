@@ -170,7 +170,7 @@ namespace Reboost.WebApi.Controllers
                 // Send email to rater
                 string raterSubject = "Hoàn Tất Đánh Giá";
                 string raterUrl = $"{configuration["ClientUrl"]}/review/" + result.ReviewRequest.Submission.QuestionId + "/" + result.ReviewRequest.Submission.DocId + "/" + result.ReviewId;
-                string raterContent = $"Hi {currentUser.FirstName},<p> Cảm ơn bạn đã hoàn tất đánh giá cho bài viết.</p> <p>Bạn có thể xem lại hđánh giá của mình sử dụng link sau đây: <a href='{raterUrl}'>link tới bài viết</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>";
+                string raterContent = $"Xin chào {currentUser.FirstName},<p> Cảm ơn bạn đã hoàn tất đánh giá cho bài viết.</p> <p>Bạn có thể xem lại đánh giá của mình sử dụng link sau đây: <a href='{raterUrl}'>link tới bài viết</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>";
                 await _mailService.SendEmailAsync(currentUser.Email, raterSubject, raterContent);
 
                 string raterRole = "học viên";
@@ -181,7 +181,7 @@ namespace Reboost.WebApi.Controllers
                 // Send email to reviewee
                 string revieweeSubject = "Bài Viết Của Bạn Đã Được Đánh Giá Bởi Reboost";
                 string url = $"{configuration["ClientUrl"]}/review/" + result.ReviewRequest.Submission.QuestionId + "/" + result.ReviewRequest.Submission.DocId + "/" + result.ReviewId;
-                string revieweeContent = $"Hi {reviewee.FirstName},<p>Bài viết của bạn đã được đánh giá bởi " + raterRole + " của Reboost.</p> <p>Bạn có thể xem đánh giá cho bài viết của bạn sử dụng link sau đây: <a href='{url}'>link tới bài viết</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>";
+                string revieweeContent = $"Xin chào {reviewee.FirstName},<p>Bài viết của bạn đã được đánh giá bởi " + raterRole + " của Reboost.</p> <p>Bạn có thể xem đánh giá cho bài viết của bạn sử dụng link sau đây: <a href='" + url + "'>link tới bài viết</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>";
                 await _mailService.SendEmailAsync(reviewee.Email, revieweeSubject, revieweeContent);
 
                 // Send email to admin

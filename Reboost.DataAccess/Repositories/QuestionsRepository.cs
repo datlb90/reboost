@@ -11,11 +11,13 @@ using Reboost.Shared;
 using Reboost.DataAccess.Models;
 using System.IO;
 using static System.Net.Mime.MediaTypeNames;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Reboost.DataAccess.Repositories
 {
     public interface IQuestionsRepository : IRepository<Questions>
     {
+        Task<List<InitQuestionModel>> GetInitQuestionModels();
         Task<Questions> GetQuestionByIdAsync(int id);
         Task<Tasks> GetTaksById(int taskId);
         Task<List<Questions>> GetAllActiveQuestions();
@@ -41,6 +43,84 @@ namespace Reboost.DataAccess.Repositories
     {
         public QuestionsRepository(ReboostDbContext context) : base(context)
         { }
+
+        public async Task<List<InitQuestionModel>> GetInitQuestionModels()
+        {
+            List<InitQuestionModel> model = new List<InitQuestionModel>();
+            var initQuesitons = await (from quest in ReboostDbContext.Questions
+                                       join task in ReboostDbContext.Tasks on quest.TaskId equals task.Id
+                                       where quest.Id == 1 || quest.Id == 6 // Getting the 2 questions for the 2 test
+                                       select new InitQuestionModel
+                                       {
+                                           Id = quest.Id,
+                                           Title = quest.Title,
+                                           Section = task.Name,
+                                           Test = task.Name == "Academic Writing Task 1" || task.Name == "Academic Writing Task 2" ? "IELTS" : "TOEFL",
+                                           Time = task.Time,
+                                           Type = quest.Type,
+                                           Sample = quest.HasSample,
+                                           AverageScore = quest.AverageScore,
+                                           Submission = quest.SubmissionCount,
+                                           Like = quest.LikeCount,
+                                           Status = "To do",
+                                           Difficulty = quest.Difficulty,
+                                           Direction = task.Direction
+                                       }).ToListAsync();
+
+            foreach (var quesiton in initQuesitons)
+            {
+                var resultParts = ReboostDbContext.QuestionParts.Where(qp => qp.QuestionId == quesiton.Id).ToList();
+                var resultPartsModel = new List<QuestionPartModel>();
+                resultParts.ForEach(rs =>
+                {
+                    resultPartsModel.Add(new QuestionPartModel
+                    {
+                        QuestionId = rs.QuestionId,
+                        Content = rs.Content,
+                        Name = rs.Name
+                    });
+                });
+                quesiton.QuestionsPart = resultPartsModel;
+
+                // Get rubric for this question
+                var rubricQuery = await (from q in ReboostDbContext.Questions
+                                         join r in ReboostDbContext.Rubrics on q.TaskId equals r.TaskId
+                                         join rc in ReboostDbContext.RubricCriteria on r.Id equals rc.RubricId
+                                         join rm in ReboostDbContext.RubricMilestones on rc.Id equals rm.CriteriaId
+                                         where q.Id == quesiton.Id
+                                         select new RubricsQuery
+                                         {
+                                             Id = rm.Id,
+                                             CriteriaId = rc.Id,
+                                             CriteriaDescription = rc.Description,
+                                             HasScore = rc.HasScore,
+                                             Name = rc.Name,
+                                             BandScore = rm.BandScore,
+                                             Description = rm.Description
+                                         }).ToListAsync();
+
+                var rubricList = rubricQuery.GroupBy(q => q.Name).Select(g => new RubricsModel
+                {
+                    Name = g.Key,
+                    Id = g.FirstOrDefault()?.CriteriaId,
+                    Description = g.FirstOrDefault()?.CriteriaDescription,
+                    HasScore = g.FirstOrDefault().HasScore,
+                    BandScoreDescriptions = g.ElementAt(0).Id == -1 ? new List<BandScoreDescription>() : g.Select(d => new BandScoreDescription
+                    {
+                        Id = d.Id,
+                        BandScore = d.BandScore,
+                        Description = d.Description
+                    }).ToList()
+                }).ToList();
+
+                quesiton.Rubrics = rubricList;
+
+                // Get samples for this question
+                quesiton.Samples = await GetSamplesForQuestion(quesiton.Id);
+            }
+
+            return initQuesitons;
+        }
 
         public async Task<Questions> GetQuestionByIdAsync(int id)
         {
@@ -87,6 +167,7 @@ namespace Reboost.DataAccess.Repositories
 
             return dicTask;
         }
+
         public async Task<List<QuestionModel>> GetAllByUserAsync(string userId) {
             var tests = await GetTestForCurrentUsers(userId);
             var allQuestions = from quest in ReboostDbContext.Questions

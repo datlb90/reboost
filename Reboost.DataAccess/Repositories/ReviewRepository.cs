@@ -841,80 +841,10 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<Raters> GetMasterRaterForProRequestAsync()
         {
-            //Query master rater that have lowest assigned requests
-            var selectedRater = await (from r in db.Raters
-                                       join a in (from a in db.RequestAssignments where a.Status == RequestAssignmentStatus.ASSIGNED select a) on r.Id equals a.RaterId into raterFull
-                                       from a in raterFull.DefaultIfEmpty()
-                                       where r.Status == RaterStatus.APPROVED && r.IsMaster == true
-                                       orderby r.AppliedDate
-                                       group r by r.Id into g
-                                       select new
-                                       {
-                                           RaterId = g.Key,
-                                           AssignedRequests = g.Count()
-                                       }).OrderBy(r => r.AssignedRequests).ToListAsync();
-
-            int key = 0;
-
-            if (selectedRater.Count == 0)
-            {
-                return null;
-            }
-
-            foreach (var r in selectedRater)
-            {
-                var rater = await (from ra in db.Raters
-                                   where ra.Id == r.RaterId
-                                   select ra).FirstOrDefaultAsync();
-
-                if (rater == null)
-                    continue;
-
-                var reviews = await (from re in db.Reviews
-                                     where re.ReviewerId == rater.UserId
-                                     orderby re.Id descending
-                                     select re).Take(5).ToListAsync();
-
-                int totalDispute = 0;
-
-                foreach (var review in reviews)
-                {
-
-                    var disputeExist = await (from d in db.Disputes
-                                              where d.ReviewId == review.Id
-                                              select d).FirstOrDefaultAsync();
-
-                    var rate = await (from ra in db.ReviewRatings
-                                      where ra.ReviewId == review.Id && ra.Rate < 2
-                                      select ra).FirstOrDefaultAsync();
-
-                    if (disputeExist != null || rate != null)
-                    {
-                        totalDispute++;
-                    }
-                }
-
-                var pendingReviews = await (from rv in db.Reviews
-                                            join rq in db.ReviewRequests on rv.RequestId equals rq.Id
-                                            join rt in db.ReviewRatings on rv.Id equals rt.ReviewId into completedReviews
-                                            from rated in completedReviews.DefaultIfEmpty()
-                                            where rv.RevieweeId == rater.UserId && rq.Status == ReviewRequestStatus.COMPLETED && rated == null
-                                            select rv).ToListAsync();
-
-                if (totalDispute < 3 && pendingReviews.Count() == 0)
-                {
-                    key = selectedRater.IndexOf(r);
-                    break;
-                }
-            }
-
-
-            if (selectedRater[key] == null)
-                return null;
-
+            // Send all request to admin for now, then admin will distribute
             var raterUser = await (from r in db.Raters
                                    join u in db.Users on r.UserId equals u.Id
-                                   where r.Id == selectedRater[key].RaterId
+                                   where r.Status == RaterStatus.APPROVED && r.IsMaster == true && r.Biography == "Admin"
                                    select new { Rater = r, User = u }).FirstOrDefaultAsync();
 
             if (raterUser == null)
@@ -923,6 +853,89 @@ namespace Reboost.DataAccess.Repositories
             raterUser.Rater.User = raterUser.User;
 
             return raterUser.Rater;
+
+            //Query master rater that have lowest assigned requests
+            //var selectedRater = await (from r in db.Raters
+            //                           //join a in (from a in db.RequestAssignments where a.Status == RequestAssignmentStatus.ASSIGNED select a) on r.Id equals a.RaterId into raterFull
+            //                           //from a in raterFull.DefaultIfEmpty()
+            //                           where r.Status == RaterStatus.APPROVED && r.IsMaster == true && r.Biography == "Admin"
+            //                           orderby r.AppliedDate
+            //                           group r by r.Id into g
+            //                           select new
+            //                           {
+            //                               RaterId = g.Key,
+            //                               AssignedRequests = g.Count()
+            //                           }).OrderBy(r => r.AssignedRequests).ToListAsync();
+
+            //int key = 0;
+
+            //if (selectedRater.Count == 0)
+            //{
+            //    return null;
+            //}
+
+            //foreach (var r in selectedRater)
+            //{
+            //    var rater = await (from ra in db.Raters
+            //                       where ra.Id == r.RaterId
+            //                       select ra).FirstOrDefaultAsync();
+
+            //    if (rater == null)
+            //        continue;
+
+            //    var reviews = await (from re in db.Reviews
+            //                         where re.ReviewerId == rater.UserId
+            //                         orderby re.Id descending
+            //                         select re).Take(5).ToListAsync();
+
+            //    int totalDispute = 0;
+
+            //    foreach (var review in reviews)
+            //    {
+
+            //        var disputeExist = await (from d in db.Disputes
+            //                                  where d.ReviewId == review.Id
+            //                                  select d).FirstOrDefaultAsync();
+
+            //        var rate = await (from ra in db.ReviewRatings
+            //                          where ra.ReviewId == review.Id && ra.Rate < 2
+            //                          select ra).FirstOrDefaultAsync();
+
+            //        if (disputeExist != null || rate != null)
+            //        {
+            //            totalDispute++;
+            //        }
+            //    }
+
+            //    var pendingReviews = await (from rv in db.Reviews
+            //                                join rq in db.ReviewRequests on rv.RequestId equals rq.Id
+            //                                join rt in db.ReviewRatings on rv.Id equals rt.ReviewId into completedReviews
+            //                                from rated in completedReviews.DefaultIfEmpty()
+            //                                where rv.RevieweeId == rater.UserId && rq.Status == ReviewRequestStatus.COMPLETED && rated == null
+            //                                select rv).ToListAsync();
+
+            //    if (totalDispute < 3 && pendingReviews.Count() == 0)
+            //    {
+            //        key = selectedRater.IndexOf(r);
+            //        break;
+            //    }
+            //}
+
+
+            //if (selectedRater[key] == null)
+            //    return null;
+
+            //var raterUser = await (from r in db.Raters
+            //                       join u in db.Users on r.UserId equals u.Id
+            //                       where r.Id == selectedRater[key].RaterId
+            //                       select new { Rater = r, User = u }).FirstOrDefaultAsync();
+
+            //if (raterUser == null)
+            //    return null;
+
+            //raterUser.Rater.User = raterUser.User;
+
+            //return raterUser.Rater;
         }
 
 

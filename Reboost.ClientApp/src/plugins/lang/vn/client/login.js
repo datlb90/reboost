@@ -3,7 +3,7 @@ export const Login = {
   password: 'Mật khẩu',
   signIn: 'Đăng nhập',
   forgotPassword: 'Quên mật khẩu?',
-  signUp: 'Đăng ký',
+  signUp: 'Đăng ký tài khoản',
   orSignIn: 'Hoặc đăng nhập với',
   byLoggingIn: 'Khi đăng nhập, tôi đồng ý với',
   terms: 'các điều kiện',

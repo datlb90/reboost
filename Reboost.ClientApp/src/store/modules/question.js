@@ -11,15 +11,39 @@ const getDefaultState = () => {
     statusQuestion: {},
     sampleByQuestion: [],
     samples: [],
-    personalQuestion: null
+    personalQuestion: null,
+    questionsForInitialTest: null,
+    initialSubmission: null
   }
 }
 
 const state = getDefaultState()
 
 const actions = {
+  saveInitialTestData({ commit, state }, data) {
+    commit('SET_INITIAL_SUBMISSION', data)
+  },
+  switchTest({ commit, state }, test) {
+    const selectedTest = state.questionsForInitialTest.find(q => q.test == test)
+    commit('SET_QUESTION', selectedTest)
+  },
+  loadQuestionsForInitialTest({ commit, state }) {
+    if (state.questionsForInitialTest && state.questionsForInitialTest.length > 0) {
+      const selectedTest = state.questionsForInitialTest.find(q => q.test == 'IELTS')
+      commit('SET_QUESTION', selectedTest)
+    } else {
+      questionService.getQuestionsForInitialTest().then(result => {
+        commit('SET_QUESTIONS_INIT_TEST', result)
+        const selectedTest = result.find(q => q.test == 'IELTS')
+        commit('SET_QUESTION', selectedTest)
+      })
+    }
+  },
   savePersonalQuestion({ commit }, personalQuestion) {
     commit('SET_PERSONAL_QUESTION', personalQuestion)
+  },
+  clearInitialSubmission({ commit }) {
+    commit('CLEAR_INITIAL_SUBMISSION')
   },
   clearPersonalQuestion({ commit }) {
     commit('CLEAR_PERSONAL_QUESTION')
@@ -84,7 +108,12 @@ const actions = {
 }
 
 const mutations = {
-
+  SET_INITIAL_SUBMISSION: (state, submission) => {
+    state.initialSubmission = submission
+  },
+  SET_QUESTIONS_INIT_TEST: (state, questions) => {
+    state.questionsForInitialTest = questions
+  },
   SET_QUESTIONS: (state, questions) => {
     state.questions = questions
   },
@@ -118,6 +147,9 @@ const mutations = {
   CLEAR_PERSONAL_QUESTION: (state) => {
     state.personalQuestion = null
   },
+  CLEAR_INITIAL_SUBMISSION: (state) => {
+    state.initialSubmission = null
+  },
   CLEAR_STATE(state) {
     Object.assign(state, getDefaultState())
   }
@@ -132,7 +164,8 @@ const getters = {
   getStatusQuestion: state => state.statusQuestion,
   getSampleByQuestion: state => state.sampleByQuestion,
   getAllSample: state => state.samples,
-  getPersonalQuestion: state => state.personalQuestion
+  getPersonalQuestion: state => state.personalQuestion,
+  getInitialSubmission: state => state.initialSubmission
   // getSelected: state => state.selectedRater
 }
 

@@ -29,6 +29,12 @@ namespace Reboost.WebApi.Controllers
             _sampleService = sampleService;
         }
 
+        [HttpGet("initial/test")]
+        public async Task<List<InitQuestionModel>> GetInitQuestionModels()
+        {
+            return await _service.GetInitQuestionModels();
+        }
+
         [HttpPost("peronsal/submission")]
         public async Task<IActionResult> CreatePersonalSubmission([FromForm] RequestReviewForWriting model)
         {
@@ -54,6 +60,7 @@ namespace Reboost.WebApi.Controllers
         {
             return await _service.GetAllByUserAsync(userId);
         }
+
         [Authorize]
         [HttpGet]
         [Route("getById/{id}")]
@@ -103,7 +110,8 @@ namespace Reboost.WebApi.Controllers
         {
             return await _service.GetQuestionCompletedIdByUser(userId);
         }
-        [Authorize]
+
+        //[Authorize]
         [HttpGet]
         [Route("sampleForQuestion/{questionId}")]
         public async Task<List<SampleForQuestion>> GetSamplesForQuestion([FromRoute] int questionId)

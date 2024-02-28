@@ -175,12 +175,12 @@
           </el-tab-pane>
           <el-tab-pane label="Samples" name="sample" style="height: 100%; position: relative;">
             <div class="par-content">
-              <tab-samples />
+              <tab-samples :question-id="questionId" />
             </div>
           </el-tab-pane>
           <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
             <div class="par-content">
-              <tab-rubric />
+              <tab-rubric :question-id="questionId" />
             </div>
           </el-tab-pane>
           <el-tab-pane label="Submissions" name="submissions" style="height: 100%; position: relative;">
@@ -350,12 +350,10 @@
     </splitpanes>
     <div>
       <checkout
-        :visible="checkoutVisible"
+        ref="checkoutDialog"
         :submission-id="+submissionId"
         :question-id="+questionId"
         :unrated-count="unRatedList.length"
-        @proReviewRequested="isProRequested=true"
-        @closed="checkoutVisible=false"
       />
     </div>
     <el-dialog
@@ -536,12 +534,12 @@
           </el-tab-pane>
           <el-tab-pane label="Samples" name="sample" style="height: 100%; position: relative;">
             <div>
-              <tab-samples />
+              <tab-samples :question-id="questionId" />
             </div>
           </el-tab-pane>
           <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
             <div>
-              <tab-rubric />
+              <tab-rubric :question-id="questionId" />
             </div>
           </el-tab-pane>
           <el-tab-pane label="Submissions" name="submissions" style="height: 100%; position: relative;">
@@ -690,12 +688,10 @@
       </div>
       <div>
         <checkout
-          :visible="checkoutVisible"
+          ref="checkoutDialog"
           :submission-id="+submissionId"
           :question-id="+questionId"
           :unrated-count="unRatedList.length"
-          @proReviewRequested="isProRequested=true"
-          @closed="checkoutVisible=false"
         />
       </div>
       <el-dialog
@@ -754,7 +750,7 @@ export default {
       second: 3,
       closeTimer: false,
       writingContent: '',
-      questionId: undefined,
+      questionId: parseInt(this.$route.params.id),
       isTest: false,
       countWord: 0,
       isShowCountWord: true,
@@ -859,13 +855,14 @@ export default {
     }
   },
   async mounted() {
+    console.log(this.questionId)
     window.addEventListener('resize', () => {
       this.screenWidth = window.innerWidth
     })
     window.component = this
-    this.questionId = this.$route.params.id
+    // this.questionId = this.$route.params.id
     this.submissionId = this.$route.params.submissionId
-    this.$store.dispatch('question/loadQuestion', +this.questionId).then(rs => {
+    this.$store.dispatch('question/loadQuestion', this.questionId).then(rs => {
       this.calculateContainerHeight()
       this.loadCompleted = true
     })
@@ -1090,12 +1087,13 @@ export default {
           if (rs) {
             this.$notify.success({
               title: 'Success',
-              message: 'Your writing has been successfully submitted!',
+              message: 'Bài viết của bạn đã được nộp thành công',
               type: 'success',
               duration: 3000
             })
             this.writingSubmitted = true
-            this.checkoutVisible = true
+            // this.checkoutVisible = true
+            this.$refs.checkoutDialog?.openDialog()
           }
         })
       } else {
@@ -1104,14 +1102,15 @@ export default {
           if (rs) {
             this.$notify.success({
               title: 'Success',
-              message: 'Your writing has been successfully submitted!',
+              message: 'Bài viết của bạn đã được nộp thành công',
               type: 'success',
               duration: 3000
             })
             this.hasSubmitionForThisQuestion = true
             this.submissionId = rs.submissions[0]?.id
             this.writingSubmitted = true
-            this.checkoutVisible = true
+            // this.checkoutVisible = true
+            this.$refs.checkoutDialog?.openDialog()
           }
         })
       }

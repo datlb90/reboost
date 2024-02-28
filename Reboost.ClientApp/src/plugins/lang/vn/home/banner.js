@@ -1,10 +1,10 @@
 export const Banner = {
-  slogan: 'Một cách mới để nâng cao điểm viết IETLS & TOEFL',
-  bannerContentDescription: 'Reboost mang lại những công cụ hữu dụng và 1 phương pháp học mới khuyến khích bạn luyện tập và nâng cao điểm thi viết IETLS và TOEFL. Chúng tôi sẽ cùng bạn chuẩn bị cho bài thi và giúp bạn cải thiện điểm số của mình bằng cách cung cấp cho bạn:',
+  slogan: 'Một cách mới để nâng cao điểm viết IELTS & TOEFL',
+  bannerContentDescription: 'Reboost giúp bạn cải thiện kỹ năng viết bằng cách cung cấp:', // 'Reboost mang lại những công cụ hữu dụng và 1 phương pháp học mới khuyến khích bạn luyện tập và nâng cao điểm thi viết IELTS và TOEFL. Chúng tôi sẽ cùng bạn chuẩn bị cho bài thi và giúp bạn cải thiện điểm số của mình bằng cách cung cấp cho bạn:',
   content1: 'Đa dạng các chủ đề viết đã được phân loại',
   content2: 'Bài viết mẫu, ý tưởng phát triển, và từ vựng cho mỗi chủ đề',
   content3: 'Cơ hội cải thiện kỹ năng viết bằng cách cung cấp phản hồi',
-  content4: 'Dịch vụ chấm bài nhanh và chất lượng giúp các bạn sớm tiến bộ',
+  content4: 'Dịch vụ chấm bài viết nhanh và chất lượng',
   emailAddress: 'Địa chỉ email',
   placeholderEmail: 'Nhập địa chỉ email',
   password: 'Mật khẩu',

@@ -8,8 +8,14 @@ const paymentService = {
   submitZaloPayRequest(model) {
     return http.post('/payment/zalopay/request', model).then(rs => rs.data)
   },
+  VnPayCallback(model) {
+    return http.post('/payment/vnpay/callback', model).then(rs => rs.data)
+  },
   verifyVnPayStatus(model) {
     return http.post('/payment/vnpay/verify', model).then(rs => rs.data)
+  },
+  processVnPayOrder(orderId) {
+    return http.get('/payment/vnpay/process/order/' + orderId).then(rs => rs.data)
   },
   createNewOrder(order) {
     return http.post('/payment/order', order).then(rs => rs.data)

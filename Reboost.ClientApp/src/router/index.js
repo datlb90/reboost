@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 
 import About from '../views/About.vue'
 import Terms from '../views/Terms.vue'
+import IPN from '../views/IPN.vue'
 import Privacy from '../views/PrivacyPolicy.vue'
 import DataDeletion from '../views/DataDeletion.vue'
 import Document from '../views/Document.vue'
@@ -84,6 +85,7 @@ import Samples from '../views/admin/Samples.vue'
 import Articles from '../views/admin/Articles.vue'
 import LearnerArticles from '../views/learner/Articles.vue'
 import ArticleDetail from '../views/learner/ArticleDetail.vue'
+import PaymentRedirect from '../views/learner/PaymentRedirect.vue'
 
 // import PageNotFound from '../views/PageNotFound.vue'
 import protect from './guard'
@@ -141,6 +143,16 @@ const router = new VueRouter({
       path: '/privacy',
       name: 'Privacy Policy',
       component: Privacy,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+
+    {
+      path: '/IPN',
+      name: 'IPN',
+      component: IPN,
       meta: {
         plainLayout: true,
         landingPage: false
@@ -312,6 +324,16 @@ const router = new VueRouter({
       path: '/reviews',
       name: PageName.REVIEWS,
       component: Reviews,
+      meta: {
+        plainLayout: false,
+        landingPage: false,
+        loginRequired: true
+      }
+    },
+    {
+      path: '/payment/redirect',
+      name: 'Payment Redirect',
+      component: PaymentRedirect,
       meta: {
         plainLayout: false,
         landingPage: false,

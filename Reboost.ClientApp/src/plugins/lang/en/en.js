@@ -33,7 +33,7 @@ import { LandingHeader } from './home/landingHeader'
 import { Checkout } from './checkout/checkout'
 import { UnlimittedTopics } from './home/unlimittedTopics'
 import { ProRater } from './home/proRater'
-
+import { Pricing } from './home/pricing'
 const langES = {
   landingHeader: LandingHeader,
   question: Question,
@@ -69,7 +69,8 @@ const langES = {
   addArticle: AddArticle,
   checkout: Checkout,
   unlimittedTopics: UnlimittedTopics,
-  proRater: ProRater
+  proRater: ProRater,
+  pricing: Pricing
 }
 
 export default langES

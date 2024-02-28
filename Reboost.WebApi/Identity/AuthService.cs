@@ -58,7 +58,7 @@ namespace Reboost.WebApi.Identity
         public async Task<UserManagerResponse> RegisterUserAsync(RegisterViewModel model)
         {
             if (model == null)
-                throw new NullReferenceException("Invalid data!");
+                throw new NullReferenceException("Dữ liệu không hợp lệ. Vui lòng nhập đầy đủ dữ liệu.");
             
             var identityUser = new ApplicationUser
             {
@@ -98,7 +98,7 @@ namespace Reboost.WebApi.Identity
                     {
                         return new UserManagerResponse
                         {
-                            Message = "User has no role",
+                            Message = "Đã xảy ra lỗi trong quá trình tạo tài khoản, xin vui lòng liên hệ với chúng tôi tại support@reboost.vn",
                             IsSuccess = false,
                         };
                     }
@@ -116,14 +116,14 @@ namespace Reboost.WebApi.Identity
                     return new UserManagerResponse
                     {
                         user = userModel,
-                        Message = "Account Registration Success!",
+                        Message = "Tài khoản đã được tạo thành công",
                         IsSuccess = true,
                     };
                 }
             }
             return new UserManagerResponse
             {
-                Message = "User did not create",
+                Message = "Đã xảy ra lỗi trong quá trình tạo tài khoản, xin vui lòng liên hệ với chúng tôi tại support@reboost.vn",
                 IsSuccess = false,
                 Errors = result.Errors.Select(e => e.Description)
             };
@@ -261,7 +261,7 @@ namespace Reboost.WebApi.Identity
             {
                 return new UserManagerResponse
                 {
-                    Message = "Invalid email",
+                    Message = "Địa chỉ email không chính xác. Vui lòng nhập lại.",
                     IsSuccess = false,
                 };
             }
@@ -272,7 +272,7 @@ namespace Reboost.WebApi.Identity
             {
                 return new UserManagerResponse
                 {
-                    Message = "There is no user with that Email address",
+                    Message = "Địa chỉ email không chính xác. Vui lòng nhập lại.",
                     IsSuccess = false,
                 };
             }
@@ -281,7 +281,7 @@ namespace Reboost.WebApi.Identity
             if (!result)
                 return new UserManagerResponse
                 {
-                    Message = "Invalid password",
+                    Message = "Mật khẩu không chính xác. Vui lòng nhập lại.",
                     IsSuccess = false,
                 };
 
@@ -289,7 +289,7 @@ namespace Reboost.WebApi.Identity
             {
                 return new UserManagerResponse
                 {
-                    Message = "Please verify your email address in mailbox.",
+                    Message = "Vui lòng xác minh địa chỉ email qua đường link đã được gửi tới email của bạn",
                     IsSuccess = false,
                 };
             }

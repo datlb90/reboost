@@ -3,10 +3,9 @@
   <div v-if="screenWidth > 1200" id="banner" class="ml-main-section" style=" padding-top: 150px; padding-bottom: 80px;">
     <div class="container">
       <div class="row">
-
         <div class="col-lg-6 col-md-12">
           <div class="ml-banner-content">
-            <span style="font-size: 40px; color: #4a6f8a; font-weight: 400;">{{ messageTranslates('banner', 'slogan') }}</span>
+            <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 400;">{{ messageTranslates('banner', 'slogan') }}</h1>
             <p style="margin-top: 30px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
             <ul>
               <li>{{ messageTranslates('banner', 'content1') }}</li>
@@ -14,6 +13,14 @@
               <li>{{ messageTranslates('banner', 'content3') }}</li>
               <li>{{ messageTranslates('banner', 'content4') }}</li>
             </ul>
+
+            <el-button
+              class="btn btn-dark"
+              style="padding: 15px 80px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
+              :loading="loading"
+              @click="gotoTest()"
+            > Thực Hiện Bài Kiểm Tra Đầu Vào Miễn Phí
+            </el-button>
           </div>
         </div>
 
@@ -57,7 +64,7 @@
               <div style="font-size: 14px; padding-top: 20px; height: 10px; padding-bottom: 20px;">
 
                 <div style="width: 50%; float: left;">
-                  <a style="text-decoration: none;" href="/register">{{ messageTranslates('banner', 'signUp') }}</a>
+                  <a style="text-decoration: none;" href="/register">{{ messageTranslates('login', 'signUp') }}</a>
                 </div>
 
                 <div style="width: 50%; float: right; text-align: right;">
@@ -85,7 +92,7 @@
 
         <div class="col-lg-6 col-md-12">
           <div class="ml-banner-content">
-            <h1>{{ messageTranslates('banner', 'bannerContentTitle') }}</h1>
+            <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 400;">{{ messageTranslates('banner', 'slogan') }}</h1>
             <p style="margin-top: 30px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
             <ul>
               <li>{{ messageTranslates('banner', 'content1') }}</li>
@@ -93,6 +100,14 @@
               <li>{{ messageTranslates('banner', 'content3') }}</li>
               <li>{{ messageTranslates('banner', 'content4') }}</li>
             </ul>
+
+            <el-button
+              class="btn btn-dark"
+              style="padding: 15px 60px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
+              :loading="loading"
+              @click="gotoTest()"
+            > Thực Hiện Bài Kiểm Tra Đầu Vào Miễn Phí
+            </el-button>
           </div>
         </div>
 
@@ -158,25 +173,33 @@
     <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
   </div>
 
-  <div v-else id="banner" class="ml-main-section" style=" padding-top: 150px; padding-bottom: 80px;">
+  <div v-else id="banner" class="ml-main-section" style=" padding-top: 100px; padding-bottom: 80px;">
     <div class="container">
       <div class="row">
 
         <div class="col-lg-6 col-md-12">
           <div class="ml-banner-content">
-            <h1>{{ messageTranslates('banner', 'bannerContentTitle') }}</h1>
-            <p style="margin-top: 30px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
-            <ul>
-              <li>{{ messageTranslates('banner', 'content1') }}</li>
-              <li>{{ messageTranslates('banner', 'content2') }}</li>
-              <li>{{ messageTranslates('banner', 'content3') }}</li>
-              <li>{{ messageTranslates('banner', 'content4') }}</li>
-            </ul>
+            <h1 style="font-size: 32px; text-align: left; margin-left: 10px; color: #4a6f8a; font-weight: 400;">{{ messageTranslates('banner', 'slogan') }}</h1>
+            <p style="margin-top: 30px; text-align: left; font-size: 14.5px; margin-left: 10px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
+            <div>
+              <div style="font-size: 14.5px; color: #4a6f8a; text-align: left; margin-left: 10px; margin-bottom: 5px;">- {{ messageTranslates('banner', 'content1') }}</div>
+              <div style="font-size: 14.5px; color: #4a6f8a; text-align: left; margin-left: 10px; margin-bottom: 5px;">- {{ messageTranslates('banner', 'content2') }}</div>
+              <div style="font-size: 14.5px; color: #4a6f8a; text-align: left; margin-left: 10px; margin-bottom: 5px;">- {{ messageTranslates('banner', 'content3') }}</div>
+              <div style="font-size: 14.5px; color: #4a6f8a; text-align: left; margin-left: 10px; margin-bottom: 5px;">- {{ messageTranslates('banner', 'content4') }}</div>
+            </div>
+
+            <el-button
+              class="btn btn-dark"
+              style="width: 100%; padding: 15px 60px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
+              :loading="loading"
+              @click="gotoTest()"
+            > Thực Hiện Bài Kiểm Tra Đầu Vào Miễn Phí
+            </el-button>
           </div>
         </div>
 
         <div class="col-lg-5 offset-lg-1">
-          <div class="banner-form ml-3">
+          <div class="banner-form">
             <form>
               <div class="form-group">
                 <label>{{ messageTranslates('banner', 'emailAddress') }}</label>
@@ -284,6 +307,13 @@ export default {
   },
   methods: {
     ...mapActions('auth', ['login']),
+    gotoTest() {
+      var anchor = document.getElementById('initialTest')
+      if (anchor) {
+        console.lo9g
+        window.scrollTo(anchor.offsetLeft, anchor.offsetTop - 50)
+      }
+    },
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
     },

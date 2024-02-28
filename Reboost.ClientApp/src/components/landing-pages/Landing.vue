@@ -2,6 +2,7 @@
   <div>
     <Banner />
     <BoxesArea />
+    <InitialTest />
     <HowItWorks2 />
     <Funfacts />
     <FeaturesArea />
@@ -15,6 +16,7 @@
 
 <script>
 import Banner from './landing/Banner'
+import InitialTest from './landing/InitialTest'
 import BoxesArea from './landing/BoxesArea'
 import FeaturesArea from './landing/FeaturesArea'
 import Features from './landing/Features'
@@ -34,6 +36,7 @@ export default {
   name: 'Developer',
   components: {
     Banner,
+    InitialTest,
     BoxesArea,
     FeaturesArea,
     Features,

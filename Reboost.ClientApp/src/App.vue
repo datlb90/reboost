@@ -2,13 +2,13 @@
   <div id="app">
     <div v-if="!$route.meta.plainLayout && $route.meta.landingPage">
       <LandingHeader />
-      <PreLoader v-if="isLoading" />
+      <!-- <PreLoader v-if="isLoading" /> -->
       <router-view />
       <Footer />
     </div>
     <div v-if="!$route.meta.plainLayout && $route.meta.raterLanding">
       <RaterHeader />
-      <PreLoader v-if="isLoading" />
+      <!-- <PreLoader v-if="isLoading" /> -->
       <router-view />
       <Footer />
     </div>
@@ -28,12 +28,13 @@ import Header from './components/layout/Header'
 import LandingHeader from './components/layout/LandingHeader'
 import RaterHeader from './components/layout/RaterHeader'
 import Footer from './components/layout/Footer'
-import PreLoader from './components/layout/PreLoader'
+// import PreLoader from './components/layout/PreLoader'
 
 export default {
   name: 'App',
   components: {
-    Header, LandingHeader, RaterHeader, Footer, PreLoader
+    Header, LandingHeader, RaterHeader, Footer
+    // PreLoader
   },
 
   data() {
@@ -54,7 +55,6 @@ export default {
   mounted() {
     this.currentUrl = window.location.pathname
     var lang = localStorage.getItem('language')
-    console.log(lang)
     if (lang) {
       this.$ml.change(lang)
     } else {
@@ -68,6 +68,9 @@ export default {
 </script>
 
 <style>
+.el-notification {
+  z-index: 999999 !important;
+}
 .el-dialog__header  {
   background: #ecf5ff;
   padding-bottom: 15px !important;

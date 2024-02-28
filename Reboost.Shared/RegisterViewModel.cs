@@ -8,12 +8,11 @@ namespace Reboost.Shared
     public class RegisterViewModel
     {
         [Required]
-        [StringLength(50)]
-        [EmailAddress]
+        [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ.")]
         public string Email { get; set; }
 
         [Required]
-        [StringLength(50, MinimumLength = 6)]
+        //[StringLength(50, MinimumLength = 6)]
         public string Password { get; set; }
 
         //[Required]

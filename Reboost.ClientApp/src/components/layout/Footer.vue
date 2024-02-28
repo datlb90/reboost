@@ -6,7 +6,7 @@
     padding-bottom: 1px;"
   >
     <p>Công Ty TNHH Reboost. Địa Chỉ: NO05-LK128, Khu đất dịch vụ Cửa Phủ, Phường La Khê, Quận Hà Đông, Thành Phố Hà Nội, Việt Nam.</p>
-    <p>Chịu Trách Nhiệm Quản Lý Nội Dung: Nguyễn Thị Huyền Trang. Email: support@reboost.vn. Điện Thoại Liên Lạc: 0393535216</p>
+    <p>Chịu Trách Nhiệm Quản Lý Nội Dung: Nguyễn Thị Huyền Trang. Email: <a href="mailto:support@reboost.vn">support@reboost.vn</a>. Điện Thoại Liên Lạc: 0393535216</p>
     <p>Mã số doanh nghiệp: 0110542943 do Sở Kế hoạch & Đầu tư TP Hà Nội cấp lần đầu ngày 15/11/2023.</p>
     <p>© 2023 - Bản quyền thuộc về Công ty TNHH Reboost | <a href="/terms">Điều Khoản</a> | <a href="/privacy">Chính Sách Bảo Mật</a></p>
     <!-- <div class="container">

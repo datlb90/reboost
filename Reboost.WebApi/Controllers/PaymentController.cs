@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using Reboost.Shared;
 using Reboost.Service.ZaloPay;
 using Newtonsoft.Json;
+using OpenAI_API.Moderation;
+using Microsoft.Extensions.Logging;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -23,23 +25,22 @@ namespace Reboost.WebApi.Controllers
         private IUserService _userService;
         private IStripeService _stripeService;
         private IOrderService _orderService;
+        private readonly ILogger<PaymentController> _logger;
+
         public PaymentController(IPaymentService service, IMapper mapper, IUserService userService,
-            IStripeService stripeService, IOrderService orderService) : base(service)
+            IStripeService stripeService, IOrderService orderService, ILogger<PaymentController> logger) : base(service)
         {
             _mapper = mapper;
             _userService = userService;
             _stripeService = stripeService;
             _orderService = orderService;
+            _logger = logger;
         }
 
         [HttpPost("zalopay/verify")]
-        public async Task<IActionResult> VerifyZaloPayStatus(ZaloPayVerifyResultModel model)
+        public async Task<VerifyPaymentModel> VerifyZaloPayStatus(ZaloPayVerifyResultModel model)
         {
-            Orders rs = await _service.VerifyZaloPayStatus(model);
-            if (rs != null)
-                return Ok(rs);
-            else
-                return BadRequest();
+            return await _service.VerifyZaloPayStatus(model);
         }
 
         [HttpPost("zalopay/callback")]
@@ -55,26 +56,93 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("zalopay/request")]
         public async Task<string> GetZaloPayUrl(ZaloPayRequestModel model)
         {
+            model.ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
             return await _service.GetZaloPayUrl(model);
         }
 
-        [HttpPost("vnpay/verify")]
-        public async Task<IActionResult> VerifyVnPayStatus(VNPayVerifyResultModel model)
+        [HttpPost("vnpay/request")]
+        public async Task<string> GetVNPayUrl(VNPayRequestModel model)
         {
-            Orders rs = await _service.VerifyVnPayStatus(model);
-            if (rs != null)
-                return Ok(rs);
-            else
-                return BadRequest();
+            string ipnIpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+
+            model.ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            return await _service.GetVNPayUrl(model);
         }
 
-        [HttpPost("vnpay/request")]
-        public IActionResult RedirectToVNPay(VNPayRequestModel model)
+        [HttpGet("vnpay/callback")]
+        public async Task<IActionResult> VnPayCallback()
         {
-            //model.ipAddress = "35.142.187.143";
+            VnPayCallbackResultModel rs = new VnPayCallbackResultModel();
+            List<string> whiteListIP = new List<string>
+            {
+                "113.160.92.202",
+                "113.52.45.78",
+                "116.97.245.130",
+                "42.118.107.252",
+                "113.20.97.250",
+                "203.171.19.146",
+                "103.220.87.4",
+                "103.220.86.4"
+            };
+            try
+            {
+                string ipnIpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                _logger.LogInformation("Địa chỉ IP gọi vào IPN: " + ipnIpAddress);   
+                if (whiteListIP.Contains(ipnIpAddress))
+                {
+                    if (Request.Query != null && Request.Query.Keys.Count != 0)
+                    {
+                        string queryString = "";
+                        foreach (string key in Request.Query.Keys)
+                        {
+                            queryString += key + "=" + Request.Query[key] + "&";
+                        }
+                        _logger.LogInformation("Data nhận được từ IPN: " + queryString);
+                        VNPayVerifyResultModel model = new VNPayVerifyResultModel
+                        {
+                            orderId = Request.Query["vnp_TxnRef"],
+                            vnpAmount = Request.Query["vnp_Amount"],
+                            vnpayTranId = Request.Query["vnp_TransactionNo"],
+                            vnpResponseCode = Request.Query["vnp_ResponseCode"],
+                            vnpTransactionStatus = Request.Query["vnp_TransactionStatus"],
+                            vnpSecureHash = Request.Query["vnp_SecureHash"],
+                            queryString = queryString
+                        };
+                        rs = await _service.VnPayCallback(model);
+                        return Ok(rs);
+                    }
+                    else
+                    {
+                        rs.RspCode = "99";
+                        rs.Message = "Input data required";
+                        return Ok(rs);
+                    }
+                }
+                else
+                {
+                    return BadRequest();
+                }
+               
+            }
+            catch (Exception e)
+            {
+                rs.RspCode = "99";
+                rs.Message = "Unknow error";
+                return Ok(rs);
+            }
+        }
+
+        [HttpPost("vnpay/verify")]
+        public VerifyPaymentModel VerifyVnPayStatus(VNPayVerifyResultModel model)
+        {
             model.ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-            string vnpUrl =  _service.GetVNPayUrl(model);
-            return Redirect(vnpUrl);
+            return _service.VerifyVnPayStatus(model);
+        }
+
+        [HttpGet("vnpay/process/order/{orderId}")]
+        public async Task<VerifyPaymentModel> ProcessVnPayOrder(int orderId)
+        {
+            return await _service.ProcessVnPayOrder(orderId);
         }
 
         [Authorize]

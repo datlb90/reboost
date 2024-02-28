@@ -61,7 +61,7 @@ namespace Reboost.WebApi.Controllers
             var _rubric = _mapper.Map<Rubrics>(model);
             return await _service.UpdateAsync(_rubric);
         }
-        [Authorize]
+        //[Authorize]
         [HttpGet]
         [Route("getByQuestionId/{id}")]
         public async Task<List<RubricsModel>> GetByQuestionId([FromRoute] int id)

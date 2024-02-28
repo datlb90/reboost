@@ -11,7 +11,7 @@ export const Register = {
   alreadyHave: 'Already have an account?',
   signInNow: 'Sign In Now',
   orSignInWith: 'Or you can sign in with',
-  byLoggingIn: 'By logging in, I agree to the',
+  bySigningUp: 'By signing up, you agree with our',
   terms: 'terms',
   and: 'and',
   policies: 'policies'

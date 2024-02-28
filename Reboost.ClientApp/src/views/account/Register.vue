@@ -1,13 +1,15 @@
 <template>
   <div>
     <div>
-      <el-alert v-if="personalQuestion" title="Sign up free now to request review for your writing" type="success" center show-icon />
+      <el-alert v-if="initialSubmission" title="Đăng ký tài khoản để nhận kết quả kiểm tra đầu vào của bạn" type="success" center show-icon />
+      <el-alert v-else-if="personalQuestion" title="Đăng ký tài khoản để gửi yêu cầu chấm bài viết của bạn cho chúng tôi" type="success" center show-icon />
+
       <div class="wrapper">
         <div>
           <el-form ref="formSignUp" :model="form">
             <div style="margin: auto; width: 140px; padding-left: 10px; padding-bottom: 30px;">
               <router-link class="navbar-brand" to="/" style="padding-top: 0px;">
-                <img src="@/assets/logo/green_logo.png" alt="logo" style="width: 140px;">
+                <img src="@/assets/logo/logo.png" alt="logo" style="width: 140px;">
               </router-link>
             </div>
             <el-form-item style="text-align: left;" prop="firstName" :rules="[{ required: true, message: messageTranslates('register', 'firstNameRequired')}]">
@@ -23,14 +25,6 @@
               <el-input id="password" v-model="form.password" type="password" autocomplete="off" :placeholder="messageTranslates('register', 'password')" />
             </el-form-item>
             <el-form-item>
-              <!-- <el-button
-                type="primary"
-                class="login-btn"
-                style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
-                @click="signUp()"
-              >
-                {{ messageTranslates('register', 'createAccount') }}
-              </el-button> -->
               <el-button
                 class="btn btn-gradient"
                 style="width: 100%; margin-right: 20px; padding: 12px 20px;"
@@ -40,7 +34,6 @@
                 {{ messageTranslates('register', 'createAccount') }}
               </el-button>
             </el-form-item>
-
             <el-form-item style="text-align: center;">
               <p href="/forgot/password" style="color: black; text-decoration: none;">
                 {{ messageTranslates('register', 'alreadyHave') }}  <a href="/login" style="color: rgb(101 139 179); text-decoration: none;">
@@ -48,12 +41,10 @@
                 </a>
               </p>
             </el-form-item>
-
             <hr>
             <div style="font-size: 14px; text-align: center; padding-bottom: 10px;">
               {{ messageTranslates('register', 'orSignInWith') }}
             </div>
-
             <el-form-item>
               <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
                 <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
@@ -67,15 +58,15 @@
               </form>
             </el-form-item>
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
-              {{ messageTranslates('register', 'byLoggingIn') }}
+              Bằng việc đăng ký tài khoản, bạn đồng ý với
               <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
-                {{ messageTranslates('register', 'terms') }}
-              </a> {{ messageTranslates('register', 'and') }}
+                điều khoản
+              </a> và
               <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
-                {{ messageTranslates('register', 'policies') }}
+                chính sách bảo mật
               </a>
+              của chúng tôi
             </div>
-
           </el-form>
         </div>
       </div>
@@ -105,11 +96,13 @@ export default {
       googleFormAction: null,
       facebookFormAction: null,
       loading: false,
-      personalQuestion: null
+      personalQuestion: null,
+      initialSubmission: null
     }
   },
   async created() {
     this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
+    this.initialSubmission = this.$store.getters['question/getInitialSubmission']
     this.googleFormAction = 'api/auth/external/google/' + encodeURIComponent(this.returnUrl)
     this.facebookFormAction = 'api/auth/external/facebook/' + encodeURIComponent(this.returnUrl)
     // this.oauthSignIn()
@@ -132,8 +125,9 @@ export default {
           })
           this.loading = false
           if (user) {
-            // Add user score to by bass select test requirement if review is requested
-            if (this.personalQuestion) {
+            // Add user score to by bass select test requirement if
+            // user submits an initial test or review is requested
+            if (this.personalQuestion || this.initialSubmission) {
               var scores = []
               const formData = {
                 ieltsTestScore: {
@@ -149,7 +143,8 @@ export default {
                   SPEAKING: 0
                 }
               }
-              if (this.personalQuestion.Test == 'IELTS') {
+              if ((this.personalQuestion && this.personalQuestion.Test == 'IELTS') ||
+              (this.initialSubmission && this.initialSubmission.test == 'IELTS')) {
                 for (const key in formData.ieltsTestScore) {
                   scores.push({
                     sectionId: SCORES.IELTS[key].sectionId,
@@ -158,7 +153,8 @@ export default {
                   })
                 }
               }
-              if (this.personalQuestion.Test == 'TOEFL') {
+              if ((this.personalQuestion && this.personalQuestion.Test == 'TOEFL') ||
+              (this.initialSubmission && this.initialSubmission.test == 'TOEFL')) {
                 for (const key in formData.toeflTestScore) {
                   scores.push({
                     sectionId: SCORES.TOEFL[key].sectionId,

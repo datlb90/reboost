@@ -14,7 +14,7 @@
     <div class="dialog-body">
       <div style="padding: 20px; padding-top: 20px;">
         <div v-if="selectedReview == ''" class="tip">
-          <span style="font-size: 15px; color: #6084a4;">Để nhận phản hồi cho bài viết của mình, hãy chọn 1 trong các dịch vụ dưới đây:</span>
+          <span style="font-size: 15px; color: #6084a4;">Cảm ơn bạn đã gửi bài! Để nhận phản hồi cho bài viết của mình, bạn có thể chọn 1 trong các dịch vụ dưới đây:</span>
         </div>
         <el-page-header v-if="selectedReview == 'Pro' || selectedReview == 'AI'" class="tip" content="Select a payment method for your service" @back="goBack" />
         <el-page-header v-if="selectedReview == 'Free'" class="tip" content="Confirm your selection" @back="goBack" />
@@ -148,123 +148,33 @@ export default {
     this.email = this.currentUser.email
   },
   async created() {
-    this.getVnPayResultParams()
-    this.getZaloPayResultParams()
+
   },
   methods: {
     openDialog() {
       this.dlVisible = true
     },
-    async getZaloPayResultParams() {
-      const apptransid = this.getUrlParameter('apptransid')
-      if (apptransid) {
-        const model = {
-          appid: this.getUrlParameter('appid'),
-          apptransid: this.getUrlParameter('apptransid'),
-          pmcid: this.getUrlParameter('pmcid'),
-          bankcode: this.getUrlParameter('bankcode'),
-          amount: this.getUrlParameter('amount'),
-          discountamount: this.getUrlParameter('discountamount'),
-          status: this.getUrlParameter('status'),
-          checksum: this.getUrlParameter('checksum')
-        }
-        console.log('Request model', model)
-        const order = await paymentService.verifyZaloPayStatus(model)
-        console.log('Updated order:', order)
-        if (order) {
-          if (order.status == 1) {
-            if (order.reviewType == 'Pro') {
-              this.requestProReview(order.userId, order.submissionId)
-            } else if (order.reviewType == 'AI') {
-              this.requestAutomatedReview(order.userId, order.submissionId)
-            }
-          }
-        } else {
-          // Return error message
-        }
-      }
-    },
     async submitZaloPayRequest() {
-      // Create a new order
-      const order = {
-        UserId: this.currentUser.id,
-        SubmissionId: this.submissionId,
-        ReviewType: this.selectedReview,
-        Amount: this.amount,
-        Status: 0 // Payment pending
+      const model = {
+        userId: this.currentUser.id,
+        submissionId: this.submissionId,
+        reviewType: this.selectedReview,
+        amount: this.amount,
+        status: 0 // Payment pending
       }
-      const newOrder = await paymentService.createNewOrder(order)
-      if (newOrder) {
-        // Submit zalopay request
-        const model = {
-          userId: this.currentUser.id,
-          orderId: newOrder.id,
-          amount: this.amount
-        }
-        const orderUrl = await paymentService.submitZaloPayRequest(model)
-
-        window.location.href = orderUrl
-      }
-    },
-    async getVnPayResultParams() {
-      const orderId = this.getUrlParameter('vnp_TxnRef')
-      if (orderId) {
-        const model = {
-          orderId: orderId,
-          vnpAmount: this.getUrlParameter('vnp_Amount'),
-          vnpayTranId: this.getUrlParameter('vnp_TransactionNo'),
-          vnpResponseCode: this.getUrlParameter('vnp_ResponseCode'),
-          vnpTransactionStatus: this.getUrlParameter('vnp_TransactionStatus'),
-          vnpSecureHash: this.getUrlParameter('vnp_SecureHash'),
-          queryString: decodeURIComponent(window.location.search.substring(1))
-        }
-        console.log('Request model', model)
-        const order = await paymentService.verifyVnPayStatus(model)
-        console.log('Updated order:', order)
-        if (order) {
-          if (order.status == 1) {
-            if (order.reviewType == 'Pro') {
-              this.requestProReview(order.userId, order.submissionId)
-            } else if (order.reviewType == 'AI') {
-              this.requestAutomatedReview(order.userId, order.submissionId)
-            }
-          }
-        } else {
-          // Return error message
-        }
-      }
-    },
-    getUrlParameter(sParam) {
-      const sPageURL = decodeURIComponent(window.location.search.substring(1))
-      const sURLVariables = sPageURL.split('&')
-      let sParameterName
-      let i
-      for (i = 0; i < sURLVariables.length; i++) {
-        sParameterName = sURLVariables[i].split('=')
-
-        if (sParameterName[0] === sParam) {
-          return sParameterName[1] === undefined ? true : sParameterName[1]
-        }
-      }
+      var zaloPayUrl = await paymentService.submitZaloPayRequest(model)
+      window.location.href = zaloPayUrl
     },
     async submitVNPayRequest() {
-      // Create a new order
-      const order = {
-        UserId: this.currentUser.id,
-        SubmissionId: this.submissionId,
-        ReviewType: this.selectedReview,
-        Amount: this.amount,
-        Status: 0 // Payment pending
+      const model = {
+        userId: this.currentUser.id,
+        submissionId: this.submissionId,
+        reviewType: this.selectedReview,
+        amount: this.amount,
+        status: 0 // Payment pending
       }
-      const newOrder = await paymentService.createNewOrder(order)
-      if (newOrder) {
-        // Submit vnpay request
-        const model = {
-          orderId: newOrder.id,
-          amount: this.amount
-        }
-        paymentService.submitVNPayRequest(model)
-      }
+      var vnPayUrl = await paymentService.submitVNPayRequest(model)
+      window.location.href = vnPayUrl
     },
     async dialogOpened() {
       // Load paypal button
@@ -310,7 +220,7 @@ export default {
         this.amount = 200000
         this.selectedReview = reviewType
       } else if (reviewType === 'AI') {
-        this.amount = 30000
+        this.amount = 15000
         this.selectedReview = reviewType
       } else {
         this.amount = 0
@@ -365,13 +275,20 @@ export default {
         FeedbackType: 'Pro',
         Status: REVIEW_REQUEST_STATUS.WAITING
       }).then(rs => {
-        this.dialogClosed()
+        // this.$notify.success({
+        //   title: 'Pro Review Request',
+        //   message: 'The pro review request has been successfully submitted!',
+        //   type: 'success',
+        //   duration: 1500
+        // })
+
         this.$notify.success({
-          title: 'Pro Review Request',
-          message: 'The pro review request has been successfully submitted!',
+          title: 'Thanh Toán Thành Công',
+          message: 'Cảm ơn bạn đã sử dụng dịch vụ! Giáo viên của Reboost sẽ chấm bài luận của bạn và cung cấp phản hồi trong vòng 24h. Chúng tôi sẽ thông báo cho bạn qua email khi giáo viên chấm xong.',
           type: 'success',
-          duration: 1500
+          duration: 0
         })
+        this.dialogClosed()
         this.$emit('reviewRequested')
       })
     },
@@ -379,7 +296,7 @@ export default {
       this.dialogClosed()
       const loading = this.$loading({
         lock: true,
-        text: 'Please wait while our AI rater scores your essay',
+        text: 'Bạn đã thanh toán thành công! Vui lòng chờ trong giây lát để nhận phản hồi.',
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       })
@@ -387,12 +304,12 @@ export default {
         UserId: userId,
         SubmissionId: submissionId
       }).then(rs => {
-        this.$notify.success({
-          title: 'Automated AI Review',
-          message: 'Essay scoring has been completed. Please review the feedback.',
-          type: 'success',
-          duration: 2000
-        })
+        // this.$notify.success({
+        //   title: 'Thanh Toán Thành Công',
+        //   message: 'Essay scoring has been completed. Please review the feedback.',
+        //   type: 'success',
+        //   duration: 2000
+        // })
         loading.close()
         const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
         this.$router.push(url)

@@ -3,7 +3,7 @@
   <section id="howItWorks" class="iot-why-choose-us ptb-80 pb-0">
     <div class="container">
       <div class="section-title">
-        <h2>{{ messageTranslates('howItWork2', 'title') }}</h2>
+        <h3 style="color: white;">{{ messageTranslates('howItWork2', 'title') }}</h3>
         <div class="bar" />
         <p>{{ messageTranslates('howItWork2', 'description') }}</p>
       </div>

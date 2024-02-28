@@ -34,6 +34,9 @@
 </template>
 <script>
 export default {
+  props: {
+    questionId: { type: Number, default: null }
+  },
   data() {
     return {
       tableData: [],
@@ -41,8 +44,7 @@ export default {
     }
   },
   mounted() {
-    var rubricId = this.$route.params.id
-    this.$store.dispatch('rubric/loadRubricByQuestionId', +rubricId).then(() => {
+    this.$store.dispatch('rubric/loadRubricByQuestionId', this.questionId).then(() => {
       this.tableData = this.$store.getters['rubric/getByQuestionId']
     })
   },

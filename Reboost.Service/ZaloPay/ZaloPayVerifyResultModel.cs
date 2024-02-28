@@ -3,6 +3,7 @@ namespace Reboost.Service.ZaloPay
 {
     public class ZaloPayVerifyResultModel
     {
+        public string userId { get; set; }
         public string appid { get; set; }
         public string apptransid { get; set; }
         public string pmcid { get; set; }

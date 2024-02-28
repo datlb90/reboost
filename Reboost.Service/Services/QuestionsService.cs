@@ -13,6 +13,7 @@ namespace Reboost.Service.Services
 {
     public interface IQuestionsService
     {
+        Task<List<InitQuestionModel>> GetInitQuestionModels();
         Task<Submissions> CreatePersonalSubmission(RequestReviewForWriting model);
         Task<Questions> GetByTitle(string title);
         Task<IEnumerable<Questions>> GetAllAsync();
@@ -42,6 +43,11 @@ namespace Reboost.Service.Services
         public QuestionsService(IDocumentService documentService, IUnitOfWork unitOfWork) : base(unitOfWork)
         {
             _documentService = documentService;
+        }
+
+        public async Task<List<InitQuestionModel>> GetInitQuestionModels()
+        {
+            return await _unitOfWork.Questions.GetInitQuestionModels();
         }
 
         public async Task<Questions> GetByTitle(string title)

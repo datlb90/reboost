@@ -30,6 +30,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="3.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="3.1.7" />
     <PackageReference Include="RestClient" Version="3.0.0.21" />
+    <PackageReference Include="Mail.dll" Version="3.0.24030.1216" />
+    <PackageReference Include="DKIM.Net" Version="0.3.0" />
   </ItemGroup>
 
 
@@ -1531,6 +1533,15 @@
     <Content Remove="wwwroot\img\cy.dbf92cb8.svg" />
     <Content Remove="wwwroot\img\NewReviewCenter.f817c0d6.png" />
     <Content Remove="wwwroot\img\ProRater.052813bf.png" />
+    <Content Remove="wwwroot\img\logo.760ee3d0.png" />
+    <Content Remove="wwwroot\img\pricing.99fa138c.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="log4net" />
+    <None Remove="MimeKit" />
+    <None Remove="MailKit" />
+    <None Remove="Mail.dll" />
+    <None Remove="DKIM.Net" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 </Project>
