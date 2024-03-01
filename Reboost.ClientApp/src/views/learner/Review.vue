@@ -6,9 +6,11 @@
         <el-tabs v-model="selectedTab" type="border-card">
           <el-tab-pane name="question" label="Question">
             <tabQuestion
+              v-if="review"
               ref="tabQuestion"
               :questionid="questionId"
               :reviewid="reviewId"
+              :review-request="review.reviewRequest"
               @openDisputeNote="onOpenDisputeNote"
               @closeDisputeNote="disputeNoteDialogVisible=false"
             />

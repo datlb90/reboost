@@ -2,9 +2,6 @@
   <div>
     <Banner />
     <BoxesArea />
-    <HowItWorks2 />
-    <WhyChooseUs />
-    <Feedback />
     <FAQ />
   </div>
 </template>
@@ -12,9 +9,6 @@
 <script>
 import Banner from './rater/Banner'
 import BoxesArea from './rater/BoxesArea'
-import HowItWorks2 from './rater/HowItWorks2'
-import WhyChooseUs from './rater/WhyChooseUs'
-import Feedback from './rater/Feedback'
 import FAQ from './rater/FAQ'
 import $ from 'jquery'
 // import Blog from './developer/Blog'
@@ -23,13 +17,11 @@ export default {
   components: {
     Banner,
     BoxesArea,
-    HowItWorks2,
-    WhyChooseUs,
-    Feedback,
     FAQ
   },
   mounted() {
-    $('.navbar').find('a').click(function() {
+    $('.nav-item').find('a').click(function(e) {
+      e.preventDefault()
       var $href = $(this).attr('href')
       var $anchor = $('#' + $href).offset()
       window.scrollTo($anchor.left, $anchor.top)

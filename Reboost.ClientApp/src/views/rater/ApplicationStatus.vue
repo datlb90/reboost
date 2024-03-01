@@ -2,20 +2,22 @@
   <div style="margin-top:25px;" :style="{visibility: loadCompleted?'visible':'hidden'}">
     <el-row class="row-flex">
       <el-col :span="15" class="col-border">
+
         <el-steps :active="activeStep" align-center>
-          <el-step title="Step 1" icon="el-icon-user" description="Create an account" />
-          <el-step title="Step 2" icon="el-icon-upload" description="Upload credentials" />
-          <el-step title="Step 3" icon="el-icon-circle-check" description="Complete trainning" />
-          <el-step title="Step 4" icon="el-icon-edit-outline" description="Start rating" />
+          <el-step title="Bước 1" icon="el-icon-user" description="Tạo tài khoản" />
+          <el-step title="Bước 2" icon="el-icon-upload" description="Nộp hồ sơ" />
+          <el-step title="Bước 3" icon="el-icon-circle-check" description="Hoàn thành đào tạo" />
+          <el-step title="Bước 4" icon="el-icon-edit-outline" description="Bắt đầu chấm bài" />
         </el-steps>
+
       </el-col>
     </el-row>
     <el-row class="row-flex">
-      <el-col :span="15" class="col-border">
+      <el-col :span="15" class="col-border" style="background: #f6f6f6;">
         <div class="margin-container">
           <div class="flex-box">
             <div class="label-container">
-              Application status
+              <strong>Trạng thái của hồ sơ:</strong>
             </div>
             <el-tag
               :type="
@@ -28,11 +30,12 @@
                       : status===RATER_STATUS.DOCUMENT_REQUESTED
                         ? 'warning' : 'warning'
               "
-            >{{ status }}</el-tag>
+            >{{ status == 'Applied' ? 'Đã nộp' : status }}</el-tag>
 
           </div>
-          <div :class="[status === RATER_STATUS.APPLIED ? 'inReview' : 'hidden']">
-            <p>Thank you for applying. Your application is curretly in review. We will notify you via email if your application is approved, denied, or if we need additional information.</p>
+          <div :class="[status === RATER_STATUS.APPLIED ? 'inReview' : 'hidden']" style="font-size: 15px;">
+            <p style="font-size: 15px;">Cảm ơn bạn đã nộp hồ sơ trở thành giáo viên của Reboost! Chúng tôi sẽ kiểm tra hồ sơ và liên lạc với bạn trong thời gian sớm nhất.</p>
+            <p style="font-size: 15px;">Trong thời gian xử lý, nếu bạn có thắc mắc gì vui lòng liên lạc với chung tôi qua support@reboost.vn</p>
           </div>
           <div :class="[status === RATER_STATUS.DOCUMENT_SUBMITTED ? 'inReview' : 'hidden']" style="background-color: #fdf6ec;border-left: 5px solid #e6a23c;">
             <p>Thank you for submitting the additional documents. We will review them and get back to you shortly.

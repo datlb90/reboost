@@ -13,6 +13,8 @@ namespace Reboost.DataAccess.Entities
         public PaymentStatus Status { get; set; }
         public string TransactionCode { get; set; }
         public string IpAddress { get; set; }
+        public string FeedbackLanguage { get; set; }
+        public string SpecialRequest { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime LastActivityDate { get; set; }
     }

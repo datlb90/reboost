@@ -2,10 +2,8 @@
   <el-dialog
     id="practiceWritingCheckoutContainer"
     :visible.sync="dlVisible"
-    width="800px"
+    width="760px"
     height="820px"
-    :before-close="handleClose"
-    @opened="dialogOpened"
     @closed="dialogClosed"
   >
     <div slot="title">
@@ -14,23 +12,26 @@
     <div class="dialog-body">
       <div style="padding: 20px; padding-top: 20px;">
         <div v-if="selectedReview == ''" class="tip">
-          <span style="font-size: 15px; color: #6084a4;">Cảm ơn bạn đã gửi bài! Để nhận phản hồi cho bài viết của mình, bạn có thể chọn 1 trong các dịch vụ dưới đây:</span>
+          <span style="font-size: 15px; color: #6084a4;">Cảm ơn bạn đã gửi bài viết cho chúng tôi! Để nhận phản hồi, hãy chọn 1 trong các dịch vụ dưới đây:</span>
         </div>
-        <el-page-header v-if="selectedReview == 'Pro' || selectedReview == 'AI'" class="tip" content="Select a payment method for your service" @back="goBack" />
+        <el-page-header v-if="selectedReview == 'Pro' || selectedReview == 'AI'" class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
         <el-page-header v-if="selectedReview == 'Free'" class="tip" content="Confirm your selection" @back="goBack" />
+
         <div v-if="selectedReview == '' || selectedReview == 'Pro'" id="pro-review-card" class="box-card review-card" @click="onReviewSelect('Pro')">
           <div>
             <div class="review-icon-wrapper" style="width: 62px; margin-left: 13px;"> <i class="fas fa-user-graduate review-icon" /></div>
             <div class="review-description-wrapper">
               <div class="review-title">{{ messageTranslates('checkout', 'proTitle') }}</div>
               <div class="review-description">
-                Đội ngũ giáo viên trình độ cao và giàu kinh nghiệm của Reboost sẽ chấm bài viết của bạn và cung cấp phản hồi chi tiết trong vòng 24 giờ. (<a href="#">sample feedback</a>)
+                Đội ngũ giáo viên giàu kinh nghiệm của Reboost sẽ chấm bài viết của bạn và cung cấp phản hồi chi tiết trong vòng 24 giờ. (<a href="#">sample feedback</a>)
                 <!-- Our certified rater will score your essay and provide detailed feedback within 24 hours (<a href="#">sample feedback</a>) -->
               </div>
+
             </div>
             <div class="review-price">200.000 VNĐ</div>
           </div>
         </div>
+
         <div v-if="selectedReview == '' || selectedReview == 'AI'" id="ai-review-card" class="box-card review-card" @click="onReviewSelect('AI')">
           <div>
             <div class="review-icon-wrapper"><i class="fas fa-robot review-icon" /></div>
@@ -78,25 +79,54 @@
           <el-button type="primary" :disabled="unratedCount > 0" @click="requestPeerReview()">Confirm Selection</el-button>
         </div>
       </div>
-      <div v-show="selectedReview == 'Pro' || selectedReview == 'AI'" class="co-form" :class="{ active: activeStep == 1 }">
-        <div class="co-form__section" :class="{ inactive: activeStep == 2 }">
-          <div class="co-form__title" style="padding-top: 10px">
-            <el-button v-if="activeStep == 2" style="position: absolute;right: 1rem;" size="mini" type="primary" @click="editCheckOutInfo">Edit</el-button>
-          </div>
-          <div class="pay-button-container">
-            <el-button type="danger" style="width: 100%; color: #006BC2; font-size: 18px; padding: 15px;" @click="submitZaloPayRequest()">
-              Pay with ZaloPay
-            </el-button>
+
+      <div v-show="selectedReview == 'Pro' || selectedReview == 'AI'" style="padding: 20px; padding-top: 0px;">
+        <div>
+          <div>
+            <el-divider>
+              <div class="review-title">
+                Yêu cầu cho phản hồi
+              </div>
+            </el-divider>
+            <div>
+              <div style="text-align: center;">
+                <el-radio-group v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;">
+                  <el-radio-button label="Phản hồi bằng tiếng Việt" />
+                  <el-radio-button label="Phản hồi bằng tiếng Anh" />
+                </el-radio-group>
+
+                <el-input
+                  v-if="selectedReview == 'Pro'"
+                  v-model="specialRequest"
+                  type="textarea"
+                  :rows="3"
+                  style="margin-bottom: 10px;"
+                  placeholder="Cung cấp yêu cầu cụ thể của bạn cho giáo viên. Ví dụ: chú trọng phần từ vựng, ý tưởng, ngữ pháp, và bố cục bài. Nếu không có yêu cầu gì bạn có thể để trống phần này."
+                />
+              </div>
+
+            </div>
           </div>
 
-          <div class="pay-button-container">
-            <el-button type="danger" style="width: 100%; color: #006BC2; font-size: 18px; padding: 15px;" @click="submitVNPayRequest()">
-              Pay with VNPay
+          <el-divider>
+            <div class="review-title">
+              Phương thức thanh toán
+            </div>
+          </el-divider>
+          <div style="text-align: center; padding-top: 10px;">
+            <el-button plain style="margin-right: 10px;" @click="submitZaloPayRequest()">
+              <div style="font-size: 20px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
+              <img style="height: 26px;" src="../../assets/logo/zalopay.png" alt="logo" class="main-header-logo">
+            </el-button>
+
+            <el-button plain style="margin-left: 10px;" @click="submitVNPayRequest()">
+              <div style="font-size: 20px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
+              <img style="height: 26px;" src="../../assets/logo/vnpay.png" alt="logo" class="main-header-logo">
             </el-button>
           </div>
-          <div v-if="!paid" id="paypal-button-container" class="pay-button-container" />
+          <!-- <div v-if="!paid" id="paypal-button-container" class="pay-button-container" /> -->
         </div>
-        <div v-if="activeStep == 1" class="saperator" />
+        <!-- <div v-if="activeStep == 1" class="saperator" /> -->
       </div>
 
     </div>
@@ -106,10 +136,9 @@
 
 <script>
 
-import { loadScript } from '@paypal/paypal-js'
-import paymentService from '../../services/payment.service'
 import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 import reviewService from '../../services/review.service'
+import paymentService from '../../services/payment.service'
 
 export default {
   name: 'Checkout',
@@ -133,7 +162,9 @@ export default {
       epaySelected: false,
       paid: false,
       selectedReview: '',
-      loadingAutomatedReview: false
+      loadingAutomatedReview: false,
+      feedbackLanguage: 'Phản hồi bằng tiếng Việt',
+      specialRequest: null
     }
   },
   computed: {
@@ -151,16 +182,15 @@ export default {
 
   },
   methods: {
-    openDialog() {
-      this.dlVisible = true
-    },
     async submitZaloPayRequest() {
       const model = {
         userId: this.currentUser.id,
         submissionId: this.submissionId,
         reviewType: this.selectedReview,
         amount: this.amount,
-        status: 0 // Payment pending
+        status: 0,
+        feedbackLanguage: this.feedbackLanguage,
+        specialRequest: this.specialRequest
       }
       var zaloPayUrl = await paymentService.submitZaloPayRequest(model)
       window.location.href = zaloPayUrl
@@ -171,46 +201,15 @@ export default {
         submissionId: this.submissionId,
         reviewType: this.selectedReview,
         amount: this.amount,
-        status: 0 // Payment pending
+        status: 0,
+        feedbackLanguage: this.feedbackLanguage,
+        specialRequest: this.specialRequest
       }
       var vnPayUrl = await paymentService.submitVNPayRequest(model)
       window.location.href = vnPayUrl
     },
-    async dialogOpened() {
-      // Load paypal button
-      loadScript({ 'client-id': 'Aa5nScHY-XCvNuR8KYRHA4BySu_7-91JTnBfvZ0vj9Zto8107b40nHn8-vGADPJBx5XAJS_IHL_WWK3I' }).then((paypal) => {
-        paypal
-          .Buttons({
-            createOrder: this.createOrder,
-            onApprove: this.onApprove
-          })
-          .render('#paypal-button-container')
-      })
-    },
-    createOrder: function(data, actions) {
-      return actions.order.create({
-        purchase_units: [
-          {
-            amount: {
-              value: Math.round(this.amount * 0.000041)
-            }
-          }
-        ]
-      })
-    },
-    onApprove: function(data, actions) {
-      return actions.order.capture().then(order => {
-        console.log(order)
-        const purchaseUnits = order.purchase_units
-        if (purchaseUnits.length > 0) {
-          const captures = purchaseUnits[0].payments.captures
-          if (captures.length > 0) {
-            this.paid = true
-            this.completeOrder(captures[0].id)
-            this.paymentSuccessed()
-          }
-        }
-      })
+    openDialog() {
+      this.dlVisible = true
     },
     goBack() {
       this.selectedReview = ''
@@ -227,27 +226,8 @@ export default {
         this.selectedReview = reviewType
       }
     },
-    handleClose(done) {
-      this.$confirm('Are you sure to exit?')
-        .then(_ => {
-          done()
-          const paypalContaner = document.getElementById('paypal-button-container')
-          paypalContaner.innerHTML = ''
-        })
-        .catch(_ => {})
-    },
     dialogClosed() {
       this.$emit('closed')
-    },
-    editCheckOutInfo() {
-      this.activeStep = this.activeStep == 2 ? 1 : 2
-    },
-    paymentSuccessed() {
-      if (this.selectedReview == 'Pro') {
-        this.requestProReview(this.currentUser.id, this.submissionId)
-      } else if (this.selectedReview == 'AI') {
-        this.requestAutomatedReview(this.currentUser.id, this.submissionId)
-      }
     },
     requestPeerReview() {
       if (this.unratedCount == 0) {
@@ -267,65 +247,6 @@ export default {
           this.$emit('reviewRequested')
         })
       }
-    },
-    requestProReview(userId, submissionId) {
-      reviewService.createProReviewRequest({
-        UserId: userId,
-        SubmissionId: submissionId,
-        FeedbackType: 'Pro',
-        Status: REVIEW_REQUEST_STATUS.WAITING
-      }).then(rs => {
-        // this.$notify.success({
-        //   title: 'Pro Review Request',
-        //   message: 'The pro review request has been successfully submitted!',
-        //   type: 'success',
-        //   duration: 1500
-        // })
-
-        this.$notify.success({
-          title: 'Thanh Toán Thành Công',
-          message: 'Cảm ơn bạn đã sử dụng dịch vụ! Giáo viên của Reboost sẽ chấm bài luận của bạn và cung cấp phản hồi trong vòng 24h. Chúng tôi sẽ thông báo cho bạn qua email khi giáo viên chấm xong.',
-          type: 'success',
-          duration: 0
-        })
-        this.dialogClosed()
-        this.$emit('reviewRequested')
-      })
-    },
-    requestAutomatedReview(userId, submissionId) {
-      this.dialogClosed()
-      const loading = this.$loading({
-        lock: true,
-        text: 'Bạn đã thanh toán thành công! Vui lòng chờ trong giây lát để nhận phản hồi.',
-        spinner: 'el-icon-loading',
-        background: 'rgba(0, 0, 0, 0.7)'
-      })
-      reviewService.createAutomatedReview({
-        UserId: userId,
-        SubmissionId: submissionId
-      }).then(rs => {
-        // this.$notify.success({
-        //   title: 'Thanh Toán Thành Công',
-        //   message: 'Essay scoring has been completed. Please review the feedback.',
-        //   type: 'success',
-        //   duration: 2000
-        // })
-        loading.close()
-        const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
-        this.$router.push(url)
-      })
-    },
-    async completeOrder(transactionId) {
-      const order = {
-        UserId: this.currentUser.id,
-        SubmissionId: this.submissionId,
-        ReviewType: this.selectedReview,
-        Amount: this.amount,
-        Status: 2, // Payment completed
-        TransactionCode: transactionId
-      }
-      const orderCompleted = await paymentService.createNewOrder(order)
-      console.log('Order Completed: ', orderCompleted)
     }
   }
 }

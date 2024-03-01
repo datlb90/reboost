@@ -39,14 +39,12 @@ namespace Reboost.WebApi.Controllers
             if (ModelState.IsValid)
             {
                 var result = await _authService.RegisterUserAsync(model);
-
                 if (result.IsSuccess)
-                    return Ok(result); // Status Code: 200 
-
-                return BadRequest(result);
+                    return Ok(result);
+                else
+                    return BadRequest(result);
             }
-
-            return BadRequest("Some properties are not valid"); // Status code: 400
+            return BadRequest("Đã có lỗi sảy ra trong quá trình đăng ký. Bạn vui lòng thử lại và liên hệ với chúng tôi nếu vẫn không thể đăng ký được."); // Status code: 400
         }
 
         // /api/auth/login

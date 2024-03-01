@@ -65,6 +65,9 @@ namespace Reboost.Service.Services
             await _unitOfWork.Users.UpdateScoreAsync(rater.UserId, rater.User.UserScores.ToList());
 
             rater.User = null;
+
+            // To do: gửi email cho admin
+
             return await _unitOfWork.Raters.Create(rater);
         }
 

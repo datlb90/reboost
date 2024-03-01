@@ -12,7 +12,8 @@ namespace Reboost.DataAccess.Entities
         public System.DateTime RequestedDateTime { get; set; }
         public Nullable<System.DateTime> CompletedDateTime { get; set; }
         public string Status { get; set; }
-
+        public string FeedbackLanguage { get; set; }
+        public string SpecialRequest { get; set; }
         public virtual Submissions Submission { get; set; }
     }
 }

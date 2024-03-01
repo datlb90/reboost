@@ -1085,12 +1085,12 @@ export default {
         data.status = 'Submitted'
         documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
-            this.$notify.success({
-              title: 'Success',
-              message: 'Bài viết của bạn đã được nộp thành công',
-              type: 'success',
-              duration: 3000
-            })
+            // this.$notify.success({
+            //   title: 'Success',
+            //   message: 'Bài viết của bạn đã được nộp thành công',
+            //   type: 'success',
+            //   duration: 3000
+            // })
             this.writingSubmitted = true
             // this.checkoutVisible = true
             this.$refs.checkoutDialog?.openDialog()
@@ -1100,12 +1100,12 @@ export default {
         data.status = 'Submitted'
         documentService.submitDocument(data).then(rs => {
           if (rs) {
-            this.$notify.success({
-              title: 'Success',
-              message: 'Bài viết của bạn đã được nộp thành công',
-              type: 'success',
-              duration: 3000
-            })
+            // this.$notify.success({
+            //   title: 'Success',
+            //   message: 'Bài viết của bạn đã được nộp thành công',
+            //   type: 'success',
+            //   duration: 3000
+            // })
             this.hasSubmitionForThisQuestion = true
             this.submissionId = rs.submissions[0]?.id
             this.writingSubmitted = true

@@ -1,6 +1,6 @@
 <template>
   <!-- Start Main Banner -->
-  <div v-if="screenWidth > 1200" id="banner" class="ml-main-section" style=" padding-top: 150px; padding-bottom: 80px;">
+  <div v-if="screenWidth > 1200" id="banner" class="ml-main-section" style="padding-top: 150px; padding-bottom: 80px;">
     <div class="container">
       <div class="row">
         <div class="col-lg-6 col-md-12">
@@ -17,7 +17,6 @@
             <el-button
               class="btn btn-dark"
               style="padding: 15px 80px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
-              :loading="loading"
               @click="gotoTest()"
             > Thực Hiện Bài Kiểm Tra Đầu Vào Miễn Phí
             </el-button>
@@ -104,7 +103,6 @@
             <el-button
               class="btn btn-dark"
               style="padding: 15px 60px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
-              :loading="loading"
               @click="gotoTest()"
             > Thực Hiện Bài Kiểm Tra Đầu Vào Miễn Phí
             </el-button>
@@ -191,7 +189,6 @@
             <el-button
               class="btn btn-dark"
               style="width: 100%; padding: 15px 60px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
-              :loading="loading"
               @click="gotoTest()"
             > Thực Hiện Bài Kiểm Tra Đầu Vào Miễn Phí
             </el-button>
@@ -291,7 +288,7 @@ export default {
       this.screenWidth = newWidth
     }
   },
-  ounted() {
+  mounted() {
     window.addEventListener('resize', () => {
       this.screenWidth = window.innerWidth
     })

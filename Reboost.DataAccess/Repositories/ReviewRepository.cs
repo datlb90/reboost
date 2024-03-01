@@ -766,7 +766,7 @@ namespace Reboost.DataAccess.Repositories
             request.Status = ReviewRequestStatus.WAITING;
             await db.ReviewRequests.AddAsync(request);
 
-            // Change submission status
+            // Update submission status
             Submissions sub = await db.Submissions.FindAsync(request.SubmissionId);
             sub.Status = SubmissionStatus.REVIEW_REQUESTED;
 

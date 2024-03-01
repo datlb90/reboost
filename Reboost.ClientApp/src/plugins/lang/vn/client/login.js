@@ -1,5 +1,5 @@
 export const Login = {
-  usernameEmail: 'Tên tài khoản hoặc email',
+  usernameEmail: 'Địa chỉ email của bạn',
   password: 'Mật khẩu',
   signIn: 'Đăng nhập',
   forgotPassword: 'Quên mật khẩu?',

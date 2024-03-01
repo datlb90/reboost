@@ -2,13 +2,26 @@
   <div style="height: 100%;display: flex; flex-direction: column">
     <div id="parent-scroll" style="flex-grow: 1;position: relative;">
       <div id="child-scroll">
-        <div v-if="showDirection" class="tip" transition="fade" style="margin-bottom: 10px;">
+        <div v-if="reviewRequest && reviewRequest.feedbackType == 'Free' && showDirection" class="tip" transition="fade" style="margin-bottom: 10px;">
           <p style="width: 98%;">
-            <b>Direction:</b> Read the question description and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review.
+            <b>Hướng Dẫn:</b>
+            <!-- Read the question description and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review. -->
+            Đọc mô tả câu hỏi và cung cấp phản hồi cho bài luận ở bên phải. Một bản đánh giá chất lượng bao gồm cả bình luận trong văn bản và đánh giá theo thang điểm. Vui lòng hoàn thành những mục này trước khi nộp bài đánh giá của bạn.
           </p>
-          <el-button size="mini" @click="showDirection = !showDirection">Got it</el-button>
-          <el-button size="mini" @click="notShowDirection">Never show this again</el-button>
+          <el-button size="mini" @click="showDirection = !showDirection">Đã hiểu</el-button>
+          <el-button size="mini" @click="notShowDirection">Không hiển nữa</el-button>
         </div>
+
+        <div v-if="reviewRequest && reviewRequest.feedbackType == 'Pro'" class="requirement" transition="fade" style="margin-bottom: 10px;">
+          <h5>Yêu cầu từ học viên</h5>
+          <div style="width: 98%; color: #4a6f8a; font-size: 15px;">
+            <b>- Ngôn ngữ phản hồi:</b> {{ reviewRequest.feedbackLanguage == 'vn' ? 'Tiếng Việt' : 'Tiếng Anh' }}
+          </div>
+          <div style="width: 98%; color: #4a6f8a;  font-size: 15px;">
+            <b>- Yêu cầu khác:</b> {{ reviewRequest.specialRequest }}
+          </div>
+        </div>
+
         <div v-if="dispute && currentUser.role === UserRole.ADMIN" class="content-con" style="margin-bottom: 10px;">
           <p style="width: 98%;">
             Dispute
@@ -88,7 +101,8 @@ export default ({
   },
   props: {
     questionid: { type: Number, default: null },
-    reviewid: { type: Number, default: null }
+    reviewid: { type: Number, default: null },
+    reviewRequest: { type: Object, default: null }
   },
   data() {
     return {
@@ -247,4 +261,11 @@ export default ({
 
 <style scoped>
 @import '../../styles/review.css';
+.requirement {
+  padding: 10px 10px;
+  font-size: 12px;
+  background-color: #fdf6ec;
+  border-radius: 4px;
+  border-left: 5px solid #e6a23c;
+}
 </style>

@@ -1,115 +1,56 @@
 <template>
-  <div id="faq">
-    <!-- Start Page Title -->
-    <div class="page-title-area" style="padding-top: 80px; padding-bottom: 30px;">
-      <!-- <div class="d-table">
-        <div class="d-table-cell">
-          <div class="container">
-            <h2>Fre</h2>
-          </div>
+  <div id="process" class="boxes-area" style="padding-top: 50px;">
+    <div class="container">
+      <div style="margin-top: 100px;">
+        <div class="section-title">
+          <h3> Quy trình đăng ký đơn giản</h3>
+          <div class="bar" />
         </div>
-      </div> -->
-
-      <div class="section-title">
-        <h2>Frequently Asked Questions</h2>
-        <div class="bar" />
-      </div>
-
-      <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
-      <div class="shape2 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
-      <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
-      <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-      <div class="shape5"><img src="../../../assets/img/shape5.png" alt="shape"></div>
-      <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-      <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-      <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
-    </div>
-    <!-- End Page Title -->
-
-    <!-- Start FAQ Area -->
-    <section class="faq-area ptb-80" style="padding-top: 50px; background: #fafbfd;">
-      <div class="container">
-        <div class="faq-accordion">
-          <VueFaqAccordion
-            :items="myItems"
-          />
-        </div>
-
-        <div class="faq-contact">
-          <h3>Ask Your Question</h3>
-          <form>
-            <div class="row">
-              <div class="col-lg-6 col-md-6">
-                <div class="form-group">
-                  <input type="text" placeholder="Name" class="form-control">
-                </div>
-              </div>
-
-              <div class="col-lg-6 col-md-6">
-                <div class="form-group">
-                  <input type="email" placeholder="Email" class="form-control">
-                </div>
-              </div>
-
-              <div class="col-lg-12 col-md-12">
-                <div class="form-group">
-                  <input type="text" placeholder="Subject" class="form-control">
-                </div>
-              </div>
-
-              <div class="col-lg-12 col-md-12">
-                <div class="form-group">
-                  <textarea name="message" cols="30" rows="6" placeholder="Message" class="form-control" />
-                </div>
-              </div>
-
-              <div class="col-lg-12 col-md-12">
-                <button class="btn btn-primary" type="submit">Submit Now!</button>
-              </div>
+        <el-steps :active="4" style="margin-top: 60px; margin-bottom: 60px; color: #6084a4 !important;">
+          <el-step icon="far fa-user-circle">
+            <div slot="icon">
+              <i class="far fa-user-circle" style="font-size: 40px;" />
             </div>
-          </form>
-        </div>
+            <div slot="title" style="font-size: 16px; font-weight: bold;">Bước 1</div>
+            <div slot="description" style="font-size: 15px;">Tạo tài khoản giảo viên</div>
+          </el-step>
+          <el-step icon="fas fa-file-upload">
+            <div slot="icon">
+              <i class="fas fa-file-upload" style="font-size: 40px;" />
+            </div>
+            <div slot="title" style="font-size: 16px; font-weight: bold;">Bước 2</div>
+            <div slot="description" style="font-size: 15px;">Nộp hồ sơ và chứng chỉ</div>
+          </el-step>
+
+          <el-step icon="far fa-check-circle">
+            <div slot="icon">
+              <i class="far fa-check-circle" style="font-size: 40px;" />
+            </div>
+            <div slot="title" style="font-size: 16px; font-weight: bold;">Bước 3</div>
+            <div slot="description" style="font-size: 15px;">Hoàn thành khoá đào tạo</div>
+          </el-step>
+
+          <el-step icon="fas fa-edit">
+            <div slot="icon">
+              <i class="fas fa-edit" style="font-size: 40px;" />
+            </div>
+            <div slot="title" style="font-size: 16px; font-weight: bold;">Bước 4</div>
+            <div slot="description" style="font-size: 15px;">Bắt đầu chấm bài</div>
+          </el-step>
+
+        </el-steps>
       </div>
-    </section>
-    <!-- End FAQ Area -->
+    </div>
   </div>
 </template>
 
 <script>
-import VueFaqAccordion from 'vue-faq-accordion'
 export default {
   name: 'Faq',
   components: {
-    VueFaqAccordion
   },
   data() {
     return {
-      myItems: [
-        {
-          title: 'How many time zones are there in all?',
-          value: 'Given a 24-hour day and 360 degrees of longitude around the Earth'
-        },
-        {
-          title: 'How long is a day and year on Venus?',
-          value: 'Venus takes 224.7 Earth days to complete one orbit around the Sun.'
-        },
-        {
-          title: 'What animal smells like popcorn?',
-          value: 'Binturongs smell like popcorn.'
-        },
-        {
-          title: 'What animal smells like popcorn?',
-          value: 'Binturongs smell like popcorn.'
-        },
-        {
-          title: 'What animal smells like popcorn?',
-          value: 'Binturongs smell like popcorn.'
-        },
-        {
-          title: 'What animal smells like popcorn?',
-          value: 'Binturongs smell like popcorn.'
-        }
-      ]
     }
   }
 }

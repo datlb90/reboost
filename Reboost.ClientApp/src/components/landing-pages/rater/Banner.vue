@@ -1,56 +1,51 @@
 <template>
-  <!-- Start Main Banner -->
-  <div id="banner" class="main-banner" style="height: 860px; padding-top: 100px; padding-bottom: 80px;">
+  <div v-if="screenWidth > 1200" class="ml-main-section" style="height: 850px;padding-top: 120px; padding-bottom: 50px;">
     <div class="container">
       <div class="row">
         <div class="col-lg-7 col-md-12">
           <div class="ml-banner-content" style="margin-top: 10px;">
-            <h1>Become a Rater with Reboost</h1>
-            <el-steps :active="4" style="margin-top: 60px; margin-bottom: 60px; color: #6084a4 !important;">
-              <el-step title="Step 1" description="Create an account" icon="far fa-user-circle" />
-              <el-step title="Step 2" description="Upload credentials" icon="fas fa-file-upload" />
-              <el-step title="Step 3" description="Complete tranning" icon="far fa-check-circle" />
-              <el-step title="Step 4" description="Start rating" icon="fas fa-edit" />
-            </el-steps>
-            <p style="max-width: 100%;">Our raters are teachers, instructors, test makers, certified examiners, and industry professionals, who are all passionate about their areas of expertise and eager to help test takers improve their writing skill and test score.</p>
-            <p style="max-width: 100%;">Our online evaluation platform makes connecting with test takers and earning extra income simple, convenient, and flexible.</p>
+            <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 400;">Trở thành giáo viên của Reboost</h1>
+            <p style="max-width: 100%;">Reboost là nền tảng được thiết kế để kết nối giáo viên dạy IELTS và TOEFL với học viên, giúp giáo viên có cơ hội chấm bài và hỗ trợ học viên cải thiện kỹ năng viết.</p>
+            <p style="max-width: 100%;">Chúng tôi tin rằng sự tiến bộ của học viên là niềm tự hào và thành tựu của các thầy cô giáo. Vì vậy, Reboost không chỉ là một công cụ giáo dục mà còn là cầu nối giúp họ chia sẻ kiến thức và kinh nghiệm của mình để tạo ra những sự khác biệt.</p>
+            <p style="max-width: 100%;">Với Reboost, giáo viên sẽ được trải nghiệm một hệ thống đánh giá trực tuyến tiên tiến, linh hoạt về thời gian và địa điểm, giúp tối đa hóa cơ hội kiếm thêm thu nhập mà không làm ảnh hưởng đến công việc chính. Chúng tôi cam kết cung cấp một môi trường làm việc chuyên nghiệp, nơi giáo viên có thể phát triển bản thân và góp phần vào thành công của học viên.</p>
+            <p style="max-width: 100%;">Hãy gia nhập Reboost ngay hôm nay để cùng chúng tôi tạo nên một cộng đồng học tập tích cực, nơi mỗi giáo viên đều có cơ hội phát huy tối đa tiềm năng của mình và giúp đỡ học viên đạt được mục tiêu học tập của họ.</p>
           </div>
         </div>
 
         <div class="col-lg-5 col-md-12">
-          <div class="banner-form ml-3">
-            <el-form ref="formSignUp" :model="form">
-              <el-form-item class="m-1" prop="firstName" :rules="[{ required: true, message: 'First name is required'}]">
-                <label class="m-0">First name</label>
-                <el-input id="firstName" v-model="form.firstName" type="text" placeholder="First Name" />
+          <div class="banner-form ml-3" style="padding-top: 30px;">
+            <el-form ref="formSignUp" :model="form" :rules="rules">
+              <el-form-item style="margin-bottom: 16px;" prop="fullName">
+                <label class="m-0">Họ và tên</label>
+                <el-input id="fullName" v-model="form.fullName" type="text" placeholder="Họ và tên của bạn. Ví dụ: Nguyễn Văn A" />
+              </el-form-item>
+              <el-form-item style="margin-bottom: 16px;" prop="phoneNumber">
+                <label class="m-0">Số điện thoại</label>
+                <el-input id="phoneNumber" v-model="form.phoneNumber" type="text" placeholder="Số điện thoại của bạn. Ví dụ: 0981234567" />
+              </el-form-item>
+              <el-form-item style="margin-bottom: 16px;" prop="email">
+                <label class="m-0">Địa chỉ email</label>
+                <el-input id="email" v-model="form.email" type="text" placeholder="Địa chỉ email của bạn. Ví dụ rater@reboost.vn" />
+              </el-form-item>
+              <el-form-item prop="password">
+                <label class="m-0">Mật khẩu</label>
+                <el-input id="password" v-model="form.password" type="password" autocomplete="off" placeholder="Điền mật khẩu của bạn" />
               </el-form-item>
 
-              <el-form-item class="m-1" prop="lastName" :rules="[{ required: true, message: 'Last name is required'}]">
-                <label class="m-0">Last name</label>
-                <el-input id="lastName" v-model="form.lastName" type="text" placeholder="Last Name" />
-              </el-form-item>
-
-              <el-form-item class="m-1" prop="email" :rules="[{ required: true, message: 'Email address is required'}]">
-                <label class="m-0">Email address</label>
-                <el-input id="email" v-model="form.email" type="text" placeholder="Username or email" />
-              </el-form-item>
-              <el-form-item prop="password" :rules="[{ required: true, message: 'Password is required'}]">
-                <label class="m-0">Password</label>
-                <el-input id="password" v-model="form.password" type="password" autocomplete="off" placeholder="Password" />
-              </el-form-item>
               <el-button
                 type="primary"
                 class="login-btn"
                 style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
+                :loading="loading"
                 @click="signUp()"
               >
-                Create Rater Account
+                Tạo Tài Khoản Giáo Viên
               </el-button>
               <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
-                Or you can sign in with
+                Hoặc bạn có thể đăng ký với
               </div>
 
-              <div style="padding-bottom: 40px;">
+              <div style="padding-bottom: 30px;">
                 <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
                   <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
                     Facebook
@@ -63,7 +58,7 @@
                 </form>
               </div>
 
-              <div style="font-size: 14px; text-align: center; padding-top: 20px; height: 10px;">
+              <!-- <div style="font-size: 14px; text-align: center; padding-top: 20px; height: 10px;">
                 By logging in, I agree to the
                 <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
                   terms
@@ -71,7 +66,7 @@
                 <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
                   policies
                 </a>
-              </div>
+              </div> -->
 
             </el-form>
           </div>
@@ -87,7 +82,163 @@
     <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
     <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
   </div>
-  <!-- End ML Main Banner -->
+  <div v-else-if="screenWidth > 992" class="ml-main-section" style="height: 960px; padding-top: 120px; padding-bottom: 50px;">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-7 col-md-12">
+          <div class="ml-banner-content" style="margin-top: 10px;">
+            <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 400;">Trở thành giáo viên của Reboost</h1>
+            <p style="max-width: 100%;">Reboost là nền tảng được thiết kế để kết nối giáo viên dạy IELTS và TOEFL với học viên, giúp giáo viên có cơ hội chấm bài và hỗ trợ học viên cải thiện kỹ năng viết.</p>
+            <p style="max-width: 100%;">Chúng tôi tin rằng sự tiến bộ của học viên là niềm tự hào và thành tựu của các thầy cô giáo. Vì vậy, Reboost không chỉ là một công cụ giáo dục mà còn là cầu nối giúp họ chia sẻ kiến thức và kinh nghiệm của mình để tạo ra những sự khác biệt.</p>
+            <p style="max-width: 100%;">Với Reboost, giáo viên sẽ được trải nghiệm một hệ thống đánh giá trực tuyến tiên tiến, linh hoạt về thời gian và địa điểm, giúp tối đa hóa cơ hội kiếm thêm thu nhập mà không làm ảnh hưởng đến công việc chính. Chúng tôi cam kết cung cấp một môi trường làm việc chuyên nghiệp, nơi giáo viên có thể phát triển bản thân và góp phần vào thành công của học viên.</p>
+            <p style="max-width: 100%;">Hãy gia nhập Reboost ngay hôm nay để cùng chúng tôi tạo nên một cộng đồng học tập tích cực, nơi mỗi giáo viên đều có cơ hội phát huy tối đa tiềm năng của mình và giúp đỡ học viên đạt được mục tiêu học tập của họ.</p>
+          </div>
+        </div>
+
+        <div class="col-lg-5 col-md-12">
+          <div class="banner-form ml-3" style="padding-top: 30px;">
+            <el-form ref="formSignUp" :model="form" :rules="rules">
+              <el-form-item style="margin-bottom: 16px;" prop="fullName">
+                <label class="m-0">Họ và tên</label>
+                <el-input id="fullName" v-model="form.fullName" type="text" placeholder="Họ và tên của bạn. Ví dụ: Nguyễn Văn A" />
+              </el-form-item>
+              <el-form-item style="margin-bottom: 16px;" prop="phoneNumber">
+                <label class="m-0">Số điện thoại</label>
+                <el-input id="phoneNumber" v-model="form.phoneNumber" type="text" placeholder="Số điện thoại của bạn. Ví dụ: 0981234567" />
+              </el-form-item>
+              <el-form-item style="margin-bottom: 16px;" prop="email">
+                <label class="m-0">Địa chỉ email</label>
+                <el-input id="email" v-model="form.email" type="text" placeholder="Địa chỉ email của bạn. Ví dụ rater@reboost.vn" />
+              </el-form-item>
+              <el-form-item prop="password">
+                <label class="m-0">Mật khẩu</label>
+                <el-input id="password" v-model="form.password" type="password" autocomplete="off" placeholder="Điền mật khẩu của bạn" />
+              </el-form-item>
+              <el-button
+                type="primary"
+                class="login-btn"
+                style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
+                :loading="loading"
+                @click="signUp()"
+              >
+                Tạo Tài Khoản Giáo Viên
+              </el-button>
+              <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
+                Hoặc bạn có thể đăng ký với
+              </div>
+
+              <div style="padding-bottom: 30px;">
+                <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
+                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                    Facebook
+                  </el-button>
+                </form>
+                <form ref="googleLoginForm" method="post" :action="googleFormAction">
+                  <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
+                    Google
+                  </el-button>
+                </form>
+              </div>
+
+              <!-- <div style="font-size: 14px; text-align: center; padding-top: 20px; height: 10px;">
+                By logging in, I agree to the
+                <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
+                  terms
+                </a> and
+                <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
+                  policies
+                </a>
+              </div> -->
+
+            </el-form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
+    <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
+    <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+  </div>
+  <div v-else class="ml-main-section" style="height: auto; padding-top: auto; padding-bottom: 50px;">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-7 col-md-12">
+          <div class="ml-banner-content" style="margin-top: 10px; margin-bottom: 20px;">
+            <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 400;">Trở thành giáo viên của Reboost</h1>
+            <p style="max-width: 100%;">Reboost là nền tảng được thiết kế để kết nối giáo viên dạy IELTS và TOEFL với học viên, giúp giáo viên có cơ hội chấm bài và hỗ trợ học viên cải thiện kỹ năng viết.</p>
+            <p style="max-width: 100%;">Chúng tôi tin rằng sự tiến bộ của học viên là niềm tự hào và thành tựu của các thầy cô giáo. Vì vậy, Reboost không chỉ là một công cụ giáo dục mà còn là cầu nối giúp họ chia sẻ kiến thức và kinh nghiệm của mình để tạo ra những sự khác biệt.</p>
+            <p style="max-width: 100%;">Với Reboost, giáo viên sẽ được trải nghiệm một hệ thống đánh giá trực tuyến tiên tiến, linh hoạt về thời gian và địa điểm, giúp tối đa hóa cơ hội kiếm thêm thu nhập mà không làm ảnh hưởng đến công việc chính. Chúng tôi cam kết cung cấp một môi trường làm việc chuyên nghiệp, nơi giáo viên có thể phát triển bản thân và góp phần vào thành công của học viên.</p>
+            <p style="max-width: 100%;">Hãy gia nhập Reboost ngay hôm nay để cùng chúng tôi tạo nên một cộng đồng học tập tích cực, nơi mỗi giáo viên đều có cơ hội phát huy tối đa tiềm năng của mình và giúp đỡ học viên đạt được mục tiêu học tập của họ.</p>
+          </div>
+        </div>
+
+        <div class="col-lg-5 col-md-12">
+          <div class="banner-form ml-3" style="padding-top: 30px;">
+            <el-form ref="formSignUp" :model="form" :rules="rules">
+              <el-form-item style="margin-bottom: 16px;" prop="fullName">
+                <label class="m-0">Họ và tên</label>
+                <el-input id="fullName" v-model="form.fullName" type="text" placeholder="Họ và tên của bạn. Ví dụ: Nguyễn Văn A" />
+              </el-form-item>
+              <el-form-item style="margin-bottom: 16px;" prop="phoneNumber">
+                <label class="m-0">Số điện thoại</label>
+                <el-input id="phoneNumber" v-model="form.phoneNumber" type="text" placeholder="Số điện thoại của bạn. Ví dụ: 0981234567" />
+              </el-form-item>
+              <el-form-item style="margin-bottom: 16px;" prop="email">
+                <label class="m-0">Địa chỉ email</label>
+                <el-input id="email" v-model="form.email" type="text" placeholder="Địa chỉ email của bạn. Ví dụ rater@reboost.vn" />
+              </el-form-item>
+              <el-form-item prop="password">
+                <label class="m-0">Mật khẩu</label>
+                <el-input id="password" v-model="form.password" type="password" autocomplete="off" placeholder="Điền mật khẩu của bạn" />
+              </el-form-item>
+
+              <el-form-item>
+                <el-button
+                  type="primary"
+                  class="login-btn"
+                  style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
+                  :loading="loading"
+                  @click="signUp()"
+                >
+                  Tạo Tài Khoản Giáo Viên
+                </el-button>
+                <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
+                  Hoặc bạn có thể đăng ký với
+                </div>
+
+                <div style="padding-bottom: 30px;">
+                  <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
+                    <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                      Facebook
+                    </el-button>
+                  </form>
+                  <form ref="googleLoginForm" method="post" :action="googleFormAction">
+                    <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
+                      Google
+                    </el-button>
+                  </form>
+                </div>
+
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
+    <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
+    <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+    <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+  </div>
 </template>
 
 <script>
@@ -96,20 +247,82 @@ import { PageName } from '@/app.constant'
 export default {
   name: 'Banner',
   data() {
+    var validatePhone = (rule, value, callback) => {
+      var phoneno = /^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/
+      if (!value.match(phoneno)) {
+        callback(new Error('Vui lòng nhập một số điện thoại hợp lệ'))
+      } else {
+        callback()
+      }
+    }
+    var validateEmail = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('Vui lòng điền địa chỉ email của bạn'))
+      } else if (!value.toLowerCase().match(
+          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      )) {
+        callback(new Error('Vui lòng nhập một email hợp lệ'))
+      } else {
+        callback()
+      }
+    }
+    var validatePassword = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('Vui lòng nhập mật khẩu'))
+      } else if (value.length < 6) {
+        callback(new Error('Mật khẩu cần có ít nhất 6 ký tự'))
+      } else {
+        callback()
+      }
+    }
     return {
-      user: null,
-      mgr: null,
       form: {
+        fullName: '',
         email: '',
         password: '',
-        firstName: null,
-        lastName: null
+        phoneNumber: ''
       },
+      rules: {
+        fullName: [
+          {
+            required: true, message: 'Vui lòng điền họ và tên của bạn'
+          }
+        ],
+        email: [
+          {
+            validator: validateEmail, trigger: 'blur'
+          }
+        ],
+        phoneNumber: [
+          {
+            validator: validatePhone, trigger: 'blur'
+          }
+        ],
+        password: [
+          {
+            validator: validatePassword, trigger: 'blur'
+          }
+        ]
+      },
+      user: null,
+      mgr: null,
       googleExternalLogin: null,
       returnUrl: '/',
       googleFormAction: null,
-      facebookFormAction: null
+      facebookFormAction: null,
+      screenWidth: window.innerWidth,
+      loading: false
     }
+  },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
+  mounted() {
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
   },
   async created() {
     this.googleFormAction = 'api/auth/external/google/Rater/' + encodeURIComponent(this.returnUrl)
@@ -117,6 +330,7 @@ export default {
   },
   methods: {
     ...mapActions('auth', ['register']),
+
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
     },
@@ -126,14 +340,15 @@ export default {
     async signUp() {
       this.$refs['formSignUp'].validate(async valid => {
         if (valid) {
-          console.log(this.form)
+          this.loading = true
           const user = await this.register({
             Email: this.form.email,
             Password: this.form.password,
-            FirstName: this.form.firstName,
-            LastName: this.form.lastName,
+            FullName: this.form.fullName,
+            PhoneNumber: this.form.phoneNumber,
             Role: 'Rater'
           })
+          this.loading = false
           if (user) {
             this.$router.push({ name: PageName.AFTER_LOGIN })
           }

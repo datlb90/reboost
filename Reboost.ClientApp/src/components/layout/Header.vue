@@ -47,23 +47,18 @@
                 </a>
               </li>
             </ul>
-            <!-- <ul v-if="role == UserRole.LEARNER && selectedTest.length==0" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
-                <li class="nav-item">
-                  <router-link to="/SelectYourTest" class="nav-link">Select Your Test</router-link>
-                </li>
-              </ul> -->
-            <ul v-if="role == userRole.RATER" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
-              <li class="nav-item" style="padding-bottom: 12px;">
+            <ul v-if="role == userRole.RATER" class="navbar-nav nav ml-auto" style="margin-left: 50px !important;">
+              <!-- <li class="nav-item" style="padding-bottom: 12px;">
                 <router-link to="/reviews" class="nav-link">Reviews</router-link>
-              </li>
+              </li> -->
               <li class="nav-item" style="padding-bottom: 12px;">
-                <router-link to="/rater/apply" class="nav-link">Application</router-link>
+                <router-link to="/rater/apply" class="nav-link">Hồ sơ đăng ký</router-link>
               </li>
               <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
                 <a :href="$router.resolve({name: reviewsPage}).href">Reviews</a>
               </li>
               <li class="nav-item">
-                <a href="/" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
+                <a href="/" class="nav-link" @click.prevent="openContactDialog()">Liên hệ</a>
               </li>
             </ul>
             <ul v-if="role == userRole.ADMIN" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
@@ -93,6 +88,7 @@
             <!-- <el-button type="primary" icon="el-icon-edit" size="small" style="margin-right: 20px;" @click="openRequestReviewDialog">Request Review</el-button> -->
 
             <el-button
+              v-if="role == userRole.LEARNER"
               icon="el-icon-edit"
               class="btn btn-gradient"
               style="margin-right: 20px; padding: 6px 20px; font-size: 12px;"
@@ -259,7 +255,8 @@ export default {
           // process AI review
           reviewService.createAutomatedReview({
             UserId: user.id,
-            SubmissionId: submissionId
+            SubmissionId: submissionId,
+            FeedbackLanguage: 'vn'
           }).then(rs => {
             // Todo: update user score
             loading.close()

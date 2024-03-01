@@ -95,7 +95,9 @@ namespace Reboost.Service.Services
                 {
                     UserId = order.UserId,
                     SubmissionId = order.SubmissionId,
-                    FeedbackType = "Pro"
+                    FeedbackType = "Pro",
+                    FeedbackLanguage = order.FeedbackLanguage,
+                    SpecialRequest = order.SpecialRequest
                 };
 
                 CreatedProRequestModel request = await _reviewService.CreateProRequestAsync(reviewRequest);
@@ -107,7 +109,7 @@ namespace Reboost.Service.Services
             }
             else // AI Review
             {
-                GetReviewsModel review = await _reviewService.CreateAutomatedReview(order.UserId, order.SubmissionId);
+                GetReviewsModel review = await _reviewService.CreateAutomatedReview(order.UserId, order.SubmissionId, order.FeedbackLanguage);
                 result.review = new ReviewFeedbackModel
                 {
                     docId = review.DocId,
@@ -297,7 +299,9 @@ namespace Reboost.Service.Services
                 Status = PaymentStatus.PENDING,
                 CreatedDate = DateTime.Now.AddHours(12),
                 LastActivityDate = DateTime.UtcNow,
-                IpAddress = model.ipAddress
+                IpAddress = model.ipAddress,
+                FeedbackLanguage = model.feedbackLanguage == "Phản hồi bằng tiếng Anh" ? "en" : "vn",
+                SpecialRequest = model.specialRequest
             };
 
             Orders newOrder = await _orderService.Create(order);
@@ -359,7 +363,9 @@ namespace Reboost.Service.Services
                 Status = PaymentStatus.PENDING,
                 CreatedDate = DateTime.Now.AddHours(12),
                 LastActivityDate = DateTime.UtcNow,
-                IpAddress = model.ipAddress
+                IpAddress = model.ipAddress,
+                FeedbackLanguage = model.feedbackLanguage == "Phản hồi bằng tiếng Anh" ? "en" : "vn",
+                SpecialRequest = model.specialRequest
             };
 
             Orders newOrder = await _orderService.Create(order);

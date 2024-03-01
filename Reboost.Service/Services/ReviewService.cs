@@ -20,7 +20,7 @@ namespace Reboost.Service.Services
     {
         Task<Submissions> GetSubmissionById(int submissionId);
         Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId);
-        Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId);
+        Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage);
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<Annotations> annotations, IEnumerable<InTextComments> comments);
@@ -99,7 +99,7 @@ namespace Reboost.Service.Services
         {
             return Regex.Replace(input, "<.*?>", String.Empty);
         }
-        public async Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId)
+        public async Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage = "vn")
         {
             Submissions submission = await _unitOfWork.Submission.GetByIdAsync(submissionId);
             QuestionModel question = await _unitOfWork.Questions.GetByIdAsync(submission.QuestionId);
@@ -109,20 +109,26 @@ namespace Reboost.Service.Services
             NewIELTSEssayFeedbackModel ieltsFeedback = new NewIELTSEssayFeedbackModel();
             if (question.Section == "Independent Writing" || question.Section == "Integrated Writing")
             {
-                toeflFeedback = await chatGPTService.GetTOEFLIndependentEssayFeedback(questionContent, document.Text);
+                toeflFeedback = await chatGPTService.GetTOEFLIndependentEssayFeedback(questionContent, document.Text, feedbackLanguage);
             }
             else if (question.Section == "Integrated Writing")
             {
-                toeflFeedback = await chatGPTService.GetTOEFLIntegratedEssayFeedback(questionContent, document.Text);
+                toeflFeedback = await chatGPTService.GetTOEFLIntegratedEssayFeedback(questionContent, document.Text, feedbackLanguage);
             }
             else
             {
-                ieltsFeedback = await chatGPTService.GetIELTSEssayFeedback(questionContent, document.Text);
+                ieltsFeedback = await chatGPTService.GetIELTSEssayFeedback(questionContent, document.Text, feedbackLanguage);
             }
             var rubrics = await _unitOfWork.Rubrics.GetByQuestionId(question.Id);
             List<ReviewData> reviewDataList = new List<ReviewData>();
             foreach (RubricsModel criteria in rubrics)
             {
+                string shouldbe = "nên được thay bằng";
+                if(feedbackLanguage == "vn")
+                {
+                    shouldbe = "should be";
+                }
+                    
                 ReviewData reviewData = new ReviewData();
                 reviewData.CriteriaId = (int)criteria.Id;
                 if (question.Test == "TOEFL")
@@ -148,7 +154,7 @@ namespace Reboost.Service.Services
                                 if(!String.IsNullOrEmpty(error.issue))
                                     errors += "- '" + error.issue + "'";
                                 if (!String.IsNullOrEmpty(error.fix))
-                                    errors += " should be '" + error.fix + "'";
+                                    errors += " " + shouldbe + " '" + error.fix + "'";
                                 if (!String.IsNullOrEmpty(error.type))
                                     errors += " (" + error.type + " )";
                                 errors += Environment.NewLine;
@@ -191,7 +197,7 @@ namespace Reboost.Service.Services
                                 if (!String.IsNullOrEmpty(error.issue))
                                     errors += "- '" + error.issue + "'";
                                 if (!String.IsNullOrEmpty(error.fix))
-                                    errors += " should be '" + error.fix + "'";
+                                    errors += " "+ shouldbe +" '" + error.fix + "'";
                                 if (!String.IsNullOrEmpty(error.type))
                                     errors += " (" + error.type + " )";
                                 errors += Environment.NewLine;

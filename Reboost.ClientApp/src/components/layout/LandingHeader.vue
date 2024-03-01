@@ -121,7 +121,6 @@
       :form="form"
     />
   </header>
-
   <header v-else id="header" :class="['headroom', {'is-sticky': isSticky}]">
     <div id="navigation-bar" class="startp-nav">
 

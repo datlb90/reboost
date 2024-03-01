@@ -20,7 +20,7 @@ const instance = axios.create(config)
 
 // Add a request interceptor
 instance.interceptors.request.use(
-  function(config) {
+  function (config) {
     // store.dispatch('loading/startLoading')
     const accessToken = store.state.auth.user.token
     if (!_.isEmpty(accessToken)) {
@@ -28,7 +28,7 @@ instance.interceptors.request.use(
     }
     return config
   },
-  function(error) {
+  function (error) {
     // store.dispatch('loading/startLoading')
     return Promise.reject(error)
   }
@@ -50,19 +50,14 @@ instance.interceptors.response.use(
     // Handling error
     if (error.response) {
       let message = ''
-	  if (error.response.data.message) { message += error.response.data.message + ' ' }
-	  if (error.response.data.title) { message += error.response.data.title + ' ' }
+      if (error.response.data.message) { message += error.response.data.message + ' ' }
+      if (error.response.data.title) { message += error.response.data.title + ' ' }
       if (error.response.data.modelState) { message += error.response.data.modelState.invalid_grant + ' ' }
       if (error.response.data.innerException) { message += error.response.data.innerException.exceptionMessage }
       if (error.response.config.url === '/auth/register') {
-        if (Array.isArray(error.response.data.errors)) {
-          error.response.data.errors.forEach(e => {
-            message += '<br/>' + '-   ' + e
-          })
-        } else {
-          error.response.data.errors.Email ? message += '<br/>' + '- ' + error.response.data.errors.Email[0] : ''
-          error.response.data.errors.Password ? message += '<br/>' + '- ' + error.response.data.errors.Password[0] : ''
-        }
+        error.response.data.errors.forEach(e => {
+          message = e
+        })
       }
 
       Notification.error({
@@ -77,91 +72,91 @@ instance.interceptors.response.use(
 // axios methods
 const methods = {
   /**
-	 * request.
-	 * @param {Object} config Config
-	 * @return {Promise} Promise
-	 * @see {@link https://github.com/mzabriskie/axios#instance-methods}
-	 */
+   * request.
+   * @param {Object} config Config
+   * @return {Promise} Promise
+   * @see {@link https://github.com/mzabriskie/axios#instance-methods}
+   */
   request(config) {
     throw new Error('Not Implemented')
   },
 
   /**
-	 * get.
-	 * @param {String} url Url
-	 * @param {Object} config Config
-	 * @return {Promise} Promise
-	 * @see {@link https://github.com/mzabriskie/axios#instance-methods}
-	 */
+   * get.
+   * @param {String} url Url
+   * @param {Object} config Config
+   * @return {Promise} Promise
+   * @see {@link https://github.com/mzabriskie/axios#instance-methods}
+   */
   get(url, config) {
     return instance.get(url, config)
   },
 
   /**
-	 * delete.
-	 * @param {String} url Url
-	 * @param {Object} config Config
-	 * @return {Promise} Promise
-	 * @see {@link https://github.com/mzabriskie/axios#instance-methods}
-	 */
+   * delete.
+   * @param {String} url Url
+   * @param {Object} config Config
+   * @return {Promise} Promise
+   * @see {@link https://github.com/mzabriskie/axios#instance-methods}
+   */
   delete(url, config) {
     return instance.delete(url, config)
   },
 
   /**
-	 * head.
-	 * @param {String} url Url
-	 * @param {Object} config Config
-	 * @return {Promise} Promise
-	 * @see {@link https://github.com/mzabriskie/axios#instance-methods}
-	 */
+   * head.
+   * @param {String} url Url
+   * @param {Object} config Config
+   * @return {Promise} Promise
+   * @see {@link https://github.com/mzabriskie/axios#instance-methods}
+   */
   head(url, config) {
     throw new Error('Not Implemented')
   },
 
   /**
-	 * options.
-	 * @param {String} url Url
-	 * @param {Object} config Config
-	 * @return {Promise} Promise
-	 * @see {@link https://github.com/mzabriskie/axios#instance-methods}
-	 */
+   * options.
+   * @param {String} url Url
+   * @param {Object} config Config
+   * @return {Promise} Promise
+   * @see {@link https://github.com/mzabriskie/axios#instance-methods}
+   */
   options(url, config) {
     throw new Error('Not Implemented')
   },
 
   /**
-	 * post.
-	 * @param {String} url Url
-	 * @param {Object} data Data
-	 * @param {Object} config Config
-	 * @return {Promise} Promise
-	 * @see {@link https://github.com/mzabriskie/axios#instance-methods}
-	 */
+   * post.
+   * @param {String} url Url
+   * @param {Object} data Data
+   * @param {Object} config Config
+   * @return {Promise} Promise
+   * @see {@link https://github.com/mzabriskie/axios#instance-methods}
+   */
   post(url, data, config) {
     return instance.post(url, data, config)
   },
 
   /**
-	 * put.
-	 * @param {String} url Url
-	 * @param {Object} data Data
-	 * @param {Object} config Config
-	 * @return {Promise} Promise
-	 * @see {@link https://github.com/mzabriskie/axios#instance-methods}
-	 */
+   * put.
+   * @param {String} url Url
+   * @param {Object} data Data
+   * @param {Object} config Config
+   * @return {Promise} Promise
+   * @see {@link https://github.com/mzabriskie/axios#instance-methods}
+   */
   put(url, data, config) {
     return instance.put(url, data, config)
   },
 
   /**
-	 * patch.
-	 * @param {String} url Url
-	 * @param {Object} data Data
-	 * @param {Object} config Config
-	 * @return {Promise} Promise
-	 * @see {@link https://github.com/mzabriskie/axios#instance-methods}
-	 */
+   * patch.
+   * @param {String} url Url
+   * @param {Object} data Data
+   * @param {Object} config Config
+   * @return {Promise} Promise
+   * @see {@link https://github.com/mzabriskie/axios#instance-methods}
+   */
   patch(url, data, config) {
     throw new Error('Not Implemented')
   }

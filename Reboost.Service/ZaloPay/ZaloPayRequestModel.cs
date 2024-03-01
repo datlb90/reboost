@@ -9,6 +9,8 @@ namespace Reboost.Service.ZaloPay
         public string reviewType { get; set; }
         public int status { get; set; }
         public string ipAddress { get; set; }
+        public string feedbackLanguage { get; set; }
+        public string specialRequest { get; set; }
     }
 }
 

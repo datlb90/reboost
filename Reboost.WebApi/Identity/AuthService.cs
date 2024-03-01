@@ -64,8 +64,9 @@ namespace Reboost.WebApi.Identity
             {
                 Email = model.Email,
                 UserName = GetUsernameFromEmail(model.Email),
-                FirstName = model.FirstName,
-                LastName = model.LastName
+                FirstName = model.FullName,
+                LastName = "",
+                PhoneNumber = model.PhoneNumber
             };
             var result = await _userManger.CreateAsync(identityUser, model.Password);
             if (result.Succeeded)
@@ -110,8 +111,8 @@ namespace Reboost.WebApi.Identity
                         Role = roles.FirstOrDefault(), // Each user has only one role
                         Token = tokenAsString,
                         ExpireDate = token.ValidTo,
-                        FirstName = model.FirstName,
-                        LastName = model.LastName
+                        FirstName = model.FullName,
+                        LastName = ""
                     };
                     return new UserManagerResponse
                     {
@@ -121,11 +122,27 @@ namespace Reboost.WebApi.Identity
                     };
                 }
             }
+
+            List<string> errorList = new List<string>();
+            
+
+            if(result != null && result.Errors != null && result.Errors.Count() > 0)
+            {
+                if (result.Errors.First().Code == "DuplicateUserName")
+                {
+                    errorList.Add("Email đã được sử dụng, bạn hãy chọn một email khác.");
+                }
+            }
+            else
+            {
+                errorList.Add("Đã xảy ra lỗi trong quá trình tạo tài khoản, xin vui lòng liên hệ với chúng tôi tại support@reboost.vn");
+            }
+
             return new UserManagerResponse
             {
-                Message = "Đã xảy ra lỗi trong quá trình tạo tài khoản, xin vui lòng liên hệ với chúng tôi tại support@reboost.vn",
+                Message = "Lỗi đăng ký tài khoản",
                 IsSuccess = false,
-                Errors = result.Errors.Select(e => e.Description)
+                Errors = errorList
             };
         }
         public async Task<UserManagerResponse> LoginExternalAsync(AuthenticateResult authResult)
