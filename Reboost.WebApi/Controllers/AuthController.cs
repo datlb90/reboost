@@ -156,20 +156,20 @@ namespace Reboost.WebApi.Controllers
 
             if (result.IsSuccess)
             {
-                return Redirect($"{_configuration["AppUrl"]}/login?email=confirmed");
+                return Redirect($"{_configuration["ClientUrl"]}/login?email=confirmed");
             }
 
             return BadRequest(result);
         }
 
-        // api/auth/forget_password
-        [HttpPost("forget_password")]
-        public async Task<IActionResult> ForgetPassword(string email)
+        // api/auth/forgot/password
+        [HttpPost("forgot/password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
         {
-            if (string.IsNullOrEmpty(email))
+            if (string.IsNullOrEmpty(model.Email))
                 return NotFound();
 
-            var result = await _authService.ForgetPasswordAsync(email);
+            var result = await _authService.ForgotPasswordAsync(model);
 
             if (result.IsSuccess)
                 return Ok(result); // 200
@@ -177,9 +177,9 @@ namespace Reboost.WebApi.Controllers
             return BadRequest(result); // 400
         }
 
-        // api/auth/reset_password
-        [HttpPost("reset_password")]
-        public async Task<IActionResult> ResetPassword([FromForm] ResetPasswordViewModel model)
+        // api/auth/reset/password
+        [HttpPost("reset/password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -191,7 +191,7 @@ namespace Reboost.WebApi.Controllers
                 return BadRequest(result);
             }
 
-            return BadRequest("Some properties are not valid");
+            return BadRequest("Dữ liệu cung cấp không hợp lệ");
         }
 
 

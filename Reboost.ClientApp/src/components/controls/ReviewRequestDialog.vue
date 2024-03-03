@@ -1,5 +1,6 @@
 <template>
   <el-dialog
+    v-if="screenWidth > 780"
     id="addEditQuestionDialog"
     title="Gửi Yêu Cầu Chấm Bài Viết"
     :visible.sync="dialogVisible"
@@ -14,34 +15,34 @@
         :model="form"
         label-width="120px"
       >
-        <el-form-item size="mini" label="Task">
+        <el-form-item size="mini" label="Chọn task">
           <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 1" border>IELTS Task 1</el-radio>
           <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 2" border>IELTS Task 2</el-radio>
           <el-radio v-model="selectedTask" style="margin-right: 5px;" label="TOEFL Independent" border>TOEFL Independent</el-radio>
           <el-radio v-model="selectedTask" style="margin-right: 5px;" label="TOEFL Integrated" border>TOEFL Integrated</el-radio>
         </el-form-item>
 
-        <el-form-item prop="topic" :rules="[{ required: true, message: 'The writing topic is required' }]" size="mini" label="Topic">
+        <el-form-item prop="topic" :rules="[{ required: true, message: 'Hãy thêm một chủ đề viết' }]" size="mini" label="Chủ đề">
           <el-input
             v-model="form.topic"
             type="textarea"
             :rows="4"
-            :placeholder="'Enter the ' + selectedTask + ' topic'"
+            :placeholder="'Điền chủ đề cho bài ' + selectedTask + ''"
             style="width: 96%;"
           />
         </el-form-item>
 
-        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" prop="reading" :rules="[{ required: true, message: 'The reading passage is required' }]" size="mini" label="Reading">
+        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" prop="reading" :rules="[{ required: true, message: 'Hãy thêm thông tin bài đọc' }]" size="mini" label="Bài đọc">
           <el-input
             v-model="form.reading"
             type="textarea"
             :rows="4"
-            placeholder="Enter the reading passage for the TOEFL Integrated topic"
+            placeholder="Điền thông tin bài đọc"
             style="width: 96%;"
           />
         </el-form-item>
 
-        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" size="mini" label="Listening">
+        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" size="mini" label="Bài nghe">
           <el-upload
             action=""
             :on-preview="handlePreview"
@@ -59,17 +60,17 @@
           </el-upload>
         </el-form-item>
 
-        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" size="mini" label="Transcript">
+        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" size="mini" label="Bản ghi">
           <el-input
             v-model="form.transcript"
             type="textarea"
             :rows="4"
-            placeholder="Enter the transcript of the listening if available"
+            placeholder="Điền bản ghi của bài nghe nếu bạn có"
             style="width: 96%;"
           />
         </el-form-item>
 
-        <el-form-item v-if="selectedTask == 'IELTS Task 1'" size="mini" label="Chart">
+        <el-form-item v-if="selectedTask == 'IELTS Task 1'" size="mini" label="Biểu đồ">
           <el-upload
             action=""
             :on-preview="handlePreview"
@@ -82,18 +83,131 @@
             :file-list="chartList"
             style="width: 96%;"
           >
-            <el-button size="small" type="primary" plain>Upload chart for IELTS Task 1 (Optional)</el-button>
+            <el-button size="small" type="primary" plain>Nhấn để tải lên</el-button>
             <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateImgUpload') }}</div>
           </el-upload>
         </el-form-item>
 
-        <el-form-item prop="response" :rules="[{ required: true, message: 'Your response is required' }]" size="mini" label="Response">
+        <el-form-item prop="response" :rules="[{ required: true, message: 'Hãy thêm bài viết của bạn cho chủ đề này' }]" size="mini" label="Bài viết">
           <el-input
             v-model="form.response"
             type="textarea"
             :rows="8"
-            :placeholder="'Enter your response for the ' + selectedTask + ' topic'"
+            :placeholder="'Bài viết của bạn cho chủ đề này'"
             style="width: 96%;"
+          />
+        </el-form-item>
+
+        <el-form-item>
+          <el-button size="mini" type="primary" @click="submit">{{ messageTranslates('addEditQuestion', 'submit') }}</el-button>
+          <el-button size="mini" @click="cancelRequest()">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+
+  </el-dialog>
+  <el-dialog
+    v-else
+    id="addEditQuestionDialog"
+    title="Gửi Yêu Cầu Chấm Bài Viết"
+    :visible.sync="dialogVisible"
+    :before-close="handleClose"
+    :fullscreen="true"
+    :close-on-click-modal="false"
+  >
+    <div id="addQuestionDialog" class="dialog-content">
+      <el-form
+        ref="personalQuestionForm"
+        :model="form"
+      >
+        <el-form-item size="small">
+          <label>Chọn task</label>
+          <div>
+            <div>
+              <el-radio v-model="selectedTask" style="margin-right: 10px; margin-left: 0px;" label="IELTS Task 1" border>IELTS Academic Task 1</el-radio>
+              <el-radio v-model="selectedTask" style="margin-left: 0px;" label="IELTS Task 2" border>IELTS Academic Task 2</el-radio>
+            </div>
+            <div>
+              <el-radio v-model="selectedTask" style="margin-right: 10px;  margin-left: 0px; padding-left: 10px; padding-right: 34px;" label="TOEFL Independent" border>TOEFL Independent</el-radio>
+              <el-radio v-model="selectedTask" style=" margin-left: 0px; padding-left: 10px; padding-right: 46px;" label="TOEFL Integrated" border>TOEFL Integrated</el-radio>
+            </div>
+          </div>
+
+        </el-form-item>
+
+        <el-form-item prop="topic" :rules="[{ required: true, message: 'Hãy thêm một chủ đề viết' }]">
+          <label>Chủ đề</label>
+          <el-input
+            v-model="form.topic"
+            type="textarea"
+            :rows="4"
+            :placeholder="'Điền chủ đề viết cho ' + selectedTask + ''"
+          />
+        </el-form-item>
+
+        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" prop="reading" :rules="[{ required: true, message: 'Hãy thêm thông tin bài đọc' }]">
+          <label>Bài đọc</label>
+          <el-input
+            v-model="form.reading"
+            type="textarea"
+            :rows="4"
+            placeholder="Điền thông tin bài đọc"
+          />
+        </el-form-item>
+
+        <el-form-item v-if="selectedTask == 'TOEFL Integrated'">
+          <label>Bài nghe</label>
+          <el-upload
+            action=""
+            :on-preview="handlePreview"
+            :on-change="handleToeflListeningChange"
+            :on-remove="handleRemove"
+            :multiple="false"
+            :limit="1"
+            :auto-upload="false"
+            :on-exceed="handleExceed"
+            :file-list="listeningList"
+          >
+            <el-button size="small" type="primary">{{ messageTranslates('addEditQuestion', 'uploadButton') }}</el-button>
+            <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateUpload') }}</div>
+          </el-upload>
+        </el-form-item>
+
+        <el-form-item v-if="selectedTask == 'TOEFL Integrated'">
+          <label>Bản ghi của bài nghe</label>
+          <el-input
+            v-model="form.transcript"
+            type="textarea"
+            :rows="4"
+            placeholder="Điền bản ghi của bài nghe nếu bạn có"
+          />
+        </el-form-item>
+
+        <el-form-item v-if="selectedTask == 'IELTS Task 1'">
+          <label>Biểu đồ</label>
+          <el-upload
+            action=""
+            :on-preview="handlePreview"
+            :on-change="handleIeltsChartChange"
+            :on-remove="handleChartRemove"
+            :multiple="false"
+            :limit="1"
+            :auto-upload="false"
+            :on-exceed="handleExceed"
+            :file-list="chartList"
+          >
+            <el-button size="small" type="primary" plain>Nhấn để tải lên</el-button>
+            <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateImgUpload') }}</div>
+          </el-upload>
+        </el-form-item>
+
+        <el-form-item prop="response" :rules="[{ required: true, message: 'Hãy thêm bài viết của bạn cho chủ đề này' }]">
+          <label>Bài viết của bạn</label>
+          <el-input
+            v-model="form.response"
+            type="textarea"
+            :rows="8"
+            :placeholder="'Bài viết của bạn cho chủ đề này'"
           />
         </el-form-item>
 
@@ -135,7 +249,8 @@ export default {
       LISTENING_TYPE_FILE: ['video/mp4', 'audio/mpeg'],
       CHART_TYPE_FILE: ['image/jpeg', 'image/png'],
       chartList: [],
-      listeningList: []
+      listeningList: [],
+      screenWidth: window.innerWidth
     }
   },
   computed: {
@@ -143,8 +258,15 @@ export default {
       return this.$store.getters['auth/getUser']
     }
   },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
   mounted() {
-
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
   },
   methods: {
     openDialog() {
@@ -358,7 +480,7 @@ export default {
     cancelRequest() {
       if (this.form.topic || this.form.response || this.form.reading || this.form.transcript ||
       this.chartList.length > 0 || this.listeningList.length > 0) {
-        this.$confirm('All entered information will be deleted if you cancel this review request. Are you sure?')
+        this.$confirm('Dữ liệu đã nhập sẽ bị mất nếu bạn huỷ yêu cầu chấm bài. Bạn vẫn muốn huỷ?')
         .then(_ => {
           this.resetData()
           this.dialogVisible = false

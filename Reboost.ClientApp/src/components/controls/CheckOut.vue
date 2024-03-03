@@ -1,5 +1,6 @@
 <template>
   <el-dialog
+    v-if="screenWidth > 780"
     id="practiceWritingCheckoutContainer"
     :visible.sync="dlVisible"
     width="760px"
@@ -7,7 +8,7 @@
     @closed="dialogClosed"
   >
     <div slot="title">
-      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Nhận Phản Hồi Cho Bài Viết Của Bạn</div>
+      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Nhận Phản Hồi Cho Bài Viết</div>
     </div>
     <div class="dialog-body">
       <div style="padding: 20px; padding-top: 20px;">
@@ -75,8 +76,8 @@
         </div>
       </div>
       <div v-if="selectedReview == 'Free'">
-        <div style="padding-top: 10px; text-align: center;">
-          <el-button type="primary" :disabled="unratedCount > 0" @click="requestPeerReview()">Confirm Selection</el-button>
+        <div style="padding-top: 20px; text-align: center;">
+          <el-button type="primary" :disabled="unratedCount > 0" @click="requestPeerReview()">Xác nhận</el-button>
         </div>
       </div>
 
@@ -132,6 +133,142 @@
     </div>
     <div slot="footer" class="dialog-footer" />
   </el-dialog>
+
+  <el-dialog
+    v-else
+    :visible.sync="dlVisible"
+    :fullscreen="true"
+    :style="'margin-top: 50px;'"
+    @closed="dialogClosed"
+  >
+    <div slot="title">
+      <div style="padding: 0px 20px; font-size: 18px; text-align:center;">Nhận Phản Hồi Cho Bài Viết</div>
+    </div>
+    <div class="dialog-body">
+      <div>
+        <div v-if="selectedReview == ''" class="tip">
+          <span style="font-size: 15px; color: #6084a4; word-break: break-word;">Cảm ơn bạn đã gửi bài viết cho chúng tôi! Để nhận phản hồi, hãy chọn 1 trong các dịch vụ dưới đây:</span>
+        </div>
+        <el-page-header v-if="selectedReview == 'Pro' || selectedReview == 'AI'" class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
+        <el-page-header v-if="selectedReview == 'Free'" class="tip" content="Xác nhận lựa chọn của bạn và gửi yêu cầu chấm bài" @back="goBack" />
+
+        <div v-if="selectedReview == '' || selectedReview == 'Pro'" id="pro-review-card" class="box-card review-card-mobile" @click="onReviewSelect('Pro')">
+          <div>
+            <div class="pricing-title-wrapper">
+              <div class="pricing-option-icon"><i class="fas fa-user-graduate review-icon" /> </div>
+              <div class="pricing-option-title">{{ messageTranslates('checkout', 'proTitle') }}</div>
+            </div>
+            <div>
+              <div class="pricing-option-description">
+                Đội ngũ giáo viên giàu kinh nghiệm của Reboost sẽ chấm bài viết của bạn và cung cấp phản hồi chi tiết trong vòng 24 giờ. <a href="#">Xem phản hồi mẫu</a>
+              </div>
+            </div>
+            <div class="pricing-option-price" style="width: 120px;">200.000 VNĐ</div>
+          </div>
+        </div>
+
+        <div v-if="selectedReview == '' || selectedReview == 'AI'" id="ai-review-card" class="box-card review-card-mobile" @click="onReviewSelect('AI')">
+          <div>
+            <div class="pricing-title-wrapper">
+              <div class="pricing-option-icon"><i class="fas fa-robot review-icon" /></div>
+              <div class="pricing-option-title">Phản Hồi Nhanh Từ AI</div>
+            </div>
+            <div>
+              <div class="pricing-option-description">
+                Nhận phản hồi ngay lập tức và chính xác về bài viết của mình từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4. <a href="#">Xem phản hồi mẫu</a>
+              </div>
+            </div>
+            <div class="pricing-option-price" style="width: 110px;">15.000 VNĐ</div>
+          </div>
+        </div>
+        <div v-if="selectedReview == 'Free'">
+          <div style="padding-top: 20px; text-align: center;">
+            <el-alert
+              v-if="unratedCount > 0"
+              title="Bạn hãy đánh giá tất cả phản hồi nhận được trước khi yêu cầu chấm bài từ học viên khác"
+              type="error"
+              :closable="false"
+              style="word-break: break-word;"
+            />
+          </div>
+        </div>
+        <div v-if="selectedReview == '' || selectedReview == 'Free'" id="peer-review-card" class="box-card review-card-mobile" @click="onReviewSelect('Free')">
+          <div>
+            <div class="pricing-title-wrapper">
+              <div class="pricing-option-icon"> <i class="fas fa-user-friends review-icon" /></div>
+              <div class="pricing-option-title">Đánh Giá Từ Học Viên Khác</div>
+            </div>
+            <div>
+              <div class="pricing-option-description">
+                Nhận phản hồi mang tính xây dựng từ một học viên khác có band score tương đương hoặc cao hơn bạn. <a href="#">Xem phản hồi mẫu</a>
+              </div>
+            </div>
+            <div class="pricing-option-price" style="width: 90px;">Miễn Phí</div>
+          </div>
+        </div>
+      </div>
+      <div v-if="selectedReview == 'Free'">
+        <div style="padding-top: 20px; text-align: center;">
+          <el-button type="primary" :disabled="unratedCount > 0" @click="requestPeerReview()">Xác nhận</el-button>
+        </div>
+      </div>
+
+      <div v-show="selectedReview == 'Pro' || selectedReview == 'AI'" style="padding-top: 20px;">
+        <div>
+          <div>
+            <el-divider content-position="center">
+              <div class="review-title" style="width: 180px;">
+                Yêu cầu cho phản hồi
+              </div>
+            </el-divider>
+            <div>
+              <div style="text-align: center;">
+                <el-radio-group v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;" size="small">
+                  <el-radio-button label="Phản hồi bằng tiếng Việt" />
+                  <el-radio-button label="Phản hồi bằng tiếng Anh" />
+                </el-radio-group>
+
+                <el-input
+                  v-if="selectedReview == 'Pro'"
+                  v-model="specialRequest"
+                  type="textarea"
+                  :rows="3"
+                  style="margin-bottom: 20px;"
+                  placeholder="Cung cấp yêu cầu cụ thể của bạn cho giáo viên. Ví dụ: chú trọng phần từ vựng, ý tưởng, ngữ pháp, và bố cục bài. Nếu không có yêu cầu gì bạn có thể để trống phần này."
+                />
+              </div>
+
+            </div>
+          </div>
+
+          <el-divider content-position="center">
+            <div class="review-title" style="width: 200px;">
+              Phương thức thanh toán
+            </div>
+          </el-divider>
+          <div style="text-align: center; padding-top: 20px;">
+            <el-button plain style="width: 100%;" @click="submitZaloPayRequest()">
+              <div style="width: 240px; margin: auto;">
+                <div style="font-size: 20px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
+                <img style="height: 26px;" src="../../assets/logo/zalopay.png" alt="logo" class="main-header-logo">
+              </div>
+
+            </el-button>
+
+            <el-button plain style="width: 100%; margin-left: 0px; margin-top: 10px;" @click="submitVNPayRequest()">
+              <div style="width: 240px; margin: auto;">
+                <div style="font-size: 20px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
+                <img style="height: 26px;" src="../../assets/logo/vnpay.png" alt="logo" class="main-header-logo">
+              </div>
+
+            </el-button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div slot="footer" class="dialog-footer" />
+  </el-dialog>
 </template>
 
 <script>
@@ -164,7 +301,8 @@ export default {
       selectedReview: '',
       loadingAutomatedReview: false,
       feedbackLanguage: 'Phản hồi bằng tiếng Việt',
-      specialRequest: null
+      specialRequest: null,
+      screenWidth: window.innerWidth
     }
   },
   computed: {
@@ -175,7 +313,15 @@ export default {
       return this.$store.getters['payment/getAllPrices']
     }
   },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
   async mounted() {
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
     this.email = this.currentUser.email
   },
   async created() {
@@ -264,8 +410,71 @@ export default {
   font-size: 15px !important;
   color: #6084a4 !important;
 }
+
+@media only screen and (max-width:  780px) {
+  .el-page-header__left{
+    margin-right: 25px !important;
+  }
+  .el-page-header__title{
+    width: 40px;
+    margin-top: 12px;
+  }
+  .el-page-header__left::after{
+    right: -5px !important;
+  }
+  .el-page-header__content{
+    word-break: break-word;
+  }
+}
+
 </style>
 <style scoped>
+
+.review-card-mobile {
+  display: inline-block;
+  border: 1px solid #4a6f8a;
+  border-radius: 4px;
+  margin-top: 20px;
+  padding: 20px;
+  cursor: pointer
+}
+.review-card-mobile:hover {
+  cursor: pointer;
+  opacity: 0.9;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+}
+
+.pricing-title-wrapper{
+  height: 40px;
+}
+
+.pricing-option-icon{
+  float: left;
+  width: 50px;
+}
+
+.pricing-option-title{
+  float: left;
+  font-size: 18px;
+  font-weight: 600;
+  color: #4a6f8a;
+  margin-top: 2px;
+}
+
+.pricing-option-description {
+  word-break: break-word;
+}
+
+.pricing-option-price {
+  font-size: 17px;
+  font-weight: 500;
+  color: #4a6f8a;
+  margin-top: 10px;
+  border: #4a6f8a dotted 1px;
+  padding: 4px;
+  padding-left: 9px;
+  border-radius: 5px;
+}
 
 .review-card {
   height: 120px;

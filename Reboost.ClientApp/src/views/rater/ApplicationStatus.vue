@@ -1,25 +1,24 @@
 <template>
-  <div style="margin-top:25px;" :style="{visibility: loadCompleted?'visible':'hidden'}">
-    <el-row class="row-flex">
-      <el-col :span="15" class="col-border">
-
-        <el-steps :active="activeStep" align-center>
+  <div class="list-container" style="background: #edeeef; height: calc(100vh - 53px); padding-top: 30px; padding-right: 60px; padding-left: 60px; margin-top: 0px;">
+    <el-row>
+      <el-col class="col-border" style="margin-bottom: 20px; background: white; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);">
+        <el-steps style="margin-top: 10px;" :active="activeStep" align-center>
           <el-step title="Bước 1" icon="el-icon-user" description="Tạo tài khoản" />
           <el-step title="Bước 2" icon="el-icon-upload" description="Nộp hồ sơ" />
           <el-step title="Bước 3" icon="el-icon-circle-check" description="Hoàn thành đào tạo" />
           <el-step title="Bước 4" icon="el-icon-edit-outline" description="Bắt đầu chấm bài" />
         </el-steps>
-
       </el-col>
     </el-row>
-    <el-row class="row-flex">
-      <el-col :span="15" class="col-border" style="background: #f6f6f6;">
+    <el-row>
+      <el-col class="col-border" style="margin-bottom: 20px; background: white; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);">
         <div class="margin-container">
           <div class="flex-box">
-            <div class="label-container">
+            <!-- <div class="label-container">
               <strong>Trạng thái của hồ sơ:</strong>
-            </div>
+            </div> -->
             <el-tag
+              style="font-size: 15px;"
               :type="
                 status === RATER_STATUS.APPLIED
                   ? 'primary'
@@ -30,12 +29,12 @@
                       : status===RATER_STATUS.DOCUMENT_REQUESTED
                         ? 'warning' : 'warning'
               "
-            >{{ status == 'Applied' ? 'Đã nộp' : status }}</el-tag>
+            >{{ status == 'Applied' ? 'Hồ sơ đã nộp và đang chờ xét duyệt' : status }}</el-tag>
 
           </div>
           <div :class="[status === RATER_STATUS.APPLIED ? 'inReview' : 'hidden']" style="font-size: 15px;">
-            <p style="font-size: 15px;">Cảm ơn bạn đã nộp hồ sơ trở thành giáo viên của Reboost! Chúng tôi sẽ kiểm tra hồ sơ và liên lạc với bạn trong thời gian sớm nhất.</p>
-            <p style="font-size: 15px;">Trong thời gian xử lý, nếu bạn có thắc mắc gì vui lòng liên lạc với chung tôi qua support@reboost.vn</p>
+            <p style="font-size: 15px;">Cảm ơn bạn đã nộp hồ sơ đăng ký trở thành giáo viên của Reboost! Chúng tôi sẽ xem xét hồ sơ và liên hệ với bạn trong thời gian sớm nhất.</p>
+            <p style="font-size: 15px;">Trong thời gian xử lý, nếu bạn có thắc mắc gì vui lòng liên hệ với chúng tôi qua support@reboost.vn</p>
           </div>
           <div :class="[status === RATER_STATUS.DOCUMENT_SUBMITTED ? 'inReview' : 'hidden']" style="background-color: #fdf6ec;border-left: 5px solid #e6a23c;">
             <p>Thank you for submitting the additional documents. We will review them and get back to you shortly.

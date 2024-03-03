@@ -14,7 +14,8 @@ import Logout from '../views/account/Logout.vue'
 import Register from '../views/account/Register.vue'
 import RaterRegister from '../views/account/RaterRegister.vue'
 import Redirect from '../views/account/Redirect.vue'
-
+import ForgotPassword from '../views/account/ForgotPassword.vue'
+import ResetPassword from '../views/account/ResetPassword.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
 import Review from '../views/learner/Review.vue'
 import ReviewTest from '../views/learner/ReviewTest.vue'
@@ -229,6 +230,24 @@ const router = new VueRouter({
       path: '/redirect',
       name: PageName.REDIRECT,
       component: Redirect,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
+      path: '/forgot/password',
+      name: 'Forgot Password',
+      component: ForgotPassword,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
+      path: '/reset/password',
+      name: 'Reset Password',
+      component: ResetPassword,
       meta: {
         plainLayout: true,
         landingPage: false

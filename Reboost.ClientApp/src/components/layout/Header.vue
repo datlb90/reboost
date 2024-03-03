@@ -14,16 +14,16 @@
           <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
             <ul v-if="role == userRole.LEARNER" class="navbar-nav nav mr-auto nav-wrapper">
               <li class="nav-item" style="padding-bottom: 12px;">
-                <router-link to="/questions" class="nav-link">Questions</router-link>
+                <router-link to="/questions" class="nav-link">Chủ đề viết</router-link>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
-                <router-link to="/submissions" class="nav-link">Submissions</router-link>
+                <router-link to="/submissions" class="nav-link">Bài đã nộp</router-link>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
-                <router-link to="/reviews" class="nav-link">Reviews</router-link>
+                <router-link to="/reviews" class="nav-link">Đánh giá của bạn</router-link>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
-                <a href="/" class="nav-link" @click.prevent="openContactDialog()">Contact</a>
+                <a href="/" class="nav-link" @click.prevent="openContactDialog()">Liên hệ</a>
               </li>
 
               <li class="nav-item other-items" style="padding-bottom: 12px;">
@@ -31,32 +31,43 @@
                   <el-button
                     icon="el-icon-edit"
                     class="btn btn-gradient"
-                    style="margin-right: 20px; padding: 6px 20px; font-size: 12px;"
-                    @click="openRequestReviewDialog"
-                  >Request Review
+                    style="margin-right: 20px; margin-bottom: 20px; padding: 6px 20px; font-size: 12px;"
+                    @click.prevent="openRequestReviewDialog()"
+                  >Yêu cầu chấm bài
                   </el-button>
+                  <hr style="padding-top: 0px;">
                   <div style=" display: inline-grid; padding-top: 10px; width: 420px;">
-                    <div style="padding:12px 0px;  text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">Hi, {{ displayName }}</div>
-                    <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">Review Rating: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></div>
-                    <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="selectTest()">
-                      Selected Test: {{ testsToText() }}
+
+                    <div style="padding:12px 0px;  text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                      {{ displayName }}
                     </div>
-                    <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="openAddQuestionDialog()">Contribute Question</div>
-                    <div style="padding:12px 0px;text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="logout()">Logout</div>
+                    <div v-if="role == userRole.LEARNER" style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                      Band Score: chưa xác định
+                    </div>
+                    <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                      Kỹ năng đánh giá: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold;" />
+                    </div>
+                    <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="selectTest()">
+                      Bài thi đã chọn: {{ testsToText() }}
+                    </div>
+                    <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="openAddQuestionDialog()">
+                      Đóng góp một chủ đề
+                    </div>
+                    <div style="padding:12px 0px;text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="logout()">
+                      Đăng xuất
+                    </div>
                   </div>
                 </a>
               </li>
             </ul>
             <ul v-if="role == userRole.RATER" class="navbar-nav nav ml-auto" style="margin-left: 50px !important;">
-              <!-- <li class="nav-item" style="padding-bottom: 12px;">
-                <router-link to="/reviews" class="nav-link">Reviews</router-link>
-              </li> -->
+              <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
+                <a :href="$router.resolve({name: reviewsPage}).href">Đánh giá của bạn</a>
+              </li>
               <li class="nav-item" style="padding-bottom: 12px;">
                 <router-link to="/rater/apply" class="nav-link">Hồ sơ đăng ký</router-link>
               </li>
-              <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
-                <a :href="$router.resolve({name: reviewsPage}).href">Reviews</a>
-              </li>
+
               <li class="nav-item">
                 <a href="/" class="nav-link" @click.prevent="openContactDialog()">Liên hệ</a>
               </li>
@@ -93,7 +104,7 @@
               class="btn btn-gradient"
               style="margin-right: 20px; padding: 6px 20px; font-size: 12px;"
               @click="openRequestReviewDialog"
-            >Request Review
+            >Yêu cầu chấm bài
             </el-button>
 
             <!-- <el-button
@@ -108,25 +119,28 @@
                 </el-link>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <div style="padding:0px 20px; margin-bottom: 10px; display:inline-grid">
-                  <span style="padding:5px 0px;font-weight:700;font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap; max-width: 200px;">Hi, {{ displayName }}</span>
-                  <span>Band score:  Undefined</span>
-                  <span>Review Rating: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></span>
+                <div style="padding:0px 20px; margin-bottom: 0px; display:inline-grid">
+                  <span style="padding:5px 0px; font-weight:500;font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap; max-width: 200px;">
+                    {{ displayName }}
+                  </span>
                 </div>
+                <el-dropdown-item v-if="role == userRole.LEARNER" divided>
+                  Band score:  chưa xác định
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  Kỹ năng đánh giá: {{ toFix(raterRating) }}
+                  <i class="fas fa-star" style="color: gold;" />
+                </el-dropdown-item>
 
-                <div style="padding:0px 20px; border-top: 1px solid #EBEEF5; padding-top: 12px; padding-bottom: 6px;">
-                  <el-dropdown class="lang-dropdown" trigger="click" placement="left" @command="onChangeLanguage">
-                    <span v-if="lang == 'English'">Language: English <flag iso="gb" style="border-radius: 3px; margin-left: 2px;" /></span>
-                    <span v-else>Ngôn Ngữ: Tiếng Việt <flag iso="vn" style="border-radius: 3px; margin-left: 2px;" /></span>
-                    <el-dropdown-menu slot="dropdown" class="lang-dropdown-menu">
-                      <el-dropdown-item command="vietnamese"><flag iso="vn" style="border-radius: 3px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
-                      <el-dropdown-item command="english"><flag iso="gb" style="border-radius: 3px; margin-right: 6px;" />English</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </el-dropdown>
-                </div>
-                <el-dropdown-item command="selectTest" divided>Selected Test: {{ testsToText() }}</el-dropdown-item>
-                <el-dropdown-item command="addQuestion">Contribute Question</el-dropdown-item>
-                <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
+                <el-dropdown-item command="selectTest" divided>
+                  Bài thi đã chọn: {{ testsToText() }}
+                </el-dropdown-item>
+                <el-dropdown-item command="addQuestion">
+                  Đóng góp một chủ đề
+                </el-dropdown-item>
+                <el-dropdown-item command="logout" divided>
+                  Đăng xuất
+                </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </div>
@@ -229,6 +243,7 @@ export default {
         this.$refs.reviewRequestDialog?.openDialog()
       }
     }
+    this.checkApprovedRater()
   },
   created() {
     if (this.$router.currentRoute.name == 'PracticeWriting' || this.$router.currentRoute.name == 'Review') {
@@ -269,7 +284,6 @@ export default {
     getRaterRating() {
       if (this.currentUser.id) {
         raterService.getRaterRating().then(rs => {
-          console.log('User Rating: ', rs)
           this.raterRating = rs
         })
       }

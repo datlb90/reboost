@@ -33,9 +33,10 @@ namespace Reboost.Service.Services
 
     public class RaterService : BaseService, IRaterService
     {
-        public RaterService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        private IMailService _mailService;
+        public RaterService(IUnitOfWork unitOfWork, IMailService mailService) : base(unitOfWork)
         {
-
+            _mailService = mailService;
         }
         public async Task<Raters> CreateAsync(Raters rater, List<IFormFile> uploadFiles)
         {
@@ -65,10 +66,19 @@ namespace Reboost.Service.Services
             await _unitOfWork.Users.UpdateScoreAsync(rater.UserId, rater.User.UserScores.ToList());
 
             rater.User = null;
+            var newRater =  await _unitOfWork.Raters.Create(rater);
 
-            // To do: gửi email cho admin
+            // Gửi email thông báo cho admin
+            string message = $"<p>Hi Admin,</p>" +
+                            $"<p>Hệ thống đã ghi nhận một hồ sơ đăng ký giáo viên mới.</p>" +
+                            $"<p>Tên giáo viên: " + user.FirstName + ". Địa chỉ email: " + user.Email + ". Số điện thoại: " + user.PhoneNumber + "</p>" +
+                            $"<p>Giới thiệu của giáo viên: " + rater.Biography + "</p>" +
+                            $"<p>Hãy xem xét hồ sơ và liên hệ với giáo viên trong thời gian sớm nhất.</p>" +
+                            $"<p>Xin chân thành cảm ơn!</p>" +
+                            $"<p>Reboost Support</p>";
 
-            return await _unitOfWork.Raters.Create(rater);
+            await _mailService.SendEmailAsync("support@reboost.vn", "Hồ sơ đăng ký giáo viên mới", message);
+            return newRater;
         }
 
         public async Task<Raters> DeleteAsync(int id)

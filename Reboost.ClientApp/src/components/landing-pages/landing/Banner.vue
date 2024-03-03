@@ -16,9 +16,9 @@
 
             <el-button
               class="btn btn-dark"
-              style="padding: 15px 80px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
+              style="font-size: 20px; padding: 15px 80px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
               @click="gotoTest()"
-            > Thực Hiện Bài Kiểm Tra Đầu Vào Miễn Phí
+            > Kiểm Tra Đầu Vào Miễn Phí
             </el-button>
           </div>
         </div>
@@ -67,7 +67,7 @@
                 </div>
 
                 <div style="width: 50%; float: right; text-align: right;">
-                  <a style="text-decoration: none;" href="/forgot">{{ messageTranslates('banner', 'forgotPassword') }}</a>
+                  <a style="text-decoration: none;" href="/forgot/password">{{ messageTranslates('banner', 'forgotPassword') }}</a>
                 </div>
 
               </div>
@@ -102,9 +102,9 @@
 
             <el-button
               class="btn btn-dark"
-              style="padding: 15px 60px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
+              style="font-size: 20px; padding: 15px 80px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
               @click="gotoTest()"
-            > Thực Hiện Bài Kiểm Tra Đầu Vào Miễn Phí
+            > Kiểm Tra Đầu Vào Miễn Phí
             </el-button>
           </div>
         </div>
@@ -153,7 +153,7 @@
                 </div>
 
                 <div style="width: 50%; float: right; text-align: right;">
-                  <a style="text-decoration: none;" href="/forgot">{{ messageTranslates('banner', 'forgotPassword') }}</a>
+                  <a style="text-decoration: none;" href="/forgot/password">{{ messageTranslates('banner', 'forgotPassword') }}</a>
                 </div>
 
               </div>
@@ -171,7 +171,7 @@
     <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
   </div>
 
-  <div v-else id="banner" class="ml-main-section" style=" padding-top: 100px; padding-bottom: 80px;">
+  <div v-else id="banner" class="ml-main-section" style=" padding-top: 110px; padding-bottom: 80px;">
     <div class="container">
       <div class="row">
 
@@ -185,12 +185,11 @@
               <div style="font-size: 14.5px; color: #4a6f8a; text-align: left; margin-left: 10px; margin-bottom: 5px;">- {{ messageTranslates('banner', 'content3') }}</div>
               <div style="font-size: 14.5px; color: #4a6f8a; text-align: left; margin-left: 10px; margin-bottom: 5px;">- {{ messageTranslates('banner', 'content4') }}</div>
             </div>
-
             <el-button
               class="btn btn-dark"
-              style="width: 100%; padding: 15px 60px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
+              style="font-size: 20px; width: 100%; padding: 15px 80px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
               @click="gotoTest()"
-            > Thực Hiện Bài Kiểm Tra Đầu Vào Miễn Phí
+            > Kiểm Tra Đầu Vào Miễn Phí
             </el-button>
           </div>
         </div>
@@ -239,7 +238,7 @@
                 </div>
 
                 <div style="width: 50%; float: right; text-align: right;">
-                  <a style="text-decoration: none;" href="/forgot">{{ messageTranslates('banner', 'forgotPassword') }}</a>
+                  <a style="text-decoration: none;" href="/forgot/password">{{ messageTranslates('banner', 'forgotPassword') }}</a>
                 </div>
 
               </div>

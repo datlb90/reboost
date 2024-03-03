@@ -1,8 +1,8 @@
 <template>
-  <div style="margin-top:25px;">
-    <el-row class="row-flex">
-      <el-col :span="15" class="col-border">
-        <el-steps :active="1" align-center>
+  <div class="list-container" style="background: #edeeef; height: calc(100vh - 53px); padding-top: 30px; padding-right: 60px; padding-left: 60px; margin-top: 0px;">
+    <el-row>
+      <el-col class="col-border" style="margin-bottom: 20px; background: white; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);">
+        <el-steps style="margin-top: 10px;" :active="1" align-center>
           <el-step title="Bước 1" icon="el-icon-user" description="Tạo tài khoản" />
           <el-step title="Bước 2" icon="el-icon-upload" description="Nộp hồ sơ" />
           <el-step title="Bước 3" icon="el-icon-circle-check" description="Hoàn thành đào tạo" />
@@ -10,8 +10,8 @@
         </el-steps>
       </el-col>
     </el-row>
-    <el-row class="row-flex">
-      <el-col :span="15" class="col-border" style="background: #f6f6f6;">
+    <el-row>
+      <el-col class="col-border" style="background: white; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);">
         <el-form ref="formRegister" :model="formRegister" label-width="180px" style="width: 90%;">
           <el-form-item v-if="raterId" size="mini" label="Current Status">
             <el-tag
@@ -37,7 +37,7 @@
             size="mini"
             label="Họ và tên:"
             prop="firstName"
-            style="margin-bottom: 0px;"
+            style="margin-bottom: 5px;"
           >
             <div style="margin-top: 4px; font-size: 13px;">{{ formRegister.firstName }}</div>
           </el-form-item>
@@ -45,12 +45,12 @@
             size="mini"
             label="Địa chỉ email:"
             prop="firstName"
-            style="margin-bottom: 0px;"
+            style="margin-bottom: 5px;"
           >
             <div style="margin-top: 4px; font-size: 13px;">{{ formRegister.email }}</div>
           </el-form-item>
 
-          <el-form-item size="mini" style="margin-bottom: 10px;" label="Đăng ký trở thành" prop="applyTo" :rules="[{ type: 'array', required: true, message: 'Bạn cần lựa chọn đăng ký trở thành giáo viên IELTS hoặc TOEFL' }]">
+          <el-form-item size="mini" label="Đăng ký trở thành" style="margin-bottom: 10px;" prop="applyTo" :rules="[{ type: 'array', required: true, message: 'Bạn cần lựa chọn đăng ký trở thành giáo viên IELTS hoặc TOEFL' }]">
             <div style="transform:translateY(5px)">
               <el-checkbox-group v-model="formRegister.applyTo">
                 <el-checkbox label="Giáo Viên IELTS" name="applyTo" />
@@ -78,7 +78,7 @@
               >
                 <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
-                  <p>Ảnh chụp kết quả thi IELTS hoặc chứng chỉ liên quan của bạn. Chúng tôi chỉ chấp nhận ảnh có dung lượng dưới 3mb với đuôi jpg, jpeg, gif, và png.</p>
+                  <p>Ảnh chụp kết quả thi IELTS hoặc chứng chỉ liên quan của bạn. Chỉ chấp nhận ảnh có dung lượng dưới 3mb với đuôi jpg, jpeg, gif, và png.</p>
                 </div>
               </el-upload>
             </el-form-item>
@@ -103,7 +103,7 @@
               >
                 <el-button type="primary">Click to upload</el-button>
                 <div slot="tip" class="el-upload__tip">
-                  <p>Ảnh chụp kết quả thi TOEFL hoặc chứng chỉ liên quan của bạn. Chúng tôi chỉ chấp nhận ảnh có dung lượng dưới 3mb với đuôi jpg, jpeg, gif, và png.</p>
+                  <p>Ảnh chụp kết quả thi TOEFL hoặc chứng chỉ liên quan của bạn. Chỉ chấp nhận ảnh có dung lượng dưới 3mb với đuôi jpg, jpeg, gif, và png.</p>
                 </div>
               </el-upload>
             </el-form-item>
@@ -111,7 +111,7 @@
 
           <el-form-item
             size="mini"
-            label="Photo ID"
+            label="Ảnh định danh"
             prop="iDCardPhotos"
             :rules="[
               { required: true, message: 'Ảnh chụp CMND hoặc CCCD là bắt buộc'}]"
@@ -128,7 +128,7 @@
             >
               <el-button type="primary">Click to upload</el-button>
               <div slot="tip" class="el-upload__tip">
-                <p>Ảnh chụp CMND hoặc CCCD có tên trùng với tên trên chứng chỉ của bạn. Chúng tôi chỉ chấp nhận ảnh có dung lượng dưới 3mb với đuôi jpg, jpeg, gif, và png.</p>
+                <p>Ảnh chụp CMND hoặc CCCD có tên trùng với tên trên chứng chỉ của bạn. Chỉ chấp nhận ảnh có dung lượng dưới 3mb với đuôi jpg, jpeg, gif, và png.</p>
               </div>
             </el-upload>
           </el-form-item>
@@ -142,7 +142,7 @@
             <el-input v-model="formRegister.note" type="textarea" :rows="5" placeholder="Note" />
           </el-form-item>
           <el-form-item size="mini" style="margin: 0;">
-            <el-button v-if="!raterId" type="primary" size="mini" @click="onSubmit('formRegister', 'create')">Nộp hồ sơ</el-button>
+            <el-button v-if="!raterId" type="primary" size="mini" :loading="loading" @click="onSubmit('formRegister', 'create')">Nộp hồ sơ</el-button>
             <!-- <el-button v-if="!raterId" size="mini"></el-button> -->
             <el-button v-if="raterId" class="button" size="mini" type="primary" @click="onSubmit('formRegister', 'update')">Save</el-button>
             <el-button v-if="raterId" class="button" size="mini" type="success" @click="updateStatus('Approved')">Approve for training</el-button>
@@ -227,7 +227,8 @@ export default {
         type: null,
         url: null
       },
-      portraitImg: true
+      portraitImg: true,
+      loading: false
     }
   },
   computed: {
@@ -333,6 +334,7 @@ export default {
     onSubmit(formName, createOrUpdate) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          this.loading = true
           const formData = new FormData()
           formData.set('User[firstName]', this.formRegister.firstName)
           formData.set('User[lastName]', this.formRegister.lastName)
@@ -429,11 +431,13 @@ export default {
                 type: 'success',
                 duration: 5000
               })
+              this.loading = false
               this.$router.push('/rater/application/status/' + rs.id)
             })
           } else if (createOrUpdate == 'update') {
             formData.set('Id', this.formRegister.id)
             raterService.update(formData).then(rs => {
+              this.loading = false
               this.$notify.success({
                 title: 'Success',
                 message: 'Updated successfully',
@@ -449,6 +453,7 @@ export default {
             type: 'error',
             duration: 2000
           })
+          this.loading = false
           return false
         }
       })

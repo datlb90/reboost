@@ -74,16 +74,16 @@ export default async (router) => {
       next()
     }
 
-    if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register') {
+    if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password') {
       next()
       return
     }
-    if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register') {
+    if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password') {
       next()
       return
     }
     if (!currentUser || !currentUser.id) {
-      if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register') {
+      if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password') {
         next()
         return
       }

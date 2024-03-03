@@ -14,48 +14,48 @@
         :model="form"
         label-width="120px"
       >
-        <el-form-item prop="name" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'name')">
+        <el-form-item prop="name" :rules="[{ required: true }]" size="mini" label="Tiêu đề">
           <el-input
             v-model="form.name"
             type="textinput"
-            :placeholder="messageTranslates('addEditQuestion', 'placeholderName')"
+            placeholder="Chọn một tiêu đề ngắn gọn cho chủ đề viết"
             style="width: 95%;"
           />
         </el-form-item>
 
         <div style="display:flex">
-          <el-form-item prop="test" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'test')">
-            <el-select v-model="form.test" :placeholder="messageTranslates('addEditQuestion', 'test')" style="width: 200px;" @change="testChange()">
+          <el-form-item prop="test" :rules="[{ required: true }]" size="mini" label="Bài thi">
+            <el-select v-model="form.test" placeholder="Chọn IELTS hoặc TOEFL" style="width: 200px;" @change="testChange()">
               <el-option v-for="item in tests" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
 
-          <el-form-item prop="task" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'task')">
-            <el-select v-model="form.task" :placeholder="messageTranslates('addEditQuestion', 'task')" style="width: 200px;">
+          <el-form-item prop="task" :rules="[{ required: true }]" size="mini" label="Task">
+            <el-select v-model="form.task" placeholder="Chọn task" style="width: 200px;">
               <el-option v-for="item in tasksList" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
 
         </div>
         <div style="display:flex">
-          <el-form-item prop="type" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'type')">
-            <el-select v-model="form.type" :placeholder="messageTranslates('addEditQuestion', 'type')" allow-create :filterable="true" style="width: 200px;">
+          <el-form-item prop="type" :rules="[{ required: true }]" size="mini" label="Kiểu bài">
+            <el-select v-model="form.type" placeholder="Chọn kiểu" allow-create :filterable="true" style="width: 200px;">
               <el-option v-for="item in types" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
-          <el-form-item prop="difficulty" :rules="[{ required: true }]" size="mini" label="Difficulty">
-            <el-select v-model="form.difficulty" placeholder="Select Difficulty" style="width: 200px;">
+          <el-form-item prop="difficulty" :rules="[{ required: true }]" size="mini" label="Độ khó">
+            <el-select v-model="form.difficulty" placeholder="Chọn độ khó" style="width: 200px;">
               <el-option key="Easy" label="Easy" value="Easy" />
               <el-option key="Medium" label="Medium" value="Medium" />
               <el-option key="Hard" label="Hard" value="Hard" />
             </el-select>
           </el-form-item>
         </div>
-        <el-form-item prop="content" :rules="[{ required: true }]" size="mini" :label="messageTranslates('addEditQuestion', 'question')">
+        <el-form-item prop="content" :rules="[{ required: true }]" size="mini" label="Chủ đề">
           <el-tiptap
             v-model="form.content"
-            lang="en"
-            placeholder="Write something …"
+            lang="vn"
+            placeholder="Điền chủ đề của bài viết"
             :extensions="extensions"
             :char-counter-count="false"
             style="width: 95%;"
@@ -65,11 +65,11 @@
           <!-- <div v-if="form.test && (form.task!==2 && form.task!==3)" style="margin-left:120px">{{ messageTranslates('addEditQuestion', 'noPart') }}
           </div> -->
           <div v-if="form.test && form.task===2">
-            <el-form-item prop="" size="mini" :label="messageTranslates('addEditQuestion', 'reading')">
+            <el-form-item prop="" size="mini" label="Bài đọc">
               <el-tiptap
                 v-model="toeflReading"
                 lang="en"
-                placeholder="Write something …"
+                placeholder="Điền thông tin bài đọc"
                 :extensions="extensions"
                 :char-counter-count="false"
                 style="width: 95%;"
@@ -93,11 +93,11 @@
               </el-upload>
             </el-form-item>
 
-            <el-form-item prop="" size="mini" :label="messageTranslates('addEditQuestion', 'transcript')">
+            <el-form-item prop="" size="mini" label="Đoạn dịch">
               <el-tiptap
                 v-model="toeflTranscript"
-                lang="en"
-                placeholder="Write something …"
+                lang="vn"
+                placeholder="Thêm đoạn dịch cho bài nghe"
                 :extensions="extensions"
                 :char-counter-count="false"
                 style="width: 95%;"
@@ -105,7 +105,7 @@
             </el-form-item>
           </div>
           <div v-if="form.test && form.task===3">
-            <el-form-item prop="" size="mini" :label="messageTranslates('addEditQuestion', 'chart')" :rules="[{ required: true }]">
+            <el-form-item prop="" size="mini" label="Biểu đồ" :rules="[{ required: true }]">
               <el-upload
                 action=""
                 :on-preview="handlePreview"
@@ -123,14 +123,14 @@
             </el-form-item>
           </div>
           <div>
-            <el-form-item prop="" size="mini" label="Tip">
+            <el-form-item prop="" size="mini" label="Dữ liệu hỗ trợ">
               <el-tiptap
                 v-model="questionTip"
-                lang="en"
-                placeholder="Write something …"
+                lang="vn"
+                placeholder="Thêm dữ liệu hỗ trợ cho chủ đề. Ví dụ: ý tưởng phát triển bài, gợi ý bố cục, hoặc từ vựng liên quan"
                 :extensions="extensions"
                 :char-counter-count="false"
-                style="width: 95%; overflow: auto; height: 500px;"
+                style="width: 95%; overflow: auto; height: 300px;"
               />
             </el-form-item>
           </div>

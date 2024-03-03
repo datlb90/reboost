@@ -233,7 +233,7 @@
                         </el-card>
                       </div>
                     </div>
-                    <div v-if="getRubric.length == 0" style="width: 100%; text-align: center;">
+                    <div v-if="getRubric && getRubric.length == 0" style="width: 100%; text-align: center;">
                       <span class="tab-none-content">No rubric found</span>
                     </div>
                   </div>
@@ -270,13 +270,8 @@
                     :disabled="!(writingContent && writingContent.length > 0)"
                     type="primary"
                     @click="submit()"
-                  >Submit</el-button>
-                  <el-button
-                    v-if="isEdit && !isFreeRequested && !isProRequested"
-                    style="float: right; margin-left: 5px"
-                    size="mini"
-                    @click="isEdit=false"
-                  >Edit</el-button>
+                  >Nộp bài
+                  </el-button>
                   <el-button
                     v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
                     size="mini"
@@ -284,18 +279,19 @@
                     type="primary"
                     style="float: right; margin-left: 5px;"
                     @click="submit()"
-                  >Submit</el-button>
-                  <!-- <el-button
-                    v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
-                    size="mini"
-                    :disabled="!(writingContent && writingContent.length > 0)"
-                    style="float: right;"
-                    @click="save()"
-                  >Save</el-button> -->
+                  >Nộp bài
+                  </el-button>
                 </div>
               </div>
               <div style="flex-grow: 1;">
-                <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Bắt đầu bài viết của bạn ở đây ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
+                <textarea
+                  v-model="writingContent"
+                  :disabled="isEdit || writingSubmitted"
+                  placeholder="Bắt đầu bài viết của bạn ở đây ..."
+                  spellcheck="false"
+                  class="textarea-style"
+                  @keyup="countWords()"
+                />
               </div>
             </div>
           </pane>

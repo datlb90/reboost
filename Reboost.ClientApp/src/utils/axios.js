@@ -61,7 +61,7 @@ instance.interceptors.response.use(
       }
 
       Notification.error({
-        title: 'Error',
+        title: 'Đã xảy ra lỗi',
         message: message,
         dangerouslyUseHTMLString: error.response.config.url === '/auth/register'
       })

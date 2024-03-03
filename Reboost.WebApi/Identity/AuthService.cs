@@ -29,7 +29,7 @@ namespace Reboost.WebApi.Identity
 
         Task<UserManagerResponse> ConfirmEmailAsync(string userId, string token);
 
-        Task<UserManagerResponse> ForgetPasswordAsync(string email);
+        Task<UserManagerResponse> ForgotPasswordAsync(ForgotPasswordModel model);
 
         Task<UserManagerResponse> ResetPasswordAsync(ResetPasswordViewModel model);
     }
@@ -233,13 +233,25 @@ namespace Reboost.WebApi.Identity
             var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
             var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
 
+            //string url = $"{_configuration["AppUrl"]}/api/auth/confirm/email?id={user.Id}&code={validEmailToken}";
+
+            //await _mailService.SendEmailAsync(user.Email, "Xác nhận địa chỉ email", $"<h3>Welcome to Reboost!</h3>" +
+            //    $"<p>To finish setting up your Reboost account, we just need to make sure this email address is yours.</p>" +
+            //    $"<p>To verify your email address, please click on this link: <a href='{url}'>confirm my email</a></p>" +
+            //    $"<p>If you didn't make this request, you can safely ignore this email.</p>" +
+            //    $"<p>Thanks,</p><p>Reboost Support Team</p>");
+
             string url = $"{_configuration["AppUrl"]}/api/auth/confirm/email?id={user.Id}&code={validEmailToken}";
 
-            await _mailService.SendEmailAsync(user.Email, "Verify Your Email Address", $"<h3>Welcome to Reboost!</h3>" +
-                $"<p>To finish setting up your Reboost account, we just need to make sure this email address is yours.</p>" +
-                $"<p>To verify your email address, please click on this link: <a href='{url}'>confirm my email</a></p>" +
-                $"<p>If you didn't make this request, you can safely ignore this email.</p>" +
-                $"<p>Thanks,</p><p>Reboost Support Team</p>");
+            string message = $"<p>Xin chào " + user.FirstName + ",</p>" +
+                            $"<p>Chào mừng bạn đên với Reboost!</p>" +
+                            $"<p>Để hoàn thiện quá trình đăng ký tài khoản, bạn vui lòng xác nhận địa chỉ email sử dụng đường dẫn dưới đây:</p>" +
+                            $"<p><a href='{url}'>Đường dẫn xác nhận địa chỉ email</a></p>" +
+                            $"<p>Nếu bạn không yêu cầu đăng ký tài khoản, bạn có thể bỏ qua email này.</p>" +
+                            $"<p>Xin chân thành cảm ơn!</p>" +
+                            $"<p>Reboost Support</p>";
+
+            await _mailService.SendEmailAsync(user.Email, "Xác nhận địa chỉ email", message);
         }
 
         private async Task<(IdentityUser user, string provider, string email, IEnumerable<Claim> claims)>
@@ -398,29 +410,36 @@ namespace Reboost.WebApi.Identity
             };
         }
 
-        public async Task<UserManagerResponse> ForgetPasswordAsync(string email)
+        public async Task<UserManagerResponse> ForgotPasswordAsync(ForgotPasswordModel model)
         {
-            var user = await _userManger.FindByEmailAsync(email);
+            var user = await _userManger.FindByEmailAsync(model.Email);
             if (user == null)
                 return new UserManagerResponse
                 {
                     IsSuccess = false,
-                    Message = "No user associated with email",
+                    Message = "Tài khoản không tồn tại",
                 };
 
             var token = await _userManger.GeneratePasswordResetTokenAsync(user);
             var encodedToken = Encoding.UTF8.GetBytes(token);
             var validToken = WebEncoders.Base64UrlEncode(encodedToken);
 
-            string url = $"{_configuration["AppUrl"]}/ResetPassword?email={email}&token={validToken}";
+            string url = $"{_configuration["ClientUrl"]}/reset/password?email={model.Email}&token={validToken}";
 
-            await _mailService.SendEmailAsync(email, "Reset Password", "<h1>Follow the instructions to reset your password</h1>" +
-                $"<p>To reset your password <a href='{url}'>Click here</a></p>");
+            string message = $"<p>Xin chào " + user.FirstName + ",</p>" +
+                            $"<p>Bạn đã yêu cầu đặt lại mật khẩu trên Reboost.</p>" +
+                            $"<p>Vui lòng sử dụng đường dẫn bên dưới để tạo mật khẩu mới cho tài khoản của bạn:</p>" +
+                            $"<p><a href='{url}'>Đường dẫn để thay đổi mật khẩu</a></p>" +
+                            $"<p>Nếu bạn không yêu cầu đổi mật khẩu, bạn có thể bỏ qua email này.</p>" +
+                            $"<p>Xin chân thành cảm ơn!</p>" +
+                            $"<p>Reboost Support</p>";
+
+            await _mailService.SendEmailAsync(model.Email, "Yêu cầu đặt lại mật khẩu", message);
 
             return new UserManagerResponse
             {
                 IsSuccess = true,
-                Message = "Reset password URL has been sent to the email successfully!"
+                Message = "Chúng tôi đã gửi hướng dẫn thay đổi mật khẩu qua email của bạn"
             };
         }
 
@@ -431,14 +450,14 @@ namespace Reboost.WebApi.Identity
                 return new UserManagerResponse
                 {
                     IsSuccess = false,
-                    Message = "No user associated with email",
+                    Message = "Tài khoản không tồn tại",
                 };
 
             if (model.NewPassword != model.ConfirmPassword)
                 return new UserManagerResponse
                 {
                     IsSuccess = false,
-                    Message = "Password doesn't match its confirmation",
+                    Message = "Mật khẩu và xác nhận mật khẩu không giống nhau",
                 };
 
             var decodedToken = WebEncoders.Base64UrlDecode(model.Token);
@@ -449,13 +468,13 @@ namespace Reboost.WebApi.Identity
             if (result.Succeeded)
                 return new UserManagerResponse
                 {
-                    Message = "Password has been reset successfully!",
+                    Message = "Mật khẩu đã được đặt lại thành công",
                     IsSuccess = true,
                 };
 
             return new UserManagerResponse
             {
-                Message = "Something went wrong",
+                Message = "Đã có lỗi xảy ra trong quá trình đặt lại mật khẩu",
                 IsSuccess = false,
                 Errors = result.Errors.Select(e => e.Description),
             };

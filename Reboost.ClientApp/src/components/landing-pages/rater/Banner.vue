@@ -1,11 +1,11 @@
 <template>
-  <div v-if="screenWidth > 1200" class="ml-main-section" style="height: 850px;padding-top: 120px; padding-bottom: 50px;">
+  <div v-if="screenWidth > 1200" class="iot-main-banner" style="height: 850px;padding-top: 120px; padding-bottom: 50px;">
     <div class="container">
       <div class="row">
         <div class="col-lg-7 col-md-12">
           <div class="ml-banner-content" style="margin-top: 10px;">
             <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 400;">Trở thành giáo viên của Reboost</h1>
-            <p style="max-width: 100%;">Reboost là nền tảng được thiết kế để kết nối giáo viên dạy IELTS và TOEFL với học viên, giúp giáo viên có cơ hội chấm bài và hỗ trợ học viên cải thiện kỹ năng viết.</p>
+            <p style="max-width: 100%;">Reboost là nền tảng giúp giáo viên dạy IELTS và TOEFL kết nối với học viên, hỗ trợ học viên chấm bài và cải thiện kỹ năng viết.</p>
             <p style="max-width: 100%;">Chúng tôi tin rằng sự tiến bộ của học viên là niềm tự hào và thành tựu của các thầy cô giáo. Vì vậy, Reboost không chỉ là một công cụ giáo dục mà còn là cầu nối giúp họ chia sẻ kiến thức và kinh nghiệm của mình để tạo ra những sự khác biệt.</p>
             <p style="max-width: 100%;">Với Reboost, giáo viên sẽ được trải nghiệm một hệ thống đánh giá trực tuyến tiên tiến, linh hoạt về thời gian và địa điểm, giúp tối đa hóa cơ hội kiếm thêm thu nhập mà không làm ảnh hưởng đến công việc chính. Chúng tôi cam kết cung cấp một môi trường làm việc chuyên nghiệp, nơi giáo viên có thể phát triển bản thân và góp phần vào thành công của học viên.</p>
             <p style="max-width: 100%;">Hãy gia nhập Reboost ngay hôm nay để cùng chúng tôi tạo nên một cộng đồng học tập tích cực, nơi mỗi giáo viên đều có cơ hội phát huy tối đa tiềm năng của mình và giúp đỡ học viên đạt được mục tiêu học tập của họ.</p>
@@ -33,14 +33,13 @@
               </el-form-item>
 
               <el-button
-                type="primary"
-                class="login-btn"
-                style="width: 100%; background: rgb(73 124 153); border-color: transparent;"
+                class="btn btn-gradient"
+                style="width: 100%; margin-right: 20px; padding: 12px 20px;"
                 :loading="loading"
                 @click="signUp()"
-              >
-                Tạo Tài Khoản Giáo Viên
+              > Tạo Tài Khoản Giáo Viên
               </el-button>
+
               <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
                 Hoặc bạn có thể đăng ký với
               </div>
@@ -57,17 +56,6 @@
                   </el-button>
                 </form>
               </div>
-
-              <!-- <div style="font-size: 14px; text-align: center; padding-top: 20px; height: 10px;">
-                By logging in, I agree to the
-                <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
-                  terms
-                </a> and
-                <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
-                  policies
-                </a>
-              </div> -->
-
             </el-form>
           </div>
         </div>
@@ -75,12 +63,12 @@
       </div>
     </div>
 
-    <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
+    <!-- <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div> -->
     <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
     <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
     <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
     <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+    <!-- <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div> -->
   </div>
   <div v-else-if="screenWidth > 992" class="ml-main-section" style="height: 960px; padding-top: 120px; padding-bottom: 50px;">
     <div class="container">
