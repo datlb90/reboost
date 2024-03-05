@@ -459,6 +459,7 @@ namespace Reboost.DataAccess.Repositories
             if (existed != null)
             {
                 rs.ReviewId = existed.Id;
+                rs.DocId = reviewRequest.Submission.DocId;
                 return await Task.FromResult(rs);
             };
 

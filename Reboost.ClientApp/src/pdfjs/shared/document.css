@@ -11,7 +11,7 @@ body {
 .pdfViewer .page {
 	margin: 0 !important;
 	margin-bottom: 10px;
-	
+
 }
 
 .annotationLayer {
@@ -39,49 +39,53 @@ body {
 }
 
 
-.comment-card{
+.comment-card {
 	position: absolute;
-    width: 95%;
-    left: 5px;
+	width: 95%;
+	left: 5px;
 }
 
 .comment-card-selected {
 	left: -20px;
-	box-shadow: 0 2px 6px 2px rgba(60,64,67,.15);
+	box-shadow: 0 2px 6px 2px rgba(60, 64, 67, .15);
 	border: 1px solid #cfcfd0;
 }
-.comment-highlight-selected{
+
+.comment-highlight-selected {
 	fill: blue;
 	fill-opacity: 0.4;
 }
-.textToolBtn{
+
+.textToolBtn {
 	background: #ffffff;
 }
-.rectangle-selected{
+
+.rectangle-selected {
 	fill: blue;
 	opacity: 0.2;
 }
-.action-card-btn{
+
+.action-card-btn {
 	cursor: pointer;
-    border: 0px none !important;
-    background: none !important;
-    position: absolute;
-    top: 0px;
+	border: 0px none !important;
+	background: none !important;
+	position: absolute;
+	top: 0px;
 }
 
-.el-card__header{
+.el-card__header {
 	padding: 8px 12px !important;
 }
 
 .el-card__body {
-    padding: 12px !important;
+	padding: 12px !important;
 }
 
-.el-textarea__inner{
+.el-textarea__inner {
 	padding: 5px 10px !important;
 }
 
-#rubric-wrapper{
+#rubric-wrapper {
 	/* position: absolute; */
 	top: 35px;
 	left: 0;

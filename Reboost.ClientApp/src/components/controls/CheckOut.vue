@@ -379,16 +379,16 @@ export default {
       if (this.unratedCount == 0) {
         reviewService.createReviewRequest({
           UserId: this.currentUser.id,
-          SubmissionId: +this.submissionId,
+          SubmissionId: this.submissionId,
           FeedbackType: 'Free',
           Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
         }).then(rs => {
           this.dialogClosed()
           this.$notify.success({
-            title: 'Peer Review Request',
-            message: 'The peer review request has been successfully submitted!',
+            title: 'Yêu cầu đã được gửi đi',
+            message: 'Yêu cầu nhận đánh giá từ học viên khác đã được gửi đi thành công. Chúng tôi sẽ thông báo cho bạn khi có phản hồi.',
             type: 'success',
-            duration: 1500
+            duration: 5000
           })
           this.$emit('reviewRequested')
         })

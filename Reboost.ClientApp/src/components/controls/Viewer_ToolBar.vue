@@ -162,8 +162,8 @@
     </div>
     <!-- Submit button -->
     <div id="submit-container" class="submit-button" style="align-items: center;">
-      <div v-if="statusText!=''" class="submit-button__text" style="">{{ statusText }}</div>
-      <el-button v-if="isAuthor" :disabled="readOnly||isRate||isSubmit" :loading="isLoading" type="primary" size="mini" @click="submitReview()">{{ messageTranslates('viewerToolBar', 'submit') }}</el-button>
+      <div v-if="statusText!=''" class="submit-button__text">{{ statusText }}</div>
+      <el-button v-if="isAuthor" :disabled="readOnly||isRate||isSubmit" :loading="loading" type="primary" size="mini" @click="submitReview()">Gửi đánh giá</el-button>
       <!-- <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="primary" size="mini" @click="rateReview()">{{ messageTranslates('viewerToolBar', 'rateReview') }}</el-button> -->
       <!-- <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="danger" size="mini" @click="disputeReview()">{{ messageTranslates('viewerToolBar', 'dispute') }}</el-button> -->
     </div>
@@ -215,7 +215,8 @@ export default ({
       dispute: null,
       UserRole: UserRole,
       DISPUTE_STATUS: DISPUTE_STATUS,
-      screenWidth: window.innerWidth
+      screenWidth: window.innerWidth,
+      loading: false
     }
   },
   computed: {
@@ -380,7 +381,10 @@ export default ({
     async submitReview() {
       this.loading = true
       await this.$emit('submit')
-       this.loading = false
+    },
+    completeLoading() {
+      console.log('ok')
+      this.loading = false
     },
     // expandColor(e) {
     //   this.expandColorPicker = e
@@ -388,7 +392,7 @@ export default ({
     //     this.$refs.colorPickerCom.expandColorPickerToggle(e)
     //   }
     // },
-    setStatusText(text = 'Saved') {
+    setStatusText(text = 'Đã lưu') {
       this.statusText = text
       setTimeout(() => { this.statusText = '' }, 2000)
     },

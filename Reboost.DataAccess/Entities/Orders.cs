@@ -22,8 +22,8 @@ namespace Reboost.DataAccess.Entities
     public enum PaymentStatus
     {
         PENDING = 0,
-        CONFIRMED = 1,
-        COMPLETED = 2,
+        COMPLETED = 1,
+        PROCESSED = 2,
         ERROR = 3,
         REFUNDED = 4,
     }

@@ -21,7 +21,7 @@ export default function renderPoint(a) {
   const otherPoints = document.querySelectorAll("svg[top='" + a.top + "']")
   if (otherPoints.length > 0) {
     const groupsArr = Array.prototype.slice.call(otherPoints)
-    const max = Math.max.apply(Math, groupsArr.map(function(o) { return parseInt(o.getAttribute('order')) }))
+    const max = Math.max.apply(Math, groupsArr.map(function (o) { return parseInt(o.getAttribute('order')) }))
     order = max + 1
   }
   setAttributes(outerSVG, {
@@ -54,7 +54,7 @@ export default function renderPoint(a) {
     width: SIZE,
     height: SIZE,
     // stroke: '#000',
-    fill: '#fff'
+    fill: '#8069e6'
   })
 
   setAttributes(path, {
@@ -63,7 +63,8 @@ export default function renderPoint(a) {
     // height: SIZE,
     // strokeWidth: 50,
     // stroke: '#000',
-    fill: 'currentColor'
+    fill: 'currentColor',
+    color: 'white'
   })
 
   innerSVG.appendChild(path)

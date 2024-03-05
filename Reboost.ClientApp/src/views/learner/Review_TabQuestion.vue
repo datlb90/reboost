@@ -13,7 +13,7 @@
         </div>
 
         <div v-if="reviewRequest && reviewRequest.feedbackType == 'Pro'" class="requirement" transition="fade" style="margin-bottom: 10px;">
-          <h5>Yêu cầu từ học viên</h5>
+          <h5 style="font-size: 18px;">Yêu cầu từ học viên</h5>
           <div style="width: 98%; color: #4a6f8a; font-size: 15px;">
             <b>- Ngôn ngữ phản hồi:</b> {{ reviewRequest.feedbackLanguage == 'vn' ? 'Tiếng Việt' : 'Tiếng Anh' }}
           </div>

@@ -56,7 +56,8 @@
         <div id="viewerContainer" style="height: calc(100vh - 50px); ">
 
           <div v-if="!completeLoading" style="width: calc(100% - 10px);">
-            <el-button type="info" plain :loading="true" style="width: 100%; border: none;">Loading Document</el-button>
+            <!-- <el-button type="info" plain :loading="true" style="width: 100%; border: none;">Đang tải bài viết</el-button> -->
+            <div v-loading="true" style="height: 500px; background: rgb(248 249 250); background-color: rgb(248 249 250);" element-loading-text="Đang tải bài viết" />
           </div>
           <div
             v-else
@@ -74,8 +75,8 @@
       <el-card id="add-new-comment" class="box-card add-new-comment" style="width: 100%; display: none;">
         <div slot="header" class="clearfix">
           <div>
-            <div style="font-size: 15px; text-align: left;">
-              {{ commentUserName() }}
+            <div style="font-weight: 500; font-size: 15px; text-align: left;">
+              Thêm bình luận mới
             </div>
           </div>
         </div>
@@ -111,8 +112,17 @@
       >
         <div slot="header" class="clearfix">
           <div>
-            <div style="font-size: 15px; text-align: left;">
-              {{ commentUserName() }}
+            <div
+              v-if="comment.text"
+              style="font-weight: 500; font-size: 15px; text-align: left;  width: 180px; text-overflow: ellipsis; word-break: break-word;  overflow: hidden; white-space: nowrap;"
+            >
+              "{{ comment.text }}"
+            </div>
+            <div v-else-if="comment.annotation.type =='point'" style="font-weight: 500; font-size: 15px; text-align: left;">
+              Ghi chú
+            </div>
+            <div v-else style="font-weight: 500; font-size: 15px; text-align: left;">
+              Bình luận chung
             </div>
           </div>
           <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
@@ -323,8 +333,8 @@
         />
 
         <div id="viewerContainer">
-          <div v-if="!completeLoading">
-            <el-button type="info" plain :loading="true" style="width: 100%; border: none;">Loading Document</el-button>
+          <div v-if="!completeLoading" style="width: calc(100% - 10px);">
+            <div v-loading="true" style="height: 500px; background: rgb(248 249 250); background-color: rgb(248 249 250);" element-loading-text="Đang tải bài viết" />
           </div>
           <div
             v-else
@@ -333,6 +343,7 @@
             class="pdfViewer"
             :document-id="documentId"
           />
+
         </div>
       </div>
       <div id="comment-wrapper">
@@ -1470,6 +1481,8 @@ export default {
         this.newComment,
         this.selectedText,
         topPos)
+      this.selectedText = null
+      console.log('New comment', newComment)
       await this.undoHistory.push({ action: 'added', annotation: newComment })
       this.updateUndoList()
       await this.comments.push(newComment)
@@ -2458,16 +2471,16 @@ export default {
       return false
     },
     async submitReview() {
-      this.isLoading = true
       this.rubricCriteria = this.$refs.tabRubric?.getRubricData()
       if (!this.rubricCriteria) {
         this.$notify.error({
-          title: 'Rubric Completion Required',
-          message: 'All criteria in the rubric must be completed before you can submit your review.',
+          title: 'Thiếu đánh giá tiêu chí chuẩn',
+          message: 'Bạn hãy cung cấp đánh giá cho toàn bộ tiêu chí chuẩn trước khi gửi phản hồi',
           type: 'error',
-          duration: 6000
+          duration: 5000
         })
         this.selectedTab = 'rubric'
+        this.$refs.toolBar?.completeLoading()
       } else {
         // Handle case where rater is adding new comment
         if (this.isAddingNewComment) {
@@ -2510,60 +2523,48 @@ export default {
         const annotationsCount = await this.countAnnotations()
         if (annotationsCount < 3) {
           this.$notify.error({
-            title: 'Annotations required',
-            message: 'At least 3 annotations required!',
+            title: 'Thiếu đánh giá trong bài viết',
+            message: 'Bạn hãy cung cấp ít nhất 3 đánh giá  trong bài viết sử dụng các công cụ đánh giá có sẵn',
             type: 'error',
-            duration: 2000
+            duration: 5000
           })
-          return
-        }
-        var reviewData = []
-        this.rubricCriteria.forEach(r => {
-          if (r.mark) {
-            reviewData.push({
-              Comment: r.comment,
-              CriteriaId: r.id,
-              Score: r.mark,
-              ReviewId: this.reviewId
-            })
-          }
-        })
-        reviewService.saveReviewFeedback(this.reviewId, reviewData).then(rs => {
+          this.$refs.toolBar?.completeLoading()
+        } else {
+          //
+          var reviewData = []
+          this.rubricCriteria.forEach(r => {
+            if (r.mark) {
+              reviewData.push({
+                Comment: r.comment,
+                CriteriaId: r.id,
+                Score: r.mark,
+                ReviewId: this.reviewId
+              })
+            }
+          })
+          // Gửi phản hồi
+          await reviewService.saveReviewFeedback(this.reviewId, reviewData)
+          reviewService.loadReviewFeedback(this.reviewId).then(rs => {
+            localStorage.removeItem('reviewComment')
+          })
           this.disableToolbarSubmit()
-          if (rs) {
-            this.$notify.success({
-              title: 'Success',
-              message: 'Review Submitted!',
-              type: 'success',
-              duration: 2000
-            })
+          this.$refs.toolBar?.completeLoading()
+          this.$notify.success({
+            title: 'Đánh giá của bạn đã được gửi',
+            message: 'Đánh giá của bạn đã được gửi cho học viên',
+            type: 'success',
+            duration: 5000
+          })
 
-            if (this.currentUser?.role == UserRole.RATER) {
-              // Send email to admin and student
-              this.$router.push('/reviews')
-            } else {
-              this.$store.dispatch('review/loadReviewsById')
-              this.$router.push('/rater/application')
-            }
-
-            // Redirect if user is Learner
-            if (this.currentUser?.role == UserRole.LEARNER) {
-              this.$router.push('/reviews')
-            }
+          // Chuyển người dùng về trang đánh giá của bạn
+          if (this.currentUser?.role == UserRole.LEARNER || this.currentUser?.role == UserRole.RATER) {
+            this.$router.push('/reviews')
           } else {
-            this.$notify.error({
-              title: 'Submit failed',
-              message: 'Current review not exist!',
-              type: 'error',
-              duration: 2000
-            })
+            this.$store.dispatch('review/loadReviewsById')
+            this.$router.push('/rater/application')
           }
-        })
-        reviewService.loadReviewFeedback(this.reviewId).then(rs => {
-          localStorage.removeItem('reviewComment')
-        })
+        }
       }
-      this.loading = false
     },
     async countAnnotations() {
       var count = 0
@@ -2881,7 +2882,7 @@ export default {
       }
     },
     async deleteButtonClicked(e) {
-      this.$confirm('Are you sure you want to delete this comment ?').then(() => {
+      this.$confirm('Bình luận này sẽ bị xoá vĩnh viễn. Bạn chắc chứ?').then(() => {
         this.deleteCommentCard(e.uuid)
         this.removeElementById(e.annotation.uuid)
       }).catch(() => {
@@ -3209,9 +3210,12 @@ export default {
 .free-text__actiion{
   cursor: cell;
 }
+
 </style>
 <style>
-
+.el-loading-mask {
+  background-color: rgb(248 249 250) !important;
+}
 .el-tabs__content{
   overflow: auto !important;
 }

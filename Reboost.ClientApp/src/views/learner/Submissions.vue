@@ -562,7 +562,8 @@ export default {
       selectionTag: [],
       showLeftArrow: false,
       showRightArrow: false,
-      allTopicEffect: 'dark'
+      allTopicEffect: 'dark',
+      screenWidth: window.screenWidth
     }
   },
   computed: {

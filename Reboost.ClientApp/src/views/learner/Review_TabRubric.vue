@@ -367,7 +367,6 @@ export default ({
     getRubricData() {
       var invalidData = this.rubricCriteria.filter(r => { return r.comment === '' || r.mark == null })
       if (invalidData.length > 0) {
-        console.log('invalid data')
         return false
       }
       return this.rubricCriteria

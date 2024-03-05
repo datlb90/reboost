@@ -39,7 +39,7 @@ export default {
 
   data() {
     return {
-      isLoading: true,
+      // isLoading: true,
       currentUrl: ''
     }
   },
@@ -47,8 +47,8 @@ export default {
   watch: {
     '$route'(pathUrl) {
       this.currentUrl = pathUrl.path
-      this.isLoading = true
-      setTimeout(() => { this.isLoading = false }, 1500)
+      // this.isLoading = true
+      // setTimeout(() => { this.isLoading = false }, 1500)
     }
   },
 
@@ -60,9 +60,9 @@ export default {
     } else {
       this.$ml.change('vietnamese')
     }
-    setTimeout(() => {
-      this.isLoading = false
-    }, 2000)
+    // setTimeout(() => {
+    //   this.isLoading = false
+    // }, 2000)
   }
 }
 </script>

@@ -37,29 +37,6 @@ namespace Reboost.WebApi.Controllers
             _logger = logger;
         }
 
-        [HttpPost("zalopay/verify")]
-        public async Task<VerifyPaymentModel> VerifyZaloPayStatus(ZaloPayVerifyResultModel model)
-        {
-            return await _service.VerifyZaloPayStatus(model);
-        }
-
-        [HttpPost("zalopay/callback")]
-        public async Task<IActionResult> ZaloPaymentCallback(CallbackRequest cbdata)
-        {
-            ZaloCallbackResultModel rs = await _service.ZaloPaymentCallback(cbdata);
-            if (rs != null)
-                return Ok(rs);
-            else
-                return BadRequest();
-        }
-
-        [HttpPost("zalopay/request")]
-        public async Task<string> GetZaloPayUrl(ZaloPayRequestModel model)
-        {
-            model.ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-            return await _service.GetZaloPayUrl(model);
-        }
-
         [HttpPost("vnpay/request")]
         public async Task<string> GetVNPayUrl(VNPayRequestModel model)
         {
@@ -87,7 +64,7 @@ namespace Reboost.WebApi.Controllers
             try
             {
                 string ipnIpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-                _logger.LogInformation("Địa chỉ IP gọi vào IPN: " + ipnIpAddress);   
+                _logger.LogInformation("Địa chỉ IP gọi vào IPN: " + ipnIpAddress);
                 if (whiteListIP.Contains(ipnIpAddress))
                 {
                     if (Request.Query != null && Request.Query.Keys.Count != 0)
@@ -122,7 +99,7 @@ namespace Reboost.WebApi.Controllers
                 {
                     return BadRequest();
                 }
-               
+
             }
             catch (Exception e)
             {
@@ -139,10 +116,37 @@ namespace Reboost.WebApi.Controllers
             return _service.VerifyVnPayStatus(model);
         }
 
-        [HttpGet("vnpay/process/order/{orderId}")]
-        public async Task<VerifyPaymentModel> ProcessVnPayOrder(int orderId)
+        [HttpPost("zalopay/request")]
+        public async Task<string> GetZaloPayUrl(ZaloPayRequestModel model)
         {
-            return await _service.ProcessVnPayOrder(orderId);
+            model.ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            return await _service.GetZaloPayUrl(model);
+        }
+
+        [HttpPost("zalopay/callback")]
+        public async Task<IActionResult> ZaloPaymentCallback(CallbackRequest cbdata)
+        {
+            string ipnIpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            _logger.LogInformation("Địa chỉ IP gọi Zalopay callback: " + ipnIpAddress);
+
+            ZaloCallbackResultModel rs = await _service.ZaloPaymentCallback(cbdata);
+            if (rs != null)
+                return Ok(rs);
+            else
+                return BadRequest();
+        }
+
+        [HttpPost("zalopay/verify")]
+        public async Task<VerifyPaymentModel> VerifyZaloPayStatus(ZaloPayVerifyResultModel model)
+        {
+            return await _service.VerifyZaloPayStatus(model);
+        }
+
+
+        [HttpGet("process/order/{orderId}")]
+        public async Task<VerifyPaymentModel> ProcessOrder(int orderId)
+        {
+            return await _service.ProcessOrder(orderId);
         }
 
         [Authorize]

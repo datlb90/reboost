@@ -1,62 +1,71 @@
 <template>
   <div class="list-container">
-    <el-card v-if="orderStatus == 1" style="margin-top: 100px; padding: 30px; width: 100%;" class="box-card">
-      <div>
+    <el-card v-if="orderStatus == 1" style="margin-top: 50px; padding: 30px; width: 100%; text-align: center;" class="box-card">
+      <div style="">
         <i class="el-icon-success" style="font-size: 50px; color: #338abb;" />
       </div>
       <div style="margin-top: 20px;">
         <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 400;">Thanh Toán Thành Công!</h1>
       </div>
-      <div style="margin-top: 20px;">
-        <p>Cảm ơn bạn đã thanh toán cho đơn hàng với mã số: #{{ order.id }}. Biên lai cho thanh toán đã được gửi cho bạn qua email.</p>
-        <p v-if="feedbackAvailable">Bài luận của bạn đã dược chấm bởi hệ thống chấm bài tự động của Reboost. Bạn có thể xem phản hồi ngay bây giờ.</p>
-        <p v-else>Giáo viên của Reboost sẽ chấm bài luận của bạn và cung cấp phản hồi trong vòng 24h. Chúng tôi sẽ thông báo cho bạn qua email khi giáo viên chấm xong.</p>
-        <p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ với chúng tôi qua <a href="mailto:support@reboost.vn">support@reboost.vn</a> để được hỗ trợ trực tiếp.</p>
-      </div>
-      <div v-if="feedbackAvailable" style="margin-top: 20px;">
-        <el-button class="btn btn-gradient" style="padding: 10px 20px; font-size: 13px;" @click="viewFeedback()">Xem Phản Hồi</el-button>
+      <div v-if="orderProcessing" style="margin-top: 20px;">
+        <p>Cảm ơn bạn đã tin tưởng sử dụng dịch vụ chấm bài của Reboost.</p>
+        <div v-loading="true" style="width: 100%; height: 300px" element-loading-text="Vui lòng chờ trong giây lát trong khi chúng tôi xử lý yêu cầu của bạn" />
       </div>
       <div v-else style="margin-top: 20px;">
-
-        <el-button class="btn btn-gradient" style="padding: 10px 20px; font-size: 13px;" @click="viewQuestions()">Tiếp Tục Luyện Tập</el-button>
-        <el-button plain style="margin-left: 10px;" @click="viewSubmission()">XEM LẠI BÀI ĐÃ NỘP</el-button>
+        <div v-if="order">
+          <div v-if="order.status == 1">
+            <div>
+              <p>Cảm ơn bạn đã thanh toán cho đơn hàng với mã số: #{{ order.id }}. Biên lai cho thanh toán đã được gửi cho bạn qua email.</p>
+              <p v-if="feedbackAvailable">Bài luận của bạn đã được chấm bởi hệ thống chấm bài tự động của Reboost. Bạn có thể xem phản hồi ngay bây giờ.</p>
+              <p v-else>Giáo viên của Reboost sẽ chấm bài luận của bạn và cung cấp phản hồi trong vòng 24h. Chúng tôi sẽ thông báo cho bạn qua email khi giáo viên chấm xong.</p>
+              <p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ với chúng tôi qua <a href="mailto:support@reboost.vn">support@reboost.vn</a> để được hỗ trợ trực tiếp.</p>
+            </div>
+            <div v-if="feedbackAvailable" style="margin-top: 20px;">
+              <el-button class="btn btn-gradient" style="padding: 10px 20px; font-size: 13px;" @click="viewFeedback()">Xem Phản Hồi</el-button>
+            </div>
+            <div v-else style="margin-top: 20px;">
+              <el-button class="btn btn-gradient" style="padding: 10px 20px; font-size: 13px;" @click="viewQuestions()">Tiếp Tục Luyện Tập</el-button>
+              <el-button plain style="margin-left: 10px;" @click="viewSubmission()">XEM LẠI BÀI ĐÃ NỘP</el-button>
+            </div>
+          </div>
+          <div v-else-if="order.status == 2">
+            <div>
+              <p>Yêu cầu chấm bài của bạn đã được xử lý. Mã đơn hàng của bạn là: #{{ order.id }}.</p>
+              <p v-if="feedbackAvailable">Bài luận của bạn đã được chấm bởi hệ thống chấm bài tự động của Reboost. Bạn có thể xem phản hồi ngay bây giờ.</p>
+              <p v-else>Giáo viên của Reboost sẽ chấm bài luận của bạn và cung cấp phản hồi trong vòng 24h. Chúng tôi sẽ thông báo cho bạn qua email khi giáo viên chấm xong.</p>
+              <p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ với chúng tôi qua <a href="mailto:support@reboost.vn">support@reboost.vn</a> để được hỗ trợ trực tiếp.</p>
+            </div>
+            <div v-if="feedbackAvailable" style="margin-top: 20px;">
+              <el-button class="btn btn-gradient" style="padding: 10px 20px; font-size: 13px;" @click="viewFeedback()">Xem Phản Hồi</el-button>
+            </div>
+            <div v-else style="margin-top: 20px;">
+              <el-button class="btn btn-gradient" style="padding: 10px 20px; font-size: 13px;" @click="viewQuestions()">Tiếp Tục Luyện Tập</el-button>
+              <el-button plain style="margin-left: 10px;" @click="viewSubmission()">XEM LẠI BÀI ĐÃ NỘP</el-button>
+            </div>
+          </div>
+          <div v-else>
+            <div>
+              <p style="color: #F56C6C;">Xin lỗi bạn vì sự bất tiện này! Đã có sự cố xảy ra trong quá trình xử lý yêu cầu chấm bài của bạn.</p>
+              <p style="color: #F56C6C;">Bạn vui lòng liên hệ với chúng tôi qua <a href="mailto:support@reboost.vn" style="color: #F56C6C;">support@reboost.vn</a> để được hỗ trợ trực tiếp.</p>
+            </div>
+            <div style="margin-top: 20px;">
+              <el-button type="danger" plain @click="contactUs()">Liên Hệ Với Chúng tôi</el-button>
+            </div>
+          </div>
+        </div>
       </div>
     </el-card>
-    <el-card v-else-if="orderStatus == 2" style="margin-top: 100px; padding: 30px; width: 100%;" class="box-card">
-      <div>
-        <i class="el-icon-info" style="font-size: 50px; color: #909399;" />
-      </div>
-      <div style="margin-top: 20px;">
-        <h1 style="font-size: 40px; color: #909399; font-weight: 400;">Yêu Cầu Đã Được Xử Lý</h1>
-      </div>
-      <div style="margin-top: 20px;">
-        <p style="color: #909399;">Yêu cầu chấm bài của bạn đã được xử lý. Mã đơn hàng của bạn là: #{{ order.id }}.</p>
-        <p v-if="feedbackAvailable" style="color: #909399;">Bài luận của bạn đã dược chấm bởi hệ thống chấm bài tự động của Reboost. Bạn có thể xem phản hồi ngay bây giờ..</p>
-        <p v-else style="color: #909399;">Giáo viên của Reboost sẽ chấm bài luận của bạn và cung cấp phản hồi trong vòng 24h. Chúng tôi sẽ thông báo cho bạn qua email khi giáo viên chấm xong.</p>
-        <p style="color: #909399;">Nếu bạn có thắc mắc gì xin vui lòng liên hệ với chúng tôi qua <a href="mailto:support@reboost.vn">support@reboost.vn</a> để được hỗ trợ trực tiếp.</p>
-      </div>
-      <div v-if="feedbackAvailable" style="margin-top: 20px;">
-        <el-button type="into" @click="viewFeedback()">Xem Phản Hồi</el-button>
-      </div>
-      <div v-else style="margin-top: 20px;">
-        <el-button type="info" @click="viewQuestions()">Tiếp Tục Luyện Tập</el-button>
-        <el-button type="info" plain style="margin-left: 10px;" @click="viewSubmission()">XEM LẠI BÀI ĐÃ NỘP</el-button>
-      </div>
-    </el-card>
-    <el-card v-else-if="orderStatus == 0" style="margin-top: 100px; padding: 30px; width: 100%;" class="box-card">
+    <el-card v-else-if="orderStatus == 0" style="margin-top: 100px; padding: 30px; width: 100%; text-align: center;" class="box-card">
       <div>
         <i class="el-icon-error" style="font-size: 50px; color: #F56C6C;" />
       </div>
-
       <div style="margin-top: 20px;">
         <h1 style="font-size: 40px; color: #F56C6C; font-weight: 400;">Thanh Toán Không Thành Công</h1>
       </div>
-
       <div style="margin-top: 20px;">
         <p style="color: #F56C6C;">Xin lỗi bạn vì sự bất tiện này! Đã có lỗi xảy ra trong quá trình thanh toán<span v-if="order"> cho mã đơn hàng: #{{ order.id }}</span>.</p>
         <p style="color: #F56C6C;">Bạn vui lòng liên hệ với chúng tôi qua <a href="mailto:support@reboost.vn" style="color: #F56C6C;">support@reboost.vn</a> để được hỗ trợ trực tiếp.</p>
       </div>
-
       <div style="margin-top: 20px;">
         <el-button type="danger" plain @click="contactUs()">Liên Hệ Với Chúng tôi</el-button>
       </div>
@@ -80,7 +89,8 @@ export default {
       paymentError: false,
       feedbackAvailable: false,
       review: null,
-      order: null
+      order: null,
+      orderProcessing: false
     }
   },
   computed: {
@@ -99,12 +109,8 @@ export default {
     async verifyZaloPayStatus() {
       const apptransid = this.getUrlParameter('apptransid')
       if (apptransid) {
-        const loading = this.$loading({
-          lock: true,
-          text: 'Vui lòng đợi trong giây lát',
-          spinner: 'el-icon-loading',
-          background: 'rgba(0, 0, 0, 0.7)'
-        })
+        const transPlited = apptransid.split('_')
+        const orderId = parseInt(transPlited[1])
         const model = {
           userId: this.currentUser.id,
           appid: this.getUrlParameter('appid'),
@@ -116,45 +122,35 @@ export default {
           status: this.getUrlParameter('status'),
           checksum: this.getUrlParameter('checksum')
         }
-
-        const rs = await paymentService.verifyZaloPayStatus(model)
-        if (rs) {
-          if (rs.status == 1) {
-            // Payment is completed, and review has been processed
-            this.review = rs.review
-            this.order = rs.order
-            if (rs.order.reviewType == 'AI') {
-              this.feedbackAvailable = true
-            }
+        const paymentResult = await paymentService.verifyZaloPayStatus(model)
+        if (paymentResult) {
+          if (paymentResult.status == 1) {
             this.orderStatus = 1
-          } else if (rs.status == 2) {
-            // Order has already been processed
-            this.review = rs.review
-            this.order = rs.order
-            if (rs.order.reviewType == 'AI') {
-              this.feedbackAvailable = true
+            this.orderProcessing = true
+            const rs = await paymentService.processOrder(orderId)
+            if (rs) {
+              if (rs.status == 1 || rs.status == 2) {
+                this.review = rs.review
+                this.order = rs.order
+                if (rs.order.reviewType == 'AI') {
+                  this.feedbackAvailable = true
+                }
+              } else {
+                this.order = rs.order
+              }
             }
-            this.orderStatus = 2
+            this.orderProcessing = false
           } else {
-            // There was an error with the request
             this.orderStatus = 0
           }
         } else {
-          // There was an error with the request
           this.orderStatus = 0
         }
-        loading.close()
       }
     },
     async verifyVnPayStatus() {
       const orderId = this.getUrlParameter('vnp_TxnRef')
       if (orderId) {
-        const loading = this.$loading({
-          lock: true,
-          text: 'Vui lòng đợi trong giây lát',
-          spinner: 'el-icon-loading',
-          background: 'rgba(0, 0, 0, 0.7)'
-        })
         const model = {
           userId: this.currentUser.id,
           orderId: orderId,
@@ -169,83 +165,29 @@ export default {
         const paymentResult = await paymentService.verifyVnPayStatus(model)
         if (paymentResult) {
           if (paymentResult.status == 1) {
-            // Payment is completed, get review data
-            const rs = await paymentService.processVnPayOrder(orderId)
+            this.orderStatus = 1
+            this.orderProcessing = true
+            const rs = await paymentService.processOrder(orderId)
             if (rs) {
-              if (rs.status == 1) {
-                // Payment is completed, and review has been processed
+              if (rs.status == 1 || rs.status == 2) {
                 this.review = rs.review
                 this.order = rs.order
                 if (rs.order.reviewType == 'AI') {
                   this.feedbackAvailable = true
                 }
-                this.orderStatus = 1
               } else {
-                // There was an error with the request
-                this.orderStatus = 0
+                this.order = rs.order
               }
-            } else {
-              this.orderStatus = 0
             }
+            this.orderProcessing = false
           } else {
             this.orderStatus = 0
           }
         } else {
-          // There was an error with the request
           this.orderStatus = 0
         }
-        loading.close()
       }
     },
-    // async verifyVnPayStatus() {
-    //   const orderId = this.getUrlParameter('vnp_TxnRef')
-    //   if (orderId) {
-    //     const loading = this.$loading({
-    //       lock: true,
-    //       text: 'Vui lòng đợi trong giây lát',
-    //       spinner: 'el-icon-loading',
-    //       background: 'rgba(0, 0, 0, 0.7)'
-    //     })
-    //     const model = {
-    //       userId: this.currentUser.id,
-    //       orderId: orderId,
-    //       vnpAmount: this.getUrlParameter('vnp_Amount'),
-    //       vnpayTranId: this.getUrlParameter('vnp_TransactionNo'),
-    //       vnpResponseCode: this.getUrlParameter('vnp_ResponseCode'),
-    //       vnpTransactionStatus: this.getUrlParameter('vnp_TransactionStatus'),
-    //       vnpSecureHash: this.getUrlParameter('vnp_SecureHash'),
-    //       queryString: decodeURIComponent(window.location.search.substring(1))
-    //     }
-
-    //     const rs = await paymentService.verifyVnPayStatus(model)
-    //     if (rs) {
-    //       if (rs.status == 1) {
-    //         // Payment is completed, and review has been processed
-    //         this.review = rs.review
-    //         this.order = rs.order
-    //         if (rs.order.reviewType == 'AI') {
-    //           this.feedbackAvailable = true
-    //         }
-    //         this.orderStatus = 1
-    //       } else if (rs.status == 2) {
-    //         // Order has already been processed
-    //         this.review = rs.review
-    //         this.order = rs.order
-    //         if (rs.order.reviewType == 'AI') {
-    //           this.feedbackAvailable = true
-    //         }
-    //         this.orderStatus = 2
-    //       } else {
-    //         // There was an error with the request
-    //         this.orderStatus = 0
-    //       }
-    //     } else {
-    //       // There was an error with the request
-    //       this.orderStatus = 0
-    //     }
-    //     loading.close()
-    //   }
-    // },
     viewFeedback() {
       const url = `/review/${this.review.questionId}/${this.review.docId}/${this.review.reviewId}`
       this.$router.push(url)
