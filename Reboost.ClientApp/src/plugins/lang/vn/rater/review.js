@@ -6,6 +6,6 @@ export const Review = {
   statusTypeTable: 'Loại trạng thái',
   lastActivityTable: 'Ngày hoạt động gần nhất',
   actionsTable: 'Hành động',
-  makeNew: 'Cung cấp phản hồi',
+  makeNew: 'Cung cấp đánh giá',
   completePending: 'Hoàn thành bài đánh giá đang chờ xử lý'
 }

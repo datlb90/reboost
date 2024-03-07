@@ -1,5 +1,13 @@
 <template>
   <div v-if="screenWidth > 780" class="list-container">
+    <el-alert
+      v-if="showQuestionsIntro"
+      title="Đây là nơi hiển thị đa dạng các chủ đề viết đã được phân loại. Hãy lựa chọn những đề phù hợp với bạn sử dụng công cụ tìm kiếm có sẵn và làm ít nhất một bài mỗi ngày nhé."
+      type="success"
+      center
+      style="margin-bottom: 10px"
+      @close="closeIntro()"
+    />
     <div class="top-navigator" style="height: 30px;">
       <el-button
         v-if="showLeftArrow"
@@ -16,7 +24,7 @@
           style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
           @click="onTopicClick(null)"
         >
-          All Topics: {{ questionsCount }}
+          Tất cả chủ đề: {{ questionsCount }}
         </el-tag>
         <el-tag
           v-for="item in summary"
@@ -289,6 +297,14 @@
     </div>
   </div>
   <div v-else class="list-container">
+    <el-alert
+      v-if="showQuestionsIntro"
+      title="Đây là nơi hiển thị đa dạng các chủ đề viết đã được phân loại. Hãy lựa chọn những đề phù hợp với bạn sử dụng công cụ tìm kiếm có sẵn và làm ít nhất một bài mỗi ngày nhé."
+      type="success"
+      center
+      style="margin-bottom: 10px"
+      @close="closeIntro()"
+    />
     <div class="top-navigator" style="height: 30px; margin-left: 5px; margin-right: 5px;">
       <el-button
         v-if="showLeftArrow"
@@ -619,7 +635,8 @@ export default {
       showRightArrow: false,
       allTopicEffect: 'dark',
       sortedQuestions: null,
-      screenWidth: window.innerWidth
+      screenWidth: window.innerWidth,
+      showQuestionsIntro: true
     }
   },
   computed: {
@@ -636,6 +653,9 @@ export default {
     }
   },
   mounted() {
+    if (localStorage.getItem('noQuestionsIntro')) {
+      this.showQuestionsIntro = false
+    }
     window.addEventListener('resize', () => {
       this.screenWidth = window.innerWidth
     })
@@ -668,6 +688,10 @@ export default {
     })
   },
   methods: {
+    closeIntro() {
+      localStorage.setItem('noQuestionsIntro', true)
+      this.showQuestionsIntro = false
+    },
     loadTable() {
       this.sortedQuestions = null
       const filtered = this.filter()

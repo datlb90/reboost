@@ -35,6 +35,7 @@ export const RATER_STATUS = {
   TOEFT_TRAINING_APPROVED: 'TOEFLTrainingApproved'
 }
 export const REVIEW_REQUEST_STATUS = {
+  REQUESTED: 'Requested',
   IN_PROGRESS: 'In Progress',
   COMPLETED: 'Completed',
   RATED: 'Rated',

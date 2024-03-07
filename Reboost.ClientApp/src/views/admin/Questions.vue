@@ -172,6 +172,17 @@
       @sort-change="sortChange"
     >
       <el-table-column
+        label="Id"
+        prop="id"
+        sortable
+        fixed="left"
+        width="60"
+      >
+        <template slot-scope="scope">
+          <span class="title-row cursor">{{ scope.row.id }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
         :label="messageTranslates('question', 'titleTable')"
         prop="title"
         sortable
@@ -179,7 +190,7 @@
         min-width="200"
       >
         <template slot-scope="scope">
-          <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.id }}. {{ scope.row.title }}</span>
+          <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.title }}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -482,6 +493,16 @@ export default {
           } else {
             return (propA === propB) ? 0 : propA ? 1 : -1
           }
+        } else if (sort.prop === 'id') {
+          const propA = a[sort.prop]
+          const propB = b[sort.prop]
+          if (propA < propB) {
+            if (sort.order === 'descending') { return -1 } else { return 1 }
+          }
+          if (propA > propB) {
+            if (sort.order === 'descending') { return 1 } else { return -1 }
+          }
+          return 0
         } else {
           const propA = a[sort.prop] ? a[sort.prop].trim().toUpperCase() : ''
           const propB = b[sort.prop] ? b[sort.prop].trim().toUpperCase() : ''

@@ -293,6 +293,14 @@
       <pane v-if="!tabDisCussionShowed">
         <div style="height: 100%; display: flex; flex-direction: column;">
           <div class="header-passage">
+            <el-button
+              v-if="((submissionId && isEdit) || writingSubmitted) && !isProRequested"
+              style="float: left; margin-right: 5px"
+              size="mini"
+              type="primary"
+              plain
+              @click="requestReview()"
+            >Yêu cầu chấm bài</el-button>
             <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
               <el-tag
                 v-if="isShowCountWord && countWord != 0"
@@ -343,7 +351,7 @@
             </div>
           </div>
           <div style="flex-grow: 1;">
-            <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Start your writing here ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
+            <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Bắt đầu bài viết của bạn ở đây ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
           </div>
         </div>
       </pane>
@@ -353,7 +361,6 @@
         ref="checkoutDialog"
         :submission-id="+submissionId"
         :question-id="+questionId"
-        :unrated-count="unRatedList.length"
       />
     </div>
     <el-dialog
@@ -683,7 +690,7 @@
           </div>
         </div>
         <div style="flex-grow: 1;">
-          <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Start your writing here ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
+          <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Bắt đầu bài viết của bạn ở đây ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
         </div>
       </div>
       <div>
@@ -691,7 +698,6 @@
           ref="checkoutDialog"
           :submission-id="+submissionId"
           :question-id="+questionId"
-          :unrated-count="unRatedList.length"
         />
       </div>
       <el-dialog
@@ -763,7 +769,6 @@ export default {
       timeSpentInterval: null,
       timeout: null,
       submissionId: null,
-      unRatedList: [],
       isFreeRequested: false,
       isProRequested: false,
       showStartTestButton: false,
@@ -882,12 +887,12 @@ export default {
     }
     this.idLocalStorage = this.currentUser.username + '_QuestionId' + this.questionId
     this.loadData()
-    reviewService.getUnratedReview().then(rs => {
-      if (rs.length > 0) {
-        this.unRatedList = rs
-      }
-      console.log('Unrated Reviews: ', rs)
-    })
+    // reviewService.getUnratedReview().then(rs => {
+    //   if (rs.length > 0) {
+    //     this.unRatedList = rs
+    //   }
+    //   console.log('Unrated Reviews: ', rs)
+    // })
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
@@ -935,6 +940,9 @@ export default {
       if (this.writingContent == null || this.writingContent == 'null') this.writingContent = ''
       console.log('Writing Content: ', this.writingContent)
       this.countWords()
+    },
+    requestReview() {
+      this.$refs.checkoutDialog?.openDialog()
     },
     copyTextToClipboard(text) {
       console.log(text)
@@ -1085,14 +1093,7 @@ export default {
         data.status = 'Submitted'
         documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
-            // this.$notify.success({
-            //   title: 'Success',
-            //   message: 'Bài viết của bạn đã được nộp thành công',
-            //   type: 'success',
-            //   duration: 3000
-            // })
             this.writingSubmitted = true
-            // this.checkoutVisible = true
             this.$refs.checkoutDialog?.openDialog()
           }
         })
@@ -1100,17 +1101,12 @@ export default {
         data.status = 'Submitted'
         documentService.submitDocument(data).then(rs => {
           if (rs) {
-            // this.$notify.success({
-            //   title: 'Success',
-            //   message: 'Bài viết của bạn đã được nộp thành công',
-            //   type: 'success',
-            //   duration: 3000
-            // })
             this.hasSubmitionForThisQuestion = true
             this.submissionId = rs.submissions[0]?.id
             this.writingSubmitted = true
-            // this.checkoutVisible = true
-            this.$refs.checkoutDialog?.openDialog()
+            this.$nextTick(() => {
+              this.$refs.checkoutDialog?.openDialog()
+            })
           }
         })
       }

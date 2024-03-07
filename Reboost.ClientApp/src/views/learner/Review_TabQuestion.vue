@@ -4,12 +4,11 @@
       <div id="child-scroll">
         <div v-if="reviewRequest && reviewRequest.feedbackType == 'Free' && showDirection" class="tip" transition="fade" style="margin-bottom: 10px;">
           <p style="width: 98%;">
-            <b>Hướng Dẫn:</b>
             <!-- Read the question description and provide feedback for the writing response on the right. A quality review consists of both in-text comments and rubric assesments. Please complete these before submiting your review. -->
-            Đọc mô tả câu hỏi và cung cấp phản hồi cho bài luận ở bên phải. Một bản đánh giá chất lượng bao gồm cả bình luận trong văn bản và đánh giá theo thang điểm. Vui lòng hoàn thành những mục này trước khi nộp bài đánh giá của bạn.
+            Bạn hãy đọc hiểu yêu cầu của đề bài và tham khảo hướng dẫn ở tab kế bên trước khi cung cấp phản hồi cho bài viết. Một phản hồi chất lượng bao gồm đánh giá cho những tiêu chí chuẩn (rubric assessment) và phản hồi trực tiếp trong bài viết (in-text comments). Hãy hoàn thành những mục này trước khi gửi bài đánh giá của bạn.
           </p>
-          <el-button size="mini" @click="showDirection = !showDirection">Đã hiểu</el-button>
-          <el-button size="mini" @click="notShowDirection">Không hiển nữa</el-button>
+          <el-button size="mini" @click="showDirection = !showDirection">Ok</el-button>
+          <el-button size="mini" @click="notShowDirection">Không hiện nữa</el-button>
         </div>
 
         <div v-if="reviewRequest && reviewRequest.feedbackType == 'Pro'" class="requirement" transition="fade" style="margin-bottom: 10px;">
@@ -91,9 +90,9 @@
   </div>
 </template>
 <script>
-import raterService from '@/services/rater.service'
+// import raterService from '@/services/rater.service'
 import reviewService from '@/services/review.service.js'
-import { RATER_STATUS, RATER_TRAINING_STATUS, UserRole, DISPUTE_STATUS } from '../../app.constant'
+import { RATER_STATUS, UserRole, DISPUTE_STATUS } from '../../app.constant'
 export default ({
   name: 'TabQuestion',
   components: {
@@ -165,28 +164,19 @@ export default ({
     }
   },
   async mounted() {
-    await raterService.getByCurrentUser().then(rs => {
-      this.userInfo = rs
-      if (rs.status === RATER_STATUS.REVISION_REQUESTED) {
-        // Load rater's training
-        reviewService.getRaterTrainings(rs.id).then(r => {
-          var currentTraining = r.filter(r => r.reviewId === this.reviewid)[0]
-          if (currentTraining.status == RATER_TRAINING_STATUS.REVISION_REQUEST) {
-            this.trainingNote = currentTraining.note
-          }
-        })
-      }
-    })
-
     if (localStorage.getItem('showQuestionDirection')) {
       this.showDirection = false
     }
-    this.$store.dispatch('question/loadQuestion', this.questionid).then(rs => {
+    // get question that has already been loaded from store
+    if (this.getQuestion) {
       this.loadingComplete = true
       this.calculateContainerHeight()
-    })
+    }
   },
   methods: {
+    async getQuestionById(id) {
+      return await this.$store.dispatch('question/loadQuestion', this.questionid)
+    },
     notShowDirection() {
       localStorage.setItem('showQuestionDirection', true)
       this.showDirection = false

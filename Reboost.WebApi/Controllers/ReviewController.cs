@@ -14,6 +14,7 @@ using Reboost.Shared;
 using Hangfire;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Microsoft.Extensions.Configuration;
+using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -79,7 +80,7 @@ namespace Reboost.WebApi.Controllers
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
             var check = await _service.CheckReviewValidationAsync(role.Value,currentUser, reviewId);
-            if (check!=0)
+            if (check != 0)
             {
                 return Ok(check);
             }
@@ -161,11 +162,8 @@ namespace Reboost.WebApi.Controllers
             // Send mail if review is not a training review
             if(rs != null && rs.RequestId != 0)
             {
-                // Get reviewee's Id
-                var reviewee = await _userService.GetByIdAsync(rs.RevieweeId);
-
                 // Get review's info by reviewee's Id
-                var result = await _service.GetOrCreateReviewByReviewRequestAsync(rs.RequestId, reviewee.Id);
+                var result = await _service.GetReviewByReviewRequestAsync(rs.RequestId);
 
                 // Send email to rater
                 string raterSubject = "Hoàn Tất Đánh Giá";
@@ -178,11 +176,16 @@ namespace Reboost.WebApi.Controllers
                 {
                     raterRole = "giáo viên";
                 }
-                // Send email to reviewee
-                string revieweeSubject = "Bài Viết Của Bạn Đã Được Đánh Giá Bởi Reboost";
-                string url = $"{configuration["ClientUrl"]}/review/" + result.ReviewRequest.Submission.QuestionId + "/" + result.ReviewRequest.Submission.DocId + "/" + result.ReviewId;
-                string revieweeContent = $"Xin chào {reviewee.FirstName},<p>Bài viết của bạn đã được đánh giá bởi " + raterRole + " của Reboost.</p> <p>Bạn có thể xem đánh giá cho bài viết của bạn sử dụng link sau đây: <a href='" + url + "'>link tới bài viết</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>";
-                await _mailService.SendEmailAsync(reviewee.Email, revieweeSubject, revieweeContent);
+
+                // Get reviewee's Id
+                var reviewee = await _userService.GetByIdAsync(rs.RevieweeId);
+                if (reviewee != null) {
+                    // Send email to reviewee
+                    string revieweeSubject = "Bài Viết Của Bạn Đã Được Đánh Giá Bởi Reboost";
+                    string url = $"{configuration["ClientUrl"]}/review/" + result.ReviewRequest.Submission.QuestionId + "/" + result.ReviewRequest.Submission.DocId + "/" + result.ReviewId;
+                    string revieweeContent = $"Xin chào {reviewee.FirstName},<p>Bài viết của bạn đã được đánh giá bởi " + raterRole + " của Reboost.</p> <p>Bạn có thể xem đánh giá cho bài viết của bạn sử dụng link sau đây: <a href='" + url + "'>link tới bài viết</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>";
+                    await _mailService.SendEmailAsync(reviewee.Email, revieweeSubject, revieweeContent);
+                }
 
                 // Send email to admin
                 if (isProRequest == 1)
@@ -302,6 +305,17 @@ namespace Reboost.WebApi.Controllers
             var currentUserClaim = HttpContext.User;
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            // Kiểm tra xem học viên cho thể yêu cầu peer review hay không
+            bool isEligible = await _service.EligibleForPeerReview(currentUser.Id);
+            if (!isEligible)
+            {
+                return BadRequest(new
+                {
+                    Message = "Bạn cần cung cấp 1 đánh giá trước khi yêu cầu nhận phản hồi miễn phí từ học viên khác.",
+                    IsSuccess = false
+                });
+            }
 
             request.UserId = currentUser.Id;
 

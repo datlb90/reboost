@@ -1,10 +1,9 @@
 <template>
   <div v-if="screenWidth > 780" id="reviewContainer" :style="{cursor: activeButton== 'text'||activeButton== 'rectangle' || activeButton== 'point' ? 'crosshair':''}" style="border-top: 1px solid rgb(223 224 238); background: rgb(248, 249, 250);">
-
     <div id="content-wrapper" style="background: rgb(248, 249, 250); height: inherit; width: 100%;position: absolute; overflow: unset;">
       <div id="left-panel" :class="{'hideQuestion': !showQuestion}" style="height: calc(100vh - 50px);">
         <el-tabs v-model="selectedTab" type="border-card">
-          <el-tab-pane name="question" label="Question">
+          <el-tab-pane name="question" label="Chủ đề">
             <tabQuestion
               v-if="review"
               ref="tabQuestion"
@@ -15,10 +14,22 @@
               @closeDisputeNote="disputeNoteDialogVisible=false"
             />
           </el-tab-pane>
-          <el-tab-pane name="rubric" label="Rubric">
+
+          <el-tab-pane v-if="currentUser.role != 'rater'" name="guide" label="Hướng Dẫn">
+            <SelfReviewIeltsTask1 v-if="isSelfReview && task == 'Academic Writing Task 1'" ref="tabGuide" />
+            <SelfReviewIeltsTask2 v-if="isSelfReview && task == 'Academic Writing Task 2'" ref="tabGuide" />
+            <SelfReviewIndependent v-if="isSelfReview && task == 'Independent Writing'" ref="tabGuide" />
+            <SelfReviewIntegrated v-if="isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
+            <PeerReviewIeltsTask1 v-if="!isSelfReview && task == 'Academic Writing Task 1'" ref="tabGuide" />
+            <PeerReviewIeltsTask2 v-if="!isSelfReview && task == 'Academic Writing Task 2'" ref="tabGuide" />
+            <PeerReviewIndependent v-if="!isSelfReview && task == 'Independent Writing'" ref="tabGuide" />
+            <PeerReviewIntegrated v-if="!isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
+          </el-tab-pane>
+
+          <el-tab-pane name="rubric" label="Tiêu chí chuẩn">
             <tabRubric v-if="review" ref="tabRubric" :current-user="currentUser" :questionid="questionId" :is-ai-review="isAiReview" :reviewid="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
-          <el-tab-pane v-if="isRate && !isDisputed && !isAiReview" name="rate" label="Rate">
+          <el-tab-pane v-if="isRate && !isAiReview" name="rate" label="Đánh giá">
             <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
           </el-tab-pane>
         </el-tabs>
@@ -462,13 +473,21 @@
 </template>
 
 <script>
-import raterService from '../../services/rater.service'
+// import raterService from '../../services/rater.service'
 import PDFJS from 'pdf-dist/webpack.js'
 import ToolBar from '../../components/controls/Viewer_ToolBar'
 import TabQuestion from './Review_TabQuestion'
 import TabRubric from './Review_TabRubric'
 import TabRate from './Review_TabRate'
 import TextToolGroup from '../../components/controls/TextToolGroup'
+import SelfReviewIeltsTask1 from '../../components/guides/SelfReviewIeltsTask1'
+import SelfReviewIeltsTask2 from '../../components/guides/SelfReviewIeltsTask2'
+import SelfReviewIntegrated from '../../components/guides/SelfReviewIntegrated'
+import SelfReviewIndependent from '../../components/guides/SelfReviewIndependent'
+import PeerReviewIeltsTask1 from '../../components/guides/PeerReviewIeltsTask1'
+import PeerReviewIeltsTask2 from '../../components/guides/PeerReviewIeltsTask2'
+import PeerReviewIntegrated from '../../components/guides/PeerReviewIntegrated'
+import PeerReviewIndependent from '../../components/guides/PeerReviewIndependent'
 // PDFJSAnnotate
 import PDFJSAnnotate from '@/pdfjs/PDFJSAnnotate'
 const { UI } = PDFJSAnnotate
@@ -489,7 +508,7 @@ import { enableEdit, disableEdit } from '@/pdfjs/UI/edit'
 import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
-import { REVIEW_REQUEST_STATUS, UserRole, SubmissionStatus } from '../../app.constant'
+import { UserRole } from '../../app.constant'
 import moment from 'moment-timezone'
 // import Rubric from '@/components/controls/Rubric'
 // import { highlightText } from '../../pdfjs/UI/highlight-text.js'
@@ -501,7 +520,15 @@ export default {
     'tabQuestion': TabQuestion,
     'tabRubric': TabRubric,
     'textToolGroup': TextToolGroup,
-    'tabRate': TabRate
+    'tabRate': TabRate,
+     'SelfReviewIeltsTask1': SelfReviewIeltsTask1,
+ 'SelfReviewIeltsTask2': SelfReviewIeltsTask2,
+ 'SelfReviewIntegrated': SelfReviewIntegrated,
+ 'SelfReviewIndependent': SelfReviewIndependent,
+  'PeerReviewIeltsTask1': PeerReviewIeltsTask1,
+ 'PeerReviewIeltsTask2': PeerReviewIeltsTask2,
+ 'PeerReviewIntegrated': PeerReviewIntegrated,
+ 'PeerReviewIndependent': PeerReviewIndependent
     // 'rubric': Rubric
   },
   data() {
@@ -582,7 +609,6 @@ export default {
       selectedTab: 'question',
       isReviewAuth: false,
       isRated: false,
-      statusRater: '',
       isSubmit: false,
       disputeDialogVisible: false,
       disputeNote: {
@@ -596,7 +622,9 @@ export default {
       isAiReview: false,
       isLoading: false,
       review: null,
-      screenWidth: window.innerWidth
+      screenWidth: window.innerWidth,
+      isSelfReview: false,
+      task: null
     }
   },
   computed: {
@@ -627,9 +655,9 @@ export default {
   },
   async beforeMount() {
     if (this.$route.params.docId && this.$route.params.reviewId && this.$route.params.questionId) {
-      this.questionId = +this.$route.params.questionId
-      this.reviewId = +this.$route.params.reviewId
-      this.documentId = +this.$route.params.docId
+      this.questionId = parseInt(this.$route.params.questionId)
+      this.reviewId = parseInt(this.$route.params.reviewId)
+      this.documentId = parseInt(this.$route.params.docId)
       this.isView = this.$route.params.isViewOrRate === 'view' || this.$route.params.isViewOrRate === 'rate'
       this.RENDER_OPTIONS.documentId = this.documentId
       this.isRate = this.$route.params.isViewOrRate === 'rate'
@@ -645,21 +673,10 @@ export default {
     window.component = this
     window['PDFJSAnnotate'] = PDFJSAnnotate
     window['APP'] = this
-    // window.onmessage = function(e) {
-    //   console.log('receive message from parent', e.data)
-    //   if (e.data) {
-    //     if (typeof e.data === 'string' || e.data instanceof String) {
-    //       this.showRubric = e.data.toLowerCase() === 'rubric'
-    //     }
-    //   }
-    // }
-    // window.addEventListener('message', (e) => {
-    //   console.log('receive message from parent iframe', e)
-    // })
     localStorage.setItem(`${this.documentId}/tooltype`, 'cursor')
     localStorage.setItem(`${this.documentId}/color`, '#ff0000')
     PDFJSAnnotate.getStoreAdapter().clearAnnotations(this.documentId)
-    // Render stuff
+    // load the document and annotations
     this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId }).then(async() => {
       PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
       this.completeLoading = true
@@ -668,23 +685,18 @@ export default {
       this.$refs.toolBar?.insertExpandMenu()
       this.handleCommentPositionsRestore()
       this.hideDeleteToolBar()
-      // this.ToolbarButtons()
-      // this.ScaleAndRotate();
     })
-
-    await raterService.getByCurrentUser().then(rs => {
-      if (rs) {
-        this.statusRater = rs.status
-      }
-    })
-
-    this.loadReview().then(rs => {
-      if (this.currentUser.role === 'Admin' || this.isView || this.isRate) {
-        this.disableToolbarSubmit()
-      } else {
-        enableEdit()
-      }
-    })
+    // Load question and get task info
+    const question = await this.$store.dispatch('question/loadQuestion', this.questionId)
+    this.task = question.section
+    // Load review
+    await this.loadReview()
+    // Show/hide tools based on role
+    if (this.currentUser.role === 'Admin' || this.isView || this.isRate) {
+      this.disableToolbarSubmit()
+    } else {
+      enableEdit()
+    }
   },
   beforeCreate() {
     document.body.style = 'overflow: hidden'
@@ -698,6 +710,63 @@ export default {
     document.body.style.overflow = null
   },
   methods: {
+    async loadReview() {
+      // Get the review data and display the tab accordingly
+      const rs = await reviewService.getById(this.$route.params.reviewId)
+      console.log('Review:', rs)
+      if (this.currentUser.role === UserRole.ADMIN) {
+        this.$store.dispatch('rater/setSelectedRater', rs.rater)
+      }
+      if (rs.review) {
+        this.review = rs
+        if (rs.review.status === 'Completed') {
+          this.isView = true
+          this.isSubmit = true
+          // this.selectedTab = 'rubric'
+        }
+        this.$refs.toolBar?.loadReviewData(rs)
+        if (rs.review.reviewerId === 'AI') {
+          this.isAiReview = true
+        }
+        if (rs.review.reviewerId === rs.review.revieweeId) {
+          // this.selectedTab = 'guide'
+          this.isSelfReview = true
+        }
+      }
+
+      // Check if the current user is the review author
+      if (rs.review && this.currentUser.id === rs.review.reviewerId) {
+        this.isReviewAuth = true
+      }
+
+      if (rs.review && (this.currentUser.id === rs.review.reviewerId || this.currentUser.id === rs.review.revieweeId) &&
+      (rs.review.status === 'Completed' || rs.review.status === 'Rated')) {
+        this.isRate = true
+        const reviewRating = await reviewService.getReviewRating(this.$route.params.reviewId)
+
+        if (reviewRating) {
+          this.isRated = true
+          // this.selectedTab = 'rate'
+          this.$refs.tabRate?.updateData({ value: reviewRating.rate, comment: reviewRating.comment, rated: true })
+          this.isView = true
+        } else if (this.isReviewAuth) {
+          this.isRate = false
+        }
+      } else if (rs.review && this.currentUser.id === rs.review.revieweeId && rs.review.reviewerId !== rs.review.revieweeId) {
+        this.isView = true
+      }
+
+      // Decide which tab to open based on review status
+      if (rs.review.status == 'In Progress') { // Làm mới hoặc đang làm dở
+        if (this.isSelfReview) { this.selectedTab = 'guide' } // Hiển thì tab hướng dẫn cho self review
+        // Nếu không phải là self review thì hiển thị tab chủ đề
+      } else if (rs.review.status === 'Completed') { // Nếu bài chấm đã được hoàn thiện
+        // hiển thị tab rubric
+        this.selectedTab = 'rubric'
+      } else if (this.isRated) {
+        this.selectedTab = 'rate'
+      }
+    },
     async annotationAdded(documentId, pageNumber, annotation) {
       if (annotation.type == 'textbox' || annotation.type == 'area') {
         this.disableToolbarButtons()
@@ -2334,7 +2403,7 @@ export default {
         })
         const target = this.getHighlightByCommentId(newComment.annotation.uuid)
         if (this.newComment.replace(/\s/g, '').length != 0) {
-        // Save in-progress comment
+          // Save in-progress comment
           await this.addCommentText(false)
         }
         this.handleCommentAnnotationClick(target)
@@ -2475,7 +2544,7 @@ export default {
       if (!this.rubricCriteria) {
         this.$notify.error({
           title: 'Thiếu đánh giá tiêu chí chuẩn',
-          message: 'Bạn hãy cung cấp đánh giá cho toàn bộ tiêu chí chuẩn trước khi gửi phản hồi',
+          message: 'Bạn hãy cho điểm và cung cấp bình luận cho toàn bộ tiêu chí chuẩn trước khi gửi phản hồi.',
           type: 'error',
           duration: 5000
         })
@@ -2550,8 +2619,8 @@ export default {
           this.disableToolbarSubmit()
           this.$refs.toolBar?.completeLoading()
           this.$notify.success({
-            title: 'Đánh giá của bạn đã được gửi',
-            message: 'Đánh giá của bạn đã được gửi cho học viên',
+            title: 'Cảm ơn bạn đã gửi đánh giá!',
+            message: 'Đánh giá của bạn đã được gửi cho học viên. Bạn có thể yêu cầu nhận phản hồi miễn phí từ học viên khác ngay bây giờ.',
             type: 'success',
             duration: 5000
           })
@@ -3096,58 +3165,6 @@ export default {
     disableToolbarButtons() {
       this.activeButton = 'cursor'
       this.$refs.toolBar?.disableButtons()
-    },
-    async loadReview() {
-      const result = await reviewService.getById(this.$route.params.reviewId).then(async rs => {
-        console.log('Review:', rs)
-
-        if (this.currentUser.role === UserRole.ADMIN) {
-          this.$store.dispatch('rater/setSelectedRater', rs.rater)
-        }
-
-        if (rs.review) {
-          if (rs.review.status === REVIEW_REQUEST_STATUS.COMPLETED) {
-            this.isView = true
-            this.isSubmit = true
-          }
-          this.$refs.toolBar?.loadReviewData(rs)
-
-          if (rs.review.reviewerId === 'AI') {
-            this.selectedTab = 'rubric'
-            this.isAiReview = true
-          }
-        }
-
-        this.review = rs
-
-        if (rs.submission?.status.trim() === SubmissionStatus.REVIEWED) {
-          this.selectedTab = 'rubric'
-        }
-
-        if (rs.review && this.currentUser.id === rs.review.reviewerId) {
-          this.isReviewAuth = true
-        }
-
-        if (rs.review && (this.currentUser.id === rs.review.reviewerId || this.currentUser.id === rs.review.revieweeId) &&
-        (rs.review.status.trim() === REVIEW_REQUEST_STATUS.COMPLETED || rs.review.status.trim() === REVIEW_REQUEST_STATUS.RATED || rs.review.status.trim() === REVIEW_REQUEST_STATUS.PAID)) {
-          this.isRate = true
-
-          reviewService.getReviewRating(this.$route.params.reviewId).then(r => {
-            if (r) {
-              this.isRated = true
-              this.selectedTab = 'rate'
-              this.$refs.tabRate?.updateData({ value: r.rate, comment: r.comment, rated: true })
-              this.isView = true
-            } else if (this.isReviewAuth) {
-              // this.$refs.tabRate.updateData({ value: 0, comment: 'Please wait for reviewee!', rated: true })
-              this.isRate = false
-            }
-          })
-        } else if (rs.review && this.currentUser.id === rs.review.revieweeId && rs.review.reviewerId !== rs.review.revieweeId) {
-          this.isView = true
-        }
-      })
-      return result
     },
     rateReview() {
       this.selectedTab = 'rate'

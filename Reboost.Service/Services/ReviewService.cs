@@ -18,6 +18,8 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId);
+        Task<bool> EligibleForPeerReview(string userId);
         Task<Submissions> GetSubmissionById(int submissionId);
         Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId);
         Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage);
@@ -87,6 +89,15 @@ namespace Reboost.Service.Services
             chatGPTService = _chatGPTService;
             configuration = _configuration;
         }
+        public async Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId)
+        {
+            return await _unitOfWork.Review.GetReviewByReviewRequestAsync(requestId);
+        }
+        public async Task<bool> EligibleForPeerReview(string userId)
+        {
+            return await _unitOfWork.Review.EligibleForPeerReview(userId);
+        }
+
         public async Task<Submissions> GetSubmissionById(int submissionId)
         {
             return await _unitOfWork.Submission.GetByIdAsync(submissionId);
@@ -400,7 +411,8 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Review.GetReviewRatingsByReviewIdAsync(reviewId);
         }
-        public async Task<GetReviewsModel> CreateReviewFromQueue(string userId) {
+        public async Task<GetReviewsModel> CreateReviewFromQueue(string userId)
+        {
             return await _unitOfWork.Review.CreateReviewFromQueue(userId);
         }
         public async Task<IEnumerable<Reviews>> GetUnRatedReviewsAsync(string userId)

@@ -27,8 +27,8 @@ namespace Reboost.Shared
     }
     public static class ReviewRequestStatus
     {
+        public const string REQUESTED = "Requested";
         public const string COMPLETED = "Completed";
-        public const string REVIEW_REQUESTED = "Review Requested";
         public const string RATED = "Rated";
         public const string WAITING = "Waiting";
         public const string IN_PROGRESS = "In Progress";

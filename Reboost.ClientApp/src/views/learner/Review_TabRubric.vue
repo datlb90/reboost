@@ -16,7 +16,7 @@
                     {{ criteria.name }}
                   </div>
                   <div style="float: right;">
-                    <el-tooltip placement="right" effect="light" popper-class="rubric-description" sty>
+                    <el-tooltip v-if="criteria.name != 'Overall Score & Feedback'" placement="right" effect="light" popper-class="rubric-description" sty>
                       <div slot="content">
                         <div>
                           <el-table
@@ -32,20 +32,38 @@
                             />
                             <el-table-column
                               prop="description"
-                              label="Desciption"
+                              label="Description"
                             />
                           </el-table>
                         </div>
                       </div>
                       <el-button :id="'save-btn-' + criteria.id" type="info" plain icon="el-icon-info" size="mini">Rubric</el-button>
                     </el-tooltip>
+                    <div v-if="criteria.name == 'Overall Score & Feedback'">
+                      <el-select
+                        v-model="criteria.mark"
+                        placeholder="Band"
+                        size="mini"
+                        style="width: 82px;"
+                        :readonly="readOnly || currentUser.role == 'Admin'"
+                        :disabled="readOnly || currentUser.role == 'Admin'"
+                        @change="rubricMileStoneClick(reviewid, criteria, $event)"
+                      >
+                        <el-option
+                          v-for="item in scoreOptions"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value"
+                        />
+                      </el-select>
+
+                    </div>
 
                   </div>
                   <!-- <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="float: right;">
                     <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
                   </div> -->
                 </div>
-
                 <!-- <div style="font-size: 14px;">
                   {{ criteria.description }}
                 </div> -->
@@ -53,11 +71,9 @@
                 <!-- <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="margin-top: 10px;">
                   <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
                 </div> -->
-
               </div>
-
               <div>
-                <div v-if="criteria.name != 'Critical Errors'">
+                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Overall Score & Feedback'">
                   <el-radio-group
                     :id="criteria.id"
                     v-model="criteria.mark"
@@ -66,14 +82,12 @@
                     :disabled="readOnly || currentUser.role == 'Admin'"
                     @input="rubricMileStoneClick(reviewid, criteria, $event)"
                   >
-
                     <el-radio-button
                       v-for="milestone in criteria.bandScoreDescriptions.slice()"
                       id="mileStone"
                       :key="milestone.id"
                       :label="milestone.bandScore"
                     />
-
                     <!-- <el-tooltip
                       v-for="milestone in criteria.bandScoreDescriptions.slice()"
                       :key="milestone.id"
@@ -98,7 +112,7 @@
                     v-model="criteria.comment"
                     :criteria-index="criteriaIndex"
                     type="textarea"
-                    placeholder="Enter text here"
+                    placeholder="Cung cấp bình luận cho tiêu chí này. Bạn có thể đánh giá về những phần đã làm tốt và điểm cần cải thiện của bài viết."
                     :autosize="{ minRows: 5, maxRows: 10 }"
                     :maxlength="8000"
                     class="criteria-comment"
@@ -167,7 +181,98 @@ export default ({
       rubricCriteria: [],
       readOnly: false,
       dialogVisible: false,
-      selectedCriteria: null
+      selectedCriteria: null,
+      scoreOptions: null,
+      toeflScores: [
+        {
+          value: 5,
+          label: '5.0'
+        }, {
+          value: 4.5,
+          label: '4.5'
+        }, {
+          value: 4,
+          label: '4.0'
+        }, {
+          value: 3.5,
+          label: '3.5'
+        }, {
+          value: 3,
+          label: '3.0'
+        }, {
+          value: 2.5,
+          label: '2.5'
+        }, {
+          value: 2,
+          label: '2.0'
+        }, {
+          value: 1.5,
+          label: '1.5'
+        }, {
+          value: 1,
+          label: '1.0'
+        }, {
+          value: 0,
+          label: '0'
+        }
+      ],
+      ieltsSCores: [
+        {
+          value: 9,
+          label: '9.0'
+        }, {
+          value: 8.5,
+          label: '8.5'
+        }, {
+          value: 8,
+          label: '8.0'
+        }, {
+          value: 7.5,
+          label: '7.5'
+        }, {
+          value: 7,
+          label: '7.0'
+        }, {
+          value: 6.5,
+          label: '6.5'
+        }, {
+          value: 6,
+          label: '6.0'
+        }, {
+          value: 5.5,
+          label: '5.5'
+        }, {
+          value: 5,
+          label: '5.0'
+        }, {
+          value: 4.5,
+          label: '4.5'
+        }, {
+          value: 4,
+          label: '4.0'
+        }, {
+          value: 3.5,
+          label: '3.5'
+        }, {
+          value: 3,
+          label: '3.0'
+        }, {
+          value: 2.5,
+          label: '2.5'
+        }, {
+          value: 2,
+          label: '2.0'
+        }, {
+          value: 1.5,
+          label: '1.5'
+        }, {
+          value: 1,
+          label: '1.0'
+        }, {
+          value: 0,
+          label: '0'
+        }
+      ]
     }
   },
   computed: {
@@ -187,6 +292,7 @@ export default ({
       const rs = await rubricService.getByQuestionId(this.questionid)
       if (rs) {
         this.rubricCriteria = rs.filter(r => this.isAiReview ? true : r.name != 'Critical Errors').map(criteria => ({ ...criteria, mark: criteria.name == 'Critical Errors' ? 0 : null, isFocused: false, comment: '' }))
+        if (this.rubricCriteria[0] && this.rubricCriteria[0].bandScoreDescriptions.length == 6) { this.scoreOptions = this.toeflScores } else { this.scoreOptions = this.ieltsSCores }
         // Get rubric data from localstorage first
         var hasComment = false
         var retrievedComment = localStorage.getItem('reviewRubricComment')
@@ -210,6 +316,7 @@ export default ({
         } else {
         // If there is nothing in localstorage, load from database
           reviewService.loadReviewFeedback(this.reviewid).then(rs => {
+            console.log(rs)
             if (rs.length > 0) {
               rs.forEach(rc => {
                 this.rubricCriteria.map(criteria => {
@@ -236,6 +343,8 @@ export default ({
       } else {
         console.log('Error: rubric cannot be found!')
       }
+
+      console.log('Rubric Criteria: ', this.rubricCriteria)
     },
     onFocus(criteria) {
       criteria.isFocused = true

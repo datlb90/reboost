@@ -51,9 +51,9 @@
         <div v-if="selectedReview == 'Free'">
           <div style="padding-top: 20px; text-align: center;">
             <el-alert
-              v-if="unratedCount > 0"
-              title="Please review all feedback before requesting for a free peer review"
-              type="error"
+              title="Để tạo môi trường học tập lành mạnh và khuyến khích các bạn thực hiện đánh giá cho các học viên khác. Chúng tôi sẽ yêu cầu các bạn cung cấp ít nhất 1 đánh giá trước khi có thể nhận phản hồi miễn phí từ học viên khác. Quy định này sẽ không áp dụng cho lần yêu cầu nhận phản hồi đầu tiên."
+              type="info"
+              style="word-break: break-word; text-align: left;"
               :closable="false"
             />
           </div>
@@ -77,7 +77,7 @@
       </div>
       <div v-if="selectedReview == 'Free'">
         <div style="padding-top: 20px; text-align: center;">
-          <el-button type="primary" :disabled="unratedCount > 0" @click="requestPeerReview()">Xác nhận</el-button>
+          <el-button type="primary" :loading="loading" @click="requestPeerReview()">Xác nhận</el-button>
         </div>
       </div>
 
@@ -183,12 +183,18 @@
         </div>
         <div v-if="selectedReview == 'Free'">
           <div style="padding-top: 20px; text-align: center;">
-            <el-alert
+            <!-- <el-alert
               v-if="unratedCount > 0"
               title="Bạn hãy đánh giá tất cả phản hồi nhận được trước khi yêu cầu chấm bài từ học viên khác"
               type="error"
               :closable="false"
               style="word-break: break-word;"
+            /> -->
+            <el-alert
+              title="Để tạo môi trường học tập lành mạnh và khuyến khích các bạn thực hiện đánh giá cho các học viên khác. Chúng tôi sẽ yêu cầu các bạn cung cấp ít nhất 1 đánh giá trước khi có thể nhận phản hồi miễn phí từ học viên khác. Quy định này sẽ không áp dụng cho lần yêu cầu nhận phản hồi đầu tiên."
+              type="info"
+              style="word-break: break-word; text-align: left;"
+              :closable="false"
             />
           </div>
         </div>
@@ -209,7 +215,7 @@
       </div>
       <div v-if="selectedReview == 'Free'">
         <div style="padding-top: 20px; text-align: center;">
-          <el-button type="primary" :disabled="unratedCount > 0" @click="requestPeerReview()">Xác nhận</el-button>
+          <el-button type="primary" :loading="loading" @click="requestPeerReview()">Xác nhận</el-button>
         </div>
       </div>
 
@@ -281,8 +287,7 @@ export default {
   name: 'Checkout',
   props: {
     submissionId: { type: Number, default: null },
-    questionId: { type: Number, default: null },
-    unratedCount: { type: Number, default: 0 }
+    questionId: { type: Number, default: null }
   },
   data() {
     return {
@@ -302,7 +307,8 @@ export default {
       loadingAutomatedReview: false,
       feedbackLanguage: 'Phản hồi bằng tiếng Việt',
       specialRequest: null,
-      screenWidth: window.innerWidth
+      screenWidth: window.innerWidth,
+      loading: false
     }
   },
   computed: {
@@ -356,6 +362,7 @@ export default {
     },
     openDialog() {
       this.dlVisible = true
+      console.log(this.submissionId)
     },
     goBack() {
       this.selectedReview = ''
@@ -376,23 +383,27 @@ export default {
       this.$emit('closed')
     },
     requestPeerReview() {
-      if (this.unratedCount == 0) {
-        reviewService.createReviewRequest({
-          UserId: this.currentUser.id,
-          SubmissionId: this.submissionId,
-          FeedbackType: 'Free',
-          Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
-        }).then(rs => {
-          this.dialogClosed()
-          this.$notify.success({
-            title: 'Yêu cầu đã được gửi đi',
-            message: 'Yêu cầu nhận đánh giá từ học viên khác đã được gửi đi thành công. Chúng tôi sẽ thông báo cho bạn khi có phản hồi.',
-            type: 'success',
-            duration: 5000
-          })
-          this.$emit('reviewRequested')
+      this.loading = true
+      reviewService.createReviewRequest({
+        UserId: this.currentUser.id,
+        SubmissionId: this.submissionId,
+        FeedbackType: 'Free',
+        FeedbackLanguage: 'vn',
+        Status: REVIEW_REQUEST_STATUS.REQUESTED
+      }).then(rs => {
+        this.dlVisible = false
+        this.$notify.success({
+          title: 'Yêu cầu đã được gửi đi',
+          message: 'Yêu cầu nhận đánh giá từ học viên khác đã được gửi đi thành công. Chúng tôi sẽ thông báo cho bạn khi có phản hồi.',
+          type: 'success',
+          duration: 5000
         })
-      }
+        this.$emit('reviewRequested')
+      }).catch(rs => {
+        // this.dlVisible = false
+        this.loading = false
+        this.$router.push('/reviews')
+      })
     }
   }
 }

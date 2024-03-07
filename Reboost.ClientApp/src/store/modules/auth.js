@@ -42,7 +42,20 @@ const actions = {
     dispatch('review/clearState', null, { root: true })
     dispatch('rater/clearState', null, { root: true })
     commit('RESET_AUTH_STATE')
+    // let checkIntro = false
+    // if (localStorage.getItem('noQuestionsIntro')) {
+    //   checkIntro = true
+    // }
+
+    const questionsIntro = localStorage.getItem('noQuestionsIntro')
+    const submissionsIntro = localStorage.getItem('noSubmissionsIntro')
+    const reviewsIntro = localStorage.getItem('noReviewsIntro')
+
     window.localStorage.clear()
+
+    if (questionsIntro) { localStorage.setItem('noQuestionsIntro', true) }
+    if (submissionsIntro) { localStorage.setItem('noSubmissionsIntro', true) }
+    if (reviewsIntro) { localStorage.setItem('noReviewsIntro', true) }
   },
   async clearUser({ state, commit }) {
     commit('RESET_AUTH_STATE')

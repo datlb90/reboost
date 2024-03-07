@@ -14,13 +14,13 @@
           <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
             <ul v-if="role == userRole.LEARNER" class="navbar-nav nav mr-auto nav-wrapper">
               <li class="nav-item" style="padding-bottom: 12px;">
-                <router-link to="/questions" class="nav-link">Chủ đề viết</router-link>
+                <router-link to="/questions" class="nav-link">Các chủ đề viết</router-link>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
-                <router-link to="/submissions" class="nav-link">Bài đã nộp</router-link>
+                <router-link to="/submissions" class="nav-link">Bài viết của tôi</router-link>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
-                <router-link to="/reviews" class="nav-link">Đánh giá của bạn</router-link>
+                <router-link to="/reviews" class="nav-link">Đánh giá của tôi</router-link>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
                 <a href="/" class="nav-link" @click.prevent="openContactDialog()">Liên hệ</a>

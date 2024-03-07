@@ -61,6 +61,7 @@ const actions = {
   loadQuestion({ commit }, id) {
     return questionService.getById(id).then(result => {
       commit('SET_QUESTION', result)
+      return result
     })
   },
   loadCountQuestionsByTasks({ commit }) {

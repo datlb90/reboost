@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -17,6 +18,8 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IReviewRepository
     {
+        Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId);
+        Task<bool> EligibleForPeerReview(string userId);
         Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId);
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
@@ -72,6 +75,16 @@ namespace Reboost.DataAccess.Repositories
         public ReviewRepository(ReboostDbContext context):base(context)
         {
             db = context;
+        }
+        public async Task<bool> EligibleForPeerReview(string userId)
+        {
+            int peerReviewCount = await db.Reviews.CountAsync(r => r.ReviewerId == userId && (r.Status == ReviewStatus.COMPLETED || r.Status == ReviewStatus.RATED));
+            int peerReviewRequestCount = await db.ReviewRequests.CountAsync(r => r.UserId == userId && r.FeedbackType == "Free");
+
+            if (peerReviewCount >= peerReviewRequestCount)
+                return true;
+            else
+                return false;
         }
         public async Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId)
         {
@@ -183,66 +196,59 @@ namespace Reboost.DataAccess.Repositories
 
             await db.ReviewData.AddRangeAsync(data);
 
-            // Check if review is a training, then change rater status to 'Training Completed' if his/her have finished all training that applied to
-            Raters rater = await db.Raters.Where(r => r.UserId == review.ReviewerId).FirstOrDefaultAsync();
+            //// Check if review is a training, then change rater status to 'Training Completed' if his/her have finished all training that applied to
+            //Raters rater = await db.Raters.Where(r => r.UserId == review.ReviewerId).FirstOrDefaultAsync();
 
-            if(rater != null &&rater.Status != RaterStatus.APPROVED)
+            //if(rater != null &&rater.Status != RaterStatus.APPROVED)
+            //{
+            //    RaterTraining training = await db.RaterTraining.Where(t => t.ReviewId == reviewId).FirstOrDefaultAsync();
+
+            //    RaterRepository _raterRepository = new RaterRepository(db);
+
+            //    List<string> trainingCount = await _raterRepository.GetApplyTo(rater.Id);
+
+            //    if (training.Status == RaterTrainingStatus.REVISION_REQUESTED)
+            //    {
+            //        training.Status = RaterTrainingStatus.REVISION_COMPLETED;
+            //    }
+            //    else
+            //    {
+            //        training.Status = RaterTrainingStatus.COMPLETED;
+            //    }
+
+            //    int completedTrainingCount = await db.RaterTraining.Where(t => t.RaterId == rater.Id && (t.Status.Contains(RaterTrainingStatus.COMPLETED) || t.Status==RaterTrainingStatus.APPROVED)).CountAsync();
+
+            //    if (trainingCount.Count() == (completedTrainingCount+1))
+            //    {
+            //        rater.Status = RaterStatus.TRAINING_COMPLETED;
+            //    }
+
+            //}
+            //else
+            //{
+
+            //}
+
+
+            // Get the review request
+            ReviewRequests request = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
+
+            if (request != null)
             {
-                RaterTraining training = await db.RaterTraining.Where(t => t.ReviewId == reviewId).FirstOrDefaultAsync();
-
-                RaterRepository _raterRepository = new RaterRepository(db);
-
-                List<string> trainingCount = await _raterRepository.GetApplyTo(rater.Id);
-
-                if (training.Status == RaterTrainingStatus.REVISION_REQUESTED)
+                // This is not a default peer review
+                // Update submission status to 'Reviewed'
+                var submission = db.Submissions.Where(s => s.Id == request.SubmissionId).FirstOrDefault();
+                if (submission != null)
                 {
-                    training.Status = RaterTrainingStatus.REVISION_COMPLETED;
+                    submission.UpdatedDate = DateTime.UtcNow;
+                    submission.Status = SubmissionStatus.REVIEWED;
                 }
-                else
-                {
-                    training.Status = RaterTrainingStatus.COMPLETED;
-                }
-
-                int completedTrainingCount = await db.RaterTraining.Where(t => t.RaterId == rater.Id && (t.Status.Contains(RaterTrainingStatus.COMPLETED) || t.Status==RaterTrainingStatus.APPROVED)).CountAsync();
-
-                if (trainingCount.Count() == (completedTrainingCount+1))
-                {
-                    rater.Status = RaterStatus.TRAINING_COMPLETED;
-                }
-
-            }
-            else
-            {
-                ReviewRequests request = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
-
-                if (request != null)
-                {
-                    //Update submission status to 'Reviewed'
-                    var submission = db.Submissions.Where(s => s.Id == request.SubmissionId).FirstOrDefault();
-                    if (submission != null)
-                    {
-                        submission.UpdatedDate = DateTime.UtcNow;
-                        submission.Status = SubmissionStatus.REVIEWED;
-                    }
-
-                    request.Status = ReviewRequestStatus.COMPLETED;
-                    request.CompletedDateTime = DateTime.UtcNow;
-
-                    //if(request.FeedbackType == ReviewRequestType.PRO)
-                    //{
-                    //    RaterBalances balances = new RaterBalances
-                    //    {
-                    //        CompletedDate = DateTime.Now,
-                    //        RaterId = rater.Id,
-                    //        ReviewId = reviewId,
-                    //        Status = RaterBalanceStatus.AVAILABLE,
-                    //        Total = 1
-                    //    };
-                    //    await db.RaterBalances.AddAsync(balances);
-                    //}
-                }
+                // Update review request status to 'Completed'
+                request.Status = ReviewRequestStatus.COMPLETED;
+                request.CompletedDateTime = DateTime.UtcNow;
             }
 
+            // To do: record overall band score
             review.Status = ReviewStatus.COMPLETED;
             review.LastActivityDate = DateTime.UtcNow;
             await db.SaveChangesAsync();
@@ -413,7 +419,7 @@ namespace Reboost.DataAccess.Repositories
 
             var unratedList = await GetUnRatedReviewOfUser(userId);
 
-            sub.Status = unratedList.Count() > 0 ? SubmissionStatus.PENDING : ReviewRequestStatus.REVIEW_REQUESTED;
+            sub.Status = unratedList.Count() > 0 ? SubmissionStatus.PENDING : ReviewRequestStatus.REQUESTED;
 
             await db.ReviewRequests.AddAsync(request);
             await db.SaveChangesAsync();
@@ -447,16 +453,46 @@ namespace Reboost.DataAccess.Repositories
             return await Task.FromResult(rs);
         }
 
-        public async Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId)
-        {
+        public async Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId)
+        { 
             GetReviewsModel rs = new GetReviewsModel();
 
-            ReviewRequests reviewRequest = await db.ReviewRequests.Include("Submission").Where(r=>r.Id == requestId).FirstOrDefaultAsync();
+            // Get the review request 
+            ReviewRequests reviewRequest = await db.ReviewRequests.Include("Submission").Where(r => r.Id == requestId).FirstOrDefaultAsync();
+
+            // Check xem đã có review cho request này hay chưa 
             Reviews existed = await db.Reviews.Where(r => r.RequestId == requestId && r.RevieweeId == reviewRequest.UserId).FirstOrDefaultAsync();
 
             rs.ReviewRequest = reviewRequest;
 
+            // Nếu đã có, trả về request đó
             if (existed != null)
+            {
+                rs.ReviewId = existed.Id;
+                rs.DocId = reviewRequest.Submission.DocId;
+                return await Task.FromResult(rs);
+            };
+            // Nếu không có trả về null 
+            return null;
+        }
+
+
+        public async Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId)
+        {
+            GetReviewsModel rs = new GetReviewsModel();
+
+            // Get the review request 
+            ReviewRequests reviewRequest = await db.ReviewRequests.Include("Submission").Where(r=>r.Id == requestId).FirstOrDefaultAsync();
+
+            // Nếu đây là default review request, 
+            // Check xem đã có review cho request này hay 
+            Reviews existed = await db.Reviews.Where(r => r.RequestId == requestId && r.RevieweeId == reviewRequest.UserId).FirstOrDefaultAsync();
+
+            rs.ReviewRequest = reviewRequest;
+
+            // Nếu đã có, trả về request đó
+            // Luôn luôn tạo mới cho requests với id == 1 hoặc id == 2
+            if (existed != null && requestId != 1 && requestId != 2)
             {
                 rs.ReviewId = existed.Id;
                 rs.DocId = reviewRequest.Submission.DocId;
@@ -627,23 +663,23 @@ namespace Reboost.DataAccess.Repositories
         }
         public async Task<GetReviewsModel> CreateReviewFromQueue(string userID)
         {
+            // Remove rating requirement and rule for priority for now.
             //decimal rate = 0;
             //var userRate = await db.UserRanks.Where(r => r.UserId == userID).FirstOrDefaultAsync();
-
             //if(userRate != null)
             //{
             //    rate = userRate.AverageReviewRate;
             //}
 
-            var tests = await GetTestForCurrentUsers(userID);
+            var selectedTests = await GetTestForCurrentUsers(userID);
 
             var request = await (from queue in db.RequestQueue 
                                  join rq in db.ReviewRequests on queue.RequestId equals rq.Id
                                  join question in db.Questions on rq.Submission.QuestionId equals question.Id
                                  join sec in db.TestSections on question.Task.SectionId equals sec.Id
                                  join test in db.Tests on sec.TestId equals test.Id
-                                 where queue.Status == 0 && rq.Status != SubmissionStatus.PENDING // && queue.MinimumRate <= rate
-                                 && tests.Contains(test.Name) && rq.UserId != userID && rq.FeedbackType == ReviewRequestType.FREE
+                                 where queue.Status == 0 && rq.Status == ReviewRequestStatus.REQUESTED // && queue.MinimumRate <= rate
+                                 && selectedTests.Contains(test.Name) && rq.UserId != userID && rq.FeedbackType == ReviewRequestType.FREE
                                  orderby
                                  //queue.Priority descending,
                                  queue.RequestedDatetime ascending
@@ -651,18 +687,45 @@ namespace Reboost.DataAccess.Repositories
 
             if (request != null)
             {
+                // If there are pending request, create a new review
                 request.Status = 1;
                 await db.SaveChangesAsync();
                 var review = await GetOrCreateReviewByReviewRequestAsync(request.RequestId, userID);
                 return review;
             }
-            //else
-            //{
-            //    // If there is no matching request in the queue because the user rating is not high enough
-            //    // We should still allow users to review random writing, but the feedback won't be sent to the learner because of its quality
-            //}
+            else
+            {
+                // If there is no matching request in the queue, we allow the learner to do self review if learner has submitted a peer review request before
+                // Chọn bài xa nhất thay vì random để cho bài self review có hiệu quả tốt
+                var learnerRequests = await db.ReviewRequests.Where(r => r.UserId == userID && r.Status == ReviewRequestStatus.REQUESTED).ToListAsync();
+                if(learnerRequests != null && learnerRequests.Count > 0)
+                {
+                    //var rand = new Random();
+                    //var selectedRequest = learnerRequests[rand.Next(learnerRequests.Count)];
+                    // Chọn bài xa nhất thay vì random để cho bài self review có hiệu quả tốt 
+                    var selectedRequest = learnerRequests.OrderBy(r => r.RequestedDateTime).Last();
 
-            return null;
+                    var requestQueue = await db.RequestQueue.Where(r => r.RequestId == selectedRequest.Id).FirstOrDefaultAsync();
+                    if (requestQueue != null)
+                    {
+                        requestQueue.Status = 1;
+                        await db.SaveChangesAsync();
+                    }
+
+                    var review = await GetOrCreateReviewByReviewRequestAsync(selectedRequest.Id, userID);
+                    return review;
+                }
+                else
+                {
+                    // Learner has not submitted any peer review request
+                    // Use default submission for the 2 tests
+                    if (selectedTests.Contains("IELTS"))
+                        return await GetOrCreateReviewByReviewRequestAsync(1, userID);
+                    else
+                        return await GetOrCreateReviewByReviewRequestAsync(2, userID);
+                }
+               
+            }
         }
 
         public async Task<List<Reviews>> GetRatedReviewsAsync(string userId)
@@ -693,14 +756,14 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<GetReviewsModel> GetPendingReviewAsync(string userId)
         {
-            var pending = (from r in db.Reviews
+            var pendingRequest = (from r in db.Reviews
                                  join request in db.ReviewRequests on r.RequestId equals request.Id
-                                 join queue in db.RequestQueue on request.Id equals queue.RequestId
-                                 where r.ReviewerId == userId && request.Status != ReviewRequestStatus.COMPLETED && request.Status != ReviewRequestStatus.RATED && queue.Status==1
+                                 //join queue in db.RequestQueue on request.Id equals queue.RequestId
+                                 where r.ReviewerId == userId && r.Status == ReviewStatus.IN_PROGRESS // && r.Status != ReviewRequestStatus.RATED //&& queue.Status==1
                                  select r).FirstOrDefault();
-            if (pending != null)
+            if (pendingRequest != null)
             {
-                var review = await GetOrCreateReviewByReviewRequestAsync(pending.RequestId, userId);
+                var review = await GetReviewByReviewRequestAsync(pendingRequest.RequestId);
                 return review;
             }
 
@@ -1037,23 +1100,23 @@ namespace Reboost.DataAccess.Repositories
             // Return null if not exist
             if (request == null)
             {
-                result.Error = "Request not exist!";
+                result.Error = "Yêu cầu chấm bài không tồn tại";
                 return result;
             }
 
             // Return review request if Request type is FREE
-            if(request.FeedbackType == ReviewRequestType.FREE)
-            {
-                result.ReviewRequest = request;
-                return result;
-            }
+            //if(request.FeedbackType == ReviewRequestType.FREE)
+            //{
+            //    result.ReviewRequest = request;
+            //    return result;
+            //}
 
             var rater = await db.Raters.Where(r => r.UserId == currentUserId).FirstOrDefaultAsync();
             var assignment = await db.RequestAssignments.Where(a => a.RequestId == requestId).FirstOrDefaultAsync();
 
             if(rater != null && assignment.RaterId != rater.Id)
             {
-                result.Error = "You do not have permission to this review!";
+                result.Error = "Yêu cầu chấm bài đã được gửi cho giáo viên khác để đảm bảo cung cấp phản hồi cho học viên trong  24h.";
                 return result;
             }
 

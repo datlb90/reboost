@@ -1,5 +1,14 @@
 <template>
   <div class="list-container">
+    <el-alert
+      v-if="showReviewsIntro"
+      title="Đây là nơi hiển thị những đánh giá của bạn. Hãy làm theo hướng dẫn và cung cấp thật nhiều những đánh giá chất lượng nhé. Bạn sẽ bất ngờ vì lợi ích mà nó mang lại đấy!"
+      type="success"
+      center
+      style="margin-bottom: 10px"
+      @close="closeIntro()"
+    />
+
     <div class="top-navigator" style="height: 35px;">
       <el-button
         v-if="showLeftArrow"
@@ -30,9 +39,24 @@
         </el-tag>
       </div>
       <div>
-        <el-button v-if="!pendingReview" size="medium" style="float: right; padding-bottom: 8px; padding-top: 8px; color: #409EFF;" @click="onNewRequestClick">
-          {{ messageTranslates('review', 'makeNew') }}
+        <el-button v-if="completeLoading && !hasPendingReview" size="medium" style="float: right; padding-bottom: 8px; padding-top: 8px; color: #409EFF;" @click="onNewRequestClick">
+          <span v-if="currentUser.role == 'rater'">Đánh giá miễn phí</span>
+          <span v-else>Cung cấp đánh giá</span>
         </el-button>
+
+        <el-tooltip
+          v-if="completeLoading && hasPendingReview"
+          class="item"
+          effect="dark"
+          content="Hãy hoàn thành bài đánh giá của bạn trước khi cung cấp 1 đánh giá mới"
+          placement="top"
+        >
+          <el-button :disabled="true" size="medium" style="float: right; padding-bottom: 8px; padding-top: 8px;" type="info" plain>
+            <span v-if="currentUser.role == 'rater'">Đánh giá miễn phí</span>
+            <span v-else>Cung cấp đánh giá</span>
+          </el-button>
+        </el-tooltip>
+
         <el-button
           v-if="showRightArrow"
           type="text"
@@ -142,28 +166,29 @@
       </el-tag>
     </div>
 
-    <el-table
-      v-if="reviews"
-      ref="filterTable"
-      :data="reviews"
-      stripe
-      style="width: 100%; margin-top: 5px;"
-      border
-      @sort-change="sortChange"
-    >
-      <el-table-column prop="id" label="#" width="48" fixed="left" />
-      <el-table-column
-        prop="questionName"
-        label="Topic"
-        sortable
-        fixed="left"
-        min-width="200"
+    <div v-if="reviews && reviews.length > 0">
+      <el-table
+
+        ref="filterTable"
+        :data="reviews"
+        stripe
+        style="width: 100%; margin-top: 5px;"
+        border
+        @sort-change="sortChange"
       >
-        <template slot-scope="scope">
-          <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.questionName }}</span>
-        </template>
-      </el-table-column>
-      <!-- <el-table-column
+        <el-table-column prop="id" label="#" width="48" fixed="left" />
+        <el-table-column
+          prop="questionName"
+          label="Topic"
+          sortable
+          fixed="left"
+          min-width="200"
+        >
+          <template slot-scope="scope">
+            <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.questionName }}</span>
+          </template>
+        </el-table-column>
+        <!-- <el-table-column
         label="Test"
         prop="test"
         sortable
@@ -173,67 +198,69 @@
           <span style="word-break: break-word">{{ scope.row.test }}</span>
         </template>
       </el-table-column> -->
-      <el-table-column
-        prop="testSection"
-        label="Section"
-        sortable
-        width="200"
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word"> {{ scope.row.testSection }}</span>
-        </template>
-      </el-table-column>
+        <el-table-column
+          prop="testSection"
+          label="Section"
+          sortable
+          width="200"
+        >
+          <template slot-scope="scope">
+            <span style="word-break: break-word"> {{ scope.row.testSection }}</span>
+          </template>
+        </el-table-column>
 
-      <el-table-column
-        prop="questionType"
-        label="Type"
-        sortable
-        width="190"
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ scope.row.questionType }}</span>
-        </template>
-      </el-table-column>
+        <el-table-column
+          prop="questionType"
+          label="Type"
+          sortable
+          width="190"
+        >
+          <template slot-scope="scope">
+            <span style="word-break: break-word">{{ scope.row.questionType }}</span>
+          </template>
+        </el-table-column>
 
-      <el-table-column
-        prop="status"
-        label="Status"
-        width="160"
-      >
-        <template slot-scope="scope">
-          <el-link :underline="false" :type="getStatusVariant(scope.row.status)">{{ scope.row.status }}</el-link>
-        </template>
-      </el-table-column>
-      <el-table-column
-        :label="messageTranslates('review', 'lastActivityTable')"
-        width="165"
-      >
-        <template slot-scope="scope">
-          <span>{{ getTimeFromDateCreateToNow(scope.row.review.lastActivityDate) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        :label="messageTranslates('review', 'actionsTable')"
-        width="130"
-        align="center"
-      >
-        <template slot-scope="scope">
-          <el-button size="mini" @click="navigateToReviewRequest(scope.row)">
-            View Review
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <div class="pagination">
-      <el-pagination
-        background
-        layout="total, sizes, prev, pager, next, jumper"
-        :page-size="pageSize"
-        :total="totalRow"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+        <el-table-column
+          prop="status"
+          label="Status"
+          width="160"
+        >
+          <template slot-scope="scope">
+            <el-link :underline="false" :type="getStatusVariant(scope.row.status)">{{ scope.row.status }}</el-link>
+          </template>
+        </el-table-column>
+        <el-table-column
+          :label="messageTranslates('review', 'lastActivityTable')"
+          width="165"
+        >
+          <template slot-scope="scope">
+            <span>{{ getTimeFromDateCreateToNow(scope.row.review.lastActivityDate) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column
+          :label="messageTranslates('review', 'actionsTable')"
+          width="130"
+          align="center"
+        >
+          <template slot-scope="scope">
+            <el-button size="mini" @click="navigateToReviewRequest(scope.row)">
+              View Review
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next, jumper"
+          :page-size="pageSize"
+          :total="totalRow"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
     </div>
+
   </div>
 </template>
 <script>
@@ -256,7 +283,7 @@ export default {
       currentPage: 1,
       gotoPage: 1,
       REVIEW_REQUEST_STATUS: REVIEW_REQUEST_STATUS,
-      pendingReview: null,
+      hasPendingReview: false,
       totalRow: 10,
       reviewCount: 10,
       filterSections: [],
@@ -271,7 +298,9 @@ export default {
       selectionTag: [],
       showLeftArrow: false,
       showRightArrow: false,
-      allTopicEffect: 'dark'
+      allTopicEffect: 'dark',
+      completeLoading: false,
+      showReviewsIntro: true
     }
   },
   computed: {
@@ -280,6 +309,9 @@ export default {
     }
   },
   mounted() {
+    if (localStorage.getItem('noReviewsIntro')) {
+      this.showReviewsIntro = false
+    }
     reviewService.getReviewsByUser().then(rs => {
       if (rs) {
         this.reviews = rs
@@ -297,10 +329,15 @@ export default {
       }
     })
     reviewService.getPendingReview().then(r => {
-      this.pendingReview = r
+      if (r) { this.hasPendingReview = true }
+      this.completeLoading = true
     })
   },
   methods: {
+    closeIntro() {
+      localStorage.setItem('noReviewsIntro', true)
+      this.showReviewsIntro = false
+    },
     loadTable() {
       this.sortedReviews = null
       const filtered = this.filter()
@@ -494,10 +531,10 @@ export default {
           this.$router.push({ name: PageName.REVIEW, params: { questionId: rs.reviewRequest.submission.questionId, docId: rs.reviewRequest.submission.docId, reviewId: rs.reviewId }})
         } else {
           this.$notify.error({
-            title: 'Not available',
-            message: 'No request available',
+            title: 'Đã xảy ra lỗi',
+            message: 'Xin vui lòng liên hệ với chúng tôi qua support@reboost.vn',
             type: 'error',
-            duration: 2000
+            duration: 3000
           })
         }
       })

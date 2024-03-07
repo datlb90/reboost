@@ -1,5 +1,13 @@
 <template>
   <div v-if="screenWidth > 780" class="list-container">
+    <el-alert
+      v-if="showSubmissionsIntro"
+      title="Đây là nơi hiển thị danh sách các bài viết bạn đã hoàn thành trên Reboost. Bạn có thể xem hoặc yêu cầu phản hồi cho bài viết của mình ở đây."
+      type="success"
+      center
+      style="margin-bottom: 10px"
+      @close="closeIntro()"
+    />
     <div class="top-navigator" style="height: 35px;">
       <el-button
         v-if="showLeftArrow"
@@ -138,14 +146,6 @@
         {{ tag }}
       </el-tag>
     </div>
-
-    <!-- <el-tag
-      v-if="unRatedList.length > 0"
-      style="margin: 0 0 10px 0"
-      type="warning"
-    >
-      You currently have unrated reviews, please rate all of your unrated reviews
-    </el-tag> -->
 
     <el-table
       v-if="submissions"
@@ -253,13 +253,21 @@
         ref="checkoutDialog"
         :question-id="+selectedQuestionId"
         :submission-id="+selectedSubId"
-        :unrated-count="unRatedList.length"
         @reviewRequested="reviewRequested"
         @closed="checkoutVisible=false"
       />
     </div>
   </div>
   <div v-else class="list-container">
+    <el-alert
+      v-if="showSubmissionsIntro"
+      title="Đây là nơi lưu trữ toàn bộ bài viết của bạn trên Reboost. Bạn có thể xem lại những bài viết cũ của mình hoặc gửi yêu cầu nhận phản hồi cho những bài viết mới."
+      type="success"
+      center
+      style="margin-bottom: 10px"
+      @close="closeIntro()"
+    />
+
     <div class="top-navigator" style="height: 35px;">
       <el-button
         v-if="showLeftArrow"
@@ -399,14 +407,6 @@
       </el-tag>
     </div>
 
-    <!-- <el-tag
-      v-if="unRatedList.length > 0"
-      style="margin: 0 0 10px 0"
-      type="warning"
-    >
-      You currently have unrated reviews, please rate all of your unrated reviews
-    </el-tag> -->
-
     <el-table
       v-if="submissions"
       ref="filterTable"
@@ -513,7 +513,6 @@
         ref="checkoutDialog"
         :question-id="+selectedQuestionId"
         :submission-id="+selectedSubId"
-        :unrated-count="unRatedList.length"
         @reviewRequested="reviewRequested"
         @closed="checkoutVisible=false"
       />
@@ -563,7 +562,8 @@ export default {
       showLeftArrow: false,
       showRightArrow: false,
       allTopicEffect: 'dark',
-      screenWidth: window.screenWidth
+      screenWidth: window.innerWidth,
+      showSubmissionsIntro: true
     }
   },
   computed: {
@@ -571,10 +571,18 @@ export default {
       return this.$store.getters['auth/getUser']
     }
   },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
   mounted() {
-    const status = this.getUrlParameter('vnp_TransactionStatus')
-    console.log(status)
-
+    if (localStorage.getItem('noSubmissionsIntro')) {
+      this.showSubmissionsIntro = false
+    }
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
     questionService.getSubmissionsByUserId(this.currentUser.id).then(rs => {
       if (rs) {
         this.submissions = rs
@@ -591,15 +599,12 @@ export default {
         })
       }
     })
-
-    reviewService.getUnratedReview().then(rs => {
-      console.log('unrated: ', rs)
-      if (rs.length > 0) {
-        this.unRatedList = rs
-      }
-    })
   },
   methods: {
+    closeIntro() {
+      localStorage.setItem('noSubmissionsIntro', true)
+      this.showSubmissionsIntro = false
+    },
     getUrlParameter(sParam) {
       const sPageURL = decodeURIComponent(window.location.search.substring(1))
       const sURLVariables = sPageURL.split('&')
@@ -815,60 +820,17 @@ export default {
     },
     actionClick(action, e) {
       this.selectedSubId = e.id
-
       if (action.trim() === 'Request Review') {
-        // if (this.unRatedList.length > 0) {
-        //   this.$notify.error({
-        //     title: 'Unrated Reviews',
-        //     message: 'Please rate all of your unrated reviews before requesting for a free peer review',
-        //     type: 'error',
-        //     duration: 0
-        //   })
-        // } else {
-        //   reviewService.createReviewRequest({
-        //     UserId: this.currentUser.id,
-        //     SubmissionId: e.id,
-        //     FeedbackType: 'Free',
-        //     Status: REVIEW_REQUEST_STATUS.IN_PROGRESS
-        //   }).then(rs => {
-        //     if (rs) {
-        //       this.$notify.success({
-        //         title: 'Submission Requested',
-        //         message: 'Requested!',
-        //         type: 'success',
-        //         duration: 1500
-        //       })
-        //       this.submissionsCached.forEach(r => {
-        //         if (r.id === e.id) {
-        //           if (this.unRatedList.length > 0) {
-        //             r.status = 'Pending'
-        //           } else {
-        //             r.status = 'Review Requested'
-        //             this.$notify.success({
-        //               title: 'Submission Requested',
-        //               message: 'Requested!',
-        //               type: 'success',
-        //               duration: 1500
-        //             })
-        //           }
-        //           r.action = 'View Submission'
-        //         }
-        //       })
-        //     }
-        //     this.loadList()
-        //   })
-        // }
         this.selectedQuestionId = e.questionId
-        this.$refs.checkoutDialog?.openDialog()
+        this.$nextTick(() => {
+          this.$refs.checkoutDialog?.openDialog()
+        })
       } else if (action == 'View Submission') {
         this.$router.push(`practice/${e.questionId}/${e.id}`)
       } else if (action == 'View Review') {
         reviewService.getOrCreateReviewBySubmissionId(e.id).then(rs => {
           this.$router.push(`review/${e.questionId}/${rs.docId}/${rs.reviewId}`)
         })
-      } else if (action == 'Request Pro Review') {
-        this.selectedQuestionId = e.questionId
-        this.$refs.checkoutDialog?.openDialog()
       }
     },
     reviewRequested() {
