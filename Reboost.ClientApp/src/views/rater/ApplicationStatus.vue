@@ -53,7 +53,8 @@
             </p>
           </div>
           <div :class="[status === RATER_STATUS.APPROVED ? 'verified' : 'hidden']">
-            <p>Congratulations! Your application to become a Reboost rater has been approved. You will start receiving review requests via email. Please try to complete these requests as soon as you can to earn money.
+            <p>
+              Xin chúc mừng! Bạn đã chính thức trở thành giáo viên của Reboost. Chúng tôi sẽ gửi yêu cầu chấm bài của học viên cho bạn qua email. Hãy chấp nhận yêu cầu ngay khi nhận được và hoàn thành bài chấm trong vòng 24h nhé.
             </p>
           </div>
           <div v-if="status===RATER_STATUS.REJECTED" class="note-container">

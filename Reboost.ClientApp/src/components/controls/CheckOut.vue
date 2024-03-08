@@ -13,7 +13,7 @@
     <div class="dialog-body">
       <div style="padding: 20px; padding-top: 20px;">
         <div v-if="selectedReview == ''" class="tip">
-          <span style="font-size: 15px; color: #6084a4;">Cảm ơn bạn đã gửi bài viết cho chúng tôi! Để nhận phản hồi, hãy chọn 1 trong các dịch vụ dưới đây:</span>
+          <span style="font-size: 15px; color: #6084a4;">Để nhận phản hồi cho bài viết của bạn, hãy chọn 1 trong những dịch vụ dưới đây:</span>
         </div>
         <el-page-header v-if="selectedReview == 'Pro' || selectedReview == 'AI'" class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
         <el-page-header v-if="selectedReview == 'Free'" class="tip" content="Confirm your selection" @back="goBack" />

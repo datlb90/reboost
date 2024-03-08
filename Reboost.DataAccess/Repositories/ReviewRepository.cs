@@ -185,7 +185,7 @@ namespace Reboost.DataAccess.Repositories
             await db.SaveChangesAsync();
             return review;
         }
-        public async Task<Reviews> SaveFeedback(int reviewId,List<ReviewData> data)
+        public async Task<Reviews> SaveFeedback(int reviewId, List<ReviewData> data)
         {
             Reviews review = await db.Reviews.FindAsync(reviewId);
 
@@ -224,11 +224,6 @@ namespace Reboost.DataAccess.Repositories
             //    }
 
             //}
-            //else
-            //{
-
-            //}
-
 
             // Get the review request
             ReviewRequests request = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
@@ -248,7 +243,12 @@ namespace Reboost.DataAccess.Repositories
                 request.CompletedDateTime = DateTime.UtcNow;
             }
 
-            // To do: record overall band score
+            // Get the final score from data
+            ReviewData finalScore = data.Find(r => r.CriteriaName == "Overall Score & Feedback");
+            if(finalScore != null)
+            {
+                review.FinalScore = finalScore.Score;
+            }
             review.Status = ReviewStatus.COMPLETED;
             review.LastActivityDate = DateTime.UtcNow;
             await db.SaveChangesAsync();
@@ -397,7 +397,7 @@ namespace Reboost.DataAccess.Repositories
                 return await Task.FromResult(exist.ReviewId.ToString());
             }
 
-            Reviews rv = new Reviews { RequestId = 0, FinalScore = 0, ReviewerId = user.Id, RevieweeId = "1", Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = DateTime.UtcNow };
+            Reviews rv = new Reviews { RequestId = 0, FinalScore = null, ReviewerId = user.Id, RevieweeId = "1", Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = DateTime.UtcNow };
             await db.Reviews.AddAsync(rv);
             await db.SaveChangesAsync();
 
@@ -428,29 +428,41 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId)
         {
-            var rs = await (from rv in db.Reviews
-                               join rr in db.ReviewRequests on rv.RequestId equals rr.Id
-                               join s in db.Submissions on rr.SubmissionId equals s.Id
-                               join q in db.Questions on s.QuestionId equals q.Id
-                               join t in db.Tasks on q.TaskId equals t.Id
-                               join ts in db.TestSections on q.Task.SectionId equals ts.Id
-                               orderby rv.LastActivityDate descending
-                               where rv.ReviewerId == userId
-                               select new GetReviewsModel
-                               {
-                                   Id = q.Id,
-                                   ReviewRequest = rr,
-                                   Submission = s,
-                                   Review = rv,
-                                   ReviewId = rv.Id,
-                                   QuestionName = q.Title,
-                                   QuestionType = q.Type,
-                                   TestSection = t.Name,
-                                   Status = rv.Status == "Rated" ? "Feedback Received" : rv.Status,
-                                   Test = ts.Test.Name
-                               }).OrderByDescending(r => r.Review.LastActivityDate).ToListAsync();
+            var reviews = await (from review in db.Reviews
+                                join request in db.ReviewRequests
+                                    on review.RequestId equals request.Id into rr_join
+                                    from rr in rr_join.DefaultIfEmpty()
+                                join submission in db.Submissions
+                                    on rr.SubmissionId equals submission.Id into rs_join
+                                    from rs in rs_join.DefaultIfEmpty()
+                                join question in db.Questions
+                                    on rs.QuestionId equals question.Id into sq_join
+                                    from sq in sq_join.DefaultIfEmpty()
+                                 join task in db.Tasks
+                                     on sq.TaskId equals task.Id into qt_join
+                                     from qt in qt_join.DefaultIfEmpty()
+                                 join rating in db.ReviewRatings
+                                    on review.Id equals rating.ReviewId into rrate_join
+                                    from rate in rrate_join.DefaultIfEmpty()
+                                 orderby review.LastActivityDate descending
+                                 where review.ReviewerId == userId
+                                 select new GetReviewsModel
+                                {
+                                    Id = sq.Id,
+                                    ReviewId = review.Id,
+                                    QuestionName = sq.Title,
+                                    QuestionType = sq.Type,
+                                    TestSection = qt.Name,
+                                    ReviewType = rr.FeedbackType == "Pro" ? "Paid Review" // Nếu là pro review, hiển thị là "Đánh giá tính phí"
+                                                : review.ReviewerId != review.RevieweeId ? "Peer Review" // Nếu là peer review, hiển thị "Đánh giá miễn phí" cho rater, "Đánh giá ngang hàng" cho learner 
+                                                : "Self Review", // Nếu là self review, hiển thị "Tự đánh giá"
+                                    Status = review.Status,
+                                    Rating = rate != null ? rate.Rate.ToString() : "Chưa có",
+                                    DocId = rs.DocId
+                                }).ToListAsync();
 
-            return await Task.FromResult(rs);
+           
+            return await Task.FromResult(reviews);
         }
 
         public async Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId)
@@ -501,7 +513,7 @@ namespace Reboost.DataAccess.Repositories
 
             DateTime currentTime = DateTime.UtcNow;
 
-            Reviews rv = new Reviews { RequestId = requestId, FinalScore = 0, ReviewerId = userId, RevieweeId = reviewRequest.UserId, Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = currentTime };
+            Reviews rv = new Reviews { RequestId = requestId, FinalScore = null, ReviewerId = userId, RevieweeId = reviewRequest.UserId, Status = ReviewStatus.IN_PROGRESS, TimeSpentInSeconds = 0, LastActivityDate = currentTime };
 
             await db.Reviews.AddAsync(rv);
 
@@ -1183,15 +1195,13 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<int> IsProRequestCheckAsync(int reviewId, string userId)
         {
-            Reviews review = await db.Reviews.FindAsync(reviewId);
-
             var rater = await db.Raters.Where(r => r.UserId == userId).FirstOrDefaultAsync();
             if(rater == null)
             {
                 // Return 2 if rater's permission denied
                 return -1;
             }
-
+            Reviews review = await db.Reviews.FindAsync(reviewId);
             // Check if is a pro review
             ReviewRequests isProRequest = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId && rq.FeedbackType == ReviewRequestType.PRO).FirstOrDefaultAsync();
 

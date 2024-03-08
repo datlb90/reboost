@@ -22,5 +22,7 @@ namespace Reboost.DataAccess.Models
         public string TestSection { get; set; }
         public string QuestionType { get; set; }
         public string Error { get; set; }
+        public string Rating { get; set; }
+        public string ReviewType { get; set; }
     }
 }

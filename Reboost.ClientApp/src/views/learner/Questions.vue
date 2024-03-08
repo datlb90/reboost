@@ -8,293 +8,296 @@
       style="margin-bottom: 10px"
       @close="closeIntro()"
     />
-    <div class="top-navigator" style="height: 30px;">
-      <el-button
-        v-if="showLeftArrow"
-        type="text"
-        size="medium"
-        icon="el-icon-d-arrow-left"
-        style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
-        @click="moveLeft()"
-      />
-      <div id="topic-container" style="display: flex; float: left; width: calc(100% - 200px); overflow: hidden;">
-        <el-tag
-          type="info"
-          :effect="allTopicEffect"
-          style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
-          @click="onTopicClick(null)"
-        >
-          Tất cả chủ đề: {{ questionsCount }}
-        </el-tag>
-        <el-tag
-          v-for="item in summary"
-          :key="item.section"
-          type="info"
-          :effect="item.effect"
-          style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
-          @click="onTopicClick(item)"
-        >
-          {{ item.section }}: {{ item.count }}
-        </el-tag>
-      </div>
+
+    <el-card v-if="!loadCompleted" style="padding: 10px; width: 100%; text-align: center;" class="box-card">
+      <div v-loading="true" style="width: 100%; height: calc(100vh - 110px);" element-loading-text="Đang tải chủ đề viết" />
+    </el-card>
+    <el-card v-else style="padding: 10px; padding-top: 5px; width: 100%;" class="box-card">
       <div>
-        <el-button size="medium" style="float: right; padding-bottom: 8px; padding-top: 8px; color: #409EFF;" @click="clickPickOne">
-          <i class="fas fa-random" style="margin-right: 5px;" />
-          {{ messageTranslates('question', 'pickOne') }}
-        </el-button>
+        <div class="top-navigator" style="height: 30px;">
+          <el-button
+            v-if="showLeftArrow"
+            type="text"
+            size="medium"
+            icon="el-icon-d-arrow-left"
+            style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
+            @click="moveLeft()"
+          />
+          <div id="topic-container" style="display: flex; float: left; width: calc(100% - 200px); overflow: hidden;">
+            <el-tag
+              type="info"
+              :effect="allTopicEffect"
+              style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
+              @click="onTopicClick(null)"
+            >
+              Tất cả chủ đề: {{ questionsCount }}
+            </el-tag>
+            <el-tag
+              v-for="item in summary"
+              :key="item.section"
+              type="info"
+              :effect="item.effect"
+              style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
+              @click="onTopicClick(item)"
+            >
+              {{ item.section }}: {{ item.count }}
+            </el-tag>
+          </div>
+          <div>
+            <el-button size="medium" style="float: right; padding-bottom: 8px; padding-top: 8px; color: #409EFF;" @click="clickPickOne">
+              <i class="fas fa-random" style="margin-right: 5px;" />
+              {{ messageTranslates('question', 'pickOne') }}
+            </el-button>
 
-        <el-button
-          v-if="showRightArrow"
-          type="text"
-          size="medium"
-          icon="el-icon-d-arrow-right"
-          style="color: grey; padding-bottom: 8px; padding-top: 8px;"
-          @click="moveRight()"
-        />
+            <el-button
+              v-if="showRightArrow"
+              type="text"
+              size="medium"
+              icon="el-icon-d-arrow-right"
+              style="color: grey; padding-bottom: 8px; padding-top: 8px;"
+              @click="moveRight()"
+            />
 
-      </div>
-    </div>
-    <div style="height: 40px;">
-      <div class="filter-container" style="width: 400px; float: left;">
-        <div class="filter-toolbar" style="margin-top: 10px;">
-          <el-dropdown
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              <el-link :underline="false" type="info">
-                Tasks<i class="el-icon-arrow-down el-icon--right" />
-              </el-link>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterSections"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-dropdown
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              <el-link :underline="false" type="info">
-                Types<i class="el-icon-arrow-down el-icon--right" />
-              </el-link>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterTypes"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-
-          <el-dropdown
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              <el-link :underline="false" type="info">
-                Difficulty<i class="el-icon-arrow-down el-icon--right" />
-              </el-link>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterDifficulties"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-
-          <el-dropdown
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              <el-link :underline="false" type="info">
-                Status<i class="el-icon-arrow-down el-icon--right" />
-              </el-link>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterStatuses"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <i class="el-icon-document" style="cursor: pointer;" alt="Sample" @click="filterSample" />
+          </div>
         </div>
-      </div>
+        <div style="height: 40px;">
+          <div class="filter-container" style="width: 400px; float: left;">
+            <div class="filter-toolbar" style="margin-top: 10px;">
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Tasks<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterSections"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Types<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterTypes"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
 
-      <div class="filter-container" style="width: calc(100% - 400px); float: right;">
-        <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
-          {{ messageTranslates('question', 'resetAll') }}
-        </el-button>
-        <el-input
-          v-model="textSearch"
-          size="mini"
-          :placeholder="messageTranslates('question', 'placeholderSearch')"
-          style="float: right; width: 200px; margin-top: 5px;"
-          @input="search()"
-        />
-      </div>
-    </div>
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Difficulty<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterDifficulties"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
 
-    <div v-if="selectionTag && selectionTag.length > 0" class="tag-selection">
-      <el-tag
-        v-for="tag in selectionTag"
-        :key="tag"
-        size="small"
-        type="info"
-        closable
-        :disable-transitions="false"
-        style="margin-right: 5px; margin-top: 5px;"
-        @close="handleClose(tag)"
-      >
-        {{ tag }}
-      </el-tag>
-    </div>
-
-    <el-table
-      v-if="questions"
-      ref="filterTable"
-      :data="questions"
-      stripe
-      style="width: 100%;"
-      @sort-change="sortChange"
-    >
-      <el-table-column
-        label="Status"
-        prop="status"
-        fixed="left"
-        width="67"
-      >
-        <template slot-scope="scope">
-          <div style="width: 100%; text-align: center;">  <el-tooltip class="item" :content="scope.row.status" placement="bottom" style="text-align: center;">
-            <i v-if="scope.row.status == 'Completed'" class="el-icon-success" style="font-size: 18px;" />
-            <i v-else-if="scope.row.status == 'Saved'" class="el-icon-folder-checked" style="font-size: 18px;" />
-            <i v-else-if="scope.row.status == 'Attempted'" class="el-icon-edit" style="font-size: 18px;" />
-            <i v-else class="el-icon-remove-outline" style="font-size: 18px;" />
-          </el-tooltip>
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Status<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterStatuses"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+              <i class="el-icon-document" style="cursor: pointer;" alt="Sample" @click="filterSample" />
+            </div>
           </div>
-        </template>
-      </el-table-column>
 
-      <el-table-column
-        :label="messageTranslates('question', 'titleTable')"
-        prop="title"
-        sortable
-        fixed="left"
-        min-width="200"
-      >
-        <template slot-scope="scope">
-          <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">{{ scope.row.id }}. {{ scope.row.title }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="Test"
-        prop="test"
-        width="75"
-        sortable
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ scope.row.test }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="Section"
-        prop="section"
-        width="200"
-        sortable
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word"> {{ scope.row.section }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        :label="messageTranslates('question', 'typeTable')"
-        prop="type"
-        width="190"
-        sortable
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ scope.row.type }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        width="100"
-        :label="messageTranslates('question', 'sampleTable')"
-        prop="sample"
-        sortable
-      >
-        <template slot-scope="scope">
-          <div v-if="scope.row.sample" class="show-title">
-            <el-tooltip class="item" effect="dark" content="Sample responses are available for this topic." placement="bottom">
-              <i class="el-icon-document" />
-            </el-tooltip>
+          <div class="filter-container" style="width: calc(100% - 400px); float: right;">
+            <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
+              {{ messageTranslates('question', 'resetAll') }}
+            </el-button>
+            <el-input
+              v-model="textSearch"
+              size="mini"
+              :placeholder="messageTranslates('question', 'placeholderSearch')"
+              style="float: right; width: 200px; margin-top: 5px;"
+              @input="search()"
+            />
           </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="Difficulty" prop="difficulty" sortable width="110">
-        <template slot-scope="scope">
+        </div>
+
+        <div v-if="selectionTag && selectionTag.length > 0" class="tag-selection">
           <el-tag
-            v-if="scope.row.difficulty == 'Medium'"
-            :key="scope.row.difficulty"
-            type="warning"
-            size="mini"
+            v-for="tag in selectionTag"
+            :key="tag"
+            size="small"
+            type="info"
+            closable
+            :disable-transitions="false"
+            style="margin-right: 5px; margin-top: 5px;"
+            @close="handleClose(tag)"
           >
-            {{ scope.row.difficulty }}
+            {{ tag }}
           </el-tag>
-          <el-tag
-            v-else-if="scope.row.difficulty == 'Hard'"
-            :key="scope.row.difficulty"
-            type="danger"
-            size="mini"
+        </div>
+
+        <el-table v-if="questions" ref="filterTable" :data="questions" stripe style="width: 100%;" empty-text="Đang tải chủ đề viết ..." @sort-change="sortChange" @row-click="rowClicked">
+          <el-table-column
+            label="Status"
+            prop="status"
+            fixed="left"
+            width="67"
           >
-            {{ scope.row.difficulty }}
-          </el-tag>
-          <el-tag
-            v-else
-            :key="scope.row.difficulty"
-            size="mini"
-            type="success"
+            <template slot-scope="scope">
+              <div style="width: 100%; text-align: center;">  <el-tooltip class="item" :content="scope.row.status" placement="bottom" style="text-align: center;">
+                <i v-if="scope.row.status == 'Completed'" class="el-icon-success" style="font-size: 18px;" />
+                <i v-else-if="scope.row.status == 'Saved'" class="el-icon-folder-checked" style="font-size: 18px;" />
+                <i v-else-if="scope.row.status == 'Attempted'" class="el-icon-edit" style="font-size: 18px;" />
+                <i v-else class="el-icon-remove-outline" style="font-size: 18px;" />
+              </el-tooltip>
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+            label="Chủ đề"
+            prop="title"
+            sortable
+            fixed="left"
+            min-width="200"
           >
-            {{ scope.row.difficulty }}
-          </el-tag>
-        </template>
-      </el-table-column>
-    </el-table>
-    <div class="pagination">
-      <el-pagination
-        background
-        layout="total, sizes, prev, pager, next, jumper"
-        :page-size="pageSize"
-        :total="totalRow"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
+            <template slot-scope="scope">
+              <span class="title-row cursor" style="word-break: break-word" @click="titleClicked(scope.row)">{{ scope.row.id }}. {{ scope.row.title }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="Test"
+            prop="test"
+            width="75"
+            sortable
+          >
+            <template slot-scope="scope">
+              <span style="word-break: break-word">{{ scope.row.test }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="Section"
+            prop="section"
+            width="200"
+            sortable
+          >
+            <template slot-scope="scope">
+              <span style="word-break: break-word"> {{ scope.row.section }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            :label="messageTranslates('question', 'typeTable')"
+            prop="type"
+            width="190"
+            sortable
+          >
+            <template slot-scope="scope">
+              <span style="word-break: break-word">{{ scope.row.type }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            width="100"
+            :label="messageTranslates('question', 'sampleTable')"
+            prop="sample"
+            sortable
+          >
+            <template slot-scope="scope">
+              <div v-if="scope.row.sample" class="show-title">
+                <el-tooltip class="item" effect="dark" content="Sample responses are available for this topic." placement="bottom">
+                  <i class="el-icon-document" />
+                </el-tooltip>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="Difficulty" prop="difficulty" sortable width="110">
+            <template slot-scope="scope">
+              <el-tag
+                v-if="scope.row.difficulty == 'Medium'"
+                :key="scope.row.difficulty"
+                type="warning"
+                size="mini"
+              >
+                {{ scope.row.difficulty }}
+              </el-tag>
+              <el-tag
+                v-else-if="scope.row.difficulty == 'Hard'"
+                :key="scope.row.difficulty"
+                type="danger"
+                size="mini"
+              >
+                {{ scope.row.difficulty }}
+              </el-tag>
+              <el-tag
+                v-else
+                :key="scope.row.difficulty"
+                size="mini"
+                type="success"
+              >
+                {{ scope.row.difficulty }}
+              </el-tag>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination">
+          <el-pagination
+            background
+            layout="total, sizes, prev, pager, next, jumper"
+            :page-size="pageSize"
+            :total="totalRow"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+
+      </div>
+    </el-card>
+
   </div>
   <div v-else class="list-container">
     <el-alert
@@ -493,7 +496,9 @@
       :data="questions"
       stripe
       style="width: 100%;"
+      empty-text="Đang tải chủ đề viết ..."
       @sort-change="sortChange"
+      @row-click="rowClicked"
     >
       <el-table-column
         prop="status"
@@ -519,7 +524,7 @@
         min-width="120"
       >
         <template slot-scope="scope">
-          <span class="title-row cursor" style="word-break: break-word;" @click="rowClicked(scope.row)">{{ scope.row.id }}. {{ scope.row.title }}</span>
+          <span class="title-row cursor" style="word-break: break-word;" @click="titleClicked(scope.row)">{{ scope.row.id }}. {{ scope.row.title }}</span>
         </template>
       </el-table-column>
 
@@ -636,7 +641,8 @@ export default {
       allTopicEffect: 'dark',
       sortedQuestions: null,
       screenWidth: window.innerWidth,
-      showQuestionsIntro: true
+      showQuestionsIntro: true,
+      loadCompleted: false
     }
   },
   computed: {
@@ -679,7 +685,7 @@ export default {
       this.filterDifficulties = this.filterDifficulties.sort(function(a, b) {
         return order.indexOf(a.text) - order.indexOf(b.text)
       })
-
+      this.loadCompleted = true
       this.loadTable()
       this.loadSummary()
       this.$nextTick(function() {
@@ -688,6 +694,14 @@ export default {
     })
   },
   methods: {
+    rowClicked(row, column, event) {
+      this.$router.push({
+        name: 'PracticeWriting',
+        params: {
+          id: row.id
+        }
+      })
+    },
     closeIntro() {
       localStorage.setItem('noQuestionsIntro', true)
       this.showQuestionsIntro = false
@@ -811,7 +825,7 @@ export default {
       console.log(typeof this.rowPerPage)
       this.pageSize = +this.rowPerPage
     },
-    rowClicked(row) {
+    titleClicked(row) {
       this.$router.push({
         name: 'PracticeWriting',
         params: {
@@ -904,7 +918,7 @@ export default {
     },
     showArrow() {
       const container = document.getElementById('topic-container')
-      if (container.scrollWidth > container.offsetWidth) { this.showRightArrow = true }
+      if (container && container.scrollWidth > container.offsetWidth) { this.showRightArrow = true }
     },
     onTopicClick(topic) {
       if (topic == null) {

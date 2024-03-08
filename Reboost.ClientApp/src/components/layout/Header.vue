@@ -62,7 +62,7 @@
             </ul>
             <ul v-if="role == userRole.RATER" class="navbar-nav nav ml-auto" style="margin-left: 50px !important;">
               <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
-                <a :href="$router.resolve({name: reviewsPage}).href">Đánh giá của bạn</a>
+                <a :href="$router.resolve({name: reviewsPage}).href">Đánh giá của tôi</a>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
                 <router-link to="/rater/apply" class="nav-link">Hồ sơ đăng ký</router-link>

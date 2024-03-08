@@ -148,14 +148,18 @@ namespace Reboost.WebApi.Controllers
             // Check rater's permission
             if (isProRequest == 2)
             {
-                return BadRequest(new { message = "You don't have permission to this review request!" });
+                return BadRequest(new
+                {
+                    Message = "Yêu cầu đánh giá đã được gửi cho 1 giáo viên khác",
+                    IsSuccess = false
+                });               
             }
 
             // Check if pro review's timeout end
-            if (isProRequest == 0)
-            {
-                return BadRequest(new { message = "Your review's timeout has ended!" });
-            }
+            //if (isProRequest == 0)
+            //{
+            //    return BadRequest(new { message = "Your review's timeout has ended!" });
+            //}
 
             var rs = await _service.SaveFeedback(id, data);
 
@@ -164,16 +168,14 @@ namespace Reboost.WebApi.Controllers
             {
                 // Get review's info by reviewee's Id
                 var result = await _service.GetReviewByReviewRequestAsync(rs.RequestId);
-
-                // Send email to rater
-                string raterSubject = "Hoàn Tất Đánh Giá";
-                string raterUrl = $"{configuration["ClientUrl"]}/review/" + result.ReviewRequest.Submission.QuestionId + "/" + result.ReviewRequest.Submission.DocId + "/" + result.ReviewId;
-                string raterContent = $"Xin chào {currentUser.FirstName},<p> Cảm ơn bạn đã hoàn tất đánh giá cho bài viết.</p> <p>Bạn có thể xem lại đánh giá của mình sử dụng link sau đây: <a href='{raterUrl}'>link tới bài viết</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>";
-                await _mailService.SendEmailAsync(currentUser.Email, raterSubject, raterContent);
-
                 string raterRole = "học viên";
                 if(isProRequest == 1)
                 {
+                    // Send email to rater
+                    string raterSubject = "Hoàn Tất Đánh Giá";
+                    string raterUrl = $"{configuration["ClientUrl"]}/review/" + result.ReviewRequest.Submission.QuestionId + "/" + result.ReviewRequest.Submission.DocId + "/" + result.ReviewId;
+                    string raterContent = $"Xin chào {currentUser.FirstName},<p> Cảm ơn bạn đã hoàn tất đánh giá cho yêu cầu chấm bài với mã số #"+ result.ReviewRequest.Id + ".</p> <p>Bạn có thể xem lại đánh giá của mình sử dụng link sau đây: <a href='{raterUrl}'>link tới bài viết</a></p><p>Nếu bạn có thắc mắc gì xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p><p>Cảm ơn bạn,</p><p>Reboost Support</p>";
+                    await _mailService.SendEmailAsync(currentUser.Email, raterSubject, raterContent);
                     raterRole = "giáo viên";
                 }
 

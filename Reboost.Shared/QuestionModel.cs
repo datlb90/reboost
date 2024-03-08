@@ -57,15 +57,21 @@ namespace Reboost.Shared
     public class SubmissionsModel
     {
         public int Id { get; set; }
-        public DateTime TimeSubmitted { get; set; }
         public int QuestionId { get; set; }
-        public string Question { get; set; }
+        public string Topic { get; set; }
         public string Status { get; set; }
+        public string Difficulty { get; set; }
         public int TimeTaken { get; set; }
         public string Action { get; set; }
-        public string TestSection { get; set; }
+        public string Task { get; set; }
         public string Test { get; set; }
         public string QuestionType { get; set; }
+        public string Score { get; set; }
+        public int DocId { get; set; }
+        public int ReviewId { get; set; }
+        public DateTime TimeSubmitted { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        public DateTime? ReviewActivityDate { get; set; }
     }
     public class SubmissionsForQuestionModel
     {

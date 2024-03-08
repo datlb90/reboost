@@ -475,30 +475,38 @@ namespace Reboost.DataAccess.Repositories
         }
         public async Task<List<SubmissionsModel>> GetAllSubmissionByUserIdAsync(string userId)
         {
-            var listsubmissions = await (from s in ReboostDbContext.Submissions
-                                         join q in ReboostDbContext.Questions on s.QuestionId equals q.Id
-                                         join t in ReboostDbContext.Tasks on q.TaskId equals t.Id
-                                         join ts in ReboostDbContext.TestSections on q.Task.SectionId equals ts.Id
-                                         where s.UserId == userId && s.Status != "Saved"
-                                         orderby s.UpdatedDate descending, s.SubmittedDate descending
+            var listsubmissions = await (from submission in ReboostDbContext.Submissions
+                                         join question in ReboostDbContext.Questions
+                                            on submission.QuestionId equals question.Id into sq_join
+                                            from sq in sq_join.DefaultIfEmpty()
+                                         join task in ReboostDbContext.Tasks
+                                            on sq.TaskId equals task.Id into qt_join
+                                            from qt in qt_join.DefaultIfEmpty()
+                                         join request in ReboostDbContext.ReviewRequests
+                                            on submission.Id equals request.SubmissionId into sr_join
+                                            from sr in sr_join.DefaultIfEmpty()
+                                         join review in ReboostDbContext.Reviews
+                                            on sr.Id equals review.RequestId into rr_join
+                                            from rr in rr_join.DefaultIfEmpty()
+                                         where submission.UserId == userId
+                                         orderby submission.UpdatedDate descending, submission.SubmittedDate descending
                                          select new SubmissionsModel
                                          {
-                                             Id = s.Id,
-                                             QuestionId = q.Id,
-                                             Question = q.Title,
-                                             Status = s.Status,
-                                             Action =
-                                                (s.Status == SubmissionStatus.PENDING ||
-                                                s.Status == SubmissionStatus.SUBMITTED ||
-                                                s.Status == SubmissionStatus.REVIEW_REQUESTED) ? "View Submission" :
-                                                (s.Status == SubmissionStatus.REVIEWED || 
-                                                s.Status == SubmissionStatus.COMPLETED) ? "View Review" : "View Submission",
-                                             TimeTaken = s.TimeSpentInSeconds,
-                                             TimeSubmitted = s.SubmittedDate,
-                                             Test = ts.Test.Name,
-                                             TestSection = t.Name,
-                                             QuestionType = q.Type
-                                         }).OrderByDescending(s => s.TimeSubmitted).ToListAsync();
+                                             Id = submission.Id,
+                                             QuestionId = sq.Id,
+                                             Topic = sq.Title,
+                                             TimeTaken = submission.TimeSpentInSeconds,
+                                             TimeSubmitted = submission.SubmittedDate,
+                                             UpdatedDate = submission.UpdatedDate,
+                                             Task = qt.Name,
+                                             QuestionType = sq.Type,
+                                             Difficulty = sq.Difficulty,
+                                             Score = rr != null ? rr.FinalScore != null ? rr.FinalScore.ToString() : "Đang chấm" : // Bài viết đã hoặc đang chấm
+                                                     sr != null ? "Chờ chấm": // Yêu cầu chấm bài đã được gửi, nhưng chưa có người chấm 
+                                                     "Chưa chấm", // Bài viết đã nộp nhưng chưa yêu cầu nhận phản hồi
+                                             DocId = submission.DocId,
+                                             ReviewId = rr != null ? rr.Id : 0
+                                         }).ToListAsync();
             return listsubmissions;
         }
         public async Task<List<SubmissionsForQuestionModel>> GetSubmissionsForQuestion(string userId, int questionId)

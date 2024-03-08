@@ -2,521 +2,313 @@
   <div v-if="screenWidth > 780" class="list-container">
     <el-alert
       v-if="showSubmissionsIntro"
-      title="Đây là nơi hiển thị danh sách các bài viết bạn đã hoàn thành trên Reboost. Bạn có thể xem hoặc yêu cầu phản hồi cho bài viết của mình ở đây."
+      title="Đây là nơi hiển thị các bài viết bạn đã hoàn thành. Bạn có thể xem lại bài, tham khảo đánh giá, hoặc yêu cầu phản hồi cho bài viết của mình ở đây."
       type="success"
       center
-      style="margin-bottom: 10px"
-      @close="closeIntro()"
-    />
-    <div class="top-navigator" style="height: 35px;">
-      <el-button
-        v-if="showLeftArrow"
-        type="text"
-        size="medium"
-        icon="el-icon-d-arrow-left"
-        style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
-        @click="moveLeft()"
-      />
-      <div id="topic-container" style="display: flex; float: left; width: calc(100% - 25px); margin-right: 5px; overflow: hidden;">
-        <el-tag
-          type="info"
-          :effect="allTopicEffect"
-          style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
-          @click="onTopicClick(null)"
-        >
-          All Submissions: {{ submissionCount }}
-        </el-tag>
-        <el-tag
-          v-for="item in summary"
-          :key="item.section"
-          type="info"
-          :effect="item.effect"
-          style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
-          @click="onTopicClick(item)"
-        >
-          {{ item.section }}: {{ item.count }}
-        </el-tag>
-      </div>
-      <div>
-        <el-button
-          v-if="showRightArrow"
-          type="text"
-          size="medium"
-          icon="el-icon-d-arrow-right"
-          style="color: grey; padding-bottom: 8px; padding-top: 8px;"
-          @click="moveRight()"
-        />
-      </div>
-    </div>
-
-    <div style="height: 40px;">
-      <div class="filter-container" style="width: 310px; float: left;">
-        <div class="filter-toolbar" style="margin-top: 10px;">
-          <el-dropdown
-            placement="bottom-start"
-            :hide-on-click="true"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              <el-link :underline="false" type="info">
-                Test Sections<i class="el-icon-arrow-down el-icon--right" />
-              </el-link>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterSections"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-dropdown
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              <el-link :underline="false" type="info">
-                Types<i class="el-icon-arrow-down el-icon--right" />
-              </el-link>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterTypes"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-dropdown
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              <el-link :underline="false" type="info">
-                Status<i class="el-icon-arrow-down el-icon--right" />
-              </el-link>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterStatuses"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </div>
-      </div>
-
-      <div class="filter-container" style="width: calc(100% - 310px); float: right;">
-        <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
-          {{ messageTranslates('question', 'resetAll') }}
-        </el-button>
-        <el-input
-          v-model="textSearch"
-          size="mini"
-          placeholder="Search Submissions"
-          style="float: right; width: 200px; margin-top: 5px;"
-          @input="search()"
-        />
-      </div>
-    </div>
-
-    <div v-if="selectionTag && selectionTag.length > 0" class="tag-selection">
-      <el-tag
-        v-for="tag in selectionTag"
-        :key="tag"
-        size="small"
-        type="info"
-        closable
-        :disable-transitions="false"
-        style="margin-right: 5px; margin-bottom: 5px;"
-        @close="handleClose(tag)"
-      >
-        {{ tag }}
-      </el-tag>
-    </div>
-
-    <el-table
-      v-if="submissions"
-      ref="filterTable"
-      :data="submissions"
-      stripe
-      style="width: 100%; margin-top: 5px;"
-      border
-      @sort-change="sortChange"
-    >
-      <el-table-column prop="questionId" label="#" width="48" fixed="left" />
-
-      <el-table-column
-        :label="messageTranslates('submission', 'questionTable')"
-        prop="question"
-        sortable
-        fixed="left"
-        min-width="200"
-      >
-        <template slot-scope="scope">
-          <span class="title-row cursor" style="word-break: break-word">{{ scope.row.question }}</span>
-        </template>
-      </el-table-column>
-      <!-- <el-table-column
-        label="Test"
-        prop="test"
-        sortable
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ scope.row.test }}</span>
-        </template>
-      </el-table-column> -->
-      <el-table-column
-        label="Section"
-        prop="testSection"
-        sortable
-        width="200"
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word"> {{ scope.row.testSection }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="Type"
-        prop="questionType"
-        sortable
-        width="190"
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ scope.row.questionType }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="status"
-        :label="messageTranslates('submission', 'statusTable')"
-        width="150"
-      >
-        <template slot-scope="scope">
-          <el-link :underline="false" :type="getStatusVariant(scope.row.status)">{{ getStatusName(scope.row.status) }}</el-link>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="Time Submitted"
-        width="165"
-      >
-        <template slot-scope="scope">
-          <span>{{ getTimeFromDateCreateToNow(scope.row.timeSubmitted) }}</span>
-        </template>
-      </el-table-column>
-      <!-- <el-table-column width="110px" prop="timeTaken" align="center" :label="messageTranslates('submission', 'timeTakenTable')">
-        <template slot-scope="scope">
-          <span>{{ getTimeTaken(scope.row.timeTaken) }}</span>
-        </template>
-      </el-table-column> -->
-      <el-table-column
-        :label="messageTranslates('submission', 'actionsTable')"
-        width="150"
-        align="center"
-      >
-        <template slot-scope="scope">
-          <div class="action-column-cell">
-            <el-button size="mini" style="width: 130px;" @click="actionClick(scope.row.action, scope.row)">{{ scope.row.action }}</el-button>
-          </div>
-          <div v-if="scope.row.status.trim() == 'Completed'" style="margin-top: 5px" class="action-column-cell">
-            <el-button size="mini" style="width: 130px;" @click="actionClick('View Submission', scope.row)">View Submission</el-button>
-          </div>
-          <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
-            <el-button size="mini" style="width: 130px;" @click="actionClick('Request Review', scope.row)">Request Review</el-button>
-          </div>
-        </template>
-      </el-table-column>
-    </el-table>
-    <div class="pagination">
-      <el-pagination
-        background
-        layout="total, sizes, prev, pager, next, jumper"
-        :page-size="pageSize"
-        :total="totalRow"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
-    <div>
-      <checkout
-        ref="checkoutDialog"
-        :question-id="+selectedQuestionId"
-        :submission-id="+selectedSubId"
-        @reviewRequested="reviewRequested"
-        @closed="checkoutVisible=false"
-      />
-    </div>
-  </div>
-  <div v-else class="list-container">
-    <el-alert
-      v-if="showSubmissionsIntro"
-      title="Đây là nơi lưu trữ toàn bộ bài viết của bạn trên Reboost. Bạn có thể xem lại những bài viết cũ của mình hoặc gửi yêu cầu nhận phản hồi cho những bài viết mới."
-      type="success"
-      center
-      style="margin-bottom: 10px"
+      style="margin-bottom: 10px; margin-top: 10px;"
       @close="closeIntro()"
     />
 
-    <div class="top-navigator" style="height: 35px;">
-      <el-button
-        v-if="showLeftArrow"
-        type="text"
-        size="medium"
-        icon="el-icon-d-arrow-left"
-        style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
-        @click="moveLeft()"
-      />
-      <div id="topic-container" style="display: flex; float: left; width: calc(100% - 25px); margin-right: 5px; overflow: hidden;">
-        <el-tag
-          type="info"
-          :effect="allTopicEffect"
-          style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
-          @click="onTopicClick(null)"
-        >
-          All Submissions: {{ submissionCount }}
-        </el-tag>
-        <el-tag
-          v-for="item in summary"
-          :key="item.section"
-          type="info"
-          :effect="item.effect"
-          style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
-          @click="onTopicClick(item)"
-        >
-          {{ item.section }}: {{ item.count }}
-        </el-tag>
-      </div>
-      <div>
-        <el-button
-          v-if="showRightArrow"
-          type="text"
-          size="medium"
-          icon="el-icon-d-arrow-right"
-          style="color: grey; padding-bottom: 8px; padding-top: 8px;"
-          @click="moveRight()"
-        />
-      </div>
+    <div v-if="!loadCompleted">
+      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
+        <div v-loading="true" style="width: 100%;  height: calc(100vh - 110px);" element-loading-text="Đang tải bài viết của bạn" />
+      </el-card>
     </div>
 
-    <div style="height: 40px;">
-      <div class="filter-container" style="width: 310px; float: left;">
-        <div class="filter-toolbar" style="margin-top: 10px;">
-          <el-dropdown
-            placement="bottom-start"
-            :hide-on-click="true"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              <el-link :underline="false" type="info">
-                Test Sections<i class="el-icon-arrow-down el-icon--right" />
-              </el-link>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterSections"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-dropdown
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              <el-link :underline="false" type="info">
-                Types<i class="el-icon-arrow-down el-icon--right" />
-              </el-link>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterTypes"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-dropdown
-            placement="bottom-start"
-            :hide-on-click="false"
-            style="float: left; margin-right: 15px;"
-            @command="onFilterChange"
-          >
-            <span class="el-dropdown-link" style="cursor: pointer;">
-              <el-link :underline="false" type="info">
-                Status<i class="el-icon-arrow-down el-icon--right" />
-              </el-link>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="item in filterStatuses"
-                :key="item.text"
-                :command="item"
-                :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-              >{{ item.text }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+    <div v-if="loadCompleted && submissions && submissions.length == 0">
+      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
+
+        <div style="margin-top: 20px; margin-bottom: 20px;">
+          <h5>Bạn chưa hoàn thành bài viết nào, hãy tìm 1 đề phù hợp và bắt đầu làm ngay!</h5>
+
+          <div style="margin-top: 20px;">
+            <el-button type="primary" plain @click="viewQuestions()">Tìm chủ đề phù hợp</el-button>
+            <el-button plain style="margin-left: 10px;" @click="clickPickOne()">Làm 1 bài ngẫu nhiên</el-button>
+          </div>
+
         </div>
-      </div>
-
-      <div class="filter-container" style="width: calc(100% - 310px); float: right;">
-        <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
-          {{ messageTranslates('question', 'resetAll') }}
-        </el-button>
-        <el-input
-          v-model="textSearch"
-          size="mini"
-          placeholder="Search Submissions"
-          style="float: right; width: 200px; margin-top: 5px;"
-          @input="search()"
-        />
-      </div>
+      </el-card>
     </div>
 
-    <div v-if="selectionTag && selectionTag.length > 0" class="tag-selection">
-      <el-tag
-        v-for="tag in selectionTag"
-        :key="tag"
-        size="small"
-        type="info"
-        closable
-        :disable-transitions="false"
-        style="margin-right: 5px; margin-bottom: 5px;"
-        @close="handleClose(tag)"
-      >
-        {{ tag }}
-      </el-tag>
-    </div>
-
-    <el-table
-      v-if="submissions"
-      ref="filterTable"
-      :data="submissions"
-      stripe
-      style="width: 100%; margin-top: 5px;"
-      border
-      @sort-change="sortChange"
-    >
-      <el-table-column prop="questionId" label="#" width="48" fixed="left" />
-
-      <el-table-column
-        :label="messageTranslates('submission', 'questionTable')"
-        prop="question"
-        sortable
-        fixed="left"
-        min-width="200"
-      >
-        <template slot-scope="scope">
-          <span class="title-row cursor" style="word-break: break-word">{{ scope.row.question }}</span>
-        </template>
-      </el-table-column>
-      <!-- <el-table-column
-        label="Test"
-        prop="test"
-        sortable
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ scope.row.test }}</span>
-        </template>
-      </el-table-column> -->
-      <el-table-column
-        label="Section"
-        prop="testSection"
-        sortable
-        width="200"
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word"> {{ scope.row.testSection }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="Type"
-        prop="questionType"
-        sortable
-        width="190"
-      >
-        <template slot-scope="scope">
-          <span style="word-break: break-word">{{ scope.row.questionType }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="status"
-        :label="messageTranslates('submission', 'statusTable')"
-        width="150"
-      >
-        <template slot-scope="scope">
-          <el-link :underline="false" :type="getStatusVariant(scope.row.status)">{{ getStatusName(scope.row.status) }}</el-link>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="Time Submitted"
-        width="165"
-      >
-        <template slot-scope="scope">
-          <span>{{ getTimeFromDateCreateToNow(scope.row.timeSubmitted) }}</span>
-        </template>
-      </el-table-column>
-      <!-- <el-table-column width="110px" prop="timeTaken" align="center" :label="messageTranslates('submission', 'timeTakenTable')">
-        <template slot-scope="scope">
-          <span>{{ getTimeTaken(scope.row.timeTaken) }}</span>
-        </template>
-      </el-table-column> -->
-      <el-table-column
-        :label="messageTranslates('submission', 'actionsTable')"
-        width="150"
-        align="center"
-      >
-        <template slot-scope="scope">
-          <div class="action-column-cell">
-            <el-button size="mini" style="width: 130px;" @click="actionClick(scope.row.action, scope.row)">{{ scope.row.action }}</el-button>
+    <div v-if="loadCompleted && submissions && submissions.length > 0">
+      <el-card style="padding: 10px; padding-top: 5px; width: 100%;" class="box-card">
+        <div class="top-navigator" style="height: 35px;">
+          <el-button
+            v-if="showLeftArrow"
+            type="text"
+            size="medium"
+            icon="el-icon-d-arrow-left"
+            style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
+            @click="moveLeft()"
+          />
+          <div id="topic-container" style="display: flex; float: left; width: calc(100% - 170px); margin-right: 5px; overflow: hidden;">
+            <el-tag
+              type="info"
+              :effect="allTopicEffect"
+              style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
+              @click="onTopicClick(null)"
+            >
+              All Submissions: {{ submissionCount }}
+            </el-tag>
+            <el-tag
+              v-for="item in summary"
+              :key="item.section"
+              type="info"
+              :effect="item.effect"
+              style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
+              @click="onTopicClick(item)"
+            >
+              {{ item.section }}: {{ item.count }}
+            </el-tag>
           </div>
-          <div v-if="scope.row.status.trim() == 'Completed'" style="margin-top: 5px" class="action-column-cell">
-            <el-button size="mini" style="width: 130px;" @click="actionClick('View Submission', scope.row)">View Submission</el-button>
+
+          <div>
+            <el-button size="medium" style="float: right; padding-bottom: 8px; padding-top: 8px; color: #409EFF;" @click="clickPickOne">
+              <i class="fas fa-random" style="margin-right: 5px;" />
+              Viết 1 đề bất kỳ
+            </el-button>
+
+            <el-button
+              v-if="showRightArrow"
+              type="text"
+              size="medium"
+              icon="el-icon-d-arrow-right"
+              style="color: grey; padding-bottom: 8px; padding-top: 8px;"
+              @click="moveRight()"
+            />
           </div>
-          <div v-if="scope.row.status.trim() == 'Submitted'" style="margin-top: 5px" class="action-column-cell">
-            <el-button size="mini" style="width: 130px;" @click="actionClick('Request Review', scope.row)">Request Review</el-button>
+        </div>
+
+        <div style="height: 40px;">
+          <div class="filter-container" style="width: 310px; float: left;">
+            <div class="filter-toolbar" style="margin-top: 10px;">
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="true"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Test Sections<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterSections"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Types<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterTypes"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Status<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterStatuses"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
           </div>
-        </template>
-      </el-table-column>
-    </el-table>
-    <div class="pagination">
-      <el-pagination
-        background
-        layout="total, prev, pager, next"
-        :page-size="pageSize"
-        :total="totalRow"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+
+          <div class="filter-container" style="width: calc(100% - 310px); float: right;">
+            <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
+              {{ messageTranslates('question', 'resetAll') }}
+            </el-button>
+            <el-input
+              v-model="textSearch"
+              size="mini"
+              placeholder="Search Submissions"
+              style="float: right; width: 200px; margin-top: 5px;"
+              @input="search()"
+            />
+          </div>
+        </div>
+
+        <div v-if="selectionTag && selectionTag.length > 0" class="tag-selection">
+          <el-tag
+            v-for="tag in selectionTag"
+            :key="tag"
+            size="small"
+            type="info"
+            closable
+            :disable-transitions="false"
+            style="margin-right: 5px; margin-bottom: 5px;"
+            @close="handleClose(tag)"
+          >
+            {{ tag }}
+          </el-tag>
+        </div>
+
+        <el-table v-if="submissions" ref="filterTable" :data="submissions" stripe style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
+          <el-table-column
+            label="Chủ đề"
+            prop="questionId"
+            sortable
+            fixed="left"
+            min-width="200"
+          >
+            <template slot-scope="scope">
+              <span class="title-row cursor" style="word-break: break-word">
+                {{ scope.row.questionId + '. ' + scope.row.topic }}
+              </span>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+            label="Ngày nộp"
+            width="165"
+          >
+            <template slot-scope="scope">
+              <span>{{ getTimeFromDateCreateToNow(scope.row.timeSubmitted) }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+            label="Task"
+            prop="task"
+            sortable
+            width="200"
+          >
+            <template slot-scope="scope">
+              <span style="word-break: break-word"> {{ scope.row.task }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="Loại đề"
+            prop="questionType"
+            sortable
+            width="190"
+          >
+            <template slot-scope="scope">
+              <span style="word-break: break-word">{{ scope.row.questionType }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="Độ khó" prop="difficulty" sortable width="100">
+            <template slot-scope="scope">
+              <span style="word-break: break-word">{{ scope.row.difficulty }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="Band Score" prop="score" sortable width="150">
+            <template slot-scope="scope">
+              <!-- <span style="word-break: break-word">{{ scope.row.score }}</span> -->
+              <!-- <div v-if="scope.row.score === 'Chưa chấm'" /> -->
+
+              <el-tooltip
+                v-if="scope.row.score === 'Chưa chấm'"
+                class="item"
+                effect="dark"
+                content="Nhấp để yêu cầu đánh giá cho bài viết"
+                placement="top"
+              >
+                <el-link style="color: #409fff;" @click.stop="requestReview(scope.row)">
+                  Chưa có đánh giá
+                </el-link>
+              </el-tooltip>
+
+              <el-tooltip
+                v-else-if="scope.row.score === 'Chờ chấm'"
+                class="item"
+                effect="dark"
+                content="Yêu cầu đánh giá đã được gửi đi, bạn sẽ được thông báo khi có phản hồi"
+                placement="top"
+              >
+                <el-link :underline="false" type="info">
+                  Chờ đánh giá
+                </el-link>
+              </el-tooltip>
+
+              <el-tooltip
+                v-else-if="scope.row.score === 'Đang chấm'"
+                class="item"
+                effect="dark"
+                content="Bài viết của bạn đang được chấm"
+                placement="top"
+              >
+                <el-link :underline="false" type="warning">
+                  Đang chấm
+                </el-link>
+              </el-tooltip>
+
+              <el-tooltip
+                v-else
+                class="item"
+                effect="dark"
+                content="Nhấp để xem đánh giá chi tiết cho bài viết của bạn"
+                placement="top"
+              >
+                <el-link type="success" @click.stop="viewReview(scope.row)">
+                  Band {{ scope.row.score }}
+                </el-link>
+              </el-tooltip>
+
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination">
+          <el-pagination
+            background
+            layout="total, sizes, prev, pager, next, jumper"
+            :page-size="pageSize"
+            :total="totalRow"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+
+        <div>
+          <checkout
+            ref="checkoutDialog"
+            :question-id="+selectedQuestionId"
+            :submission-id="+selectedSubId"
+            @reviewRequested="reviewRequested"
+            @closed="checkoutVisible=false"
+          />
+        </div>
+      </el-card>
+
     </div>
-    <div>
-      <checkout
-        ref="checkoutDialog"
-        :question-id="+selectedQuestionId"
-        :submission-id="+selectedSubId"
-        @reviewRequested="reviewRequested"
-        @closed="checkoutVisible=false"
-      />
-    </div>
+
   </div>
 </template>
 <script>
@@ -563,7 +355,8 @@ export default {
       showRightArrow: false,
       allTopicEffect: 'dark',
       screenWidth: window.innerWidth,
-      showSubmissionsIntro: true
+      showSubmissionsIntro: true,
+      loadCompleted: false
     }
   },
   computed: {
@@ -584,12 +377,13 @@ export default {
       this.screenWidth = window.innerWidth
     })
     questionService.getSubmissionsByUserId(this.currentUser.id).then(rs => {
+      this.loadCompleted = true
       if (rs) {
         this.submissions = rs
         this.submissionsCached = [...this.submissions]
         console.log('Submissions: ', this.submissionsCached)
         this.totalRow = this.submissionCount = this.submissionsCached.length
-        this.filterSections = Object.keys(_.groupBy(this.submissionsCached, 'testSection')).map(k => ({ text: k, checked: false }))
+        this.filterSections = Object.keys(_.groupBy(this.submissionsCached, 'task')).map(k => ({ text: k, checked: false }))
         this.filterTypes = Object.keys(_.groupBy(this.submissionsCached, 'questionType')).map(k => ({ text: k, checked: false }))
         this.filterStatuses = Object.keys(_.groupBy(this.submissionsCached, 'status')).map(k => ({ text: k, checked: false }))
         this.loadTable()
@@ -601,6 +395,34 @@ export default {
     })
   },
   methods: {
+    viewReview(row) {
+      this.$router.push(`review/${row.questionId}/${row.docId}/${row.reviewId}`)
+    },
+    requestReview(row) {
+      this.selectedQuestionId = row.questionId
+      this.selectedSubId = row.id
+      this.$nextTick(() => {
+        this.$refs.checkoutDialog?.openDialog()
+      })
+    },
+    rowClicked(row, column, event) {
+      this.$router.push(`practice/${row.questionId}/${row.id}`)
+    },
+    clickPickOne() {
+      const questions = this.$store.getters['question/getAll']
+      var listNoCompleted = questions.filter(r => r.status.trim() === 'To do')
+      var chosenNumber = Math.floor(Math.random() * listNoCompleted.length)
+      var id = listNoCompleted[chosenNumber].id
+      this.$router.push({
+        name: 'PracticeWriting',
+        params: {
+          id: id
+        }
+      })
+    },
+    viewQuestions() {
+      this.$router.push('/questions')
+    },
     closeIntro() {
       localStorage.setItem('noSubmissionsIntro', true)
       this.showSubmissionsIntro = false
@@ -635,7 +457,7 @@ export default {
 
       for (const q of this.submissionsCached) {
         let pass = true
-        if (_filteredSection.length > 0 && !_filteredSection.includes(q.testSection)) {
+        if (_filteredSection.length > 0 && !_filteredSection.includes(q.task)) {
           pass = false
         }
         if (_filteredType.length > 0 && !_filteredType.includes(q.questionType)) {
@@ -656,8 +478,8 @@ export default {
     },
     loadSummary() {
       var counts = this.submissionsCached.reduce((p, c) => {
-        var name = c.testSection
-        if (!p.hasOwnProperty(c.testSection)) {
+        var name = c.task
+        if (!p.hasOwnProperty(c.task)) {
           p[name] = 0
         }
         p[name]++
@@ -672,8 +494,10 @@ export default {
       this.$refs.filterTable.clearSort()
       const filtered = this.filter()
       filtered.sort(function(a, b) {
-        const propA = a[sort.prop] ? a[sort.prop].trim().toUpperCase() : ''
-        const propB = b[sort.prop] ? b[sort.prop].trim().toUpperCase() : ''
+        // const propA = a[sort.prop] ? a[sort.prop].trim().toUpperCase() : ''
+        // const propB = b[sort.prop] ? b[sort.prop].trim().toUpperCase() : ''
+        const propA = a[sort.prop]
+        const propB = b[sort.prop]
         if (propA < propB) {
           if (sort.order === 'descending') { return -1 } else { return 1 }
         }
@@ -769,7 +593,7 @@ export default {
     },
     showArrow() {
       const container = document.getElementById('topic-container')
-      if (container.scrollWidth > container.offsetWidth) { this.showRightArrow = true }
+      if (container && container.scrollWidth > container.offsetWidth) { this.showRightArrow = true }
     },
     onTopicClick(topic) {
       if (topic == null) {
@@ -836,8 +660,7 @@ export default {
     reviewRequested() {
       this.submissionsCached.forEach(r => {
         if (r.id === this.selectedSubId) {
-          r.status = 'Review Requested'
-          r.action = 'View Submission'
+          r.score = 'Chờ chấm'
         }
       })
     }
@@ -953,6 +776,9 @@ el-table{
 .current-page{
   display: flex;
   align-items: center;
+}
+.hover-row > .el-table__cell > .cell > .title-row{
+  color: #409EFF
 }
 .title-row{
   /* font-weight: bold; */

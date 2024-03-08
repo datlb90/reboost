@@ -2593,7 +2593,7 @@ export default {
         if (annotationsCount < 3) {
           this.$notify.error({
             title: 'Thiếu đánh giá trong bài viết',
-            message: 'Bạn hãy cung cấp ít nhất 3 đánh giá  trong bài viết sử dụng các công cụ đánh giá có sẵn',
+            message: 'Bạn hãy cung cấp ít nhất 3 phản hồi trong bài viết sử dụng các công cụ đánh giá có sẵn',
             type: 'error',
             duration: 5000
           })
@@ -2604,6 +2604,7 @@ export default {
           this.rubricCriteria.forEach(r => {
             if (r.mark) {
               reviewData.push({
+                CriteriaName: r.name,
                 Comment: r.comment,
                 CriteriaId: r.id,
                 Score: r.mark,

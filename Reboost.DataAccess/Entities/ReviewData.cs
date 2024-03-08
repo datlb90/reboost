@@ -9,6 +9,8 @@ namespace Reboost.DataAccess.Entities
     public class ReviewData : BaseEntity
     {
         public int ReviewId { get; set; }
+        [NotMapped]
+        public string CriteriaName { get; set; }
         public int CriteriaId { get; set; }
         [Column(TypeName = "decimal(4,1)")]
         public Nullable<decimal> Score { get; set; }

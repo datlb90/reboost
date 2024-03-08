@@ -109,7 +109,7 @@ export default {
 }
 
 .list-container {
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .other-items {

@@ -132,6 +132,7 @@ namespace Reboost.Service.Services
             }
             var rubrics = await _unitOfWork.Rubrics.GetByQuestionId(question.Id);
             List<ReviewData> reviewDataList = new List<ReviewData>();
+            decimal? finalScore = null;
             foreach (RubricsModel criteria in rubrics)
             {
                 string shouldbe = "nên được thay bằng";
@@ -173,9 +174,10 @@ namespace Reboost.Service.Services
                             reviewData.Comment = errors;
                             reviewData.Score = 0;
                             break;
-                        case "Overall Feedback":
+                        case "Overall Score & Feedback":
                             reviewData.Comment = toeflFeedback.overallFeedback.comment;
-                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.overallFeedback.score);
+                            reviewData.Score = (decimal)toeflFeedback.overallFeedback.score;
+                            finalScore = reviewData.Score;
                             break;
                         default:
                             break;
@@ -216,9 +218,10 @@ namespace Reboost.Service.Services
                             reviewData.Comment = errors;
                             reviewData.Score = 0;
                             break;
-                        case "Overall Feedback":
+                        case "Overall Score & Feedback":
                             reviewData.Comment = ieltsFeedback.overallFeedback.comment;
-                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.overallFeedback.score);
+                            reviewData.Score = (decimal)ieltsFeedback.overallFeedback.score;
+                            finalScore = reviewData.Score;
                             break;
                         default:
                             break;
@@ -234,7 +237,7 @@ namespace Reboost.Service.Services
                 ReviewerId = "AI",
                 RevieweeId = userId,
                 SubmissionId = submissionId,
-                FinalScore = null,
+                FinalScore = finalScore,
                 Status = ReviewStatus.COMPLETED,
                 TimeSpentInSeconds = 0,
                 LastActivityDate = DateTime.UtcNow,
