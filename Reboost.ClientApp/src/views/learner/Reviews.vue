@@ -10,13 +10,13 @@
     />
 
     <div v-if="!loadCompleted">
-      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
+      <el-card style="padding: 10px; width: 100%; text-align: center; box-shadow: 0 2px 12px 0 #88c4ce;" class="box-card">
         <div v-loading="true" style="width: 100%;  height: calc(100vh - 110px);" element-loading-text="Đang tải đánh giá của bạn" />
       </el-card>
     </div>
 
     <div v-if="loadCompleted && reviews && reviews.length == 0">
-      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
+      <el-card style="padding: 10px; width: 100%; text-align: center; box-shadow: 0 2px 12px 0 #88c4ce;" class="box-card">
 
         <div style="margin-top: 20px; margin-bottom: 20px;">
           <h5>Bạn chưa có đánh giá nào, hãy cung cấp 1 đánh giá ngay!</h5>
@@ -30,7 +30,7 @@
     </div>
 
     <div v-if="loadCompleted && reviews && reviews.length > 0">
-      <el-card style="padding: 10px; padding-top: 5px; width: 100%;" class="box-card">
+      <el-card style="padding: 10px; padding-top: 5px; width: 100%; box-shadow: 0 2px 12px 0 #88c4ce;" class="box-card">
         <div class="top-navigator" style="height: 35px;">
           <el-button
             v-if="showLeftArrow"
@@ -47,7 +47,7 @@
               style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
               @click="onTopicClick(null)"
             >
-              All Reviews: {{ reviewCount }}
+              Tất cả đánh giá: {{ reviewCount }}
             </el-tag>
             <el-tag
               v-for="item in summary"
@@ -64,7 +64,7 @@
             <el-button
               v-if="completeLoading && !hasPendingReview"
               size="medium"
-              style="float: right; padding-bottom: 8px; padding-top: 8px; color: #409EFF;"
+              style="float: right; padding-bottom: 8px; padding-top: 8px; color: rgb(42 185 190);"
               :loading="isLoading"
               @click="onNewRequestClick"
             >
@@ -722,7 +722,7 @@ el-table{
   align-items: center;
 }
 .hover-row > .el-table__cell > .cell > .title-row{
-  color: #409EFF
+  color: rgb(42 185 190);
 }
 .title-row{
   /* font-weight: bold; */

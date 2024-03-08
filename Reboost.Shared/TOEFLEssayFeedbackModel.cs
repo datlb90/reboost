@@ -22,6 +22,15 @@ namespace Reboost.Shared
         public List<AutomatedFeedbackError> errors { get; set; }
     }
 
+    //public class NewTOEFLEssayFeedbackModel
+    //{
+    //    public AutomatedFeedbackModel langUse { get; set; }
+    //    public AutomatedFeedbackModel organization { get; set; }
+    //    public AutomatedFeedbackModel devSupport { get; set; }
+    //    public AutomatedFeedbackModel overallFeedback { get; set; }
+    //    public List<AutomatedFeedbackError> errors { get; set; }
+    //}
+
     public class AutomatedFeedbackModel
     {
         public string comment { get; set; }

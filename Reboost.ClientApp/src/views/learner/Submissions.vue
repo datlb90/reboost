@@ -10,13 +10,13 @@
     />
 
     <div v-if="!loadCompleted">
-      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
+      <el-card style="padding: 10px; width: 100%; text-align: center; box-shadow: 0 2px 12px 0 #9ec5ee;" class="box-card">
         <div v-loading="true" style="width: 100%;  height: calc(100vh - 110px);" element-loading-text="Đang tải bài viết của bạn" />
       </el-card>
     </div>
 
     <div v-if="loadCompleted && submissions && submissions.length == 0">
-      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
+      <el-card style="padding: 10px; width: 100%; text-align: center; box-shadow: 0 2px 12px 0 #9ec5ee;" class="box-card">
 
         <div style="margin-top: 20px; margin-bottom: 20px;">
           <h5>Bạn chưa hoàn thành bài viết nào, hãy tìm 1 đề phù hợp và bắt đầu làm ngay!</h5>
@@ -31,7 +31,7 @@
     </div>
 
     <div v-if="loadCompleted && submissions && submissions.length > 0">
-      <el-card style="padding: 10px; padding-top: 5px; width: 100%;" class="box-card">
+      <el-card style="padding: 10px; padding-top: 5px; width: 100%; box-shadow: 0 2px 12px 0 #9ec5ee;" class="box-card">
         <div class="top-navigator" style="height: 35px;">
           <el-button
             v-if="showLeftArrow"
@@ -48,7 +48,7 @@
               style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
               @click="onTopicClick(null)"
             >
-              All Submissions: {{ submissionCount }}
+              Tất cả bài viết: {{ submissionCount }}
             </el-tag>
             <el-tag
               v-for="item in summary"

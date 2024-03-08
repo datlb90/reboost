@@ -118,13 +118,29 @@ namespace Reboost.Service.Services
             var questionContent = StripHTML(question.QuestionsPart.Find(p => p.Name == "Question").Content);
             NewTOEFLEssayFeedbackModel toeflFeedback = new NewTOEFLEssayFeedbackModel();
             NewIELTSEssayFeedbackModel ieltsFeedback = new NewIELTSEssayFeedbackModel();
-            if (question.Section == "Independent Writing" || question.Section == "Integrated Writing")
+            if (question.Section == "Independent Writing")
             {
                 toeflFeedback = await chatGPTService.GetTOEFLIndependentEssayFeedback(questionContent, document.Text, feedbackLanguage);
             }
             else if (question.Section == "Integrated Writing")
             {
-                toeflFeedback = await chatGPTService.GetTOEFLIntegratedEssayFeedback(questionContent, document.Text, feedbackLanguage);
+                string integratedQuestion = "\nTask: " + questionContent + "\n";
+
+                var reading = question.QuestionsPart.Find(p => p.Name == "Reading");
+                if(reading != null)
+                {
+                    string readingStr = StripHTML(reading.Content);
+                    integratedQuestion += "Reading passage: \"" + readingStr  +"\"\n";
+                }
+
+                var transcript = question.QuestionsPart.Find(p => p.Name == "Transcript");
+                if(transcript != null)
+                {
+                    string transcriptStr = StripHTML(transcript.Content);
+                    integratedQuestion += "Listening lecture: \"" + transcriptStr + "\"";
+                }
+
+                toeflFeedback = await chatGPTService.GetTOEFLIntegratedEssayFeedback(integratedQuestion, document.Text, feedbackLanguage);
             }
             else
             {
