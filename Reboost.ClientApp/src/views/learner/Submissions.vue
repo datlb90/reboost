@@ -2,21 +2,25 @@
   <div v-if="screenWidth > 780" class="list-container">
     <el-alert
       v-if="showSubmissionsIntro"
-      title="Đây là nơi hiển thị các bài viết bạn đã hoàn thành. Bạn có thể xem lại bài, tham khảo đánh giá, hoặc yêu cầu phản hồi cho bài viết của mình ở đây."
-      type="success"
+      type="info"
+      :show-icon="true"
       center
       style="margin-bottom: 10px; margin-top: 10px;"
       @close="closeIntro()"
-    />
+    >
+      <span slot="title" style="font-size: 15px;">
+        Đây là nơi hiển thị các bài viết bạn đã hoàn thành. Bạn có thể xem lại bài, tham khảo đánh giá, hoặc yêu cầu phản hồi cho bài viết của mình.
+      </span>
+    </el-alert>
 
     <div v-if="!loadCompleted">
-      <el-card style="padding: 10px; width: 100%; text-align: center; box-shadow: 0 2px 12px 0 #9ec5ee;" class="box-card">
+      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
         <div v-loading="true" style="width: 100%;  height: calc(100vh - 110px);" element-loading-text="Đang tải bài viết của bạn" />
       </el-card>
     </div>
 
     <div v-if="loadCompleted && submissions && submissions.length == 0">
-      <el-card style="padding: 10px; width: 100%; text-align: center; box-shadow: 0 2px 12px 0 #9ec5ee;" class="box-card">
+      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
 
         <div style="margin-top: 20px; margin-bottom: 20px;">
           <h5>Bạn chưa hoàn thành bài viết nào, hãy tìm 1 đề phù hợp và bắt đầu làm ngay!</h5>
@@ -31,7 +35,7 @@
     </div>
 
     <div v-if="loadCompleted && submissions && submissions.length > 0">
-      <el-card style="padding: 10px; padding-top: 5px; width: 100%; box-shadow: 0 2px 12px 0 #9ec5ee;" class="box-card">
+      <el-card style="padding: 10px; padding-top: 5px; width: 100%;" class="box-card">
         <div class="top-navigator" style="height: 35px;">
           <el-button
             v-if="showLeftArrow"
@@ -43,8 +47,8 @@
           />
           <div id="topic-container" style="display: flex; float: left; width: calc(100% - 170px); margin-right: 5px; overflow: hidden;">
             <el-tag
-              type="info"
               :effect="allTopicEffect"
+              type="info"
               style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
               @click="onTopicClick(null)"
             >
@@ -289,6 +293,308 @@
           <el-pagination
             background
             layout="total, sizes, prev, pager, next, jumper"
+            :page-size="pageSize"
+            :total="totalRow"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+
+        <div>
+          <checkout
+            ref="checkoutDialog"
+            :question-id="+selectedQuestionId"
+            :submission-id="+selectedSubId"
+            @reviewRequested="reviewRequested"
+            @closed="checkoutVisible=false"
+          />
+        </div>
+      </el-card>
+
+    </div>
+
+  </div>
+  <div v-else class="list-container">
+    <el-alert
+      v-if="showSubmissionsIntro"
+      type="info"
+      :show-icon="true"
+      center
+      style="margin-bottom: 10px; margin-top: 5px;"
+      @close="closeIntro()"
+    >
+      <span slot="title" style="font-size: 15px;">
+        Đây là nơi hiển thị các bài viết bạn đã hoàn thành. Bạn có thể xem lại bài, tham khảo đánh giá, hoặc yêu cầu phản hồi cho bài viết của mình.
+      </span>
+    </el-alert>
+
+    <div v-if="!loadCompleted">
+      <el-card style="width: 100%; text-align: center;" class="box-card">
+        <div v-loading="true" style="width: 100%;  height: calc(100vh - 110px);" element-loading-text="Đang tải bài viết của bạn" />
+      </el-card>
+    </div>
+
+    <div v-if="loadCompleted && submissions && submissions.length == 0">
+      <el-card style="width: 100%; text-align: center;" class="box-card">
+
+        <div style="margin-top: 20px; margin-bottom: 20px;">
+          <h5>Bạn chưa hoàn thành bài viết nào, hãy tìm 1 đề phù hợp và bắt đầu làm ngay!</h5>
+
+          <div style="margin-top: 20px;">
+            <el-button type="primary" plain @click="viewQuestions()">Tìm chủ đề phù hợp</el-button>
+            <el-button plain style="margin-left: 10px;" @click="clickPickOne()">Làm 1 bài ngẫu nhiên</el-button>
+          </div>
+
+        </div>
+      </el-card>
+    </div>
+
+    <div v-if="loadCompleted && submissions && submissions.length > 0">
+      <el-card style="padding-top: 5px; width: 100%;" class="box-card">
+        <div class="top-navigator" style="height: 35px;">
+          <el-button
+            v-if="showLeftArrow"
+            type="text"
+            size="medium"
+            icon="el-icon-d-arrow-left"
+            style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
+            @click="moveLeft()"
+          />
+          <div id="topic-container" style="display: flex; float: left; width: calc(100% - 30px); margin-right: 5px; overflow: hidden;">
+            <el-tag
+              :effect="allTopicEffect"
+              type="info"
+              style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
+              @click="onTopicClick(null)"
+            >
+              Tất cả: {{ submissionCount }}
+            </el-tag>
+            <el-tag
+              v-for="item in summary"
+              :key="item.section"
+              type="info"
+              :effect="item.effect"
+              style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
+              @click="onTopicClick(item)"
+            >
+              {{ item.section }}: {{ item.count }}
+            </el-tag>
+          </div>
+
+          <div>
+            <el-button
+              v-if="showRightArrow"
+              type="text"
+              size="medium"
+              icon="el-icon-d-arrow-right"
+              style="color: grey; padding-bottom: 8px; padding-top: 8px;"
+              @click="moveRight()"
+            />
+          </div>
+        </div>
+
+        <div>
+          <el-button style="float: right; margin-top: 5px; color: #409EFF;" size="mini" @click="clickPickOne">
+            Viết 1 đề bất kỳ
+          </el-button>
+
+          <el-input
+            v-model="textSearch"
+            size="mini"
+            placeholder="Nhập để tìm kiếm"
+            style="float: left; width: 150px; margin-top: 5px;"
+            @input="search()"
+          />
+
+          <el-button size="mini" style="float: left; margin-top: 5px; margin-left: 5px; " @click="clearFilter">
+            Đặt lại bộ lọc
+          </el-button>
+        </div>
+
+        <div style="height: 40px;">
+          <div class="filter-container" style="width: 100%; float: left;">
+            <div class="filter-toolbar" style="margin-top: 10px;">
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="true"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Task<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterSections"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterTypes"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Độ khó<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterDifficulties"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Trạng Thái<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterStatuses"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="selectionTag && selectionTag.length > 0" class="tag-selection">
+          <el-tag
+            v-for="tag in selectionTag"
+            :key="tag"
+            size="small"
+            type="info"
+            closable
+            :disable-transitions="false"
+            style="margin-right: 5px; margin-bottom: 5px;"
+            @close="handleClose(tag)"
+          >
+            {{ tag }}
+          </el-tag>
+        </div>
+
+        <el-table v-if="submissions" ref="filterTable" :data="submissions" stripe style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
+          <el-table-column
+            label="Chủ đề đã viết"
+            prop="questionId"
+            sortable
+            fixed="left"
+            min-width="150"
+          >
+            <template slot-scope="scope">
+              <span class="title-row cursor" style="word-break: break-word">
+                {{ scope.row.questionId + '. ' + scope.row.topic }}
+              </span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="Band Score" prop="score" sortable width="150">
+            <template slot-scope="scope">
+              <!-- <span style="word-break: break-word">{{ scope.row.score }}</span> -->
+              <!-- <div v-if="scope.row.score === 'Chưa chấm'" /> -->
+
+              <el-tooltip
+                v-if="scope.row.score === 'Chưa chấm'"
+                class="item"
+                effect="dark"
+                content="Nhấp để yêu cầu đánh giá cho bài viết"
+                placement="top"
+              >
+                <el-link style="color: #409fff;" @click.stop="requestReview(scope.row)">
+                  Chưa có đánh giá
+                </el-link>
+              </el-tooltip>
+
+              <el-tooltip
+                v-else-if="scope.row.score === 'Chờ chấm'"
+                class="item"
+                effect="dark"
+                content="Yêu cầu đánh giá đã được gửi đi, bạn sẽ được thông báo khi có phản hồi"
+                placement="top"
+              >
+                <el-link :underline="false" type="info">
+                  Chờ đánh giá
+                </el-link>
+              </el-tooltip>
+
+              <el-tooltip
+                v-else-if="scope.row.score === 'Đang chấm'"
+                class="item"
+                effect="dark"
+                content="Bài viết của bạn đang được chấm"
+                placement="top"
+              >
+                <el-link :underline="false" type="warning">
+                  Đang chấm
+                </el-link>
+              </el-tooltip>
+
+              <el-tooltip
+                v-else
+                class="item"
+                effect="dark"
+                content="Nhấp để xem đánh giá chi tiết cho bài viết của bạn"
+                placement="top"
+              >
+                <el-link type="success" @click.stop="viewReview(scope.row)">
+                  Band {{ scope.row.score }}
+                </el-link>
+              </el-tooltip>
+
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination">
+          <el-pagination
+            background
+            layout="total, prev, pager, next"
             :page-size="pageSize"
             :total="totalRow"
             @size-change="handleSizeChange"

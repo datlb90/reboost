@@ -13,6 +13,13 @@
               @openDisputeNote="onOpenDisputeNote"
               @closeDisputeNote="disputeNoteDialogVisible=false"
             />
+            <div
+              v-if="!review"
+              v-loading="true"
+              style="height: 520px;"
+              element-loading-text="Đang tải chủ đề và tiêu chí đánh giá"
+              element-loading-background="rgba(0, 0, 0, 0.8)"
+            />
           </el-tab-pane>
 
           <el-tab-pane v-if="currentUser.role != 'rater'" name="guide" label="Hướng Dẫn">
@@ -29,7 +36,7 @@
           <el-tab-pane name="rubric" label="Tiêu chí chuẩn">
             <tabRubric v-if="review" ref="tabRubric" :current-user="currentUser" :questionid="questionId" :is-ai-review="isAiReview" :reviewid="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
-          <el-tab-pane v-if="isRate && !isAiReview" name="rate" label="Đánh giá">
+          <el-tab-pane v-if="isRate && !isAiReview" name="rate" label="Rating">
             <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
           </el-tab-pane>
         </el-tabs>
@@ -297,19 +304,39 @@
       <!-- Question, rubric, and rate tab -->
       <div id="tabs-wrapper">
         <el-tabs v-model="selectedTab" type="border-card" style="margin-bottom: 10px;">
-          <el-tab-pane name="question" label="Question">
+          <el-tab-pane name="question" label="Chủ đề">
             <tabQuestion
+              v-if="review"
               ref="tabQuestion"
               :questionid="questionId"
               :reviewid="reviewId"
+              :review-request="review.reviewRequest"
               @openDisputeNote="onOpenDisputeNote"
               @closeDisputeNote="disputeNoteDialogVisible=false"
             />
+            <div
+              v-if="!review"
+              v-loading="true"
+              style="height: 400px;"
+              element-loading-text="Đang tải chủ đề và tiêu chí đánh giá"
+              element-loading-background="rgba(0, 0, 0, 0.8)"
+            />
           </el-tab-pane>
-          <el-tab-pane name="rubric" label="Rubric">
+
+          <el-tab-pane v-if="currentUser.role != 'rater'" name="guide" label="Hướng Dẫn">
+            <SelfReviewIeltsTask1 v-if="isSelfReview && task == 'Academic Writing Task 1'" ref="tabGuide" />
+            <SelfReviewIeltsTask2 v-if="isSelfReview && task == 'Academic Writing Task 2'" ref="tabGuide" />
+            <SelfReviewIndependent v-if="isSelfReview && task == 'Independent Writing'" ref="tabGuide" />
+            <SelfReviewIntegrated v-if="isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
+            <PeerReviewIeltsTask1 v-if="!isSelfReview && task == 'Academic Writing Task 1'" ref="tabGuide" />
+            <PeerReviewIeltsTask2 v-if="!isSelfReview && task == 'Academic Writing Task 2'" ref="tabGuide" />
+            <PeerReviewIndependent v-if="!isSelfReview && task == 'Independent Writing'" ref="tabGuide" />
+            <PeerReviewIntegrated v-if="!isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
+          </el-tab-pane>
+          <el-tab-pane name="rubric" label="Tiêu chí chuẩn">
             <tabRubric v-if="review" ref="tabRubric" :current-user="currentUser" :questionid="questionId" :is-ai-review="isAiReview" :reviewid="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
-          <el-tab-pane v-if="isRate && !isDisputed && !isAiReview" name="rate" label="Rate">
+          <el-tab-pane v-if="isRate && !isDisputed && !isAiReview" name="rate" label="Rating">
             <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
           </el-tab-pane>
         </el-tabs>

@@ -14,8 +14,8 @@ const paymentService = {
   verifyVnPayStatus(model) {
     return http.post('/payment/vnpay/verify', model).then(rs => rs.data)
   },
-  processOrder(orderId) {
-    return http.get('/payment/process/order/' + orderId).then(rs => rs.data)
+  processOrder(paymentMethod, orderId) {
+    return http.get('/payment/process/order/' + paymentMethod + '/' + orderId).then(rs => rs.data)
   },
   createNewOrder(order) {
     return http.post('/payment/order', order).then(rs => rs.data)

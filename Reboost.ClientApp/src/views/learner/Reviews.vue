@@ -1,28 +1,32 @@
 <template>
-  <div class="list-container">
+  <div v-if="screenWidth > 780" class="list-container">
     <el-alert
       v-if="showReviewsIntro"
-      title="Đây là nơi hiển thị những đánh giá của bạn. Hãy làm theo hướng dẫn và cung cấp thật nhiều đánh giá chất lượng nhé. Bạn sẽ bất ngờ vì lợi ích mà nó mang lại đấy!"
-      type="success"
+      type="info"
+      :show-icon="true"
       center
-      style="margin-bottom: 10px"
+      style="margin-bottom: 10px; margin-top: 10px;"
       @close="closeIntro()"
-    />
+    >
+      <span slot="title" style="font-size: 15px;">
+        Đây là nơi hiển thị những đánh giá của bạn. Hãy làm theo hướng dẫn và cung cấp thật nhiều đánh giá chất lượng nhé. Bạn sẽ bất ngờ vì lợi ích mà nó mang lại đấy!
+      </span>
+    </el-alert>
 
     <div v-if="!loadCompleted">
-      <el-card style="padding: 10px; width: 100%; text-align: center; box-shadow: 0 2px 12px 0 #88c4ce;" class="box-card">
+      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
         <div v-loading="true" style="width: 100%;  height: calc(100vh - 110px);" element-loading-text="Đang tải đánh giá của bạn" />
       </el-card>
     </div>
 
     <div v-if="loadCompleted && reviews && reviews.length == 0">
-      <el-card style="padding: 10px; width: 100%; text-align: center; box-shadow: 0 2px 12px 0 #88c4ce;" class="box-card">
+      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
 
         <div style="margin-top: 20px; margin-bottom: 20px;">
           <h5>Bạn chưa có đánh giá nào, hãy cung cấp 1 đánh giá ngay!</h5>
 
           <div style="margin-top: 20px;">
-            <el-button type="primary" plain :loading="isLoading" @click="onNewRequestClick()">Cung cấp đánh giá</el-button>
+            <el-button type="primary" plain :loading="isLoading" icon="el-icon-edit" @click="onNewRequestClick()">Cung cấp đánh giá</el-button>
           </div>
 
         </div>
@@ -30,7 +34,7 @@
     </div>
 
     <div v-if="loadCompleted && reviews && reviews.length > 0">
-      <el-card style="padding: 10px; padding-top: 5px; width: 100%; box-shadow: 0 2px 12px 0 #88c4ce;" class="box-card">
+      <el-card style="padding: 10px; padding-top: 5px; width: 100%;" class="box-card">
         <div class="top-navigator" style="height: 35px;">
           <el-button
             v-if="showLeftArrow"
@@ -66,6 +70,7 @@
               size="medium"
               style="float: right; padding-bottom: 8px; padding-top: 8px; color: rgb(42 185 190);"
               :loading="isLoading"
+              icon="el-icon-edit"
               @click="onNewRequestClick"
             >
               <span v-if="currentUser.role == 'rater'">Đánh giá miễn phí</span>
@@ -307,6 +312,299 @@
     </div>
 
   </div>
+  <div v-else class="list-container">
+    <el-alert
+      v-if="showReviewsIntro"
+      type="info"
+      :show-icon="true"
+      center
+      style="margin-bottom: 10px; margin-top: 5px;"
+      @close="closeIntro()"
+    >
+      <span slot="title" style="font-size: 15px;">
+        Đây là nơi hiển thị những đánh giá của bạn. Hãy làm theo hướng dẫn và cung cấp thật nhiều đánh giá chất lượng nhé. Bạn sẽ bất ngờ vì lợi ích mà nó mang lại đấy!
+      </span>
+    </el-alert>
+
+    <div v-if="!loadCompleted">
+      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
+        <div v-loading="true" style="width: 100%;  height: calc(100vh - 110px);" element-loading-text="Đang tải đánh giá của bạn" />
+      </el-card>
+    </div>
+
+    <div v-if="loadCompleted && reviews && reviews.length == 0">
+      <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
+
+        <div style="margin-top: 20px; margin-bottom: 20px;">
+          <h5>Bạn chưa có đánh giá nào, hãy cung cấp 1 đánh giá ngay!</h5>
+
+          <div style="margin-top: 20px;">
+            <el-button type="primary" plain :loading="isLoading" icon="el-icon-edit" @click="onNewRequestClick()">Cung cấp đánh giá</el-button>
+          </div>
+
+        </div>
+      </el-card>
+    </div>
+
+    <div v-if="loadCompleted && reviews && reviews.length > 0">
+      <el-card style="padding: 10px; padding-top: 5px; width: 100%;" class="box-card">
+        <div class="top-navigator" style="height: 35px;">
+          <el-button
+            v-if="showLeftArrow"
+            type="text"
+            size="medium"
+            icon="el-icon-d-arrow-left"
+            style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
+            @click="moveLeft()"
+          />
+          <div id="topic-container" style="display: flex; float: left; width: calc(100% - 30px); overflow: hidden;">
+            <el-tag
+              type="info"
+              :effect="allTopicEffect"
+              style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
+              @click="onTopicClick(null)"
+            >
+              Tất cả: {{ reviewCount }}
+            </el-tag>
+            <el-tag
+              v-for="item in summary"
+              :key="item.section"
+              type="info"
+              :effect="item.effect"
+              style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
+              @click="onTopicClick(item)"
+            >
+              {{ item.section }}: {{ item.count }}
+            </el-tag>
+          </div>
+          <div>
+            <el-button
+              v-if="showRightArrow"
+              type="text"
+              size="medium"
+              icon="el-icon-d-arrow-right"
+              style="color: grey; padding-bottom: 8px; padding-top: 8px;"
+              @click="moveRight()"
+            />
+          </div>
+        </div>
+
+        <div>
+
+          <el-button
+            v-if="completeLoading && !hasPendingReview"
+            size="mini"
+            style="float: right; padding-bottom: 8px; padding-top: 8px; color: rgb(42 185 190); margin-top: 5px;"
+            :loading="isLoading"
+            @click="onNewRequestClick"
+          >
+            <span v-if="currentUser.role == 'rater'">Đánh giá miễn phí</span>
+            <span v-else>Cung cấp đánh giá</span>
+          </el-button>
+
+          <el-tooltip
+            v-if="completeLoading && hasPendingReview"
+            class="item"
+            effect="dark"
+            content="Hãy hoàn thành bài đánh giá của bạn trước khi cung cấp 1 đánh giá mới"
+            placement="top"
+          >
+            <el-button :disabled="true" size="medium" style="float: right; padding-bottom: 8px; padding-top: 8px; margin-top: 5px;" type="info" plain>
+              <span v-if="currentUser.role == 'rater'">Đánh giá miễn phí</span>
+              <span v-else>Cung cấp đánh giá</span>
+            </el-button>
+          </el-tooltip>
+
+          <el-input
+            v-model="textSearch"
+            size="mini"
+            placeholder="Nhập để tìm kiếm"
+            style="float: left; width: 150px; margin-top: 5px;"
+            @input="search()"
+          />
+
+          <el-button size="mini" style="float: left; margin-top: 5px; margin-left: 5px; " @click="clearFilter">
+            Đặt lại
+          </el-button>
+        </div>
+
+        <div style="height: 40px;">
+          <div class="filter-container" style="width: 100%; float: left;">
+            <div class="filter-toolbar" style="margin-top: 10px;">
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Task<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterSections"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterTypes"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+              <el-dropdown
+                placement="bottom-start"
+                :hide-on-click="false"
+                style="float: left; margin-right: 15px;"
+                @command="onFilterChange"
+              >
+                <span class="el-dropdown-link" style="cursor: pointer;">
+                  <el-link :underline="false" type="info">
+                    Trạng Thái<i class="el-icon-arrow-down el-icon--right" />
+                  </el-link>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="item in filterStatuses"
+                    :key="item.text"
+                    :command="item"
+                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
+                  >{{ item.text }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+          </div>
+
+        </div>
+
+        <div v-if="selectionTag && selectionTag.length > 0" class="tag-selection">
+          <el-tag
+            v-for="tag in selectionTag"
+            :key="tag"
+            size="small"
+            type="info"
+            closable
+            :disable-transitions="false"
+            style="margin-right: 5px; margin-bottom: 5px;"
+            @close="handleClose(tag)"
+          >
+            {{ tag }}
+          </el-tag>
+        </div>
+
+        <div v-if="reviews && reviews.length > 0">
+          <el-table ref="filterTable" :data="reviews" stripe style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
+            <el-table-column
+              prop="questionName"
+              label="Chủ đề viết"
+              sortable
+              fixed="left"
+              min-width="150"
+            >
+              <template slot-scope="scope">
+                <span class="title-row cursor" style="word-break: break-word" @click="rowClicked(scope.row)">
+                  {{ scope.row.id + '. ' + scope.row.questionName }}
+                </span>
+              </template>
+            </el-table-column>
+
+            <!-- <el-table-column
+              prop="reviewType"
+              label="Kiểu đánh giá"
+              width="120"
+            >
+              <template slot-scope="scope">
+                <span v-if="scope.row.reviewType == 'Peer Review'" style="word-break: break-word">
+                  <span v-if="currentUser.role == 'rater'" style="word-break: break-word">
+                    Miễn phí
+                  </span>
+                  <span v-else style="word-break: break-word">
+                    Ngang hàng
+                  </span>
+                </span>
+                <span v-else-if="scope.row.reviewType == 'Paid Review'" style="word-break: break-word">
+                  Tính phí
+                </span>
+                <span v-else style="word-break: break-word">
+                  Tự đánh giá
+                </span>
+              </template>
+            </el-table-column> -->
+
+            <el-table-column
+              prop="status"
+              label="Trạng Thái"
+              width="100"
+            >
+              <template slot-scope="scope">
+                <el-link
+                  v-if="scope.row.status == 'In Progress'"
+                  :underline="false"
+                  type="warning"
+                >Đang làm
+                </el-link>
+                <el-link
+                  v-else
+                  :underline="false"
+                  type="success"
+                >Hoàn thành
+                </el-link>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+              prop="rating"
+              label="Rating"
+              width="80"
+            >
+              <template slot-scope="scope">
+                <span v-if="scope.row.rating == 'Chưa có'">
+                  Chưa có
+                </span>
+                <span v-else>
+                  {{ scope.row.rating }} <i class="fas fa-star" style="color: gold;" />
+                </span>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div class="pagination">
+            <el-pagination
+              background
+              layout="total, prev, pager, next"
+              :page-size="pageSize"
+              :total="totalRow"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+            />
+          </div>
+        </div>
+      </el-card>
+
+    </div>
+
+  </div>
 </template>
 <script>
 import moment from 'moment-timezone'
@@ -345,6 +643,7 @@ export default {
       showRightArrow: false,
       allTopicEffect: 'dark',
       completeLoading: false,
+      screenWidth: window.innerWidth,
       showReviewsIntro: true,
       loadCompleted: false,
       isLoading: false
@@ -355,10 +654,18 @@ export default {
       return this.$store.getters['auth/getUser']
     }
   },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
   mounted() {
     if (localStorage.getItem('noReviewsIntro')) {
       this.showReviewsIntro = false
     }
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
     reviewService.getReviewsByUser().then(rs => {
       this.loadCompleted = true
       if (rs) {

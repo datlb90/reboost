@@ -7,19 +7,22 @@
     <div class="startp-nav">
       <div class="nav-container" :class="{ 'full-size': fullSizeHeader }">
         <nav class="navbar navbar-expand-md navbar-light">
-          <router-link to="/questions" style="margin-top: 0px; padding-top: 0px;">
+          <router-link v-if="selectedTest && selectedTest.length > 0" to="/questions" style="margin-top: 0px; padding-top: 0px;">
+            <img src="../../assets/logo/logo.png" alt="logo" class="main-header-logo">
+          </router-link>
+          <router-link v-else to="/select/test" style="margin-top: 0px; padding-top: 0px;">
             <img src="../../assets/logo/logo.png" alt="logo" class="main-header-logo">
           </router-link>
           <b-navbar-toggle target="navbarSupportedContent" />
           <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
             <ul v-if="role == userRole.LEARNER" class="navbar-nav nav mr-auto nav-wrapper">
-              <li class="nav-item" style="padding-bottom: 12px;">
-                <router-link to="/questions" class="nav-link">Các chủ đề viết</router-link>
+              <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="padding-bottom: 12px;">
+                <router-link to="/questions" class="nav-link">Chủ đề viết</router-link>
               </li>
-              <li class="nav-item" style="padding-bottom: 12px;">
+              <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="padding-bottom: 12px;">
                 <router-link to="/submissions" class="nav-link">Bài viết của tôi</router-link>
               </li>
-              <li class="nav-item" style="padding-bottom: 12px;">
+              <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="padding-bottom: 12px;">
                 <router-link to="/reviews" class="nav-link">Đánh giá của tôi</router-link>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
@@ -95,9 +98,6 @@
           </b-collapse>
 
           <div class="user-option">
-
-            <!-- <el-button type="primary" icon="el-icon-edit" size="small" style="margin-right: 20px;" @click="openRequestReviewDialog">Request Review</el-button> -->
-
             <el-button
               v-if="role == userRole.LEARNER"
               icon="el-icon-edit"
@@ -107,11 +107,6 @@
             >Yêu cầu chấm bài
             </el-button>
 
-            <!-- <el-button
-              class="header-notification"
-              icon="el-icon-message-solid"
-              circle
-            /> -->
             <el-dropdown style="margin-top: 5px; margin-right: 2px;" trigger="click" @command="handleCommand">
               <span class="el-dropdown-link" @click="getRaterRating">
                 <el-link :underline="false" type="info">

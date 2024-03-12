@@ -29,10 +29,10 @@ namespace Reboost.Service.Services
         Task<VerifyPaymentModel> VerifyZaloPayStatus(ZaloPayVerifyResultModel model);
         Task<ZaloCallbackResultModel> ZaloPaymentCallback(CallbackRequest cbdata);
         Task<string> GetZaloPayUrl(ZaloPayRequestModel model);
-        VerifyPaymentModel VerifyVnPayStatus(VNPayVerifyResultModel model);
+        Task<VerifyPaymentModel> VerifyVnPayStatus(VNPayVerifyResultModel model);
         Task<VnPayCallbackResultModel> VnPayCallback(VNPayVerifyResultModel model);
         Task<string> GetVNPayUrl(VNPayRequestModel model);
-        Task<VerifyPaymentModel> ProcessOrder(int orderId);
+        Task<VerifyPaymentModel> ProcessOrder(string paymentMethod, int orderId, string ipAddress);
         Task<IEnumerable<Payments>> GetAllAsync();
         Task<List<Payments>> GetAllPaymentByUserIdAsync(string id);
         Task<Payments> CreatePaymentAsync(Payments pm);
@@ -300,7 +300,7 @@ namespace Reboost.Service.Services
             }
         }
 
-        public VerifyPaymentModel VerifyVnPayStatus(VNPayVerifyResultModel model)
+        public async Task<VerifyPaymentModel> VerifyVnPayStatus(VNPayVerifyResultModel model)
         {
             VerifyPaymentModel result = new VerifyPaymentModel();
             // Trả về trạng thái lỗi by default 
@@ -332,11 +332,17 @@ namespace Reboost.Service.Services
                     bool checkSignature = vnpay.ValidateSignature(vnp_SecureHash, vnp_HashSecret);
                     if (checkSignature)
                     {
-                        if (vnp_ResponseCode == "00" && vnp_TransactionStatus == "00")
+                        Orders order = await _orderService.GetById(orderId);
+                        if(order != null && order.Amount == vnp_Amount)
                         {
-                            // Thanh toán thành công
-                            result.status = OrderStatus.COMPLETED;
+                            result.reviewType = order.ReviewType;
+                            if (vnp_ResponseCode == "00" && vnp_TransactionStatus == "00")
+                            {
+                                // Thanh toán thành công
+                                result.status = OrderStatus.COMPLETED;
+                            }
                         }
+                        
                     }
                 }
             }
@@ -384,8 +390,6 @@ namespace Reboost.Service.Services
             param.Add("mac", HmacHelper.Compute(ZaloPayHMAC.HMACSHA256, _configuration.GetSection("PaymentGateway:ZaloPay")["key1"], data));
 
             var result = await HttpHelper.PostFormAsync(_configuration.GetSection("PaymentGateway:ZaloPay")["create_order_url"], param);
-
-
 
             // Send the order_url to the front end for redirection
             int return_code = Int32.Parse(result["return_code"].ToString());
@@ -468,6 +472,7 @@ namespace Reboost.Service.Services
                 // Sanity check to make sure this is the right order
                 if (order != null && order.UserId == model.userId && order.Amount == Int32.Parse(model.amount))
                 {
+                    result.reviewType = order.ReviewType;
                     if(order.Status == PaymentStatus.COMPLETED)
                     {
                         // Đã nhận được call back
@@ -556,48 +561,111 @@ namespace Reboost.Service.Services
             return result;
         }
 
-        public async Task<VerifyPaymentModel> ProcessOrder(int orderId)
+        public async Task<VerifyPaymentModel> ProcessOrder(string paymentMethod, int orderId, string ipAddress)
         {
             VerifyPaymentModel result = new VerifyPaymentModel();
+            result.status = OrderStatus.ERROR;
+            // Wait for 1s to get callback from the payment providers
+            await Task.Delay(1000);
             Orders order = await _orderService.GetById(orderId);
             if(order != null)
             {
-                // Wait for 1 minute for the payment callback
+                // The the status of the order is still pending, Gọi API truy vấn trạng thái thanh toán của đơn hàng để lấy kết quả cuối cùng
                 if (order.Status == PaymentStatus.PENDING)
                 {
-                    bool isPending = true;
-                    int timesChecked = 0;
-                    int maxTime = 60;
-                    int delayedTime = 1000;
-                    // Check every second for the duration of 1 minute
-                    // Get order status 60 times in total
-                    while (isPending && timesChecked <= maxTime)
+                    if(paymentMethod == "vnpay")
                     {
-                        Orders latestOrder = await _orderService.GetById(orderId);
-                        timesChecked++;
-                        if (latestOrder.Status != PaymentStatus.PENDING)
+                        // Truy cập trạng thái đơn hàng và updateu
+                        var vnpData = _configuration.GetSection("PaymentGateway:VNPay");
+                        string vnp_HashSecret = vnpData["vnp_HashSecret"];
+
+                        // Gọi API truy vấn trạng thái thanh toán của đơn hàng để lấy kết quả cuối cùng
+                        var vnp_Api = vnpData["vnp_Api"];
+                        var vnp_TmnCode = vnpData["vnp_TmnCode"]; // Terminal Id
+                        var vnp_RequestId = DateTime.Now.Ticks.ToString(); //Mã hệ thống merchant tự sinh ứng với mỗi yêu cầu truy vấn giao dịch. Mã này là duy nhất dùng để phân biệt các yêu cầu truy vấn giao dịch. Không được trùng lặp trong ngày.
+                        var vnp_Version = VnPayLibrary.VERSION; //2.1.0
+                        var vnp_Command = "querydr";
+                        var vnp_TxnRef = orderId.ToString(); // Mã giao dịch thanh toán tham chiếu
+                        var vnp_OrderInfo = "Truy van giao dich:" + orderId.ToString();
+                        var vnp_TransactionDate = order.CreatedDate.ToString("yyyyMMddHHmmss");
+                        var vnp_CreateDate = DateTime.Now.ToString("yyyyMMddHHmmss");
+                        var vnp_IpAddr = ipAddress;
+
+                        var signData = vnp_RequestId + "|" + vnp_Version + "|" + vnp_Command + "|" + vnp_TmnCode + "|" + vnp_TxnRef + "|" + vnp_TransactionDate + "|" + vnp_CreateDate + "|" + vnp_IpAddr + "|" + vnp_OrderInfo;
+                        var secureHash = Utils.HmacSHA512(vnp_HashSecret, signData);
+
+                        var qdrData = new
                         {
-                            isPending = false;
-                            order = latestOrder;
+                            vnp_RequestId = vnp_RequestId,
+                            vnp_Version = vnp_Version,
+                            vnp_Command = vnp_Command,
+                            vnp_TmnCode = vnp_TmnCode,
+                            vnp_TxnRef = vnp_TxnRef,
+                            vnp_OrderInfo = vnp_OrderInfo,
+                            vnp_TransactionDate = vnp_TransactionDate,
+                            vnp_CreateDate = vnp_CreateDate,
+                            vnp_IpAddr = vnp_IpAddr,
+                            vnp_SecureHash = secureHash
+                        };
+                        var jsonData = JsonConvert.SerializeObject(qdrData);
+
+                        var httpWebRequest = (HttpWebRequest)WebRequest.Create(vnp_Api);
+                        httpWebRequest.ContentType = "application/json";
+                        httpWebRequest.Method = "POST";
+
+                        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                        {
+                            streamWriter.Write(jsonData);
                         }
-                        // Delay for 1s
-                        await Task.Delay(delayedTime);
+                        var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                        using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                        {
+                            VnPayTransactionStatusModel rs = JsonConvert.DeserializeObject<VnPayTransactionStatusModel>(streamReader.ReadToEnd());
+                            if (rs.vnp_TransactionStatus == "00")
+                            {
+                                // Process the order
+                                result = await ProcessReviewRequest(order);
+                                // Update status to processed
+                                order.Status = PaymentStatus.PROCESSED;
+                                order.LastActivityDate = DateTime.UtcNow;
+                                await _orderService.Update(order);
+                            }
+                        }
+                    }
+                    else if(paymentMethod == "zalopay")
+                    {
+                        // Gọi API truy vấn trạng thái thanh toán của đơn hàng để lấy kết quả cuối cùng
+                        var param = new Dictionary<string, string>();
+                        string appId = _configuration.GetSection("PaymentGateway:ZaloPay")["app_id"];
+                        string key1 = _configuration.GetSection("PaymentGateway:ZaloPay")["key1"];
+                        string appTransId = order.CreatedDate.ToString("yyMMdd") + "_" + order.Id.ToString();
+                        param.Add("app_id", appId);
+                        param.Add("app_trans_id", appTransId);
+                        var data = appId + "|" + appTransId + "|" + key1;
+
+                        param.Add("mac", HmacHelper.Compute(ZaloPayHMAC.HMACSHA256, key1, data));
+
+                        var orderStatusResult = await HttpHelper.PostFormAsync(_configuration.GetSection("PaymentGateway:ZaloPay")["query_order_url"], param);
+                        int orderStatus = Int32.Parse(orderStatusResult["return_code"].ToString());
+                        if (orderStatus == 1)
+                        {
+                            // Process the order
+                            result = await ProcessReviewRequest(order);
+                            // Update status to processed
+                            order.Status = PaymentStatus.PROCESSED;
+                            order.LastActivityDate = DateTime.UtcNow;
+                            await _orderService.Update(order);
+                        }
                     }
                 }
-
-                if (order.Status == PaymentStatus.PENDING)
+                else if (order.Status == PaymentStatus.COMPLETED)
                 {
-                    // Still not receive the callback or there is a problem with processing the review request
-                    // Send admin an email
-                    string message = $"<p>Hi Admin,</p>" +
-                                    $"<p>Hệ thống không nhận được payment callback để xử lý đơn hàng vớ mã số " + order.Id + "!</p>" +
-                                    $"<p>Hãy kiểm tra và báo lại cho người dùng càng sớm càng tốt.</p>" +
-                                    $"<p>Xin chân thành cảm ơn!</p>" +
-                                    $"<p>Reboost Support</p>";
-
-                    await _mailService.SendEmailAsync("support@reboost.vn", "Đã có lỗi trong quá trình xử lý đơn hàng", message);
-                    result.order = order;
-                    result.status = OrderStatus.ERROR;
+                    // Process the order
+                    result = await ProcessReviewRequest(order);
+                    // Update status to processed
+                    order.Status = PaymentStatus.PROCESSED;
+                    order.LastActivityDate = DateTime.UtcNow;
+                    await _orderService.Update(order);
                 }
                 else if(order.Status == PaymentStatus.PROCESSED)
                 {
@@ -623,16 +691,6 @@ namespace Reboost.Service.Services
                             reviewId = review.ReviewId
                         };
                     }
-
-                }
-                else if (order.Status == PaymentStatus.COMPLETED)
-                {
-                    // Process the order
-                    result = await ProcessReviewRequest(order);
-                    // Update status to processed
-                    order.Status = PaymentStatus.PROCESSED;
-                    order.LastActivityDate = DateTime.UtcNow;
-                    await _orderService.Update(order);
                 }
                 else
                 {

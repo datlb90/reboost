@@ -6,14 +6,16 @@
     <p>Reboost là một nền tảng trực tuyến giúp cho những người thi IELTS và TOEFL luyện tập và cải thiện kỹ năng viết của họ. Bằng cách truy cập vào trang web, ứng dụng di động hoặc bất kỳ dịch vụ nào được cung cấp (gọi chung là "Dịch Vụ"), bạn đồng ý rằng mình sẽ bị ràng buộc bởi các Điều Khoản Dịch Vụ này ("Điều Khoản"). Nếu bạn không đồng ý với tất cả các điều khoản và điều kiện, bạn không được phép sử dụng Dịch Vụ.</p>
 
     <h2>1. Dịch Vụ Được Cung Cấp</h2>
-    <p>Reboost cung cấp không giới hạn các chủ đề viết IETLTS và TOEFL với tài liệu hỗ trợ và bài viết mẫu cho từng chủ đề. Người dùng có thể luyện tập viết trên ứng dụng và gửi bài viết của mình để được chấm bởi các giáo viên của Reboost hoặc phần mềm đánh giá tự động. Sau khi hoàn thành 1 bài viết, người dùng có thể yêu cầu bài viết của mình được chấm và thanh toán trực tiếp trên hệ thống. Phản hồi cho bài viết sẽ được cung cấp trên hệ thống ngay sau khi thanh toán nếu người dùng chọn dịch vụ đánh giá tự động, hoặc trong vòng 24 giờ nếu người dùng chọn dịch vụ chấm bài từ giáo viên của Reboost.</p>
+    <p>Reboost cung cấp đa dạng các chủ đề viết IETLTS và TOEFL với nhiều tài liệu hỗ trợ và bài mẫu cho từng chủ đề. Người dùng có thể luyện tập viết trên ứng dụng và gửi bài viết của mình để được chấm bởi các giáo viên của Reboost hoặc phần mềm đánh giá tự động. Sau khi hoàn thành 1 bài viết, người dùng có thể yêu cầu bài viết của mình được chấm và thanh toán trực tiếp trên hệ thống. Phản hồi cho bài viết sẽ được cung cấp trên hệ thống ngay sau khi thanh toán nếu người dùng chọn dịch vụ đánh giá tự động, hoặc trong vòng 28 giờ nếu người dùng chọn dịch vụ chấm bài từ giáo viên của Reboost.</p>
 
     <h2>2. Chính sách chấm bài và thời gian giao phản hồi</h2>
     <p>- Nếu bạn yêu cầu bài viết được chấm bởi giáo viên của Reboost, phản hồi cho bài viết sẽ được cung cấp trên hệ thống trong vòng 24 giờ. </p>
     <p>- Nếu bạn yêu cầu bài viết được chấm bởi hệ thống chấm bài tự động của Reboost, phản hồi cho bài viết sẽ được cung cấp trên hệ thống ngay sau khi bạn hoàn tất thanh toán.</p>
 
     <h2>3. Chính sách về sửa đổi, hủy, hoàn trả</h2>
-    <p>Sau khi nhận được phản hồi cho bài viết của mình từ Reboost, nếu gặp bất kỳ vấn đề gì liên quan tới nội dung hay chất lượng của phản hồi, bạn có thể yêu cầu bài viết được chấm lại hoặc hoàn tiền bằng cách liên hệ với chúng tôi tại <a href="mailto:support@reboost.vn">support@reboost.vn</a>. Yêu cầu chấm lại bài viết hay hoàn tiền sẽ được đánh giá trên cơ sở từng trường hợp.</p>
+    <p>
+      Sau khi nhận được phản hồi cho bài viết của mình từ Reboost, bạn có 24 giờ để gửi khiếu lại về chất lượng của phản hồi mà bạn nhận được và yêu cầu bài viết được chấm lại hoặc hoàn tiền bằng cách liên hệ với chúng tôi tại <a href="mailto:support@reboost.vn">support@reboost.vn</a>. Yêu cầu chấm lại bài viết hay hoàn tiền của bạn sẽ được chúng tôi đánh giá trong vòng 2 ngày làm việc kể từ khi nhận dược yêu cầu. Nếu kết quả đánh giá cho thấy giáo viên hoặc hệ thống tự động của chúng tôi không cung cấp được phản hồi đáp ứng tiêu chuẩn đánh giá của Reboost, yêu cầu của bạn sẽ được duyệt. Nếu bạn yêu cầu bài viết được chấm lại, giáo viên của chúng tôi sẽ cung cấp lại phản hồi trong vòng 24h kể từ ngày yêu cầu chấm lại được duyệt. Nếu bạn yêu cầu hoàn tiền, chúng tôi sẽ hoàn tiền ngay sau khi yêu cầu được duyệt.
+    </p>
 
     <h2>4. Chính sách thanh toán</h2>
     <p>- Phương thức thanh toán chấp nhận: thẻ ATM và tài khoản ngân hàng, ví điện tử ZaloPay, quét mã QR.</p>

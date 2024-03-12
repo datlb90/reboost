@@ -13,11 +13,20 @@ namespace Reboost.Shared
         public string overallFeedback { get; set; }
     }
 
-    public class NewTOEFLEssayFeedbackModel
+    public class TOEFLIndependentFeedbackModel
     {
-        public AutomatedFeedbackModel useOflanguge { get; set; }
-        public AutomatedFeedbackModel coherenceAccuracy { get; set; }
-        public AutomatedFeedbackModel developmentOrganization { get; set; }
+        public AutomatedFeedbackModel languageUse { get; set; }
+        public AutomatedFeedbackModel organization { get; set; }
+        public AutomatedFeedbackModel developmentSupport { get; set; }
+        public AutomatedFeedbackModel overallFeedback { get; set; }
+        public List<AutomatedFeedbackError> errors { get; set; }
+    }
+
+    public class TOEFLIntegratedFeedbackModel
+    {
+        public AutomatedFeedbackModel languageUse { get; set; }
+        public AutomatedFeedbackModel organization { get; set; }
+        public AutomatedFeedbackModel content { get; set; }
         public AutomatedFeedbackModel overallFeedback { get; set; }
         public List<AutomatedFeedbackError> errors { get; set; }
     }
@@ -31,10 +40,18 @@ namespace Reboost.Shared
     //    public List<AutomatedFeedbackError> errors { get; set; }
     //}
 
+    public class FeedbackModel
+    {
+        public string strengths { get; set; }
+        public string weaknesses { get; set; }
+        public string recommendations { get; set; }
+    }
+
     public class AutomatedFeedbackModel
     {
-        public string comment { get; set; }
+        public FeedbackModel feedback { get; set; }
         public float score { get; set; }
+        public string comment { get; set; }
     }
 
     public class AutomatedFeedbackError

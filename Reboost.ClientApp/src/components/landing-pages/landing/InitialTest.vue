@@ -24,13 +24,13 @@
                               <div class="title-tab">
                                 {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
                               </div>
-                              <div style="float: right;">
+                              <!-- <div style="float: right;">
                                 <div>
                                   <el-tag v-if="isTesting" class="mr-2" type="danger" size="medium" style="height: 30px; line-height: 28px;"><i class="el-icon-timer" style="font-size: 14px; margin-right: 4px;" />{{ minute }} : {{ second }}</el-tag>
                                   <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" style="padding: 8px 15px;" @click="startTest()">Start Test</el-button>
                                   <el-checkbox v-model="isTest" size="mini" border style="height: 30px; margin-bottom: 0px;" @change="changedOption()"> Test Mode</el-checkbox>
                                 </div>
-                              </div>
+                              </div> -->
                             </div>
                             <div>
                               <el-tag
@@ -323,13 +323,13 @@
                               <div class="title-tab">
                                 {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
                               </div>
-                              <div style="float: right;">
+                              <!-- <div style="float: right;">
                                 <div>
                                   <el-tag v-if="isTesting" class="mr-2" type="danger" size="medium" style="height: 30px; line-height: 28px;"><i class="el-icon-timer" style="font-size: 14px; margin-right: 4px;" />{{ minute }} : {{ second }}</el-tag>
                                   <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" style="padding: 8px 15px;" @click="startTest()">Start Test</el-button>
                                   <el-checkbox v-model="isTest" size="mini" border style="height: 30px; margin-bottom: 0px;" @change="changedOption()"> Test Mode</el-checkbox>
                                 </div>
-                              </div>
+                              </div> -->
                             </div>
 
                             <div>

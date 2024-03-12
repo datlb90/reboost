@@ -18,6 +18,7 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IReviewRepository
     {
+        Task<ReviewRequests> CreateReviewRequest(ReviewRequests request);
         Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId);
         Task<bool> EligibleForPeerReview(string userId);
         Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId);
@@ -76,6 +77,13 @@ namespace Reboost.DataAccess.Repositories
         {
             db = context;
         }
+        public async Task<ReviewRequests> CreateReviewRequest(ReviewRequests request)
+        {
+            await db.ReviewRequests.AddAsync(request);
+            await db.SaveChangesAsync();
+            return await Task.FromResult(request);
+        }
+
         public async Task<bool> EligibleForPeerReview(string userId)
         {
             int peerReviewCount = await db.Reviews.CountAsync(r => r.ReviewerId == userId && (r.Status == ReviewStatus.COMPLETED || r.Status == ReviewStatus.RATED));
@@ -1412,9 +1420,9 @@ namespace Reboost.DataAccess.Repositories
                                         {
                                           RequestId = rr.Id,
                                           LearnerId = rr.UserId,
-                                          LearnerName = learner.FirstName + " " + learner.LastName,
+                                          LearnerName = learner.FirstName,
                                           RaterId = rater.UserId,
-                                          RaterName = raterProfile.FirstName + " " + raterProfile.LastName,
+                                          RaterName = raterProfile.FirstName,
                                           RequestStatus = rr.Status,
                                           AssignmentStatus = assignment.Status,
                                           ReviewStatus = review.Status,

@@ -13,6 +13,7 @@ using Stripe;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
+using System.IO;
 
 namespace Reboost.Service.Services
 {
@@ -116,75 +117,50 @@ namespace Reboost.Service.Services
             QuestionModel question = await _unitOfWork.Questions.GetByIdAsync(submission.QuestionId);
             Documents document = await _unitOfWork.Documents.GetByIdAsync(submission.DocId);
             var questionContent = StripHTML(question.QuestionsPart.Find(p => p.Name == "Question").Content);
-            NewTOEFLEssayFeedbackModel toeflFeedback = new NewTOEFLEssayFeedbackModel();
-            NewIELTSEssayFeedbackModel ieltsFeedback = new NewIELTSEssayFeedbackModel();
-            if (question.Section == "Independent Writing")
-            {
-                toeflFeedback = await chatGPTService.GetTOEFLIndependentEssayFeedback(questionContent, document.Text, feedbackLanguage);
-            }
-            else if (question.Section == "Integrated Writing")
-            {
-                string integratedQuestion = "\nTask: " + questionContent + "\n";
 
-                var reading = question.QuestionsPart.Find(p => p.Name == "Reading");
-                if(reading != null)
-                {
-                    string readingStr = StripHTML(reading.Content);
-                    integratedQuestion += "Reading passage: \"" + readingStr  +"\"\n";
-                }
-
-                var transcript = question.QuestionsPart.Find(p => p.Name == "Transcript");
-                if(transcript != null)
-                {
-                    string transcriptStr = StripHTML(transcript.Content);
-                    integratedQuestion += "Listening lecture: \"" + transcriptStr + "\"";
-                }
-
-                toeflFeedback = await chatGPTService.GetTOEFLIntegratedEssayFeedback(integratedQuestion, document.Text, feedbackLanguage);
-            }
-            else
-            {
-                ieltsFeedback = await chatGPTService.GetIELTSEssayFeedback(questionContent, document.Text, feedbackLanguage);
-            }
-            var rubrics = await _unitOfWork.Rubrics.GetByQuestionId(question.Id);
             List<ReviewData> reviewDataList = new List<ReviewData>();
             decimal? finalScore = null;
-            foreach (RubricsModel criteria in rubrics)
+            var rubrics = await _unitOfWork.Rubrics.GetByQuestionId(question.Id);
+
+            if (question.Section == "Independent Writing")
             {
-                string shouldbe = "nên được thay bằng";
-                if(feedbackLanguage == "vn")
+               TOEFLIndependentFeedbackModel toeflFeedback = await chatGPTService.GetTOEFLIndependentEssayFeedback(questionContent, document.Text, feedbackLanguage);
+
+                foreach (RubricsModel criteria in rubrics)
                 {
-                    shouldbe = "should be";
-                }
-                    
-                ReviewData reviewData = new ReviewData();
-                reviewData.CriteriaId = (int)criteria.Id;
-                if (question.Test == "TOEFL")
-                {
+                    string shouldbe = "nên sửa thành";
+                    if (feedbackLanguage != "vn")
+                    {
+                        shouldbe = "should be";
+                    }
+
+                    ReviewData reviewData = new ReviewData();
+                    reviewData.CriteriaId = (int)criteria.Id;
                     switch (criteria.Name)
                     {
-                        case "Use of Language":
-                            reviewData.Comment = toeflFeedback.useOflanguge.comment;
-                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.useOflanguge.score);
+                        case "Language Use":
+                            reviewData.Comment = toeflFeedback.languageUse.comment;
+                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.languageUse.score);
                             break;
-                        case "Coherence & Accuracy":
-                            reviewData.Comment = toeflFeedback.coherenceAccuracy.comment;
-                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.coherenceAccuracy.score);
+                        case "Organization":
+                            reviewData.Comment = toeflFeedback.organization.comment;
+                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.organization.score);
                             break;
-                        case "Development & Organization":
-                            reviewData.Comment = toeflFeedback.developmentOrganization.comment;
-                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.developmentOrganization.score);
+                        case "Development and Support":
+                            reviewData.Comment = toeflFeedback.developmentSupport.comment;
+                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.developmentSupport.score);
                             break;
                         case "Critical Errors":
                             string errors = "";
-                            foreach(AutomatedFeedbackError error in toeflFeedback.errors)
+                            foreach (AutomatedFeedbackError error in toeflFeedback.errors)
                             {
-                                if(!String.IsNullOrEmpty(error.issue))
+                                if (!String.IsNullOrEmpty(error.issue))
                                     errors += "- '" + error.issue + "'";
                                 if (!String.IsNullOrEmpty(error.fix))
                                     errors += " " + shouldbe + " '" + error.fix + "'";
                                 if (!String.IsNullOrEmpty(error.type))
                                     errors += " (" + error.type + " )";
+                                errors += Environment.NewLine;
                                 errors += Environment.NewLine;
                             }
                             reviewData.Comment = errors;
@@ -198,9 +174,105 @@ namespace Reboost.Service.Services
                         default:
                             break;
                     }
+                    reviewDataList.Add(reviewData);
+                }
+
+            }
+            else if (question.Section == "Integrated Writing")
+            {
+                string integratedQuestion = "\nTask: " + questionContent + "\n";
+
+                var reading = question.QuestionsPart.Find(p => p.Name == "Reading");
+                if (reading != null)
+                {
+                    string readingStr = StripHTML(reading.Content);
+                    integratedQuestion += "Reading passage: \"" + readingStr + "\"\n";
+                }
+
+                var transcript = question.QuestionsPart.Find(p => p.Name == "Transcript");
+                if (transcript != null)
+                {
+                    string transcriptStr = StripHTML(transcript.Content);
+                    integratedQuestion += "Listening lecture: \"" + transcriptStr + "\"";
+                }
+
+                TOEFLIntegratedFeedbackModel toeflFeedback = await chatGPTService.GetTOEFLIntegratedEssayFeedback(integratedQuestion, document.Text, feedbackLanguage);
+
+                foreach (RubricsModel criteria in rubrics)
+                {
+                    string shouldbe = "nên sửa thành";
+                    if (feedbackLanguage != "vn")
+                    {
+                        shouldbe = "should be";
+                    }
+
+                    ReviewData reviewData = new ReviewData();
+                    reviewData.CriteriaId = (int)criteria.Id;
+                    switch (criteria.Name)
+                    {
+                        case "Language Use":
+                            reviewData.Comment = toeflFeedback.languageUse.comment;
+                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.languageUse.score);
+                            break;
+                        case "Organization":
+                            reviewData.Comment = toeflFeedback.organization.comment;
+                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.organization.score);
+                            break;
+                        case "Content":
+                            reviewData.Comment = toeflFeedback.content.comment;
+                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.content.score);
+                            break;
+                        case "Critical Errors":
+                            string errors = "";
+                            foreach (AutomatedFeedbackError error in toeflFeedback.errors)
+                            {
+                                if (!String.IsNullOrEmpty(error.issue))
+                                    errors += "- '" + error.issue + "'";
+                                if (!String.IsNullOrEmpty(error.fix))
+                                    errors += " " + shouldbe + " '" + error.fix + "'";
+                                if (!String.IsNullOrEmpty(error.type))
+                                    errors += " (" + error.type + " )";
+                                errors += Environment.NewLine;
+                                errors += Environment.NewLine;
+                            }
+                            reviewData.Comment = errors;
+                            reviewData.Score = 0;
+                            break;
+                        case "Overall Score & Feedback":
+                            reviewData.Comment = toeflFeedback.overallFeedback.comment;
+                            reviewData.Score = (decimal)toeflFeedback.overallFeedback.score;
+                            finalScore = reviewData.Score;
+                            break;
+                        default:
+                            break;
+                    }
+                    reviewDataList.Add(reviewData);
+                }
+            }
+            else if (question.Section == "Academic Writing Task 1")
+            {
+                IELTSTask1FeedbackModel ieltsFeedback = new IELTSTask1FeedbackModel();
+                var chart = question.QuestionsPart.Find(p => p.Name == "Chart");
+                if(chart != null)
+                {
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/photo", chart.Content);
+                     ieltsFeedback = await chatGPTService.GetIELTSTask1EssayFeedback(questionContent, document.Text, filePath, feedbackLanguage);
                 }
                 else
                 {
+                    ieltsFeedback = await chatGPTService.GetIELTSTask1EssayFeedback(questionContent, document.Text, null, feedbackLanguage);
+                }
+
+                foreach (RubricsModel criteria in rubrics)
+                {
+                    string shouldbe = "nên sửa thành";
+                    if (feedbackLanguage != "vn")
+                    {
+                        shouldbe = "should be";
+                    }
+
+                    ReviewData reviewData = new ReviewData();
+                    reviewData.CriteriaId = (int)criteria.Id;
                     switch (criteria.Name)
                     {
                         case "Task Achievement":
@@ -226,9 +298,10 @@ namespace Reboost.Service.Services
                                 if (!String.IsNullOrEmpty(error.issue))
                                     errors += "- '" + error.issue + "'";
                                 if (!String.IsNullOrEmpty(error.fix))
-                                    errors += " "+ shouldbe +" '" + error.fix + "'";
+                                    errors += " " + shouldbe + " '" + error.fix + "'";
                                 if (!String.IsNullOrEmpty(error.type))
                                     errors += " (" + error.type + " )";
+                                errors += Environment.NewLine;
                                 errors += Environment.NewLine;
                             }
                             reviewData.Comment = errors;
@@ -242,14 +315,84 @@ namespace Reboost.Service.Services
                         default:
                             break;
                     }
+                    reviewDataList.Add(reviewData);
                 }
 
-                reviewDataList.Add(reviewData);
             }
+            else // Academic Writing Task 2 
+            {
+                IELTSTask2FeedbackModel ieltsFeedback = await chatGPTService.GetIELTSTask2EssayFeedback(questionContent, document.Text, feedbackLanguage);
+                foreach (RubricsModel criteria in rubrics)
+                {
+                    string shouldbe = "nên sửa thành";
+                    if (feedbackLanguage != "vn")
+                    {
+                        shouldbe = "should be";
+                    }
 
+                    ReviewData reviewData = new ReviewData();
+                    reviewData.CriteriaId = (int)criteria.Id;
+                    switch (criteria.Name)
+                    {
+                        case "Task Response":
+                            reviewData.Comment = ieltsFeedback.taskResponse.comment;
+                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.taskResponse.score);
+                            break;
+                        case "Coherence & Cohesion":
+                            reviewData.Comment = ieltsFeedback.coherence.comment;
+                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.coherence.score);
+                            break;
+                        case "Lexical Resource":
+                            reviewData.Comment = ieltsFeedback.lexicalResource.comment;
+                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.lexicalResource.score);
+                            break;
+                        case "Grammatical Range & Accuracy":
+                            reviewData.Comment = ieltsFeedback.grammar.comment;
+                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.grammar.score);
+                            break;
+                        case "Critical Errors":
+                            string errors = "";
+                            foreach (AutomatedFeedbackError error in ieltsFeedback.errors)
+                            {
+                                if (!String.IsNullOrEmpty(error.issue))
+                                    errors += "- '" + error.issue + "'";
+                                if (!String.IsNullOrEmpty(error.fix))
+                                    errors += " " + shouldbe + " '" + error.fix + "'";
+                                if (!String.IsNullOrEmpty(error.type))
+                                    errors += " (" + error.type + " )";
+                                errors += Environment.NewLine;
+                                errors += Environment.NewLine;
+                            }
+                            reviewData.Comment = errors;
+                            reviewData.Score = 0;
+                            break;
+                        case "Overall Score & Feedback":
+                            reviewData.Comment = ieltsFeedback.overallFeedback.comment;
+                            reviewData.Score = (decimal)ieltsFeedback.overallFeedback.score;
+                            finalScore = reviewData.Score;
+                            break;
+                        default:
+                            break;
+                    }
+                    reviewDataList.Add(reviewData);
+                }
+            }
+            // Create a ReviewRequest
+            ReviewRequests request = new ReviewRequests
+            {
+                UserId = userId,
+                SubmissionId = submissionId,
+                FeedbackType = "AI",
+                RequestedDateTime = DateTime.UtcNow,
+                CompletedDateTime = DateTime.UtcNow,
+                Status = "Completed",
+                FeedbackLanguage = feedbackLanguage,
+            };
+            ReviewRequests newRequest = await _unitOfWork.Review.CreateReviewRequest(request);
+            // Create the review with review data
             Reviews review = new Reviews
             {
-                RequestId = 0,
+                RequestId = newRequest.Id,
                 ReviewerId = "AI",
                 RevieweeId = userId,
                 SubmissionId = submissionId,

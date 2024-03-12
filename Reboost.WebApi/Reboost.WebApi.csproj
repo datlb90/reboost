@@ -1611,6 +1611,12 @@
     <Content Remove="wwwroot\img\10.06e886d9.png" />
     <Content Remove="wwwroot\img\projects-img4.6c4cc116.jpg" />
     <Content Remove="wwwroot\img\services-img2.14892bd0.jpg" />
+    <Content Remove="wwwroot\css\chunk-vendors.3c248817.css" />
+    <Content Remove="wwwroot\css\app.1d05bcac.css" />
+    <Content Remove="wwwroot\js\chunk-vendors.c526a7d2.js" />
+    <Content Remove="wwwroot\js\chunk-vendors.c526a7d2.js.map" />
+    <Content Remove="wwwroot\img\toefl-logo.983b7cef.png" />
+    <Content Remove="wwwroot\img\zalopay.e7808158.png" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="log4net" />

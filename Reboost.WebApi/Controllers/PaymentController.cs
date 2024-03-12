@@ -110,10 +110,10 @@ namespace Reboost.WebApi.Controllers
         }
 
         [HttpPost("vnpay/verify")]
-        public VerifyPaymentModel VerifyVnPayStatus(VNPayVerifyResultModel model)
+        public async Task<VerifyPaymentModel> VerifyVnPayStatus(VNPayVerifyResultModel model)
         {
             model.ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-            return _service.VerifyVnPayStatus(model);
+            return await _service.VerifyVnPayStatus(model);
         }
 
         [HttpPost("zalopay/request")]
@@ -143,10 +143,11 @@ namespace Reboost.WebApi.Controllers
         }
 
 
-        [HttpGet("process/order/{orderId}")]
-        public async Task<VerifyPaymentModel> ProcessOrder(int orderId)
+        [HttpGet("process/order/{paymentMethod}/{orderId}")]
+        public async Task<VerifyPaymentModel> ProcessOrder(string paymentMethod, int orderId)
         {
-            return await _service.ProcessOrder(orderId);
+            string ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            return await _service.ProcessOrder(paymentMethod, orderId, ipAddress);
         }
 
         [Authorize]

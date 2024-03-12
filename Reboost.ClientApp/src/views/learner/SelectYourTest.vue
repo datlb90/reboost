@@ -1,57 +1,48 @@
 <template>
   <div class="list-container">
-    <el-row :style="{visibility: loadCompleted?'visible':'hidden'}">
-      <el-col style="min-width: 480px;">
-        <el-row>
-          <el-col style="margin-top: 30px; margin-bottom: 40px;">
-            <div class="tip">Please select the test that you are preparing for</div>
-          </el-col>
-        </el-row>
-        <el-form ref="formData" :model="formData">
-          <el-row>
-            <el-col :span="12" style="padding-right: 15px;">
-              <el-row style="margin-bottom: 10px;">
-                <el-col :span="24">
-                  <div class="image-ielts" :class="{'question-con': selectIELTS}" style="text-align: center; height: 225px; padding: 0; border: 1px solid #ebeef5;" @click="selectScoreIELTS()">
-                    <img src="@/assets/img/ielts-logo-1.png" alt="" style="height:100%; width: 90%;">
-                  </div>
-                </el-col>
-              </el-row>
 
-              <div v-if="selectIELTS" style="margin-bottom: 10px;">
-                <el-alert
-                  title="IELTS test has been selected "
-                  show-icon
-                  :closable="false"
-                />
-              </div>
-            </el-col>
+    <el-alert
+      type="info"
+      :show-icon="true"
+      center
+      style="margin-bottom: 10px; margin-top: 10px;"
+    >
+      <span slot="title" style="font-size: 15px;">
+        Chào mừng bạn đến với Reboost! Để bắt đầu luyện tập, hãy chọn bài thi phù hợp với bạn.
+      </span>
+    </el-alert>
 
-            <el-col :span="12" style="padding-left: 15px;">
-              <el-row style="margin-bottom: 10px;">
-                <el-col :span="24">
-                  <div style="height: 225px; padding: 58px; border: 1px solid #ebeef5;" class="image-ielts" :class="{'question-con': selectTOEFL}" @click="selectScoreTOEFL()">
-                    <img src="@/assets/img/toefl-logo.png" alt="" style="height:100%; width: 100%;">
-                  </div>
-                </el-col>
-              </el-row>
-              <div v-if="selectTOEFL" style="margin-bottom: 10px;">
-                <el-alert
-                  title="TOEFL test has been selected "
-                  show-icon
-                  :closable="false"
-                />
-              </div>
-            </el-col>
-          </el-row>
-          <el-row v-if="selectIELTS || selectTOEFL">
-            <el-col style="text-align: center; margin-top: 20px;">
-              <el-button size="medium" type="primary" :loading="loading" plain @click="submit('formData')">Continue with your selection</el-button>
-            </el-col>
-          </el-row>
-        </el-form>
-      </el-col>
-    </el-row>
+    <el-card style="width: 100%; padding: 10px;" class="box-card">
+
+      <div style="margin-bottom: 20px;">
+        <div
+          class="image-ielts"
+          :class="{'question-con': selectIELTS}"
+          style="text-align: center; height: 225px; padding: 50px; border: 1px solid #ebeef5; border-radius: 5px;"
+          @click="selectScoreIELTS()"
+        >
+          <img src="@/assets/img/ielts-logo.png" alt="" style="height:100%; width: 380px;">
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px; margin-top: 10px;">
+        <div
+          style=" text-align: center; height: 225px; padding: 50px; border: 1px solid #ebeef5;"
+          class="image-ielts"
+          :class="{'question-con': selectTOEFL}"
+          @click="selectScoreTOEFL()"
+        >
+          <img src="@/assets/img/toefl-logo.png" alt="" style="height:100%; width: 400px;">
+        </div>
+      </div>
+
+      <div style="width: 210px; margin: auto;">
+        <el-button v-if="selectIELTS || selectTOEFL" size="medium" type="primary" :loading="loading" plain @click="submit('formData')">
+          Xác nhận lựa chọn
+        </el-button>
+      </div>
+
+    </el-card>
   </div>
 
 </template>

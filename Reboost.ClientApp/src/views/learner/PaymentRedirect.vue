@@ -9,7 +9,8 @@
       </div>
       <div v-if="orderProcessing" style="margin-top: 20px;">
         <p>Cảm ơn bạn đã tin tưởng sử dụng dịch vụ chấm bài của Reboost.</p>
-        <div v-loading="true" style="width: 100%; height: 300px" element-loading-text="Vui lòng chờ trong giây lát trong khi chúng tôi xử lý yêu cầu của bạn" />
+        <div v-if="reviewType == 'AI'" v-loading="true" style="width: 100%; height: 300px" element-loading-text="Vui lòng chờ vài phút trong khi hệ thống chấm bài và cung cấp phản hồi cho bạn" />
+        <div v-else v-loading="true" style="width: 100%; height: 300px" element-loading-text="Vui lòng chờ trong giây lát trong khi chúng tôi xử lý yêu cầu của bạn" />
       </div>
       <div v-else style="margin-top: 20px;">
         <div v-if="order">
@@ -90,7 +91,8 @@ export default {
       feedbackAvailable: false,
       review: null,
       order: null,
-      orderProcessing: false
+      orderProcessing: false,
+      reviewType: null
     }
   },
   computed: {
@@ -124,10 +126,11 @@ export default {
         }
         const paymentResult = await paymentService.verifyZaloPayStatus(model)
         if (paymentResult) {
+          this.reviewType = paymentResult.reviewType
           if (paymentResult.status == 1) {
             this.orderStatus = 1
             this.orderProcessing = true
-            const rs = await paymentService.processOrder(orderId)
+            const rs = await paymentService.processOrder('zalopay', orderId)
             if (rs) {
               if (rs.status == 1 || rs.status == 2) {
                 this.review = rs.review
@@ -164,10 +167,11 @@ export default {
 
         const paymentResult = await paymentService.verifyVnPayStatus(model)
         if (paymentResult) {
+          this.reviewType = paymentResult.reviewType
           if (paymentResult.status == 1) {
             this.orderStatus = 1
             this.orderProcessing = true
-            const rs = await paymentService.processOrder(orderId)
+            const rs = await paymentService.processOrder('vnpay', orderId)
             if (rs) {
               if (rs.status == 1 || rs.status == 2) {
                 this.review = rs.review

@@ -14,9 +14,19 @@ namespace Reboost.Shared
         public string overallFeedback { get; set; }
     }
 
-    public class NewIELTSEssayFeedbackModel
+    public class IELTSTask1FeedbackModel
     {
         public AutomatedFeedbackModel taskAchievement { get; set; }
+        public AutomatedFeedbackModel coherence { get; set; }
+        public AutomatedFeedbackModel lexicalResource { get; set; }
+        public AutomatedFeedbackModel grammar { get; set; }
+        public List<AutomatedFeedbackError> errors { get; set; }
+        public AutomatedFeedbackModel overallFeedback { get; set; }
+    }
+
+    public class IELTSTask2FeedbackModel
+    {
+        public AutomatedFeedbackModel taskResponse { get; set; }
         public AutomatedFeedbackModel coherence { get; set; }
         public AutomatedFeedbackModel lexicalResource { get; set; }
         public AutomatedFeedbackModel grammar { get; set; }
