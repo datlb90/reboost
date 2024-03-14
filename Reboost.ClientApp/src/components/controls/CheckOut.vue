@@ -348,17 +348,18 @@ export default {
       window.location.href = zaloPayUrl
     },
     async submitVNPayRequest() {
-      const model = {
-        userId: this.currentUser.id,
-        submissionId: this.submissionId,
-        reviewType: this.selectedReview,
-        amount: this.amount,
-        status: 0,
-        feedbackLanguage: this.feedbackLanguage,
-        specialRequest: this.specialRequest
-      }
-      var vnPayUrl = await paymentService.submitVNPayRequest(model)
-      window.location.href = vnPayUrl
+      this.requestAIReview()
+      // const model = {
+      //   userId: this.currentUser.id,
+      //   submissionId: this.submissionId,
+      //   reviewType: this.selectedReview,
+      //   amount: this.amount,
+      //   status: 0,
+      //   feedbackLanguage: this.feedbackLanguage,
+      //   specialRequest: this.specialRequest
+      // }
+      // var vnPayUrl = await paymentService.submitVNPayRequest(model)
+      // window.location.href = vnPayUrl
     },
     openDialog() {
       this.dlVisible = true
@@ -390,6 +391,28 @@ export default {
         FeedbackType: 'Free',
         FeedbackLanguage: 'vn',
         Status: REVIEW_REQUEST_STATUS.REQUESTED
+      }).then(rs => {
+        this.dlVisible = false
+        this.$notify.success({
+          title: 'Yêu cầu đã được gửi đi',
+          message: 'Yêu cầu nhận đánh giá từ học viên khác đã được gửi đi thành công. Chúng tôi sẽ thông báo cho bạn khi có phản hồi.',
+          type: 'success',
+          duration: 5000
+        })
+        this.$emit('reviewRequested')
+      }).catch(rs => {
+        // this.dlVisible = false
+        this.loading = false
+        this.$router.push('/reviews')
+      })
+    },
+    requestAIReview() {
+      this.loading = true
+      reviewService.createAutomatedReview({
+        UserId: this.currentUser.id,
+        SubmissionId: this.submissionId,
+        FeedbackType: 'AI',
+        FeedbackLanguage: 'vn'
       }).then(rs => {
         this.dlVisible = false
         this.$notify.success({

@@ -251,7 +251,7 @@ export default {
     processInitialSubmission(user, submissionData) {
       const loading = this.$loading({
         lock: true,
-        text: 'Xin vui lòng chờ trong giây lát trong khi hệ thống chấm bài kiểm tra đầu vào của bạn',
+        text: 'Bạn vui lòng chờ từ 2 tới 3 phút trong khi hệ thống chấm bài và cung cấp những phản hồi tốt nhất cho bạn',
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       })

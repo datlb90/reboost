@@ -47,7 +47,7 @@ namespace Reboost.DataAccess.Repositories
                                join rc in ReboostDbContext.RubricCriteria on r.Id equals rc.RubricId
                                join rm in ReboostDbContext.RubricMilestones on rc.Id equals rm.CriteriaId
                                //into rcm from s in rcm.DefaultIfEmpty()
-                               where q.Id == id
+                               where q.Id == id && rc.Name != "Critical Errors"
                                select new RubricsQuery
                                {
                                    Id = rm.Id,

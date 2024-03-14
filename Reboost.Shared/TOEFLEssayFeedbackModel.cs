@@ -42,6 +42,7 @@ namespace Reboost.Shared
 
     public class FeedbackModel
     {
+        public string performance { get; set; }
         public string strengths { get; set; }
         public string weaknesses { get; set; }
         public string recommendations { get; set; }

@@ -9,7 +9,7 @@
       </div>
       <div v-if="orderProcessing" style="margin-top: 20px;">
         <p>Cảm ơn bạn đã tin tưởng sử dụng dịch vụ chấm bài của Reboost.</p>
-        <div v-if="reviewType == 'AI'" v-loading="true" style="width: 100%; height: 300px" element-loading-text="Vui lòng chờ vài phút trong khi hệ thống chấm bài và cung cấp phản hồi cho bạn" />
+        <div v-if="reviewType == 'AI'" v-loading="true" style="width: 100%; height: 300px" element-loading-text="Bạn vui lòng chờ từ 2 tới 3 phút trong khi hệ thống chấm bài và cung cấp những phản hồi tốt nhất cho bạn" />
         <div v-else v-loading="true" style="width: 100%; height: 300px" element-loading-text="Vui lòng chờ trong giây lát trong khi chúng tôi xử lý yêu cầu của bạn" />
       </div>
       <div v-else style="margin-top: 20px;">
