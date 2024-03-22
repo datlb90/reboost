@@ -1,269 +1,169 @@
 <template>
   <!-- Start Main Banner -->
-  <div v-if="screenWidth > 1200" id="banner" class="ml-main-section" style="padding-top: 150px; padding-bottom: 80px;">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-6 col-md-12">
-          <div class="ml-banner-content">
-            <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 400;">{{ messageTranslates('banner', 'slogan') }}</h1>
-            <p style="margin-top: 30px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
-            <ul>
-              <li>{{ messageTranslates('banner', 'content1') }}</li>
-              <li>{{ messageTranslates('banner', 'content2') }}</li>
-              <li>{{ messageTranslates('banner', 'content3') }}</li>
-              <li>{{ messageTranslates('banner', 'content4') }}</li>
-            </ul>
-
-            <el-button
-              class="btn btn-dark"
-              style="font-size: 20px; padding: 15px 80px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
-              @click="gotoTest()"
-            > Kiểm Tra Đầu Vào Miễn Phí
-            </el-button>
-          </div>
-        </div>
-
-        <div class="col-lg-5 offset-lg-1">
-          <div class="banner-form ml-3">
-            <form>
-              <div class="form-group">
-                <label>{{ messageTranslates('banner', 'emailAddress') }}</label>
-                <input v-model="email" type="text" class="form-control" :placeholder="messageTranslates('banner', 'placeholderEmail')">
-              </div>
-
-              <div class="form-group">
-                <label>{{ messageTranslates('banner', 'password') }}</label>
-                <input v-model="password" type="password" class="form-control" :placeholder="messageTranslates('banner', 'placeholderPassword')">
-              </div>
-              <el-button
-                class="btn btn-gradient"
-                style="width: 100%; margin-right: 20px; padding: 12px 20px;"
-                :loading="loading"
-                @click="signIn()"
-              >{{ messageTranslates('banner', 'signIn') }}
-              </el-button>
-
-              <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
-                {{ messageTranslates('banner', 'signInOther') }}
-              </div>
-
-              <div style="padding-bottom: 40px;">
-                <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
-                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
-                    Facebook
-                  </el-button>
-                </form>
-                <form ref="googleLoginForm" method="post" :action="googleFormAction">
-                  <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
-                    Google
-                  </el-button>
-                </form>
-              </div>
-
-              <div style="font-size: 14px; padding-top: 20px; height: 10px; padding-bottom: 20px;">
-
-                <div style="width: 50%; float: left;">
-                  <a style="text-decoration: none;" href="/register">{{ messageTranslates('login', 'signUp') }}</a>
-                </div>
-
-                <div style="width: 50%; float: right; text-align: right;">
-                  <a style="text-decoration: none;" href="/forgot/password">{{ messageTranslates('banner', 'forgotPassword') }}</a>
-                </div>
-
-              </div>
-            </form>
-          </div>
-        </div>
-
-      </div>
-    </div>
-    <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
-    <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
-    <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
-  </div>
-
-  <div v-else-if="screenWidth > 992" id="banner" class="ml-main-section" style=" padding-top: 150px; padding-bottom: 80px;">
-    <div class="container">
-      <div class="row">
-
-        <div class="col-lg-6 col-md-12">
-          <div class="ml-banner-content">
-            <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 400;">{{ messageTranslates('banner', 'slogan') }}</h1>
-            <p style="margin-top: 30px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
-            <ul>
-              <li>{{ messageTranslates('banner', 'content1') }}</li>
-              <li>{{ messageTranslates('banner', 'content2') }}</li>
-              <li>{{ messageTranslates('banner', 'content3') }}</li>
-              <li>{{ messageTranslates('banner', 'content4') }}</li>
-            </ul>
-
-            <el-button
-              class="btn btn-dark"
-              style="font-size: 20px; padding: 15px 80px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
-              @click="gotoTest()"
-            > Kiểm Tra Đầu Vào Miễn Phí
-            </el-button>
-          </div>
-        </div>
-
-        <div class="col-lg-5 offset-lg-1">
-          <div class="banner-form ml-3">
-            <form>
-              <div class="form-group">
-                <label>{{ messageTranslates('banner', 'emailAddress') }}</label>
-                <input v-model="email" type="text" class="form-control" :placeholder="messageTranslates('banner', 'placeholderEmail')">
-              </div>
-
-              <div class="form-group">
-                <label>{{ messageTranslates('banner', 'password') }}</label>
-                <input v-model="password" type="password" class="form-control" :placeholder="messageTranslates('banner', 'placeholderPassword')">
-              </div>
-              <el-button
-                class="btn btn-gradient"
-                style="width: 100%; margin-right: 20px; padding: 12px 20px;"
-                :loading="loading"
-                @click="signIn()"
-              >{{ messageTranslates('banner', 'signIn') }}
-              </el-button>
-
-              <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
-                {{ messageTranslates('banner', 'signInOther') }}
-              </div>
-
-              <div style="padding-bottom: 40px;">
-                <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
-                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
-                    Facebook
-                  </el-button>
-                </form>
-                <form ref="googleLoginForm" method="post" :action="googleFormAction">
-                  <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
-                    Google
-                  </el-button>
-                </form>
-              </div>
-
-              <div style="font-size: 14px; padding-top: 20px; height: 10px; padding-bottom: 20px;">
-
-                <div style="width: 50%; float: left;">
-                  <a style="text-decoration: none;" href="/register">{{ messageTranslates('banner', 'signUp') }}</a>
-                </div>
-
-                <div style="width: 50%; float: right; text-align: right;">
-                  <a style="text-decoration: none;" href="/forgot/password">{{ messageTranslates('banner', 'forgotPassword') }}</a>
-                </div>
-
-              </div>
-            </form>
-          </div>
-        </div>
-
-      </div>
-    </div>
-    <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
-    <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
-    <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
-  </div>
-
-  <div v-else id="banner" class="ml-main-section" style=" padding-top: 110px; padding-bottom: 80px;">
-    <div class="container">
-      <div class="row">
-
-        <div class="col-lg-6 col-md-12">
-          <div class="ml-banner-content">
-            <h1 style="font-size: 32px; text-align: left; margin-left: 10px; color: #4a6f8a; font-weight: 400;">{{ messageTranslates('banner', 'slogan') }}</h1>
-            <p style="margin-top: 30px; text-align: left; font-size: 14.5px; margin-left: 10px;">{{ messageTranslates('banner', 'bannerContentDescription') }}</p>
+  <div>
+    <div v-if="screenWidth > 1200" id="banner" class="ml-main-section" style="padding-top: 210px; height: 620px; margin-bottom: 80px;">
+      <div class="container">
+        <div style="text-align: center;">
+          <div>
             <div>
-              <div style="font-size: 14.5px; color: #4a6f8a; text-align: left; margin-left: 10px; margin-bottom: 5px;">- {{ messageTranslates('banner', 'content1') }}</div>
-              <div style="font-size: 14.5px; color: #4a6f8a; text-align: left; margin-left: 10px; margin-bottom: 5px;">- {{ messageTranslates('banner', 'content2') }}</div>
-              <div style="font-size: 14.5px; color: #4a6f8a; text-align: left; margin-left: 10px; margin-bottom: 5px;">- {{ messageTranslates('banner', 'content3') }}</div>
-              <div style="font-size: 14.5px; color: #4a6f8a; text-align: left; margin-left: 10px; margin-bottom: 5px;">- {{ messageTranslates('banner', 'content4') }}</div>
-            </div>
-            <el-button
-              class="btn btn-dark"
-              style="font-size: 20px; width: 100%; padding: 15px 80px; margin-top: 20px; background-color: #4b6f8a; margin-bottom: 40px;"
-              @click="gotoTest()"
-            > Kiểm Tra Đầu Vào Miễn Phí
-            </el-button>
-          </div>
-        </div>
-
-        <div class="col-lg-5 offset-lg-1">
-          <div class="banner-form">
-            <form>
-              <div class="form-group">
-                <label>{{ messageTranslates('banner', 'emailAddress') }}</label>
-                <input v-model="email" type="text" class="form-control" :placeholder="messageTranslates('banner', 'placeholderEmail')">
+              <div>
+                <h1 style="font-size: 42px; color: #4a6f8a; font-weight: 500;">Luyện viết IELTS và nhận phản hồi miễn phí</h1>
               </div>
-
-              <div class="form-group">
-                <label>{{ messageTranslates('banner', 'password') }}</label>
-                <input v-model="password" type="password" class="form-control" :placeholder="messageTranslates('banner', 'placeholderPassword')">
-              </div>
+              <p style="width: 70%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
+                Reboost giúp bạn cải thiện kỹ năng viết hiệu quả bằng cách cung cấp
+                đa dạng các chủ đề viết đã được phân loại, tài nguyên hữu dụng cho từng chủ đề, cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+              </p>
               <el-button
-                class="btn btn-gradient"
-                style="width: 100%; margin-right: 20px; padding: 12px 20px;"
-                :loading="loading"
-                @click="signIn()"
-              >{{ messageTranslates('banner', 'signIn') }}
+                class="btn btn-dark"
+                style="font-size: 18px; padding: 12px 50px; margin-top: 50px; background-color: #4b6f8a;"
+                @click="openRequestReviewDialog()"
+              > Yêu Cầu Chấm Bài Miễn Phí
               </el-button>
-
-              <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
-                {{ messageTranslates('banner', 'signInOther') }}
-              </div>
-
-              <div style="padding-bottom: 40px;">
-                <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
-                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
-                    Facebook
-                  </el-button>
-                </form>
-                <form ref="googleLoginForm" method="post" :action="googleFormAction">
-                  <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
-                    Google
-                  </el-button>
-                </form>
-              </div>
-
-              <div style="font-size: 14px; padding-top: 20px; height: 10px; padding-bottom: 20px;">
-
-                <div style="width: 50%; float: left;">
-                  <a style="text-decoration: none;" href="/register">{{ messageTranslates('banner', 'signUp') }}</a>
-                </div>
-
-                <div style="width: 50%; float: right; text-align: right;">
-                  <a style="text-decoration: none;" href="/forgot/password">{{ messageTranslates('banner', 'forgotPassword') }}</a>
-                </div>
-
-              </div>
-            </form>
+            </div>
           </div>
         </div>
-
       </div>
+      <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
+      <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
+      <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+      <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+      <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+      <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
     </div>
-    <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
-    <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
-    <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+
+    <div v-else-if="screenWidth > 992" id="banner" class="ml-main-section" style=" padding-top: 180px; margin-bottom: 80px;">
+      <div class="container">
+        <div style="text-align: center;">
+
+          <div>
+            <div>
+              <div>
+                <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 500;">Luyện viết IELTS và nhận phản hồi miễn phí</h1>
+              </div>
+              <p style="width: 70%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
+                Reboost giúp bạn cải thiện kỹ năng viết hiệu quả bằng cách cung cấp
+                đa dạng các chủ đề viết đã được phân loại, tài nguyên hữu dụng cho từng chủ đề, cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+              </p>
+              <el-button
+                class="btn btn-dark"
+                style="font-size: 18px; padding: 12px 50px; margin-top: 50px; background-color: #4b6f8a;"
+                @click="openRequestReviewDialog()"
+              > Yêu Cầu Chấm Bài Miễn Phí
+              </el-button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
+      <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
+      <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+      <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+      <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+      <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+    </div>
+
+    <div v-else id="banner" class="ml-main-section" style="padding-top: 160px; height: 500px; margin-bottom: 70px;">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-6 col-md-12">
+            <div class="ml-banner-content">
+              <div>
+                <h1 style="font-size: 35px; color: #4a6f8a; font-weight: 500;">Luyện viết IELTS và nhận phản hồi miễn phí</h1>
+              </div>
+              <p style="margin-top: 30px; font-size: 16px; color: #4a6f8a;">
+                Reboost giúp bạn cải thiện kỹ năng viết hiệu quả bằng cách cung cấp
+                đa dạng các chủ đề viết đã được phân loại, tài nguyên hữu dụng cho từng chủ đề, cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+              </p>
+
+              <el-button
+                class="btn btn-dark"
+                style="font-size: 18px; padding: 12px 50px; margin-top: 50px; background-color: #4b6f8a;"
+                @click="openRequestReviewDialog()"
+              > Yêu Cầu Chấm Bài Miễn Phí
+              </el-button>
+            </div>
+          </div>
+
+          <!-- <div class="col-lg-5 offset-lg-1">
+            <div class="banner-form">
+              <form>
+                <div class="form-group">
+                  <label>{{ messageTranslates('banner', 'emailAddress') }}</label>
+                  <input v-model="email" type="text" class="form-control" :placeholder="messageTranslates('banner', 'placeholderEmail')">
+                </div>
+
+                <div class="form-group">
+                  <label>{{ messageTranslates('banner', 'password') }}</label>
+                  <input v-model="password" type="password" class="form-control" :placeholder="messageTranslates('banner', 'placeholderPassword')">
+                </div>
+                <el-button
+                  class="btn btn-gradient"
+                  style="width: 100%; margin-right: 20px; padding: 12px 20px;"
+                  :loading="loading"
+                  @click="signIn()"
+                >{{ messageTranslates('banner', 'signIn') }}
+                </el-button>
+
+                <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
+                  {{ messageTranslates('banner', 'signInOther') }}
+                </div>
+
+                <div style="padding-bottom: 40px;">
+                  <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
+                    <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                      Facebook
+                    </el-button>
+                  </form>
+                  <form ref="googleLoginForm" method="post" :action="googleFormAction">
+                    <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
+                      Google
+                    </el-button>
+                  </form>
+                </div>
+
+                <div style="font-size: 14px; padding-top: 20px; height: 10px; padding-bottom: 20px;">
+
+                  <div style="width: 50%; float: left;">
+                    <a style="text-decoration: none;" href="/register">{{ messageTranslates('banner', 'signUp') }}</a>
+                  </div>
+
+                  <div style="width: 50%; float: right; text-align: right;">
+                    <a style="text-decoration: none;" href="/forgot/password">{{ messageTranslates('banner', 'forgotPassword') }}</a>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+          </div> -->
+
+        </div>
+      </div>
+      <div class="shape1"><img src="../../../assets/img/shape1.png" alt="shape"></div>
+      <div class="shape3"><img src="../../../assets/img/shape3.svg" alt="shape"></div>
+      <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+      <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+      <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
+      <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+    </div>
+    <review-request-dialog
+      ref="reviewRequestDialog"
+    />
   </div>
+
   <!-- End ML Main Banner -->
 </template>
 
 <script>
 import { mapActions } from 'vuex'
 import { PageName } from '@/app.constant'
+import ReviewRequestDialog from '../../../components/controls/ReviewRequestDialog.vue'
 // import authService from '@/services/auth.service'
 export default {
   name: 'Banner',
+  components: {
+    'review-request-dialog': ReviewRequestDialog
+  },
   data() {
     return {
       user: null,
@@ -303,6 +203,12 @@ export default {
   },
   methods: {
     ...mapActions('auth', ['login']),
+    openRequestReviewDialog() {
+      const header = document.querySelector('#header.headroom')
+      // header.style['z-index'] = 2000
+      header.style.display = 'none'
+      this.$refs.reviewRequestDialog?.openDialog()
+    },
     gotoTest() {
       var anchor = document.getElementById('initialTest')
       if (anchor) {

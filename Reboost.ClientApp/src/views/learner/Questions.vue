@@ -50,17 +50,17 @@
           <div>
             <el-button size="medium" style="float: right; padding-bottom: 8px; padding-top: 8px; color: #409EFF;" @click="clickPickOne">
               <i class="fas fa-random" style="margin-right: 5px;" />
-              {{ messageTranslates('question', 'pickOne') }}
+              Viết 1 đề ngẫu nhiên
             </el-button>
 
-            <el-button
+            <!-- <el-button
               v-if="showRightArrow"
               type="text"
               size="medium"
               icon="el-icon-d-arrow-right"
               style="color: grey; padding-bottom: 8px; padding-top: 8px;"
               @click="moveRight()"
-            />
+            /> -->
 
           </div>
         </div>
@@ -159,12 +159,12 @@
 
           <div class="filter-container" style="width: calc(100% - 400px); float: right;">
             <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
-              {{ messageTranslates('question', 'resetAll') }}
+              Đặt lại bộ lọc
             </el-button>
             <el-input
               v-model="textSearch"
               size="mini"
-              :placeholder="messageTranslates('question', 'placeholderSearch')"
+              placeholder="Nhập để tìm kiếm chủ đề"
               style="float: right; width: 200px; margin-top: 5px;"
               @input="search()"
             />
@@ -186,17 +186,18 @@
           </el-tag>
         </div>
 
-        <el-table v-if="questions" ref="filterTable" :data="questions" stripe style="width: 100%;" empty-text="Đang tải chủ đề viết ..." @sort-change="sortChange" @row-click="rowClicked">
+        <el-table v-if="questions" ref="filterTable" :data="questions" stripe style="width: 100%;" empty-text="Không có chủ đề nào" @sort-change="sortChange" @row-click="rowClicked">
           <el-table-column
             prop="status"
+            sortable
             fixed="left"
-            width="40"
+            width="45"
           >
             <template slot-scope="scope">
               <div style="width: 100%; text-align: center;">  <el-tooltip class="item" :content="scope.row.status" placement="bottom" style="text-align: center;">
-                <i v-if="scope.row.status == 'Completed'" class="el-icon-success" style="font-size: 18px;" />
-                <i v-else-if="scope.row.status == 'Saved'" class="el-icon-folder-checked" style="font-size: 18px;" />
-                <i v-else-if="scope.row.status == 'Attempted'" class="el-icon-edit" style="font-size: 18px;" />
+                <i v-if="scope.row.status == 'Đã làm'" class="el-icon-success" style="font-size: 18px;" />
+                <i v-else-if="scope.row.status == 'Đang làm'" class="el-icon-folder-checked" style="font-size: 18px;" />
+                <i v-else-if="scope.row.status == 'Đã thử'" class="el-icon-edit" style="font-size: 18px;" />
                 <i v-else class="el-icon-remove-outline" style="font-size: 18px;" />
               </el-tooltip>
               </div>
@@ -329,7 +330,7 @@
               style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
               @click="onTopicClick(null)"
             >
-              Tất cả: {{ questionsCount }}
+              Tất cả chủ đề: {{ questionsCount }}
             </el-tag>
             <el-tag
               v-for="item in summary"
@@ -339,18 +340,18 @@
               style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
               @click="onTopicClick(item)"
             >
-              {{ item.section }}: {{ item.count }}
+              {{ item.section == 'Academic Writing Task 1' ? 'Task 1' : 'Task 2' }}: {{ item.count }}
             </el-tag>
           </div>
           <div>
-            <el-button
+            <!-- <el-button
               v-if="showRightArrow"
               type="text"
               size="medium"
               icon="el-icon-d-arrow-right"
               style="color: grey; padding-bottom: 8px; padding-top: 8px;"
               @click="moveRight()"
-            />
+            /> -->
 
           </div>
         </div>
@@ -369,7 +370,7 @@
             @input="search()"
           />
           <el-button size="mini" style="float: left; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
-            Đặt lại bộ lọc
+            Đặt lại
           </el-button>
         </div>
 
@@ -482,18 +483,19 @@
           </el-tag>
         </div>
 
-        <el-table v-if="questions" ref="filterTable" :data="questions" stripe style="width: 100%;" empty-text="Đang tải chủ đề viết ..." @sort-change="sortChange" @row-click="rowClicked">
+        <el-table v-if="questions" ref="filterTable" :data="questions" stripe style="width: 100%;" empty-text="Không có chủ đề nào" @sort-change="sortChange" @row-click="rowClicked">
           <el-table-column
             prop="status"
+            sortable
             fixed="left"
-            width="25"
+            width="30"
           >
             <template slot-scope="scope">
               <div style="width: 100%; text-align: left;">
                 <el-tooltip class="item" :content="scope.row.status" placement="bottom" style="text-align: left;">
-                  <i v-if="scope.row.status == 'Completed'" class="el-icon-success" style="font-size: 15px;" />
-                  <i v-else-if="scope.row.status == 'Saved'" class="el-icon-folder-checked" style="font-size: 15px;" />
-                  <i v-else-if="scope.row.status == 'Attempted'" class="el-icon-edit" style="font-size: 15px;" />
+                  <i v-if="scope.row.status == 'Đã làm'" class="el-icon-success" style="font-size: 15px;" />
+                  <i v-else-if="scope.row.status == 'Đang làm'" class="el-icon-folder-checked" style="font-size: 15px;" />
+                  <i v-else-if="scope.row.status == 'Đã thử'" class="el-icon-edit" style="font-size: 15px;" />
                   <i v-else class="el-icon-remove-outline" style="font-size: 15px;" />
                 </el-tooltip>
               </div>
@@ -646,6 +648,7 @@ export default {
     }
   },
   mounted() {
+    document.title = 'Chủ đề viết'
     if (localStorage.getItem('noQuestionsIntro')) {
       this.showQuestionsIntro = false
     }
@@ -657,8 +660,8 @@ export default {
       // Get attempted questions
       this.questionCached.forEach(question => {
         const writingContent = localStorage.getItem(this.currentUser.username + '_QuestionId' + question.id)
-        if (writingContent != null && writingContent != 'null' && question.status == 'To do') {
-          question.status = 'Attempted'
+        if (writingContent != null && writingContent != 'null' && question.status == 'Chưa làm') {
+          question.status = 'Đã thử'
         }
       })
       console.log('Questions: ', this.questionCached)
@@ -731,7 +734,7 @@ export default {
         result = result.filter(rs => rs.sample == true)
       }
       if (this.textSearch) {
-        result = result.filter(q => q.title.toLowerCase().indexOf(this.textSearch.toLowerCase()) >= 0)
+        result = result.filter(q => q.title.toLowerCase().includes(this.textSearch.toLowerCase()))
       }
       result = result.sort((a, b) => a.id - b.id)
       return result
@@ -821,7 +824,7 @@ export default {
       })
     },
     clickPickOne() {
-      var listNoCompleted = this.questionCached.filter(r => r.status.trim() === 'To do')
+      var listNoCompleted = this.questionCached.filter(r => r.status.trim() === 'Chưa làm')
       var chosenNumber = Math.floor(Math.random() * listNoCompleted.length)
       var id = listNoCompleted[chosenNumber].id
       this.$router.push({

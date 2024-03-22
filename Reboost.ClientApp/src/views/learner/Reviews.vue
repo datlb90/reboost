@@ -19,7 +19,7 @@
       </el-card>
     </div>
 
-    <div v-if="loadCompleted && reviews && reviews.length == 0">
+    <div v-if="loadCompleted && reviewsCached && reviewsCached.length == 0">
       <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
 
         <div style="margin-top: 20px; margin-bottom: 20px;">
@@ -33,7 +33,7 @@
       </el-card>
     </div>
 
-    <div v-if="loadCompleted && reviews && reviews.length > 0">
+    <div v-if="loadCompleted && reviewsCached && reviewsCached.length > 0">
       <el-card style="padding: 10px; padding-top: 5px; width: 100%;" class="box-card">
         <div class="top-navigator" style="height: 35px;">
           <el-button
@@ -112,7 +112,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Test Sections<i class="el-icon-arrow-down el-icon--right" />
+                    Task<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -133,7 +133,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Types<i class="el-icon-arrow-down el-icon--right" />
+                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -146,7 +146,7 @@
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
-              <el-dropdown
+              <!-- <el-dropdown
                 placement="bottom-start"
                 :hide-on-click="false"
                 style="float: left; margin-right: 15px;"
@@ -154,7 +154,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Status<i class="el-icon-arrow-down el-icon--right" />
+                    Trạng thái<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -166,18 +166,18 @@
                   >{{ item.text }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
-              </el-dropdown>
+              </el-dropdown> -->
             </div>
           </div>
 
           <div class="filter-container" style="width: calc(100% - 310px); float: right;">
             <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
-              {{ messageTranslates('question', 'resetAll') }}
+              Đặt lại bộ lọc
             </el-button>
             <el-input
               v-model="textSearch"
               size="mini"
-              placeholder="Search Reviews"
+              placeholder="Nhập để tìm kiếm"
               style="float: right; width: 200px; margin-top: 5px;"
               @input="search()"
             />
@@ -199,8 +199,8 @@
           </el-tag>
         </div>
 
-        <div v-if="reviews && reviews.length > 0">
-          <el-table ref="filterTable" :data="reviews" stripe style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
+        <div>
+          <el-table v-if="reviews" ref="filterTable" :data="reviews" stripe empty-text="Không có đánh giá nào" style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
             <el-table-column
               prop="questionName"
               label="Chủ đề"
@@ -332,7 +332,7 @@
       </el-card>
     </div>
 
-    <div v-if="loadCompleted && reviews && reviews.length == 0">
+    <div v-if="loadCompleted && reviewsCached && reviewsCached.length == 0">
       <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
 
         <div style="margin-top: 20px; margin-bottom: 20px;">
@@ -346,7 +346,7 @@
       </el-card>
     </div>
 
-    <div v-if="loadCompleted && reviews && reviews.length > 0">
+    <div v-if="loadCompleted && reviewsCached && reviewsCached.length > 0">
       <el-card style="padding: 10px; padding-top: 5px; width: 100%;" class="box-card">
         <div class="top-navigator" style="height: 35px;">
           <el-button
@@ -473,7 +473,7 @@
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
-              <el-dropdown
+              <!-- <el-dropdown
                 placement="bottom-start"
                 :hide-on-click="false"
                 style="float: left; margin-right: 15px;"
@@ -493,7 +493,7 @@
                   >{{ item.text }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
-              </el-dropdown>
+              </el-dropdown> -->
             </div>
           </div>
 
@@ -514,8 +514,8 @@
           </el-tag>
         </div>
 
-        <div v-if="reviews && reviews.length > 0">
-          <el-table ref="filterTable" :data="reviews" stripe style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
+        <div>
+          <el-table v-if="reviews" ref="filterTable" :data="reviews" stripe empty-text="Không có đánh giá nào" style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
             <el-table-column
               prop="questionName"
               label="Chủ đề viết"
@@ -660,6 +660,7 @@ export default {
     }
   },
   mounted() {
+    document.title = 'Đánh giá của tôi'
     if (localStorage.getItem('noReviewsIntro')) {
       this.showReviewsIntro = false
     }
@@ -728,7 +729,7 @@ export default {
         }
       }
       if (this.textSearch) {
-        result = result.filter(q => q.questionName.toLowerCase().indexOf(this.textSearch.toLowerCase()) >= 0)
+        result = result.filter(q => q.questionName.toLowerCase().includes(this.textSearch.toLowerCase()))
       }
       // result = result.sort((a, b) => a.id - b.id)
       return result

@@ -16,11 +16,14 @@ using System.Security.Cryptography;
 using System.IO;
 using PayPal.Api;
 using Newtonsoft.Json.Linq;
+using OpenAI_API.Moderation;
 
 namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<string> getChartDescription(string fileName);
+        Task<AutomatedFeedbackModel> getAIFeedbackForCriteria(CriteriaFeedbackModel model);
         Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId);
         Task<bool> EligibleForPeerReview(string userId);
         Task<Submissions> GetSubmissionById(int submissionId);
@@ -92,6 +95,1161 @@ namespace Reboost.Service.Services
             chatGPTService = _chatGPTService;
             configuration = _configuration;
         }
+
+        public async Task<string> getChartDescription(string fileName)
+        {
+            try
+            {
+                if (!String.IsNullOrEmpty(fileName))
+                {
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/photo", fileName);
+                    return await chatGPTService.getChartDescription(filePath);
+                }
+            }
+            catch(Exception e)
+            {
+                return "";
+            }
+            return "";
+        }
+
+        public async Task<AutomatedFeedbackModel> getAIFeedbackForCriteria(CriteriaFeedbackModel model)
+        {
+            AutomatedFeedbackModel result = await chatGPTService.getAIFeedbackForCriteria(model);
+            string comment = "";
+            switch (model.criteriaName)
+            {
+                case "Task Response":
+                case "Task Achievement":
+                case "Coherence & Cohesion":
+                case "Lexical Resource":
+                case "Grammatical Range & Accuracy":
+                    comment = "";
+                    if (model.feedbackLanguage == "vn")
+                    {
+                        comment += "- Những điểm bài viết đã làm tốt:";
+                    }
+                    else
+                    {
+                        comment += "- What the essay did well:";
+                    }
+
+                    comment += Environment.NewLine;
+                    comment += result.feedback.strengths;
+                    comment += Environment.NewLine;
+                    comment += Environment.NewLine;
+                    if (model.feedbackLanguage == "vn")
+                    {
+                        comment += "- Những điểm bài viết làm chưa tốt:";
+                    }
+                    else
+                    {
+                        comment += "- Areas for improvement:";
+                    }
+
+                    comment += Environment.NewLine;
+                    comment += result.feedback.weaknesses;
+                    comment += Environment.NewLine;
+                    comment += Environment.NewLine;
+
+                    if (model.feedbackLanguage == "vn")
+                    {
+                        comment += "- Hướng dẫn để học viên cải thiện:";
+                    }
+                    else
+                    {
+                        comment += "- Recommendations:";
+                    }
+                    comment += Environment.NewLine;
+                    comment += result.feedback.recommendations;
+
+                    result.comment = comment;
+                    break;
+                case "Overall Score & Feedback":
+                    comment = "";
+                    if (model.feedbackLanguage == "vn")
+                    {
+                        comment += "- Đánh giá tổng quan:";
+                    }
+                    else
+                    {
+                        comment += "- Overvall performance:";
+                    }
+
+                    comment += Environment.NewLine;
+                    comment += result.feedback.performance;
+                    comment += Environment.NewLine;
+                    comment += Environment.NewLine;
+                    if (model.feedbackLanguage == "vn")
+                    {
+                        comment += "- Những điểm mạnh nổi bật:";
+                    }
+                    else
+                    {
+                        comment += "- Standout strengths:";
+                    }
+
+
+                    comment += Environment.NewLine;
+                    comment += result.feedback.strengths;
+                    comment += Environment.NewLine;
+                    comment += Environment.NewLine;
+                    if (model.feedbackLanguage == "vn")
+                    {
+                        comment += "- Những điểm cần cải thiện:";
+                    }
+                    else
+                    {
+                        comment += "- Areas for improvement:";
+                    }
+
+                    comment += Environment.NewLine;
+                    comment += result.feedback.weaknesses;
+                    comment += Environment.NewLine;
+                    comment += Environment.NewLine;
+
+                    if (model.feedbackLanguage == "vn")
+                    {
+                        comment += "- Khuyễn nghị cho học viên:";
+                    }
+                    else
+                    {
+                        comment += "- Recommendations:";
+                    }
+                    comment += Environment.NewLine;
+                    comment += result.feedback.recommendations;
+
+                    result.comment = comment;
+                    break;
+                default:
+                    break;
+            }
+            result.bandScore = (decimal)(Math.Round(result.score * 2, MidpointRounding.AwayFromZero) / 2); // (decimal)Math.Floor(result.score);
+            return result;
+        }
+
+        public async Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage = "vn")
+        {
+            Submissions submission = await _unitOfWork.Submission.GetByIdAsync(submissionId);
+            // Create a ReviewRequest first
+            ReviewRequests request = new ReviewRequests
+            {
+                UserId = userId,
+                SubmissionId = submissionId,
+                FeedbackType = "AI",
+                RequestedDateTime = DateTime.UtcNow,
+                CompletedDateTime = DateTime.UtcNow,
+                Status = "Completed",
+                FeedbackLanguage = feedbackLanguage,
+            };
+            ReviewRequests newRequest = await _unitOfWork.Review.CreateReviewRequest(request);
+
+            // Create the review without review data
+            Reviews review = new Reviews
+            {
+                RequestId = newRequest.Id,
+                ReviewerId = "AI",
+                RevieweeId = userId,
+                SubmissionId = submissionId,
+                FinalScore = null,
+                Status = ReviewStatus.IN_PROGRESS,
+                TimeSpentInSeconds = 0,
+                LastActivityDate = DateTime.UtcNow
+            };
+            var newReview = await _unitOfWork.Review.Create(review);
+
+            // Send the result model to the front end so we can display the review page immediately
+            GetReviewsModel result = new GetReviewsModel();
+            result.QuestionId = submission.QuestionId;
+            result.Review = newReview;
+            result.ReviewId = newReview.Id;
+            result.DocId = submission.DocId;
+            return result;
+        }
+
+        //public async Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage = "vn")
+        //{
+        //    // Create a ReviewRequest first
+        //    ReviewRequests request = new ReviewRequests
+        //    {
+        //        UserId = userId,
+        //        SubmissionId = submissionId,
+        //        FeedbackType = "AI",
+        //        RequestedDateTime = DateTime.UtcNow,
+        //        CompletedDateTime = DateTime.UtcNow,
+        //        Status = "Completed",
+        //        FeedbackLanguage = feedbackLanguage,
+        //    };
+        //    ReviewRequests newRequest = await _unitOfWork.Review.CreateReviewRequest(request);
+
+        //    Submissions submission = await _unitOfWork.Submission.GetByIdAsync(submissionId);
+        //    QuestionModel question = await _unitOfWork.Questions.GetByIdAsync(submission.QuestionId);
+        //    Documents document = await _unitOfWork.Documents.GetByIdAsync(submission.DocId);
+        //    var questionContent = StripHTML(question.QuestionsPart.Find(p => p.Name == "Question").Content);
+
+
+        //    List<ReviewData> reviewDataList = new List<ReviewData>();
+        //    decimal? finalScore = null;
+        //    var rubrics = await _unitOfWork.Rubrics.GetByQuestionId(question.Id);
+
+        //    if (question.Section == "Independent Writing")
+        //    {
+        //        TOEFLIndependentFeedbackModel toeflFeedback = await chatGPTService.GetTOEFLIndependentEssayFeedback(questionContent, document.Text, feedbackLanguage);
+
+        //        foreach (RubricsModel criteria in rubrics)
+        //        {
+        //            string comment = "";
+        //            ReviewData reviewData = new ReviewData();
+        //            reviewData.CriteriaId = (int)criteria.Id;
+        //            switch (criteria.Name)
+        //            {
+        //                case "Language Use":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.languageUse.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.languageUse.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.languageUse.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(toeflFeedback.languageUse.score);
+        //                    break;
+        //                case "Organization":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.organization.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.organization.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.organization.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(toeflFeedback.organization.score);
+        //                    break;
+        //                case "Development and Support":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.developmentSupport.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.developmentSupport.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.developmentSupport.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(toeflFeedback.developmentSupport.score);
+        //                    break;
+        //                case "Overall Score & Feedback":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Đánh giá tổng quan:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Overvall performance:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.overallFeedback.feedback.performance;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm mạnh nổi bật:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Standout strengths:";
+        //                    }
+
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.overallFeedback.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm cần cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.overallFeedback.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Khuyễn nghị cho học viên:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.overallFeedback.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)(Math.Round(toeflFeedback.overallFeedback.score * 2, MidpointRounding.AwayFromZero) / 2); // ieltsFeedback.overallFeedback.score;
+        //                    finalScore = reviewData.Score;
+        //                    break;
+        //                default:
+        //                    break;
+        //            }
+        //            reviewDataList.Add(reviewData);
+        //        }
+
+        //    }
+        //    else if (question.Section == "Integrated Writing")
+        //    {
+        //        string integratedQuestion = "\nTask: " + questionContent + "\n";
+
+        //        var reading = question.QuestionsPart.Find(p => p.Name == "Reading");
+        //        if (reading != null)
+        //        {
+        //            string readingStr = StripHTML(reading.Content);
+        //            integratedQuestion += "Reading passage: \"" + readingStr + "\"\n";
+        //        }
+
+        //        var transcript = question.QuestionsPart.Find(p => p.Name == "Transcript");
+        //        if (transcript != null)
+        //        {
+        //            string transcriptStr = StripHTML(transcript.Content);
+        //            integratedQuestion += "Listening lecture: \"" + transcriptStr + "\"";
+        //        }
+
+        //        TOEFLIntegratedFeedbackModel toeflFeedback = await chatGPTService.GetTOEFLIntegratedEssayFeedback(integratedQuestion, document.Text, feedbackLanguage);
+
+        //        foreach (RubricsModel criteria in rubrics)
+        //        {
+        //            string comment = "";
+        //            ReviewData reviewData = new ReviewData();
+        //            reviewData.CriteriaId = (int)criteria.Id;
+        //            switch (criteria.Name)
+        //            {
+        //                case "Language Use":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.languageUse.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.languageUse.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.languageUse.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(toeflFeedback.languageUse.score);
+        //                    break;
+        //                case "Organization":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.organization.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.organization.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.organization.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(toeflFeedback.organization.score);
+        //                    break;
+        //                case "Content":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.content.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.content.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.content.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(toeflFeedback.content.score);
+        //                    break;
+        //                case "Overall Score & Feedback":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Đánh giá tổng quan:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Overvall performance:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.overallFeedback.feedback.performance;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm mạnh nổi bật:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Standout strengths:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.overallFeedback.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm cần cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.overallFeedback.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Khuyễn nghị cho học viên:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += toeflFeedback.overallFeedback.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)(Math.Round(toeflFeedback.overallFeedback.score * 2, MidpointRounding.AwayFromZero) / 2);
+        //                    finalScore = reviewData.Score;
+        //                    break;
+        //                default:
+        //                    break;
+        //            }
+        //            reviewDataList.Add(reviewData);
+        //        }
+        //    }
+        //    else if (question.Section == "Academic Writing Task 1")
+        //    {
+        //        IELTSTask1FeedbackModel ieltsFeedback = new IELTSTask1FeedbackModel();
+        //        var chart = question.QuestionsPart.Find(p => p.Name == "Chart");
+        //        if (chart != null)
+        //        {
+        //            string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/photo", chart.Content);
+        //            ieltsFeedback = await chatGPTService.GetIELTSTask1EssayFeedback(questionContent, document.Text, filePath, feedbackLanguage);
+        //        }
+        //        else
+        //        {
+        //            ieltsFeedback = await chatGPTService.GetIELTSTask1EssayFeedback(questionContent, document.Text, null, feedbackLanguage);
+        //        }
+
+        //        foreach (RubricsModel criteria in rubrics)
+        //        {
+        //            string comment = "";
+        //            ReviewData reviewData = new ReviewData();
+        //            reviewData.CriteriaId = (int)criteria.Id;
+        //            switch (criteria.Name)
+        //            {
+        //                case "Task Achievement":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.taskAchievement.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.taskAchievement.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.taskAchievement.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(ieltsFeedback.taskAchievement.score);
+        //                    break;
+        //                case "Coherence & Cohesion":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.coherence.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.coherence.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.coherence.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(ieltsFeedback.coherence.score);
+        //                    break;
+        //                case "Lexical Resource":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.lexicalResource.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.lexicalResource.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.lexicalResource.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(ieltsFeedback.lexicalResource.score);
+        //                    break;
+        //                case "Grammatical Range & Accuracy":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.grammar.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.grammar.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.grammar.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(ieltsFeedback.grammar.score);
+        //                    break;
+        //                case "Overall Score & Feedback":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Đánh giá tổng quan:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Overvall performance:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.overallFeedback.feedback.performance;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm mạnh nổi bật:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Standout strengths:";
+        //                    }
+
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.overallFeedback.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm cần cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.overallFeedback.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Khuyễn nghị cho học viên:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.overallFeedback.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)(Math.Round(ieltsFeedback.overallFeedback.score * 2, MidpointRounding.AwayFromZero) / 2);
+        //                    finalScore = reviewData.Score;
+        //                    break;
+        //                default:
+        //                    break;
+        //            }
+        //            reviewDataList.Add(reviewData);
+        //        }
+
+        //    }
+        //    else // Academic Writing Task 2 
+        //    {
+        //        IELTSTask2FeedbackModel ieltsFeedback = await chatGPTService.GetIELTSTask2EssayFeedback(questionContent, document.Text, feedbackLanguage);
+        //        foreach (RubricsModel criteria in rubrics)
+        //        {
+        //            string comment = "";
+        //            ReviewData reviewData = new ReviewData();
+        //            reviewData.CriteriaId = (int)criteria.Id;
+        //            switch (criteria.Name)
+        //            {
+        //                case "Task Response":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.taskResponse.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.taskResponse.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.taskResponse.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(ieltsFeedback.taskResponse.score);
+        //                    break;
+        //                case "Coherence & Cohesion":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.coherence.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.coherence.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.coherence.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(ieltsFeedback.coherence.score);
+        //                    break;
+        //                case "Lexical Resource":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.lexicalResource.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.lexicalResource.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.lexicalResource.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(ieltsFeedback.lexicalResource.score);
+        //                    break;
+        //                case "Grammatical Range & Accuracy":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết đã làm tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- What the essay did well:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.grammar.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm bài viết làm chưa tốt:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.grammar.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Hướng dẫn để học viên cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.grammar.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)Math.Floor(ieltsFeedback.grammar.score);
+        //                    break;
+        //                case "Overall Score & Feedback":
+        //                    comment = "";
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Đánh giá tổng quan:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Overvall performance:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.overallFeedback.feedback.performance;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm mạnh nổi bật:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Standout strengths:";
+        //                    }
+
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.overallFeedback.feedback.strengths;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Những điểm cần cải thiện:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Areas for improvement:";
+        //                    }
+
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.overallFeedback.feedback.weaknesses;
+        //                    comment += Environment.NewLine;
+        //                    comment += Environment.NewLine;
+
+        //                    if (feedbackLanguage == "vn")
+        //                    {
+        //                        comment += "- Khuyễn nghị cho học viên:";
+        //                    }
+        //                    else
+        //                    {
+        //                        comment += "- Recommendations:";
+        //                    }
+        //                    comment += Environment.NewLine;
+        //                    comment += ieltsFeedback.overallFeedback.feedback.recommendations;
+
+        //                    reviewData.Comment = comment;
+        //                    reviewData.Score = (decimal)(Math.Round(ieltsFeedback.overallFeedback.score * 2, MidpointRounding.AwayFromZero) / 2); // ieltsFeedback.overallFeedback.score;
+        //                    finalScore = reviewData.Score;
+        //                    break;
+        //                default:
+        //                    break;
+        //            }
+        //            reviewDataList.Add(reviewData);
+        //        }
+        //    }
+
+        //    // Create the review with review data
+        //    Reviews review = new Reviews
+        //    {
+        //        RequestId = newRequest.Id,
+        //        ReviewerId = "AI",
+        //        RevieweeId = userId,
+        //        SubmissionId = submissionId,
+        //        FinalScore = finalScore,
+        //        Status = ReviewStatus.COMPLETED,
+        //        TimeSpentInSeconds = 0,
+        //        LastActivityDate = DateTime.UtcNow,
+        //        ReviewData = reviewDataList,
+        //    };
+
+        //    // Update the submission status
+        //    submission.Status = SubmissionStatus.COMPLETED;
+        //    submission.UpdatedDate = DateTime.UtcNow;
+        //    await _unitOfWork.Submission.Update(submission);
+
+        //    // Create the review with review data
+        //    var newReview = await _unitOfWork.Review.Create(review);
+        //    GetReviewsModel result = new GetReviewsModel();
+        //    result.QuestionId = submission.QuestionId;
+        //    result.Review = newReview;
+        //    result.ReviewId = newReview.Id;
+        //    result.DocId = document.Id;
+        //    return result;
+        //}
+
         public async Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId)
         {
             return await _unitOfWork.Review.GetReviewByReviewRequestAsync(requestId);
@@ -113,688 +1271,7 @@ namespace Reboost.Service.Services
         {
             return Regex.Replace(input, "<.*?>", String.Empty);
         }
-        public async Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage = "vn")
-        {
-            Submissions submission = await _unitOfWork.Submission.GetByIdAsync(submissionId);
-            QuestionModel question = await _unitOfWork.Questions.GetByIdAsync(submission.QuestionId);
-            Documents document = await _unitOfWork.Documents.GetByIdAsync(submission.DocId);
-            var questionContent = StripHTML(question.QuestionsPart.Find(p => p.Name == "Question").Content);
 
-            List<ReviewData> reviewDataList = new List<ReviewData>();
-            decimal? finalScore = null;
-            var rubrics = await _unitOfWork.Rubrics.GetByQuestionId(question.Id);
-
-            if (question.Section == "Independent Writing")
-            {
-               TOEFLIndependentFeedbackModel toeflFeedback = await chatGPTService.GetTOEFLIndependentEssayFeedback(questionContent, document.Text, feedbackLanguage);
-
-                foreach (RubricsModel criteria in rubrics)
-                {
-                    string shouldbe = "nên sửa thành";
-                    if (feedbackLanguage != "vn")
-                    {
-                        shouldbe = "should be";
-                    }
-
-                    ReviewData reviewData = new ReviewData();
-                    reviewData.CriteriaId = (int)criteria.Id;
-                    switch (criteria.Name)
-                    {
-                        case "Language Use":
-                            reviewData.Comment = toeflFeedback.languageUse.comment;
-                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.languageUse.score);
-                            break;
-                        case "Organization":
-                            reviewData.Comment = toeflFeedback.organization.comment;
-                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.organization.score);
-                            break;
-                        case "Development and Support":
-                            reviewData.Comment = toeflFeedback.developmentSupport.comment;
-                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.developmentSupport.score);
-                            break;
-                        case "Critical Errors":
-                            string errors = "";
-                            foreach (AutomatedFeedbackError error in toeflFeedback.errors)
-                            {
-                                if (!String.IsNullOrEmpty(error.issue))
-                                    errors += "- '" + error.issue + "'";
-                                if (!String.IsNullOrEmpty(error.fix))
-                                    errors += " " + shouldbe + " '" + error.fix + "'";
-                                if (!String.IsNullOrEmpty(error.type))
-                                    errors += " (" + error.type + " )";
-                                errors += Environment.NewLine;
-                                errors += Environment.NewLine;
-                            }
-                            reviewData.Comment = errors;
-                            reviewData.Score = 0;
-                            break;
-                        case "Overall Score & Feedback":
-                            reviewData.Comment = toeflFeedback.overallFeedback.comment;
-                            reviewData.Score = (decimal)toeflFeedback.overallFeedback.score;
-                            finalScore = reviewData.Score;
-                            break;
-                        default:
-                            break;
-                    }
-                    reviewDataList.Add(reviewData);
-                }
-
-            }
-            else if (question.Section == "Integrated Writing")
-            {
-                string integratedQuestion = "\nTask: " + questionContent + "\n";
-
-                var reading = question.QuestionsPart.Find(p => p.Name == "Reading");
-                if (reading != null)
-                {
-                    string readingStr = StripHTML(reading.Content);
-                    integratedQuestion += "Reading passage: \"" + readingStr + "\"\n";
-                }
-
-                var transcript = question.QuestionsPart.Find(p => p.Name == "Transcript");
-                if (transcript != null)
-                {
-                    string transcriptStr = StripHTML(transcript.Content);
-                    integratedQuestion += "Listening lecture: \"" + transcriptStr + "\"";
-                }
-
-                TOEFLIntegratedFeedbackModel toeflFeedback = await chatGPTService.GetTOEFLIntegratedEssayFeedback(integratedQuestion, document.Text, feedbackLanguage);
-
-                foreach (RubricsModel criteria in rubrics)
-                {
-                    string shouldbe = "nên sửa thành";
-                    if (feedbackLanguage != "vn")
-                    {
-                        shouldbe = "should be";
-                    }
-
-                    ReviewData reviewData = new ReviewData();
-                    reviewData.CriteriaId = (int)criteria.Id;
-                    switch (criteria.Name)
-                    {
-                        case "Language Use":
-                            reviewData.Comment = toeflFeedback.languageUse.comment;
-                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.languageUse.score);
-                            break;
-                        case "Organization":
-                            reviewData.Comment = toeflFeedback.organization.comment;
-                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.organization.score);
-                            break;
-                        case "Content":
-                            reviewData.Comment = toeflFeedback.content.comment;
-                            reviewData.Score = (decimal)Math.Floor(toeflFeedback.content.score);
-                            break;
-                        case "Critical Errors":
-                            string errors = "";
-                            foreach (AutomatedFeedbackError error in toeflFeedback.errors)
-                            {
-                                if (!String.IsNullOrEmpty(error.issue))
-                                    errors += "- '" + error.issue + "'";
-                                if (!String.IsNullOrEmpty(error.fix))
-                                    errors += " " + shouldbe + " '" + error.fix + "'";
-                                if (!String.IsNullOrEmpty(error.type))
-                                    errors += " (" + error.type + " )";
-                                errors += Environment.NewLine;
-                                errors += Environment.NewLine;
-                            }
-                            reviewData.Comment = errors;
-                            reviewData.Score = 0;
-                            break;
-                        case "Overall Score & Feedback":
-                            reviewData.Comment = toeflFeedback.overallFeedback.comment;
-                            reviewData.Score = (decimal)toeflFeedback.overallFeedback.score;
-                            finalScore = reviewData.Score;
-                            break;
-                        default:
-                            break;
-                    }
-                    reviewDataList.Add(reviewData);
-                }
-            }
-            else if (question.Section == "Academic Writing Task 1")
-            {
-                IELTSTask1FeedbackModel ieltsFeedback = new IELTSTask1FeedbackModel();
-                var chart = question.QuestionsPart.Find(p => p.Name == "Chart");
-                if(chart != null)
-                {
-                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/photo", chart.Content);
-                     ieltsFeedback = await chatGPTService.GetIELTSTask1EssayFeedback(questionContent, document.Text, filePath, feedbackLanguage);
-                }
-                else
-                {
-                    ieltsFeedback = await chatGPTService.GetIELTSTask1EssayFeedback(questionContent, document.Text, null, feedbackLanguage);
-                }
-
-                foreach (RubricsModel criteria in rubrics)
-                {
-                    string comment = "";
-                    ReviewData reviewData = new ReviewData();
-                    reviewData.CriteriaId = (int)criteria.Id;
-                    switch (criteria.Name)
-                    {
-                        case "Task Achievement":
-                            comment = "";
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết đã làm tốt:";
-                            }
-                            else
-                            {
-                                comment += "- What the essay did well:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.taskAchievement.feedback.strengths;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết làm chưa tốt:";
-                            }
-                            else
-                            {
-                                comment += "- Areas for improvement:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.taskAchievement.feedback.weaknesses;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Hướng dẫn để học viên cải thiện:";
-                            }
-                            else
-                            {
-                                comment += "- Recommendations:";
-                            }
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.taskAchievement.feedback.recommendations;
-
-                            reviewData.Comment = comment;
-                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.taskAchievement.score);
-                            break;
-                        case "Coherence & Cohesion":
-                            comment = "";
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết đã làm tốt:";
-                            }
-                            else
-                            {
-                                comment += "- What the essay did well:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.coherence.feedback.strengths;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết làm chưa tốt:";
-                            }
-                            else
-                            {
-                                comment += "- Areas for improvement:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.coherence.feedback.weaknesses;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Hướng dẫn để học viên cải thiện:";
-                            }
-                            else
-                            {
-                                comment += "- Recommendations:";
-                            }
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.coherence.feedback.recommendations;
-
-                            reviewData.Comment = comment;
-                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.coherence.score);
-                            break;
-                        case "Lexical Resource":
-                            comment = "";
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết đã làm tốt:";
-                            }
-                            else
-                            {
-                                comment += "- What the essay did well:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.lexicalResource.feedback.strengths;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết làm chưa tốt:";
-                            }
-                            else
-                            {
-                                comment += "- Areas for improvement:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.lexicalResource.feedback.weaknesses;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Hướng dẫn để học viên cải thiện:";
-                            }
-                            else
-                            {
-                                comment += "- Recommendations:";
-                            }
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.lexicalResource.feedback.recommendations;
-
-                            reviewData.Comment = comment;
-                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.lexicalResource.score);
-                            break;
-                        case "Grammatical Range & Accuracy":
-                            comment = "";
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết đã làm tốt:";
-                            }
-                            else
-                            {
-                                comment += "- What the essay did well:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.grammar.feedback.strengths;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết làm chưa tốt:";
-                            }
-                            else
-                            {
-                                comment += "- Areas for improvement:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.grammar.feedback.weaknesses;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Hướng dẫn để học viên cải thiện:";
-                            }
-                            else
-                            {
-                                comment += "- Recommendations:";
-                            }
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.grammar.feedback.recommendations;
-
-                            reviewData.Comment = comment;
-                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.grammar.score);
-                            break;
-                        case "Overall Score & Feedback":
-                            comment = "";
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Đánh giá tổng quan:";
-                            }
-                            else
-                            {
-                                comment += "- Overvall performance:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.overallFeedback.feedback.performance;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm mạnh nổi bật:";
-                            }
-                            else
-                            {
-                                comment += "- Standout strengths:";
-                            }
-
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.overallFeedback.feedback.strengths;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm cần cải thiện:";
-                            }
-                            else
-                            {
-                                comment += "- Areas for improvement:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.overallFeedback.feedback.weaknesses;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Khuyễn nghị cho học viên:";
-                            }
-                            else
-                            {
-                                comment += "- Recommendations:";
-                            }
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.overallFeedback.feedback.recommendations;
-
-                            reviewData.Comment = comment;
-                            reviewData.Score = (decimal)(Math.Round(ieltsFeedback.overallFeedback.score * 2, MidpointRounding.AwayFromZero) / 2); // ieltsFeedback.overallFeedback.score;
-                            finalScore = reviewData.Score;
-                            break;
-                        default:
-                            break;
-                    }
-                    reviewDataList.Add(reviewData);
-                }
-
-            }
-            else // Academic Writing Task 2 
-            {
-                IELTSTask2FeedbackModel ieltsFeedback = await chatGPTService.GetIELTSTask2EssayFeedback(questionContent, document.Text, feedbackLanguage);
-                foreach (RubricsModel criteria in rubrics)
-                {
-                    string comment = "";
-                    ReviewData reviewData = new ReviewData();
-                    reviewData.CriteriaId = (int)criteria.Id;
-                    switch (criteria.Name)
-                    {
-                        case "Task Response":
-                            comment = "";
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết đã làm tốt:";
-                            }
-                            else
-                            {
-                                comment += "- What the essay did well:";
-                            }
-                          
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.taskResponse.feedback.strengths;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết làm chưa tốt:";
-                            }
-                            else
-                            {
-                                comment += "- Areas for improvement:";
-                            }
-                          
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.taskResponse.feedback.weaknesses;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                           
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Hướng dẫn để học viên cải thiện:";
-                            }
-                            else
-                            {
-                                comment += "- Recommendations:";
-                            }
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.taskResponse.feedback.recommendations;
-
-                            reviewData.Comment = comment;
-                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.taskResponse.score);
-                            break;
-                        case "Coherence & Cohesion":
-                            comment = "";
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết đã làm tốt:";
-                            }
-                            else
-                            {
-                                comment += "- What the essay did well:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.coherence.feedback.strengths;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết làm chưa tốt:";
-                            }
-                            else
-                            {
-                                comment += "- Areas for improvement:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.coherence.feedback.weaknesses;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Hướng dẫn để học viên cải thiện:";
-                            }
-                            else
-                            {
-                                comment += "- Recommendations:";
-                            }
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.coherence.feedback.recommendations;
-
-                            reviewData.Comment = comment;
-                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.coherence.score);
-                            break;
-                        case "Lexical Resource":
-                            comment = "";
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết đã làm tốt:";
-                            }
-                            else
-                            {
-                                comment += "- What the essay did well:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.lexicalResource.feedback.strengths;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết làm chưa tốt:";
-                            }
-                            else
-                            {
-                                comment += "- Areas for improvement:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.lexicalResource.feedback.weaknesses;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Hướng dẫn để học viên cải thiện:";
-                            }
-                            else
-                            {
-                                comment += "- Recommendations:";
-                            }
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.lexicalResource.feedback.recommendations;
-
-                            reviewData.Comment = comment;
-                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.lexicalResource.score);
-                            break;
-                        case "Grammatical Range & Accuracy":
-                            comment = "";
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết đã làm tốt:";
-                            }
-                            else
-                            {
-                                comment += "- What the essay did well:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.grammar.feedback.strengths;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm bài viết làm chưa tốt:";
-                            }
-                            else
-                            {
-                                comment += "- Areas for improvement:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.grammar.feedback.weaknesses;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Hướng dẫn để học viên cải thiện:";
-                            }
-                            else
-                            {
-                                comment += "- Recommendations:";
-                            }
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.grammar.feedback.recommendations;
-
-                            reviewData.Comment = comment;
-                            reviewData.Score = (decimal)Math.Floor(ieltsFeedback.grammar.score);
-                            break;
-                        case "Overall Score & Feedback":
-                            comment = "";
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Đánh giá tổng quan:";
-                            }
-                            else
-                            {
-                                comment += "- Overvall performance:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.overallFeedback.feedback.performance;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm mạnh nổi bật:";
-                            }
-                            else
-                            {
-                                comment += "- Standout strengths:";
-                            }
-
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.overallFeedback.feedback.strengths;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Những điểm cần cải thiện:";
-                            }
-                            else
-                            {
-                                comment += "- Areas for improvement:";
-                            }
-
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.overallFeedback.feedback.weaknesses;
-                            comment += Environment.NewLine;
-                            comment += Environment.NewLine;
-
-                            if (feedbackLanguage == "vn")
-                            {
-                                comment += "- Khuyễn nghị cho học viên:";
-                            }
-                            else
-                            {
-                                comment += "- Recommendations:";
-                            }
-                            comment += Environment.NewLine;
-                            comment += ieltsFeedback.overallFeedback.feedback.recommendations;
-
-                            reviewData.Comment = comment;
-                            reviewData.Score = (decimal)(Math.Round(ieltsFeedback.overallFeedback.score * 2, MidpointRounding.AwayFromZero) / 2); // ieltsFeedback.overallFeedback.score;
-                            finalScore = reviewData.Score;
-                            break;
-                        default:
-                            break;
-                    }
-                    reviewDataList.Add(reviewData);
-                }
-            }
-            // Create a ReviewRequest
-            ReviewRequests request = new ReviewRequests
-            {
-                UserId = userId,
-                SubmissionId = submissionId,
-                FeedbackType = "AI",
-                RequestedDateTime = DateTime.UtcNow,
-                CompletedDateTime = DateTime.UtcNow,
-                Status = "Completed",
-                FeedbackLanguage = feedbackLanguage,
-            };
-            ReviewRequests newRequest = await _unitOfWork.Review.CreateReviewRequest(request);
-            // Create the review with review data
-            Reviews review = new Reviews
-            {
-                RequestId = newRequest.Id,
-                ReviewerId = "AI",
-                RevieweeId = userId,
-                SubmissionId = submissionId,
-                FinalScore = finalScore,
-                Status = ReviewStatus.COMPLETED,
-                TimeSpentInSeconds = 0,
-                LastActivityDate = DateTime.UtcNow,
-                ReviewData = reviewDataList,
-            };
-
-            // Update the submission status
-            submission.Status = SubmissionStatus.COMPLETED;
-            submission.UpdatedDate = DateTime.UtcNow;
-            await _unitOfWork.Submission.Update(submission);
-
-            // Create the review with review data
-            var newReview =  await _unitOfWork.Review.Create(review);
-            GetReviewsModel result = new GetReviewsModel();
-            result.QuestionId = submission.QuestionId;
-            result.Review = newReview;
-            result.ReviewId = newReview.Id;
-            result.DocId = document.Id;
-            return result;
-        }
         public async Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId)
         {
             return await _unitOfWork.Review.GetAnnotationsAsync(docId, reviewId);

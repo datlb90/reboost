@@ -36,7 +36,7 @@
                     class="btn btn-gradient"
                     style="margin-right: 20px; margin-bottom: 20px; padding: 6px 20px; font-size: 12px;"
                     @click.prevent="openRequestReviewDialog()"
-                  >Yêu cầu chấm bài
+                  >Yêu cầu chấm bài miễn phí
                   </el-button>
                   <hr style="padding-top: 0px;">
                   <div style=" display: inline-grid; padding-top: 10px; width: 420px;">
@@ -50,9 +50,9 @@
                     <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
                       Kỹ năng đánh giá: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold;" />
                     </div>
-                    <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="selectTest()">
+                    <!-- <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="selectTest()">
                       Bài thi đã chọn: {{ testsToText() }}
-                    </div>
+                    </div> -->
                     <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="openAddQuestionDialog()">
                       Đóng góp một chủ đề
                     </div>
@@ -104,7 +104,7 @@
               class="btn btn-gradient"
               style="margin-right: 20px; padding: 6px 20px; font-size: 12px;"
               @click="openRequestReviewDialog"
-            >Yêu cầu chấm bài
+            >Yêu cầu chấm bài miễn phí
             </el-button>
 
             <el-dropdown style="margin-top: 5px; margin-right: 2px;" trigger="click" @command="handleCommand">
@@ -127,9 +127,9 @@
                   <i class="fas fa-star" style="color: gold;" />
                 </el-dropdown-item>
 
-                <el-dropdown-item command="selectTest" divided>
+                <!-- <el-dropdown-item command="selectTest" divided>
                   Bài thi đã chọn: {{ testsToText() }}
-                </el-dropdown-item>
+                </el-dropdown-item> -->
                 <el-dropdown-item command="addQuestion">
                   Đóng góp một chủ đề
                 </el-dropdown-item>
@@ -192,7 +192,8 @@ export default {
       userRole: UserRole,
       questionId: null,
       submissionId: null,
-      initialSubmission: null
+      initialSubmission: null,
+      screenWidth: window.innerWidth
     }
   },
   computed: {
@@ -210,6 +211,9 @@ export default {
     }
   },
   watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    },
     $route(to, from) {
       if (to.name == 'PracticeWriting' || to.name == 'Review') {
         this.fullSizeHeader = true
@@ -219,12 +223,16 @@ export default {
     }
   },
   mounted() {
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
     var _lang = localStorage.getItem('language')
     if (_lang) {
       this.lang = _lang.charAt(0).toUpperCase() + _lang.slice(1)
     } else {
       this.lang = 'English'
     }
+
     // Check if user is submitting an initial test
     this.initialSubmission = this.$store.getters['question/getInitialSubmission']
     if (this.initialSubmission) {
@@ -239,6 +247,7 @@ export default {
       }
     }
     this.checkApprovedRater()
+    // this.waitForFeedbackDialogVisible = true
   },
   created() {
     if (this.$router.currentRoute.name == 'PracticeWriting' || this.$router.currentRoute.name == 'Review') {
@@ -249,12 +258,6 @@ export default {
   },
   methods: {
     processInitialSubmission(user, submissionData) {
-      const loading = this.$loading({
-        lock: true,
-        text: 'Bạn vui lòng chờ từ 2 tới 3 phút trong khi hệ thống chấm bài và cung cấp những phản hồi tốt nhất cho bạn',
-        spinner: 'el-icon-loading',
-        background: 'rgba(0, 0, 0, 0.7)'
-      })
       submissionData.userId = user.id
       // Create a new submission
       documentService.submitDocument(submissionData).then(rs => {
@@ -262,14 +265,18 @@ export default {
         this.$store.dispatch('question/clearInitialSubmission')
         if (rs) {
           const submissionId = rs.submissions[0]?.id
+          this.$notify.success({
+            title: 'Bài viết của bạn đang được chấm',
+            message: 'Bạn sẽ được chuyển hướng trong giây lát để nhận phản hồi',
+            type: 'success',
+            duration: 5000
+          })
           // process AI review
           reviewService.createAutomatedReview({
             UserId: user.id,
             SubmissionId: submissionId,
             FeedbackLanguage: 'vn'
           }).then(rs => {
-            // Todo: update user score
-            loading.close()
             const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
             this.$router.push(url)
           })
@@ -298,7 +305,7 @@ export default {
         menu.style.display = ' none'
       }
       this.$store.dispatch('auth/logout').then(rs => {
-        this.$router.push('/')
+        window.location.href = '/'
       })
     },
     selectTest() {
@@ -358,6 +365,11 @@ export default {
 }
 </script>
 
+<style>
+.el-message-box__wrapper{
+  z-index: 9999 !important;
+}
+</style>
 <style scoped>
 .lang-dropdown-menu{
   z-index: 10000 !important;

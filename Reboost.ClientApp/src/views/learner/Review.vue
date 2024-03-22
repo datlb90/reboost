@@ -18,7 +18,7 @@
               v-loading="true"
               style="height: 520px;"
               element-loading-text="Đang tải chủ đề và tiêu chí đánh giá"
-              element-loading-background="rgba(0, 0, 0, 0.8)"
+              element-loading-background="white"
             />
           </el-tab-pane>
 
@@ -34,7 +34,7 @@
           </el-tab-pane>
 
           <el-tab-pane name="rubric" label="Tiêu chí chuẩn">
-            <tabRubric v-if="review" ref="tabRubric" :current-user="currentUser" :questionid="questionId" :is-ai-review="isAiReview" :reviewid="reviewId" @setStatusText="setStatusText" />
+            <tabRubric v-if="review && documentText" ref="tabRubric" :current-user="currentUser" :feedback-language="review.reviewRequest.feedbackLanguage" :document-text="documentText" :questionid="questionId" :is-ai-review="isAiReview" :review-id="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
           <el-tab-pane v-if="isRate && !isAiReview" name="rate" label="Rating">
             <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
@@ -72,10 +72,13 @@
         />
 
         <div id="viewerContainer" style="height: calc(100vh - 50px); ">
-
           <div v-if="!completeLoading" style="width: calc(100% - 10px);">
-            <!-- <el-button type="info" plain :loading="true" style="width: 100%; border: none;">Đang tải bài viết</el-button> -->
-            <div v-loading="true" style="height: 500px; background: rgb(248 249 250); background-color: rgb(248 249 250);" element-loading-text="Đang tải bài viết" />
+            <div
+              v-loading="true"
+              style="height: 545px;"
+              element-loading-text="Đang tải bài viết của bạn"
+              element-loading-background="rgb(248 249 250)"
+            />
           </div>
           <div
             v-else
@@ -319,7 +322,7 @@
               v-loading="true"
               style="height: 400px;"
               element-loading-text="Đang tải chủ đề và tiêu chí đánh giá"
-              element-loading-background="rgba(0, 0, 0, 0.8)"
+              element-loading-background="white"
             />
           </el-tab-pane>
 
@@ -334,7 +337,7 @@
             <PeerReviewIntegrated v-if="!isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
           </el-tab-pane>
           <el-tab-pane name="rubric" label="Tiêu chí chuẩn">
-            <tabRubric v-if="review" ref="tabRubric" :current-user="currentUser" :questionid="questionId" :is-ai-review="isAiReview" :reviewid="reviewId" @setStatusText="setStatusText" />
+            <tabRubric v-if="review && documentText" ref="tabRubric" :current-user="currentUser" :feedback-language="review.reviewRequest.feedbackLanguage" :document-text="documentText" :questionid="questionId" :is-ai-review="isAiReview" :review-id="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
           <el-tab-pane v-if="isRate && !isDisputed && !isAiReview" name="rate" label="Rating">
             <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
@@ -372,7 +375,12 @@
 
         <div id="viewerContainer">
           <div v-if="!completeLoading" style="width: calc(100% - 10px);">
-            <div v-loading="true" style="height: 500px; background: rgb(248 249 250); background-color: rgb(248 249 250);" element-loading-text="Đang tải bài viết" />
+            <div
+              v-loading="true"
+              style="height: 545px;"
+              element-loading-text="Đang tải bài viết của bạn"
+              element-loading-background="rgb(248 249 250)"
+            />
           </div>
           <div
             v-else
@@ -651,7 +659,8 @@ export default {
       review: null,
       screenWidth: window.innerWidth,
       isSelfReview: false,
-      task: null
+      task: null,
+      documentText: null
     }
   },
   computed: {
@@ -716,6 +725,7 @@ export default {
     // Load question and get task info
     const question = await this.$store.dispatch('question/loadQuestion', this.questionId)
     this.task = question.section
+    document.title = 'Đánh giá - ' + question.title
     // Load review
     await this.loadReview()
     // Show/hide tools based on role
@@ -786,6 +796,7 @@ export default {
       // Decide which tab to open based on review status
       if (rs.review.status == 'In Progress') { // Làm mới hoặc đang làm dở
         if (this.isSelfReview) { this.selectedTab = 'guide' } // Hiển thì tab hướng dẫn cho self review
+        if (this.isAiReview) { this.selectedTab = 'rubric' }
         // Nếu không phải là self review thì hiển thị tab chủ đề
       } else if (rs.review.status === 'Completed') { // Nếu bài chấm đã được hoàn thiện
         // hiển thị tab rubric
@@ -878,6 +889,7 @@ export default {
     async render() {
       const self = this
       const response = await docService.getDocument(this.documentId)
+      this.documentText = response.data.text
       const arrayBuffer = self.base64ToArrayBuffer(response.data.data)
 
       const pdf = await PDFJS.getDocument(arrayBuffer).promise
@@ -3258,9 +3270,9 @@ export default {
 
 </style>
 <style>
-.el-loading-mask {
+/* .el-loading-mask {
   background-color: rgb(248 249 250) !important;
-}
+} */
 .el-tabs__content{
   overflow: auto !important;
 }

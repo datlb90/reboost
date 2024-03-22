@@ -2,7 +2,7 @@
   <el-dialog
     v-if="screenWidth > 780"
     id="addEditQuestionDialog"
-    title="Gửi Yêu Cầu Chấm Bài Viết"
+    title="Gửi Yêu Cầu Chấm Bài Miễn Phí"
     :visible.sync="dialogVisible"
     :before-close="handleClose"
     width="780px"
@@ -18,8 +18,8 @@
         <el-form-item size="mini" label="Chọn task">
           <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 1" border>IELTS Task 1</el-radio>
           <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 2" border>IELTS Task 2</el-radio>
-          <el-radio v-model="selectedTask" style="margin-right: 5px;" label="TOEFL Independent" border>TOEFL Independent</el-radio>
-          <el-radio v-model="selectedTask" style="margin-right: 5px;" label="TOEFL Integrated" border>TOEFL Integrated</el-radio>
+          <!-- <el-radio v-model="selectedTask" style="margin-right: 5px;" label="TOEFL Independent" border>TOEFL Independent</el-radio>
+          <el-radio v-model="selectedTask" style="margin-right: 5px;" label="TOEFL Integrated" border>TOEFL Integrated</el-radio> -->
         </el-form-item>
 
         <el-form-item prop="topic" :rules="[{ required: true, message: 'Hãy thêm một chủ đề viết' }]" size="mini" label="Chủ đề">
@@ -109,7 +109,7 @@
   <el-dialog
     v-else
     id="addEditQuestionDialog"
-    title="Gửi Yêu Cầu Chấm Bài Viết"
+    title="Gửi Yêu Cầu Chấm Bài Miễn Phí"
     :visible.sync="dialogVisible"
     :before-close="handleClose"
     :fullscreen="true"
@@ -127,10 +127,10 @@
               <el-radio v-model="selectedTask" style="margin-right: 10px; margin-left: 0px;" label="IELTS Task 1" border>IELTS Academic Task 1</el-radio>
               <el-radio v-model="selectedTask" style="margin-left: 0px;" label="IELTS Task 2" border>IELTS Academic Task 2</el-radio>
             </div>
-            <div>
+            <!-- <div>
               <el-radio v-model="selectedTask" style="margin-right: 10px;  margin-left: 0px; padding-left: 10px; padding-right: 34px;" label="TOEFL Independent" border>TOEFL Independent</el-radio>
               <el-radio v-model="selectedTask" style=" margin-left: 0px; padding-left: 10px; padding-right: 46px;" label="TOEFL Integrated" border>TOEFL Integrated</el-radio>
-            </div>
+            </div> -->
           </div>
 
         </el-form-item>
@@ -280,8 +280,11 @@ export default {
         this.form.response = this.personalQuestion.Text
         if (this.personalQuestion.TaskName == 'IELTS Task 1') {
           const chart = this.personalQuestion.Parts.find(p => p.Name == 'Chart')
+
           if (chart) {
-            this.chartList.push({ name: chart.FileName, url: chart.Url})
+            console.log(chart)
+            this.chartList.push({ name: chart.FileName, url: chart.Url, raw: chart.UploadedFile})
+            console.log('Chart List:', this.chartList)
           }
         }
         if (this.personalQuestion.TaskName == 'TOEFL Integrated') {
@@ -312,8 +315,10 @@ export default {
               transcript: this.form.transcript
             }
           } else if (this.selectedTask == 'IELTS Task 1') {
-            this.form.part = {
-                chart: this.chartList && this.chartList.length > 0 ? this.chartList[0] : null
+            if (this.chartList && this.chartList.length > 0) {
+              this.form.part = {
+                chart: this.chartList[0]
+              }
             }
           } else {
             this.form.part = null
@@ -330,6 +335,7 @@ export default {
             test = 'TOEFL'
           }
 
+          // Setup question content to send to the backend
           const formData = new FormData()
           formData.set('UserId', this.currentUser.id)
           formData.set('TaskName', this.selectedTask)
@@ -337,6 +343,13 @@ export default {
           formData.set('Text', this.form.response)
           formData.set('Test', test)
 
+          // Setup question content to send to the backend
+          formData.set('Question.QuestionParts[0][Name]', 'Question')
+          formData.set('Question.QuestionParts[0][Content]', this.form.topic)
+          formData.set('Question.QuestionParts[0][Order]', 1)
+          formData.set(`Question.QuestionParts[0][QuestionId]`, 0)
+
+           // Setting object to keep in the store
           var personalQuestion = {
             UserId: this.currentUser.id,
             TaskName: this.selectedTask,
@@ -351,42 +364,25 @@ export default {
           }
           personalQuestion.Parts.push(questionTopic)
 
-          formData.set('Question.QuestionParts[0][Name]', 'Question')
-          formData.set('Question.QuestionParts[0][Content]', this.form.topic)
-          formData.set('Question.QuestionParts[0][Order]', 1)
-          formData.set(`Question.QuestionParts[0][QuestionId]`, 0)
-          let order = 2
-          let count = 1
-          if (this.form.part) {
-            for (var p in this.form.part) {
-              const part = {}
-              part.Name = this.partNameFormat(p)
-
-              console.log(this.form.part[p])
-              if (this.form.part[p]?.raw) {
-                // This is for Task 1's chart and Integrated's listenting
-                // Setting form data to send to the api
-                formData.set(`Question.QuestionParts[${count}][Content]`, this.form.part[p].raw.name)
-                formData.set(`Question.QuestionParts[${count}][FileName]`, this.form.part[p].raw.name)
-                formData.set(`Question.QuestionParts[${count}][FileExtension]`, stringUtil.getFileExtension(this.form.part[p]?.name))
-                formData.set(`Question.UploadedFile`, this.form.part[p]?.raw)
-                // Setting object to keep in the store
-                part.Content = this.form.part[p].raw.name
-                part.FileName = this.form.part[p].raw.name
-                part.FileExtension = stringUtil.getFileExtension(this.form.part[p]?.name)
-                part.UploadedFile = this.form.part[p]?.raw
-                part.Url = this.fileUrl
-              } else {
-                // For integrated's reading and transcript only
-                formData.set(`Question.QuestionParts[${count}][Content]`, this.form.part[p])
-                part.Content = this.form.part[p]
-              }
-              formData.set(`Question.QuestionParts[${count}][Order]`, order)
-              formData.set(`Question.QuestionParts[${count}][Name]`, this.partNameFormat(p))
-              order += 1
-              count += 1
-              personalQuestion.Parts.push(part)
-            }
+          // If there is a chart
+          if (this.form.part && this.form.part.chart && this.form.part.chart.raw) {
+            const chart = this.form.part.chart.raw
+            // Setup chart to send to the backend
+            formData.set(`Question.QuestionParts[1][Name]`, 'Chart')
+            formData.set(`Question.QuestionParts[1][Order]`, 2)
+            formData.set(`Question.QuestionParts[1][Content]`, chart.name)
+            formData.set(`Question.QuestionParts[1][FileName]`, chart.name)
+            formData.set(`Question.QuestionParts[1][FileExtension]`, stringUtil.getFileExtension(this.form.part.chart.name))
+            formData.set(`Question.UploadedFile`, chart)
+            // Setting object to keep in the store
+            const part = {}
+            part.Name = 'Chart'
+            part.Content = chart.name
+            part.FileName = chart.name
+            part.FileExtension = stringUtil.getFileExtension(this.form.part.chart.name)
+            part.UploadedFile = chart
+            part.Url = this.fileUrl
+            personalQuestion.Parts.push(part)
           }
           // clear initial test on review request submission
           this.$store.dispatch('question/clearInitialSubmission')
@@ -434,7 +430,6 @@ export default {
         if (this.LISTENING_TYPE_FILE.includes(file.raw.type)) {
           this.fileUrl = await this.fileListToBase64(file.raw)
           this.listeningList = fileList
-          console.log(this.listeningList)
         } else {
           this.$message.warning(`Please upload mp3/mp4 file.`)
           this.listeningList = []
@@ -449,6 +444,7 @@ export default {
         if (this.CHART_TYPE_FILE.includes(file.raw.type)) {
           this.fileUrl = await this.fileListToBase64(file.raw)
           this.chartList = fileList
+          console.log(this.fileUrl)
         } else {
           this.$message.warning(`Please upload png/jpeg file.`)
           this.chartList = []
@@ -475,9 +471,18 @@ export default {
     handleClose() {
       // Do not clear the data
       // this.$store.dispatch('question/clearPersonalQuestion')
+      const header = document.querySelector('#header.headroom')
+      if (header) {
+        header.style.display = 'block'
+      }
+
       this.dialogVisible = false
     },
     cancelRequest() {
+      const header = document.querySelector('#header.headroom')
+      if (header) {
+        header.style.display = 'block'
+      }
       if (this.form.topic || this.form.response || this.form.reading || this.form.transcript ||
       this.chartList.length > 0 || this.listeningList.length > 0) {
         this.$confirm('Dữ liệu đã nhập sẽ bị mất nếu bạn huỷ yêu cầu chấm bài. Bạn vẫn muốn huỷ?')

@@ -512,7 +512,7 @@ namespace Reboost.DataAccess.Repositories
 
             // Nếu đã có, trả về request đó
             // Luôn luôn tạo mới cho requests với id == 1 hoặc id == 2
-            if (existed != null && requestId != 1 && requestId != 2)
+            if (existed != null && requestId != 183)
             {
                 rs.ReviewId = existed.Id;
                 rs.DocId = reviewRequest.Submission.DocId;
@@ -739,10 +739,11 @@ namespace Reboost.DataAccess.Repositories
                 {
                     // Learner has not submitted any peer review request
                     // Use default submission for the 2 tests
-                    if (selectedTests.Contains("IELTS"))
-                        return await GetOrCreateReviewByReviewRequestAsync(1, userID);
-                    else
-                        return await GetOrCreateReviewByReviewRequestAsync(2, userID);
+                    //if (selectedTests.Contains("IELTS"))
+                    //    return await GetOrCreateReviewByReviewRequestAsync(183, userID);
+                    //else
+                    //    return await GetOrCreateReviewByReviewRequestAsync(2, userID);
+                    return await GetOrCreateReviewByReviewRequestAsync(183, userID);
                 }
                
             }

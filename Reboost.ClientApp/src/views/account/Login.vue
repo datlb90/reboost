@@ -125,7 +125,6 @@ export default {
     if (this.$router.currentRoute.query?.email && this.$router.currentRoute.query?.email == 'confirmed') {
       this.emailConfirmed = true
     }
-
     if (this.$router.currentRoute.query?.returnUrl) {
       this.googleFormAction = 'api/auth/external/google/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
       this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
@@ -139,7 +138,7 @@ export default {
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
     },
-    submitGoohlrLoginForm() {
+    submitGoogleLoginForm() {
       this.$refs.googleLoginForm.submit()
     },
     async signIn() {

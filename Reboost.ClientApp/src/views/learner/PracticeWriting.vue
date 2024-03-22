@@ -3,7 +3,7 @@
     <splitpanes class="default-theme" vertical style="height: 100%; width: 100%;">
       <pane>
         <el-tabs v-model="activeTab" type="border-card" style="height: 100%;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
-          <el-tab-pane label="Description" name="description">
+          <el-tab-pane label="Chủ đề" name="description">
             <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
               <div style="margin-bottom: 8px;">
                 <el-row>
@@ -159,7 +159,7 @@
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Help" name="help" style="height: 100%; position: relative;">
+          <el-tab-pane label="Ý tưởng & từ vựng" name="help" style="height: 100%; position: relative;">
             <div class="par-content">
               <div v-if="getTip != ''">
                 <el-card class="box-card" style="font-size: 14px; padding: 20px;">
@@ -174,17 +174,17 @@
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Samples" name="sample" style="height: 100%; position: relative;">
+          <el-tab-pane label="Bài mẫu" name="sample" style="height: 100%; position: relative;">
             <div class="par-content">
               <tab-samples :question-id="questionId" />
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
+          <el-tab-pane label="Tiêu chí chuẩn" name="rubric" style="height: 100%; position: relative;">
             <div class="par-content">
               <tab-rubric :question-id="questionId" />
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Submissions" name="submissions" style="height: 100%; position: relative;">
+          <el-tab-pane label="Bài đã nộp" name="submissions" style="height: 100%; position: relative;">
             <div class="par-content" style="padding-right: 10px;">
               <el-table
                 :data="submissions"
@@ -327,13 +327,13 @@
                 :disabled="!(writingContent && writingContent.length > 0)"
                 type="primary"
                 @click="submit()"
-              >Submit</el-button>
+              >Nộp bài</el-button>
               <el-button
                 v-if="isEdit && !isFreeRequested && !isProRequested"
                 style="float: right; margin-left: 5px"
                 size="mini"
                 @click="isEdit=false"
-              >Edit</el-button>
+              >Sửa</el-button>
               <el-button
                 v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
                 size="mini"
@@ -341,14 +341,14 @@
                 type="primary"
                 style="float: right; margin-left: 5px;"
                 @click="submit()"
-              >Submit</el-button>
+              >Nộp bài</el-button>
               <el-button
                 v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
                 size="mini"
                 :disabled="!(writingContent && writingContent.length > 0)"
                 style="float: right;"
                 @click="save()"
-              >Save</el-button>
+              >Lưu lại</el-button>
             </div>
           </div>
           <div style="flex-grow: 1;">
@@ -869,6 +869,8 @@ export default {
     // this.questionId = this.$route.params.id
     this.submissionId = this.$route.params.submissionId
     this.$store.dispatch('question/loadQuestion', this.questionId).then(rs => {
+      console.log(rs)
+      document.title = 'Thực hành - ' + rs.title
       this.calculateContainerHeight()
       this.loadCompleted = true
     })

@@ -24,19 +24,25 @@ const actions = {
     commit('SET_INITIAL_SUBMISSION', data)
   },
   switchTest({ commit, state }, test) {
-    const selectedTest = state.questionsForInitialTest.find(q => q.test == test)
-    commit('SET_QUESTION', selectedTest)
-  },
-  loadQuestionsForInitialTest({ commit, state }) {
-    if (state.questionsForInitialTest && state.questionsForInitialTest.length > 0) {
-      const selectedTest = state.questionsForInitialTest.find(q => q.test == 'IELTS')
+    if (test == 'Đề Task 1') {
+      const selectedTest = state.questionsForInitialTest.find(q => q.section == 'Academic Writing Task 1')
       commit('SET_QUESTION', selectedTest)
     } else {
-      questionService.getQuestionsForInitialTest().then(result => {
-        commit('SET_QUESTIONS_INIT_TEST', result)
-        const selectedTest = result.find(q => q.test == 'IELTS')
-        commit('SET_QUESTION', selectedTest)
-      })
+      const selectedTest = state.questionsForInitialTest.find(q => q.section == 'Academic Writing Task 2')
+      commit('SET_QUESTION', selectedTest)
+    }
+  },
+  async loadQuestionsForInitialTest({ commit, state }) {
+    if (state.questionsForInitialTest && state.questionsForInitialTest.length > 0) {
+      const selectedTest = state.questionsForInitialTest.find(q => q.section == 'Academic Writing Task 2')
+      commit('SET_QUESTION', selectedTest)
+      return selectedTest
+    } else {
+      const result = await questionService.getQuestionsForInitialTest()
+      commit('SET_QUESTIONS_INIT_TEST', result)
+      const selectedTest = result.find(q => q.section == 'Academic Writing Task 2')
+      commit('SET_QUESTION', selectedTest)
+      return selectedTest
     }
   },
   savePersonalQuestion({ commit }, personalQuestion) {
@@ -152,7 +158,9 @@ const mutations = {
     state.initialSubmission = null
   },
   CLEAR_STATE(state) {
+    const personalQuestion = state.personalQuestion
     Object.assign(state, getDefaultState())
+    state.personalQuestion = personalQuestion
   }
 }
 

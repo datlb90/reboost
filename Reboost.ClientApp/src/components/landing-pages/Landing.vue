@@ -10,7 +10,7 @@
     <UnlimitedTopics />
     <Matching />
     <ProRater />
-    <Pricing />
+    <!-- <Pricing /> -->
   </div>
 </template>
 
@@ -25,7 +25,7 @@ import Matching from './landing/Matching'
 import HowItWorks2 from './landing/HowItWorks2'
 import Funfacts from './landing/Funfacts'
 import ProRater from './landing/ProRater'
-import Pricing from './landing/Pricing'
+// import Pricing from './landing/Pricing'
 // import WhyChooseUs from './landing/WhyChooseUs'
 // import Blog from './landing/Blog'
 // import Feedback from './landing/Feedback'
@@ -44,8 +44,8 @@ export default {
     Matching,
     HowItWorks2,
     Funfacts,
-    ProRater,
-    Pricing
+    ProRater
+    // Pricing
     // WhyChooseUs,
     // Blog,
     // Feedback,
@@ -78,8 +78,10 @@ export default {
     var menuItems = topMenu.find('a')
     // Anchors corresponding to menu items
     var scrollItems = menuItems.map(function() {
-      var item = $('#' + $(this).attr('href'))
+      if ($(this).attr('href') != '/rater') {
+        var item = $('#' + $(this).attr('href'))
       if (item.length) { return item }
+      }
     })
 
     // Bind to scroll

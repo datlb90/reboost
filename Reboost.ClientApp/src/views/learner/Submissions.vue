@@ -19,7 +19,7 @@
       </el-card>
     </div>
 
-    <div v-if="loadCompleted && submissions && submissions.length == 0">
+    <div v-if="loadCompleted && submissionsCached && submissionsCached.length == 0">
       <el-card style="padding: 10px; width: 100%; text-align: center;" class="box-card">
 
         <div style="margin-top: 20px; margin-bottom: 20px;">
@@ -27,14 +27,14 @@
 
           <div style="margin-top: 20px;">
             <el-button type="primary" plain @click="viewQuestions()">Tìm chủ đề phù hợp</el-button>
-            <el-button plain style="margin-left: 10px;" @click="clickPickOne()">Làm 1 bài ngẫu nhiên</el-button>
+            <el-button plain style="margin-left: 10px;" @click="clickPickOne()">Viết 1 đề ngẫu nhiên</el-button>
           </div>
 
         </div>
       </el-card>
     </div>
 
-    <div v-if="loadCompleted && submissions && submissions.length > 0">
+    <div v-if="loadCompleted && submissionsCached && submissionsCached.length > 0">
       <el-card style="padding: 10px; padding-top: 5px; width: 100%;" class="box-card">
         <div class="top-navigator" style="height: 35px;">
           <el-button
@@ -45,7 +45,7 @@
             style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
             @click="moveLeft()"
           />
-          <div id="topic-container" style="display: flex; float: left; width: calc(100% - 170px); margin-right: 5px; overflow: hidden;">
+          <div id="topic-container" style="display: flex; float: left; width: calc(100% - 200px); margin-right: 5px; overflow: hidden;">
             <el-tag
               :effect="allTopicEffect"
               type="info"
@@ -69,7 +69,7 @@
           <div>
             <el-button size="medium" style="float: right; padding-bottom: 8px; padding-top: 8px; color: #409EFF;" @click="clickPickOne">
               <i class="fas fa-random" style="margin-right: 5px;" />
-              Viết 1 đề bất kỳ
+              Viết 1 đề ngẫu nhiên
             </el-button>
 
             <el-button
@@ -94,7 +94,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Test Sections<i class="el-icon-arrow-down el-icon--right" />
+                    Task<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -115,7 +115,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Types<i class="el-icon-arrow-down el-icon--right" />
+                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -128,7 +128,7 @@
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
-              <el-dropdown
+              <!-- <el-dropdown
                 placement="bottom-start"
                 :hide-on-click="false"
                 style="float: left; margin-right: 15px;"
@@ -136,30 +136,30 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Status<i class="el-icon-arrow-down el-icon--right" />
+                    Độ khó<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item
-                    v-for="item in filterStatuses"
+                    v-for="item in filterDifficulties"
                     :key="item.text"
                     :command="item"
                     :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
                   >{{ item.text }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
-              </el-dropdown>
+              </el-dropdown> -->
             </div>
           </div>
 
           <div class="filter-container" style="width: calc(100% - 310px); float: right;">
             <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
-              {{ messageTranslates('question', 'resetAll') }}
+              Đặt lại bộ lọc
             </el-button>
             <el-input
               v-model="textSearch"
               size="mini"
-              placeholder="Search Submissions"
+              placeholder="Nhập để tìm kiếm"
               style="float: right; width: 200px; margin-top: 5px;"
               @input="search()"
             />
@@ -181,7 +181,7 @@
           </el-tag>
         </div>
 
-        <el-table v-if="submissions" ref="filterTable" :data="submissions" stripe style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
+        <el-table v-if="submissions" ref="filterTable" :data="submissions" empty-text="Không có bài viết nào" stripe style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
           <el-table-column
             label="Chủ đề"
             prop="questionId"
@@ -342,7 +342,7 @@
 
           <div style="margin-top: 20px;">
             <el-button type="primary" plain @click="viewQuestions()">Tìm chủ đề phù hợp</el-button>
-            <el-button plain style="margin-left: 10px;" @click="clickPickOne()">Làm 1 bài ngẫu nhiên</el-button>
+            <el-button plain style="margin-left: 10px;" @click="clickPickOne()">Viết 1 đề ngẫu nhiên</el-button>
           </div>
 
         </div>
@@ -395,7 +395,7 @@
 
         <div>
           <el-button style="float: right; margin-top: 5px; color: #409EFF;" size="mini" @click="clickPickOne">
-            Viết 1 đề bất kỳ
+            Ngẫu nhiên
           </el-button>
 
           <el-input
@@ -407,7 +407,7 @@
           />
 
           <el-button size="mini" style="float: left; margin-top: 5px; margin-left: 5px; " @click="clearFilter">
-            Đặt lại bộ lọc
+            Đặt lại
           </el-button>
         </div>
 
@@ -457,7 +457,7 @@
                 </el-dropdown-menu>
               </el-dropdown>
 
-              <el-dropdown
+              <!-- <el-dropdown
                 placement="bottom-start"
                 :hide-on-click="false"
                 style="float: left; margin-right: 15px;"
@@ -477,29 +477,7 @@
                   >{{ item.text }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
-              </el-dropdown>
-
-              <el-dropdown
-                placement="bottom-start"
-                :hide-on-click="false"
-                style="float: left; margin-right: 15px;"
-                @command="onFilterChange"
-              >
-                <span class="el-dropdown-link" style="cursor: pointer;">
-                  <el-link :underline="false" type="info">
-                    Trạng Thái<i class="el-icon-arrow-down el-icon--right" />
-                  </el-link>
-                </span>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item
-                    v-for="item in filterStatuses"
-                    :key="item.text"
-                    :command="item"
-                    :icon="item.checked ? 'el-icon-success' : 'el-icon-remove-outline'"
-                  >{{ item.text }}
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
+              </el-dropdown> -->
             </div>
           </div>
         </div>
@@ -519,7 +497,7 @@
           </el-tag>
         </div>
 
-        <el-table v-if="submissions" ref="filterTable" :data="submissions" stripe style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
+        <el-table v-if="submissions" ref="filterTable" :data="submissions" empty-text="Không có bài viết nào" stripe style="width: 100%; margin-top: 5px;" @sort-change="sortChange" @row-click="rowClicked">
           <el-table-column
             label="Chủ đề đã viết"
             prop="questionId"
@@ -676,6 +654,7 @@ export default {
     }
   },
   mounted() {
+    document.title = 'Bài viết của tôi'
     if (localStorage.getItem('noSubmissionsIntro')) {
       this.showSubmissionsIntro = false
     }
@@ -683,6 +662,7 @@ export default {
       this.screenWidth = window.innerWidth
     })
     questionService.getSubmissionsByUserId(this.currentUser.id).then(rs => {
+      console.log(rs)
       this.loadCompleted = true
       if (rs) {
         this.submissions = rs
@@ -777,7 +757,7 @@ export default {
         }
       }
       if (this.textSearch) {
-        result = result.filter(q => q.question.toLowerCase().indexOf(this.textSearch.toLowerCase()) >= 0)
+        result = result.filter(q => q.topic.toLowerCase().includes(this.textSearch.toLowerCase()))
       }
       // result = result.sort((a, b) => a.id - b.id)
       return result

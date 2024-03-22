@@ -10,20 +10,23 @@
             </router-link>
           </div>
 
-          <div id="top-menu" style="display: flex; width: 470px; float: left; margin-left: 60px;">
+          <div id="top-menu" style="display: flex; width: 560px; float: left; margin-left: 60px;">
+            <div class="nav-item">
+              <a href="initialTest" class="nav-link">Trải nghiệm</a>
+            </div>
             <div class="nav-item">
               <a href="howItWorks" class="nav-link">{{ messageTranslates('landingHeader', 'newMethod') }}</a>
             </div>
             <div class="nav-item">
               <a href="features" class="nav-link">{{ messageTranslates('landingHeader', 'features') }}</a>
             </div>
-            <div class="nav-item">
-              <a href="pricing" class="nav-link">{{ messageTranslates('landingHeader', 'pricing') }}</a>
+            <div>
+              <a href="/rater" class="nav-link"><span style="font-weight: 500; font-size: 15px;">Cho Giáo viên</span></a>
             </div>
             <div class="nav-item">
               <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">{{ messageTranslates('landingHeader', 'contact') }}</a>
             </div>
-            <div>
+            <!-- <div>
               <el-dropdown class="lang-dropdown" style="margin-left: 15px; margin-top: 8px;" placement="bottom" @command="onChangeLanguage">
                 <flag v-if="lang == 'English'" iso="vn" style="border-radius: 3px; height: 15px; width: 15px;" />
                 <flag v-else iso="gb" style="border-radius: 3px;  height: 15px; width: 15px;" />
@@ -32,20 +35,19 @@
                   <el-dropdown-item v-else command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
-            </div>
+            </div> -->
           </div>
 
           <div class="menu-btns" style="float: right;">
-            <a href="/rater" style="margin-right: 10px; padding: 8px 12px;" class="btn btn-light">
-              {{ messageTranslates('landingHeader', 'becomeRater') }}
+            <a style="margin-right: 10px; padding: 9px 15px;" class="btn btn-light" href="/login">
+              Đăng nhập
             </a>
             <el-button
-              icon="el-icon-edit"
               class="btn btn-gradient"
-              style="padding: 10px 12px;"
-              @click.prevent="openRequestReviewDialog()"
+              style="padding: 10px 18px;"
+              @click.prevent="gotoRegister()"
             >
-              {{ messageTranslates('landingHeader', 'requestReview') }}
+              Đăng ký
             </el-button>
           </div>
         </div>
@@ -55,10 +57,6 @@
     <contact-dialog ref="contactDialog" />
     <review-request-dialog
       ref="reviewRequestDialog"
-      :personal-question="personalQuestion"
-      :chart-list="chartList"
-      :listening-list="listeningList"
-      :form="form"
     />
   </header>
   <header v-else-if="screenWidth > 992" id="header" :class="['headroom', {'is-sticky': isSticky}]">
@@ -70,42 +68,38 @@
               <img src="../../assets/logo/logo.png" alt="logo" style="width: 140px;">
             </router-link>
           </div>
-          <div id="top-menu" style="display: flex; width: 470px; float: left; margin-left: 20px;">
+          <div id="top-menu" style="display: flex; width: 550px; float: left; margin-left: 10px;">
+            <div class="nav-item">
+              <a href="initialTest" class="nav-link">Trải nghiệm</a>
+            </div>
             <div class="nav-item">
               <a href="howItWorks" class="nav-link">{{ messageTranslates('landingHeader', 'newMethod') }}</a>
             </div>
+
             <div class="nav-item">
               <a href="features" class="nav-link">{{ messageTranslates('landingHeader', 'features') }}</a>
             </div>
-            <div class="nav-item">
+            <!-- <div class="nav-item">
               <a href="pricing" class="nav-link">{{ messageTranslates('landingHeader', 'pricing') }}</a>
+            </div> -->
+            <div>
+              <a href="/rater" class="nav-link"><span style="font-weight: 500; font-size: 15px;">Cho giáo viên</span></a>
             </div>
             <div class="nav-item">
               <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">{{ messageTranslates('landingHeader', 'contact') }}</a>
             </div>
-            <div>
-              <el-dropdown class="lang-dropdown" style="margin-left: 15px; margin-top: 8px;" placement="bottom" @command="onChangeLanguage">
-                <flag v-if="lang == 'English'" iso="vn" style="border-radius: 3px; height: 15px; width: 15px;" />
-                <flag v-else iso="gb" style="border-radius: 3px;  height: 15px; width: 15px;" />
-                <el-dropdown-menu slot="dropdown" class="lang-dropdown-menu">
-                  <el-dropdown-item v-if="lang == 'English'" command="vietnamese"><flag iso="vn" style="border-radius: 2px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
-                  <el-dropdown-item v-else command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </div>
           </div>
 
           <div class="menu-btns" style="float: right;">
-            <a href="/rater" style="margin-right: 10px; padding: 8px 12px;" class="btn btn-light">
-              {{ messageTranslates('landingHeader', 'becomeRaterShort') }}
+            <a style="margin-right: 10px; padding: 9px 15px;" class="btn btn-light" href="/login">
+              Đăng nhập
             </a>
             <el-button
-              icon="el-icon-edit"
               class="btn btn-gradient"
-              style="padding: 10px 12px;"
-              @click.prevent="openRequestReviewDialog()"
+              style="padding: 10px 15px;"
+              @click.prevent="gotoRegister()"
             >
-              {{ messageTranslates('landingHeader', 'requestReview') }}
+              Đăng ký
             </el-button>
           </div>
         </div>
@@ -115,10 +109,6 @@
     <contact-dialog ref="contactDialog" />
     <review-request-dialog
       ref="reviewRequestDialog"
-      :personal-question="personalQuestion"
-      :chart-list="chartList"
-      :listening-list="listeningList"
-      :form="form"
     />
   </header>
   <header v-else id="header" :class="['headroom', {'is-sticky': isSticky}]">
@@ -138,6 +128,13 @@
             </span>
 
             <el-dropdown-menu id="top-menu" slot="dropdown">
+
+              <el-dropdown-item command="a">
+                <div class="nav-item">
+                  <a href="initialTest" class="nav-link">Trải nghiệm</a>
+                </div>
+              </el-dropdown-item>
+
               <el-dropdown-item command="a">
                 <div class="nav-item">
                   <a href="howItWorks" class="nav-link">{{ messageTranslates('landingHeader', 'newMethod') }}</a>
@@ -149,8 +146,8 @@
                 </div>
               </el-dropdown-item>
               <el-dropdown-item command="c">
-                <div class="nav-item">
-                  <a href="pricing" class="nav-link">{{ messageTranslates('landingHeader', 'pricing') }}</a>
+                <div>
+                  <a href="/rater" class="nav-link"><span style="font-weight: 500; font-size: 15px;">Trở thành giáo viên</span></a>
                 </div>
               </el-dropdown-item>
               <el-dropdown-item command="d">
@@ -158,24 +155,20 @@
                   <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">{{ messageTranslates('landingHeader', 'contact') }}</a>
                 </div>
               </el-dropdown-item>
-
-              <el-dropdown-item command="d">
-                <div class="nav-item">
-                  <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">{{ messageTranslates('landingHeader', 'becomeRater') }}</a>
-                </div>
-              </el-dropdown-item>
             </el-dropdown-menu>
 
           </el-dropdown>
 
-          <div class="menu-btns" style="float: right; margin-right: 10px;">
+          <div class="menu-btns" style="float: right; margin-right: 5px; margin-top: 2px;">
+            <a style="margin-right: 10px; padding: 7px 15px;" class="btn btn-light" href="/login">
+              Đăng nhập
+            </a>
             <el-button
-              icon="el-icon-edit"
               class="btn btn-gradient"
-              style="padding: 10px 12px;"
-              @click.prevent="openRequestReviewDialog()"
+              style="padding: 8px 10px;"
+              @click.prevent="gotoRegister()"
             >
-              {{ messageTranslates('landingHeader', 'requestReview') }}
+              Đăng ký
             </el-button>
           </div>
 
@@ -186,10 +179,6 @@
     <contact-dialog ref="contactDialog" />
     <review-request-dialog
       ref="reviewRequestDialog"
-      :personal-question="personalQuestion"
-      :chart-list="chartList"
-      :listening-list="listeningList"
-      :form="form"
     />
   </header>
   <!-- End Navbar Area -->
@@ -208,16 +197,6 @@ export default {
     return {
       isSticky: false,
       lang: '',
-      personalQuestion: null,
-      chartList: [],
-      listeningList: [],
-      form: {
-        topic: null,
-        response: null,
-        reading: null,
-        transcript: null,
-        part: null
-      },
       screenWidth: window.innerWidth
     }
   },
@@ -243,6 +222,9 @@ export default {
     })
   },
   methods: {
+    gotoRegister() {
+      return this.$router.push({ path: '/register' })
+    },
     openRequestReviewDialog() {
       this.$refs.reviewRequestDialog?.openDialog()
     },

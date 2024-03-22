@@ -13,23 +13,25 @@
     <div class="dialog-body">
       <div style="padding: 20px; padding-top: 20px;">
         <div v-if="selectedReview == ''" class="tip">
-          <span style="font-size: 15px; color: #6084a4;">Để nhận phản hồi cho bài viết của bạn, hãy chọn 1 trong những dịch vụ dưới đây:</span>
+          <span style="font-size: 15px; color: #6084a4;"> Nhận phản hồi là cách tốt nhất giúp bạn tiến bộ, hãy lựa chọn 1 phản hồi thích hợp dưới đây:</span>
         </div>
-        <el-page-header v-if="selectedReview == 'Pro' || selectedReview == 'AI'" class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
-        <el-page-header v-if="selectedReview == 'Free'" class="tip" content="Confirm your selection" @back="goBack" />
+        <el-page-header v-if="selectedReview == 'Pro'" class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
+        <el-page-header v-if="selectedReview == 'Free' || selectedReview == 'AI'" class="tip" content="Xác nhận lựa chọn của bạn và gửi yêu cầu chấm bài" @back="goBack" />
 
-        <div v-if="selectedReview == '' || selectedReview == 'Pro'" id="pro-review-card" class="box-card review-card" @click="onReviewSelect('Pro')">
+        <div v-if="selectedReview == '' || selectedReview == 'Pro'" id="pro-review-card" class="box-card review-card" style="height: 140px;" @click="onReviewSelect('Pro')">
           <div>
-            <div class="review-icon-wrapper" style="width: 62px; margin-left: 13px;"> <i class="fas fa-user-graduate review-icon" /></div>
+            <div class="review-icon-wrapper" style="width: 62px;"> <i class="fas fa-user-graduate review-icon" /></div>
             <div class="review-description-wrapper">
-              <div class="review-title">{{ messageTranslates('checkout', 'proTitle') }}</div>
-              <div class="review-description">
-                Đội ngũ giáo viên giàu kinh nghiệm của Reboost sẽ chấm bài viết của bạn và cung cấp phản hồi chi tiết trong vòng 24 giờ. (<a href="#">sample feedback</a>)
+              <div class="review-title">Phản Hồi Chuyên Sâu Từ Giáo Viên</div>
+              <div class="review-description" style="margin-bottom: 20px;">
+                Nhận phản hồi có chiều sâu cùng những hướng dẫn bổ ích từ giáo viên của Reboost.
+                Giáo viên có thể đánh giá sự tiến bộ của bạn dựa theo những bài đã nộp trước đó và phản hồi theo yêu cầu cụ thể.
+                <!-- trong vòng 24 giờ (<a href="#">đánh giá mẫu</a>) -->
                 <!-- Our certified rater will score your essay and provide detailed feedback within 24 hours (<a href="#">sample feedback</a>) -->
               </div>
 
             </div>
-            <div class="review-price">200.000 VNĐ</div>
+            <div class="review-price">50.000 VNĐ</div>
           </div>
         </div>
 
@@ -38,13 +40,14 @@
             <div class="review-icon-wrapper"><i class="fas fa-robot review-icon" /></div>
             <div class="review-description-wrapper">
               <!-- <div class="review-title">Instant Feedback from AI Rater</div> -->
-              <div class="review-title">Phản Hồi Nhanh Từ AI </div>
+              <div class="review-title">Phản Hồi Nhanh và Chi Tiết Từ ChatGPT-4</div>
               <div class="review-description">
-                Nhận phản hồi ngay lập tức và chính xác về bài viết của mình từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4 (<a href="#">sample feedback</a>)
+                Nhận phản hồi nhanh chóng, chi tiết, và chính xác cho bài viết của bạn từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4.
+                <!-- (<a href="#">đánh giá mẫu</a>) -->
                 <!-- Get insighful feedback and score from our powerful writing review AI within seconds (<a href="#">sample feedback</a>) -->
               </div>
             </div>
-            <div class="review-price">15.000 VNĐ</div>
+            <div class="review-price">Miễn phí</div>
           </div>
         </div>
 
@@ -64,20 +67,15 @@
             <div class="review-icon-wrapper"> <i class="fas fa-user-friends review-icon" /></div>
             <div class="review-description-wrapper">
               <!-- <div class="review-title">Free Peer Review</div> -->
-              <div class="review-title">Đánh Giá Miễn Phí Từ Học Viên Khác</div>
+              <div class="review-title">Góp Ý Từ Học Viên Khác</div>
               <!-- <div class="review-title">Đánh Giá Miễn Phí Từ Học Viên Khác</div> -->
               <div class="review-description">
-                Nhận phản hồi mang tính xây dựng từ một học viên khác có trình độ viết tương đương hoặc cao hơn bạn (<a href="#">sample feedback</a>)
+                Nhận phản hồi mang tính xây dựng từ học viên khác giúp bạn có cái nhìn đa chiều về bài viết, mở ra cơ hội học hỏi và cải thiện kỹ năng 1 cách hiệu quả.
                 <!-- Get constructive feedback from another learner with similar or higher writing level (<a href="#">sample feedback</a>) -->
               </div>
             </div>
             <div class="review-price">Miễn Phí</div>
           </div>
-        </div>
-      </div>
-      <div v-if="selectedReview == 'Free'">
-        <div style="padding-top: 20px; text-align: center;">
-          <el-button type="primary" :loading="loading" @click="requestPeerReview()">Xác nhận</el-button>
         </div>
       </div>
 
@@ -109,12 +107,12 @@
             </div>
           </div>
 
-          <el-divider>
+          <el-divider v-if="selectedReview == 'Pro'">
             <div class="review-title">
               Phương thức thanh toán
             </div>
           </el-divider>
-          <div style="text-align: center; padding-top: 10px;">
+          <div v-if="selectedReview == 'Pro'" style="text-align: center; padding-top: 10px;">
             <el-button plain style="margin-right: 10px;" @click="submitZaloPayRequest()">
               <div style="font-size: 20px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
               <img style="height: 26px;" src="../../assets/logo/zalopay.png" alt="logo" class="main-header-logo">
@@ -127,9 +125,14 @@
           </div>
           <!-- <div v-if="!paid" id="paypal-button-container" class="pay-button-container" /> -->
         </div>
-        <!-- <div v-if="activeStep == 1" class="saperator" /> -->
       </div>
 
+      <div v-if="selectedReview == 'Free'|| selectedReview == 'AI'">
+        <div style="padding-top: 20px; text-align: center;">
+          <el-button v-if="selectedReview == 'Free'" type="primary" :loading="loading" @click="requestReview()">Xác nhận</el-button>
+          <el-button v-else :loading="loading" @click="requestReview()">Xác nhận</el-button>
+        </div>
+      </div>
     </div>
     <div slot="footer" class="dialog-footer" />
   </el-dialog>
@@ -139,6 +142,7 @@
     :visible.sync="dlVisible"
     :fullscreen="true"
     :style="'margin-top: 50px;'"
+    :before-close="handleClose"
     @closed="dialogClosed"
   >
     <div slot="title">
@@ -149,21 +153,23 @@
         <div v-if="selectedReview == ''" class="tip">
           <span style="font-size: 15px; color: #6084a4; word-break: break-word;">Cảm ơn bạn đã gửi bài viết cho chúng tôi! Để nhận phản hồi, hãy chọn 1 trong các dịch vụ dưới đây:</span>
         </div>
-        <el-page-header v-if="selectedReview == 'Pro' || selectedReview == 'AI'" class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
-        <el-page-header v-if="selectedReview == 'Free'" class="tip" content="Xác nhận lựa chọn của bạn và gửi yêu cầu chấm bài" @back="goBack" />
+        <el-page-header v-if="selectedReview == 'Pro' " class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
+        <el-page-header v-if="selectedReview == 'Free' || selectedReview == 'AI'" class="tip" content="Hãy xác nhận lựa chọn của bạn và gửi yêu cầu chấm bài" @back="goBack" />
 
         <div v-if="selectedReview == '' || selectedReview == 'Pro'" id="pro-review-card" class="box-card review-card-mobile" @click="onReviewSelect('Pro')">
           <div>
             <div class="pricing-title-wrapper">
               <div class="pricing-option-icon"><i class="fas fa-user-graduate review-icon" /> </div>
-              <div class="pricing-option-title">{{ messageTranslates('checkout', 'proTitle') }}</div>
+              <div class="pricing-option-title">Phản Hồi Chuyên Sâu Từ Giáo Viên</div>
             </div>
             <div>
               <div class="pricing-option-description">
-                Đội ngũ giáo viên giàu kinh nghiệm của Reboost sẽ chấm bài viết của bạn và cung cấp phản hồi chi tiết trong vòng 24 giờ. <a href="#">Xem phản hồi mẫu</a>
+                <!-- Đội ngũ giáo viên giàu kinh nghiệm của Reboost sẽ chấm bài viết của bạn và cung cấp phản hồi chi tiết trong vòng 24 giờ. <a href="#">Xem phản hồi mẫu</a> -->
+                Nhận phản hồi có chiều sâu cùng những hướng dẫn bổ ích từ giáo viên của Reboost.
+                Giáo viên có thể đánh giá sự tiến bộ của bạn dựa theo những bài đã nộp trước đó và phản hồi theo yêu cầu cụ thể.
               </div>
             </div>
-            <div class="pricing-option-price" style="width: 120px;">200.000 VNĐ</div>
+            <div class="pricing-option-price" style="width: 120px;">50.000 VNĐ</div>
           </div>
         </div>
 
@@ -171,14 +177,15 @@
           <div>
             <div class="pricing-title-wrapper">
               <div class="pricing-option-icon"><i class="fas fa-robot review-icon" /></div>
-              <div class="pricing-option-title">Phản Hồi Nhanh Từ AI</div>
+              <div class="pricing-option-title">Phản Hồi Nhanh Từ ChatGPT-4</div>
             </div>
             <div>
               <div class="pricing-option-description">
-                Nhận phản hồi ngay lập tức và chính xác về bài viết của mình từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4. <a href="#">Xem phản hồi mẫu</a>
+                <!-- Nhận phản hồi ngay lập tức và chính xác về bài viết của mình từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4. <a href="#">Xem phản hồi mẫu</a> -->
+                Nhận phản hồi nhanh chóng, chi tiết, và chính xác cho bài viết của bạn từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4.
               </div>
             </div>
-            <div class="pricing-option-price" style="width: 110px;">15.000 VNĐ</div>
+            <div class="pricing-option-price" style="width: 90px;">Miễn Phí</div>
           </div>
         </div>
         <div v-if="selectedReview == 'Free'">
@@ -202,24 +209,19 @@
           <div>
             <div class="pricing-title-wrapper">
               <div class="pricing-option-icon"> <i class="fas fa-user-friends review-icon" /></div>
-              <div class="pricing-option-title">Đánh Giá Từ Học Viên Khác</div>
+              <div class="pricing-option-title">Góp Ý Từ Học Viên Khác</div>
             </div>
             <div>
               <div class="pricing-option-description">
-                Nhận phản hồi mang tính xây dựng từ một học viên khác có band score tương đương hoặc cao hơn bạn. <a href="#">Xem phản hồi mẫu</a>
+                <!-- Nhận phản hồi mang tính xây dựng từ một học viên khác có band score tương đương hoặc cao hơn bạn. <a href="#">Xem phản hồi mẫu</a> -->
+                Nhận phản hồi mang tính xây dựng từ học viên khác giúp bạn có cái nhìn đa chiều về bài viết, mở ra cơ hội học hỏi và cải thiện kỹ năng 1 cách hiệu quả.
               </div>
             </div>
             <div class="pricing-option-price" style="width: 90px;">Miễn Phí</div>
           </div>
         </div>
       </div>
-      <div v-if="selectedReview == 'Free'">
-        <div style="padding-top: 20px; text-align: center;">
-          <el-button type="primary" :loading="loading" @click="requestPeerReview()">Xác nhận</el-button>
-        </div>
-      </div>
-
-      <div v-show="selectedReview == 'Pro' || selectedReview == 'AI'" style="padding-top: 20px;">
+      <div v-show="selectedReview == 'Pro' || selectedReview == 'AI'" style="padding-top: 30px;">
         <div>
           <div>
             <el-divider content-position="center">
@@ -247,12 +249,12 @@
             </div>
           </div>
 
-          <el-divider content-position="center">
+          <el-divider v-if="selectedReview == 'Pro'" content-position="center">
             <div class="review-title" style="width: 200px;">
               Phương thức thanh toán
             </div>
           </el-divider>
-          <div style="text-align: center; padding-top: 20px;">
+          <div v-if="selectedReview == 'Pro'" style="text-align: center; padding-top: 20px;">
             <el-button plain style="width: 100%;" @click="submitZaloPayRequest()">
               <div style="width: 240px; margin: auto;">
                 <div style="font-size: 20px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
@@ -271,6 +273,20 @@
           </div>
         </div>
       </div>
+
+      <div v-if="selectedReview == 'Free' || selectedReview == 'AI'">
+        <div style="padding-top: 20px; text-align: center;">
+          <el-button v-if="selectedReview == 'Free'" type="primary" :loading="loading" @click="requestReview()">Xác nhận</el-button>
+          <el-button v-else :loading="loading" @click="requestReview()">Xác nhận</el-button>
+        </div>
+      </div>
+
+      <!-- <div v-if="selectedReview == 'AI' && loading" style="height: 150px; margin-bottom: 50px;">
+        <div class="el-loading-spinner" style="position: relative; top: 10%;">
+          <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+          <p class="el-loading-text" style="word-break: break-word;">Vui lòng chờ từ 1 tới 3 phút trong khi hệ thống chấm bài và cung cấp phản hồi tốt nhất cho bạn. Nếu muốn, bạn có thể đóng cửa sổ này để tiếp tục trại nghiệm ứng dụng.</p>
+        </div>
+      </div> -->
 
     </div>
     <div slot="footer" class="dialog-footer" />
@@ -292,13 +308,11 @@ export default {
   data() {
     return {
       dlVisible: false,
-      activeStep: 1,
       card: null,
       stripe: null,
       clientSecret: null,
       checkoutDisable: true,
       newMethod: false,
-      selectedMethod: null,
       amount: 200000,
       paymentIntent: null,
       epaySelected: false,
@@ -348,23 +362,44 @@ export default {
       window.location.href = zaloPayUrl
     },
     async submitVNPayRequest() {
-      this.requestAIReview()
-      // const model = {
-      //   userId: this.currentUser.id,
-      //   submissionId: this.submissionId,
-      //   reviewType: this.selectedReview,
-      //   amount: this.amount,
-      //   status: 0,
-      //   feedbackLanguage: this.feedbackLanguage,
-      //   specialRequest: this.specialRequest
-      // }
-      // var vnPayUrl = await paymentService.submitVNPayRequest(model)
-      // window.location.href = vnPayUrl
+      // this.requestAIReview()
+      const model = {
+        userId: this.currentUser.id,
+        submissionId: this.submissionId,
+        reviewType: this.selectedReview,
+        amount: this.amount,
+        status: 0,
+        feedbackLanguage: this.feedbackLanguage,
+        specialRequest: this.specialRequest
+      }
+      var vnPayUrl = await paymentService.submitVNPayRequest(model)
+      window.location.href = vnPayUrl
     },
     openDialog() {
       this.dlVisible = true
       console.log(this.submissionId)
     },
+    dialogClosed() {
+      this.$emit('closed')
+    },
+    // handleClose(done) {
+    //   if (this.loading && this.selectedReview == 'AI') {
+    //     this.$confirm('<div>Hệ thống sẽ gửi thông báo khi bài viết của bạn được đánh giá xong. Bạn cũng có thể tìm thấy phản hồi cho bài viết ở trang <b>Bài viết của tôi</b></div>', 'Nhận thông báo khi hoàn thành', {
+    //       confirmButtonText: 'Đồng ý',
+    //       cancelButtonText: 'Tiếp tục chờ',
+    //       dangerouslyUseHTMLString: true
+    //     })
+    //     .then(_ => {
+    //       this.isWaiting = false
+    //       done()
+    //     })
+    //     .catch(_ => {
+
+    //     })
+    //   } else {
+    //     done()
+    //   }
+    // },
     goBack() {
       this.selectedReview = ''
     },
@@ -380,8 +415,12 @@ export default {
         this.selectedReview = reviewType
       }
     },
-    dialogClosed() {
-      this.$emit('closed')
+    requestReview() {
+      if (this.selectedReview == 'Free') {
+        this.requestPeerReview()
+      } else {
+        this.requestAIReview()
+      }
     },
     requestPeerReview() {
       this.loading = true
@@ -399,9 +438,12 @@ export default {
           type: 'success',
           duration: 5000
         })
+        this.loading = false
+        this.selectedReview = ''
         this.$emit('reviewRequested')
       }).catch(rs => {
         // this.dlVisible = false
+        this.selectedReview = ''
         this.loading = false
         this.$router.push('/reviews')
       })
@@ -412,16 +454,22 @@ export default {
         UserId: this.currentUser.id,
         SubmissionId: this.submissionId,
         FeedbackType: 'AI',
-        FeedbackLanguage: 'vn'
+        FeedbackLanguage: this.feedbackLanguage == 'Phản hồi bằng tiếng Việt' ? 'vn' : 'en'
       }).then(rs => {
+        this.loading = false
         this.dlVisible = false
-        this.$notify.success({
-          title: 'Yêu cầu đã được gửi đi',
-          message: 'Yêu cầu nhận đánh giá từ học viên khác đã được gửi đi thành công. Chúng tôi sẽ thông báo cho bạn khi có phản hồi.',
-          type: 'success',
-          duration: 5000
-        })
+        this.selectedReview = ''
+
         this.$emit('reviewRequested')
+        // this.$notify.success({
+        //   title: 'Đã có phản hồi cho bài viết',
+        //   message: 'Bạn đang được chuyển hướng để có thể xem đánh giá',
+        //   type: 'success',
+        //   duration: 3000
+        // })
+        const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
+        window.location.href = url
+        // this.$router.push(url)
       }).catch(rs => {
         // this.dlVisible = false
         this.loading = false

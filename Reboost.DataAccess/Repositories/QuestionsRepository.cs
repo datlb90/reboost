@@ -49,7 +49,7 @@ namespace Reboost.DataAccess.Repositories
             List<InitQuestionModel> model = new List<InitQuestionModel>();
             var initQuesitons = await (from quest in ReboostDbContext.Questions
                                        join task in ReboostDbContext.Tasks on quest.TaskId equals task.Id
-                                       where quest.Id == 1 || quest.Id == 6 // Getting the 2 questions for the 2 test
+                                       where quest.Id == 194 || quest.Id == 202 // Getting the 2 questions for the 2 test
                                        select new InitQuestionModel
                                        {
                                            Id = quest.Id,
@@ -187,7 +187,7 @@ namespace Reboost.DataAccess.Repositories
                             AverageScore = quest.AverageScore,
                             Submission = quest.SubmissionCount,
                             Like = quest.LikeCount,
-                            Status = "To do",
+                            Status = "Chưa làm",
                             Difficulty = quest.Difficulty
                         };
 
@@ -196,7 +196,7 @@ namespace Reboost.DataAccess.Repositories
                               select new
                               {
                                   Id = s.QuestionId,
-                                  Status = "Completed"
+                                  Status = "Đã làm"
                               }).Distinct();
 
             var saved = (from s in ReboostDbContext.Submissions
@@ -204,7 +204,7 @@ namespace Reboost.DataAccess.Repositories
                              select new
                              {
                                  Id = s.QuestionId,
-                                 Status = "Saved"
+                                 Status = "Đang làm"
                              }).Distinct();
 
             var result = from all in allQuestions
@@ -535,7 +535,7 @@ namespace Reboost.DataAccess.Repositories
         {
             QuestionDataModel result = new QuestionDataModel();
 
-            var tests = await ReboostDbContext.Tests.ToListAsync();
+            var tests = await ReboostDbContext.Tests.Where(t => t.Name == "IELTS").ToListAsync();
             var tasks = await ReboostDbContext.Tasks.Where(t => t.Id != 6 && t.Id != 7).Include("Section").ToListAsync();
             var types = await (from question in ReboostDbContext.Questions
                                select question.Type).Distinct().ToListAsync();
@@ -552,14 +552,14 @@ namespace Reboost.DataAccess.Repositories
             await ReboostDbContext.Questions.AddAsync(q);
             await ReboostDbContext.SaveChangesAsync();
 
-            if (model.UploadedFile!=null && model.UploadedFile.Count > 0)
+            if (model.UploadedFile != null && model.UploadedFile.Count > 0)
             {
                 foreach (var item in model.UploadedFile)
                 {
                     if (item.ContentType == "video/mp4" || item.ContentType == "audio/mpeg")
                     {
                         var extensionPath = Path.GetExtension(item.FileName);
-                        var fileName = model.Id + extensionPath;
+                        var fileName = q.Id + extensionPath;
                         var audioDirectory = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/audio");
                         if (!Directory.Exists(audioDirectory))
                         {
@@ -584,7 +584,7 @@ namespace Reboost.DataAccess.Repositories
                     else
                     {
                         var extensionPath = Path.GetExtension(item.FileName);
-                        var fileName = model.Id + extensionPath;
+                        var fileName = q.Id + extensionPath;
                         var audioDirectory = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/photo");
                         if (!Directory.Exists(audioDirectory))
                         {

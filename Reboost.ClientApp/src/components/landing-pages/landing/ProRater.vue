@@ -5,7 +5,7 @@
       <div class="row h-100 justify-content-center align-items-center">
         <div class="col-lg-4 col-md-12 services-content">
           <div class="section-title">
-            <h2>{{ messageTranslates('proRater', 'title') }}</h2>
+            <h5 style="font-size: 30px;">{{ messageTranslates('proRater', 'title') }}</h5>
             <div class="bar" />
             <p>{{ messageTranslates('proRater', 'description') }}</p>
           </div>

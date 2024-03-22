@@ -5,7 +5,7 @@
         <div class="col-lg-7 col-md-12">
           <div class="ml-banner-content" style="margin-top: 10px;">
             <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 400;">Trở thành giáo viên của Reboost</h1>
-            <p style="max-width: 100%;">Reboost là nền tảng giúp giáo viên dạy IELTS và TOEFL kết nối với học viên, hỗ trợ học viên chấm bài và cải thiện kỹ năng viết.</p>
+            <p style="max-width: 100%;">Reboost là nền tảng giúp giáo viên dạy IELTS kết nối với học viên, hỗ trợ học viên chấm bài và cải thiện kỹ năng viết.</p>
             <p style="max-width: 100%;">Chúng tôi tin rằng sự tiến bộ của học viên là niềm tự hào và thành tựu của các thầy cô giáo. Vì vậy, Reboost không chỉ là một công cụ giáo dục mà còn là cầu nối giúp họ chia sẻ kiến thức và kinh nghiệm của mình để tạo ra những sự khác biệt.</p>
             <p style="max-width: 100%;">Với Reboost, giáo viên sẽ được trải nghiệm một hệ thống đánh giá trực tuyến tiên tiến, linh hoạt về thời gian và địa điểm, giúp tối đa hóa cơ hội kiếm thêm thu nhập mà không làm ảnh hưởng đến công việc chính. Chúng tôi cam kết cung cấp một môi trường làm việc chuyên nghiệp, nơi giáo viên có thể phát triển bản thân và góp phần vào thành công của học viên.</p>
             <p style="max-width: 100%;">Hãy gia nhập Reboost ngay hôm nay để cùng chúng tôi tạo nên một cộng đồng học tập tích cực, nơi mỗi giáo viên đều có cơ hội phát huy tối đa tiềm năng của mình và giúp đỡ học viên đạt được mục tiêu học tập của họ.</p>

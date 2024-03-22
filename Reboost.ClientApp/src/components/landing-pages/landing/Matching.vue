@@ -8,7 +8,7 @@
         </div>
         <div class="col-lg-4 col-md-12 services-content">
           <div class="section-title">
-            <h2>{{ messageTranslates('matching', 'title') }}</h2>
+            <h5 style="font-size: 30px;">{{ messageTranslates('matching', 'title') }}</h5>
             <div class="bar" />
             <p>{{ messageTranslates('matching', 'description') }}</p>
           </div>

@@ -59,14 +59,16 @@ namespace Reboost.WebApi.Identity
         {
             if (model == null)
                 throw new NullReferenceException("Dữ liệu không hợp lệ. Vui lòng nhập đầy đủ dữ liệu.");
-            
+
             var identityUser = new ApplicationUser
             {
                 Email = model.Email,
                 UserName = GetUsernameFromEmail(model.Email),
                 FirstName = model.FullName,
                 LastName = "",
-                PhoneNumber = model.PhoneNumber
+                PhoneNumber = model.PhoneNumber,
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
             };
             var result = await _userManger.CreateAsync(identityUser, model.Password);
             if (result.Succeeded)
@@ -168,7 +170,9 @@ namespace Reboost.WebApi.Identity
                         Email = email,
                         UserName = username,
                         FirstName = firstName == null ? username : firstName,
-                        LastName = lastName == null ? "" : lastName
+                        LastName = lastName == null ? "" : lastName,
+                        CreatedDate = DateTime.UtcNow,
+                        UpdatedDate = DateTime.UtcNow
                     };
                     var result = await _userManger.CreateAsync(identityUser);
                     if (result.Succeeded)
@@ -176,6 +180,42 @@ namespace Reboost.WebApi.Identity
                         user = identityUser;
                         // Assign role to user
                         await _userManger.AddToRoleAsync(user, role);
+
+                        // Add user score
+                        List<UserScores> scores = new List<UserScores>();
+                        UserScores writing = new UserScores
+                        {
+                            SectionId = 8,
+                            Score = 0,
+                            UpdatedDate = DateTime.UtcNow,
+                            UserId = user.Id
+                        };
+                        scores.Add(writing);
+                        UserScores speaking = new UserScores
+                        {
+                            SectionId = 7,
+                            Score = 0,
+                            UpdatedDate = DateTime.UtcNow,
+                            UserId = user.Id
+                        };
+                        scores.Add(speaking);
+                        UserScores listening = new UserScores
+                        {
+                            SectionId = 6,
+                            Score = 0,
+                            UpdatedDate = DateTime.UtcNow,
+                            UserId = user.Id
+                        };
+                        scores.Add(listening);
+                        UserScores reading = new UserScores
+                        {
+                            SectionId = 5,
+                            Score = 0,
+                            UpdatedDate = DateTime.UtcNow,
+                            UserId = user.Id
+                        };
+                        scores.Add(reading);
+                        await _userService.AddScoreAsync(user.Id, scores);
                         // Send account verification email
                         await SendEmailVerification(user);
                     }

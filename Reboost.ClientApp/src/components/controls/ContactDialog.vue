@@ -4,6 +4,7 @@
       id="contactDialog"
       :visible.sync="dialogVisible"
       width="650px"
+      :fullscreen="screenWidth <= 780"
       @opened="dialogOpened"
       @closed="dialogClosed"
     >
@@ -18,32 +19,32 @@
           ref="contactForm"
           :model="formData"
           label-position="right"
-          label-width="150px"
+          label-width="120px"
           style="width:100%;"
         >
           <el-form-item
             size="mini"
-            :label="messageTranslates('contactDialog', 'fullName')"
+            label="Họ và tên"
             prop="fullName"
-            :rules="[{ required: true, message: 'Please enter your full name'}]"
+            :rules="[{ required: true, message: 'Hãy điền họ và tên của bạn'}]"
           >
-            <el-input v-model="formData.fullName" :disabled="currentUser.id != undefined" type="text" placeholder="Enter your full name" style="width: 90%;" />
+            <el-input v-model="formData.fullName" :disabled="currentUser.id != undefined" type="text" placeholder="Điền họ và tên của bạn" style="width: 90%;" />
           </el-form-item>
           <el-form-item
             size="mini"
-            :label="messageTranslates('contactDialog', 'email')"
+            label="Địa chỉ email"
             prop="email"
-            :rules="[{ required: true, message: 'Please enter your email address'}]"
+            :rules="[{ required: true, message: 'Hãy điền địa chỉ email của bạn'}]"
           >
-            <el-input v-model="formData.email" :disabled="currentUser.id != undefined" type="text" placeholder="Enter your email address" style="width: 90%;" />
+            <el-input v-model="formData.email" :disabled="currentUser.id != undefined" type="text" placeholder="Điền địa chỉ email của bạn" style="width: 90%;" />
           </el-form-item>
           <el-form-item
             size="mini"
             :label="messageTranslates('contactDialog', 'reason')"
             prop="reason"
-            :rules="[{ required: true, message: 'Please select a reason' }]"
+            :rules="[{ required: true, message: 'Hãy chọn 1 lý do' }]"
           >
-            <el-select v-model="formData.reason" placeholder="Select a reason" style="width: 180px; z-index: 9999 !important;">
+            <el-select v-model="formData.reason" placeholder="Chọn 1 lý do" style="width: 180px; z-index: 9999 !important;">
               <el-option
                 v-for="reason in reasons"
                 :key="reason"
@@ -54,21 +55,21 @@
           </el-form-item>
           <el-form-item
             size="mini"
-            :label="messageTranslates('contactDialog', 'message')"
+            label="Yêu cầu"
             prop="message"
-            :rules="[{ required: true, message: 'Message is required'}]"
+            :rules="[{ required: true, message: 'Hãy điền yêu cầu của bạn'}]"
           >
             <el-input
               v-model="formData.message"
               type="textarea"
               :autosize="{ minRows: 6, maxRows: 8}"
-              placeholder="Detail your enquiry here"
+              placeholder="Điền yêu cầu của bạn"
               style="width: 90%;"
             />
           </el-form-item>
           <el-form-item
             size="mini"
-            :label="messageTranslates('contactDialog', 'uploadFile')"
+            label="Tệp đính kèm"
             prop="files"
           >
             <el-upload
@@ -83,8 +84,8 @@
               :on-exceed="handleExceed"
               accept=".jpg,.png,.jpeg,.JPG,.PGN,.JPEG"
             >
-              <el-button>{{ messageTranslates('contactDialog', 'clickToUpload') }}</el-button>
-              <div slot="tip" class="el-upload__tip">jpg/png files with a size less than 3mb</div>
+              <el-button>Nhấp để tải</el-button>
+              <div slot="tip" class="el-upload__tip">Ảnh có định dạng jpg hoặc png với dung lượng nhỏ hơn 3mb</div>
             </el-upload>
           </el-form-item>
 
@@ -120,7 +121,8 @@ export default {
         files: []
       },
       reasons: ['Report a problem', 'Suggest new features', 'Other reasons'],
-      isLoading: false
+      isLoading: false,
+      screenWidth: window.innerWidth
     }
   },
   computed: {
@@ -128,7 +130,15 @@ export default {
       return this.$store.getters['auth/getUser']
     }
   },
+  watch: {
+    screenWidth(newWidth) {
+      this.screenWidth = newWidth
+    }
+  },
   mounted() {
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth
+    })
     if (this.currentUser.id) {
       this.formData.fullName = this.currentUser.firstName + ' ' + this.currentUser.lastName
       this.formData.email = this.currentUser.email

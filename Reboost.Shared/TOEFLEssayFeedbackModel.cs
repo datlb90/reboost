@@ -53,6 +53,7 @@ namespace Reboost.Shared
         public FeedbackModel feedback { get; set; }
         public float score { get; set; }
         public string comment { get; set; }
+        public decimal bandScore { get; set; }
     }
 
     public class AutomatedFeedbackError

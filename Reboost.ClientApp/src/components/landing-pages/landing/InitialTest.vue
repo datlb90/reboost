@@ -1,19 +1,19 @@
 <template>
   <!-- Start Boxes Area -->
-  <section id="initialTest" class="boxes-area" style="margin-top: 10px;  padding-top: 60px;  padding-bottom: 100px; background-color: rgb(237, 251, 252);">
+  <section id="initialTest" class="boxes-area" style="padding-top: 80px; padding-bottom: 100px; background-color: rgb(237, 251, 252);">
     <div class="container">
       <div style="text-align: center;">
-        <h3>Thực hiện bài kiểm tra đầu vào miễn phí và nhận kết quả ngay </h3>
+        <h3>Viết thử một đề và nhận phản hồi miễn phí ngay</h3>
         <el-radio-group v-model="initTest" style="margin-top: 10px; margin-bottom: 20px;" @change="switchTest">
-          <el-radio-button label="IELTS" />
-          <el-radio-button label="TOEFL" />
+          <el-radio-button label="Đề Task 1" />
+          <el-radio-button label="Đề Task 2" />
         </el-radio-group>
       </div>
       <div v-if="screenWidth > 780" id="practiceWritingContainer" style="height: 800px">
         <splitpanes class="default-theme" vertical style="height: 100%; width: 100%; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);">
           <pane>
             <el-tabs v-model="activeTab" type="border-card" style="height: 100%;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
-              <el-tab-pane label="Description" name="description">
+              <el-tab-pane label="Chủ đề" name="description">
                 <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
                   <div style="margin-bottom: 8px;">
                     <el-row>
@@ -154,7 +154,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Help" name="help" style="height: 100%; position: relative;">
+              <el-tab-pane label="Ý tưởng & từ vựng" name="help" style="height: 100%; position: relative;">
                 <div class="par-content">
                   <div v-if="getTip != ''">
                     <el-card class="box-card" style="font-size: 14px; padding: 20px;">
@@ -169,11 +169,11 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Samples" name="sample" style="height: 100%; position: relative;">
+              <el-tab-pane label="Bài mẫu" name="sample" style="height: 100%; position: relative;">
                 <div class="par-content">
                   <div>
                     <div v-if="getSamples && getSamples.length > 0">
-                      <div v-for="(item, index) in getSamples" :key="item.id">
+                      <div v-for="(item, index) in getSamples" :key="item.id" style=" margin-bottom: 20px;">
                         <el-card class="box-card sample-box">
                           <div style="height: 50px; border-bottom: 1px solid rgb(220 223 229); margin-bottom: 20px; ">
                             <div style="float: left; margin-top: 5px;">
@@ -203,7 +203,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
+              <el-tab-pane label="Tiêu chí chuẩn" name="rubric" style="height: 100%; position: relative;">
                 <div class="par-content">
                   <div>
                     <div id="rubricList">
@@ -312,7 +312,7 @@
         <div style="width: 100%; margin-top: 55px; height: 800px; overflow: auto;">
           <div id="tabs-wrapper">
             <el-tabs v-model="activeTab" type="border-card" style="margin-bottom: 10px;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
-              <el-tab-pane label="Description" name="description">
+              <el-tab-pane label="Chủ đề" name="description">
                 <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
                   <div style="margin-bottom: 8px;">
                     <el-row>
@@ -457,7 +457,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Help" name="help" style="height: 100%; position: relative;">
+              <el-tab-pane label="Ý tưởng & từ vựng" name="help" style="height: 100%; position: relative;">
                 <div>
                   <div v-if="getTip != ''">
                     <el-card class="box-card" style="font-size: 14px; padding: 20px;">
@@ -472,7 +472,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Samples" name="sample" style="height: 100%; position: relative;">
+              <el-tab-pane label="Bài mẫu" name="sample" style="height: 100%; position: relative;">
                 <div>
                   <div>
                     <div v-if="getSamples && getSamples.length > 0">
@@ -506,7 +506,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
+              <el-tab-pane label="Tiêu chí chuẩn" name="rubric" style="height: 100%; position: relative;">
                 <div>
                   <div>
                     <div id="rubricList">
@@ -536,7 +536,7 @@
                         </el-card>
                       </div>
                     </div>
-                    <div v-if="getRubric.length == 0" style="width: 100%; text-align: center;">
+                    <div v-if="getRubric && getRubric.length == 0" style="width: 100%; text-align: center;">
                       <span class="tab-none-content">No rubric found</span>
                     </div>
                   </div>
@@ -572,7 +572,7 @@
                   :disabled="!(writingContent && writingContent.length > 0)"
                   type="primary"
                   @click="submit()"
-                >Submit</el-button>
+                >Nộp bài</el-button>
                 <el-button
                   v-if="isEdit && !isFreeRequested && !isProRequested"
                   style="float: right; margin-left: 5px"
@@ -586,7 +586,7 @@
                   type="primary"
                   style="float: right; margin-left: 5px;"
                   @click="submit()"
-                >Submit</el-button>
+                >Nộp bài</el-button>
                 <!-- <el-button
                   v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
                   size="mini"
@@ -597,7 +597,7 @@
               </div>
             </div>
             <div style="flex-grow: 1;">
-              <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Start your writing here ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
+              <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Bắt đầu bài viết của bạn ở đây ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
             </div>
           </div>
           <el-dialog
@@ -678,7 +678,7 @@ export default {
       editableTabs: [],
       activeTab: 'description',
       screenWidth: window.innerWidth,
-      initTest: 'IELTS',
+      initTest: 'Đề Task 2',
       listExpand: []
     }
   },
@@ -769,12 +769,13 @@ export default {
     window.component = this
 
     this.$store.dispatch('question/loadQuestionsForInitialTest').then(rs => {
+      console.log(rs)
       this.loadCompleted = true
       this.questionId = this.$store.getters['question/getSelected'].id
+      console.log(this.questionId)
+      this.idSubmissionStorage = 'initialTestSubmission'
+      this.loadData()
     })
-
-    this.idSubmissionStorage = 'initialTestSubmission'
-    this.loadData()
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
@@ -873,6 +874,7 @@ export default {
         timeSpentInSeconds: 0,
         test: this.getDataQuestion.test
       }
+      console.log(this.questionId)
       // clear personal question on initial test submission
       this.$store.dispatch('question/clearPersonalQuestion')
       // save lại submission data in storage và chuyển qua trang đăng ký
@@ -891,13 +893,13 @@ export default {
             submissionData.userId = this.currentUser.id
             documentService.submitDocument(submissionData).then(rs => {
                 if (rs) {
-                    this.$notify.success({
-                        title: 'Success',
-                        message: 'Bài viết của bạn đã được nộp thành công',
-                        type: 'success',
-                        duration: 3000
-                    })
-                    return this.$router.push({ path: '/submissions' })
+                  this.$notify.success({
+                      title: 'Success',
+                      message: 'Bài viết của bạn đã được nộp thành công',
+                      type: 'success',
+                      duration: 3000
+                  })
+                  return this.$router.push({ path: '/submissions' })
                 }
             })
         }

@@ -4,11 +4,11 @@
     <div class="container">
       <div class="row h-100 justify-content-center align-items-center">
         <div class="col-lg-7 col-md-12">
-          <img src="../../../assets/img/features/pricing.png" class="wow fadeInDown" data-wow-delay="0.6s" alt="big-monitor">
+          <img src="../../../assets/img/feedback.png" class="wow fadeInDown" data-wow-delay="0.6s" alt="big-monitor">
         </div>
         <div class="col-lg-4 col-md-12 services-content">
           <div class="section-title">
-            <h2>{{ messageTranslates('pricing', 'title') }}</h2>
+            <h5 style="font-size: 30px;">{{ messageTranslates('pricing', 'title') }}</h5>
             <div class="bar" />
             <p>{{ messageTranslates('pricing', 'description') }}</p>
           </div>

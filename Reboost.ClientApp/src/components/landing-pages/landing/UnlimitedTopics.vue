@@ -5,14 +5,14 @@
       <div class="row h-100 justify-content-center align-items-center">
         <div class="col-lg-4 col-md-12 services-content">
           <div class="section-title">
-            <h2>{{ messageTranslates('unlimittedTopics', 'title') }}</h2>
+            <h5 style="font-size: 30px;">{{ messageTranslates('unlimittedTopics', 'title') }}</h5>
             <div class="bar" />
             <p>{{ messageTranslates('unlimittedTopics', 'description') }}</p>
           </div>
         </div>
 
         <div class="col-lg-8 col-md-12">
-          <img src="../../../assets/img/features/Topics.png" class="wow fadeInDown" data-wow-delay="0.6s" alt="book-self">
+          <img src="../../../assets/img/topics.png" class="wow fadeInDown" data-wow-delay="0.6s" alt="book-self">
         </div>
       </div>
     </div>

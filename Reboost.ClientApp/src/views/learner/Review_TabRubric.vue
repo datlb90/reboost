@@ -60,17 +60,7 @@
                     </div>
 
                   </div>
-                  <!-- <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="float: right;">
-                    <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
-                  </div> -->
                 </div>
-                <!-- <div style="font-size: 14px;">
-                  {{ criteria.description }}
-                </div> -->
-
-                <!-- <div v-if="!readOnly && currentUser.role != 'Admin' && criteria.isFocused && criteria.comment && criteria.comment.length > 0" style="margin-top: 10px;">
-                  <el-button :id="'save-btn-' + criteria.id" type="primary" plain size="mini" @click="saveRubric(reviewid, criteria)">Save</el-button>
-                </div> -->
               </div>
               <div>
                 <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Overall Score & Feedback'">
@@ -88,39 +78,31 @@
                       :key="milestone.id"
                       :label="milestone.bandScore"
                     />
-                    <!-- <el-tooltip
-                      v-for="milestone in criteria.bandScoreDescriptions.slice()"
-                      :key="milestone.id"
-                      style="margin:0;border:none;"
-                      class="item"
-                      effect="light"
-                      placement="top"
-                    >
-                      <div slot="content" style="max-width: 500px; overflow: hidden;">
-                        <pre style="font-size: 13px; overflow: hidden;">{{ milestone.description }}</pre>
-                      </div>
-                      <el-radio-button
-                        id="mileStone"
-                        :key="milestone.id"
-                        :label="milestone.bandScore"
-                      />
-                    </el-tooltip> -->
                   </el-radio-group>
                 </div>
                 <div>
-                  <el-input
-                    v-model="criteria.comment"
-                    :criteria-index="criteriaIndex"
-                    type="textarea"
-                    placeholder="Cung cấp bình luận cho tiêu chí này. Bạn có thể đánh giá về những phần đã làm tốt và điểm cần cải thiện của bài viết."
-                    :autosize="{ minRows: 5, maxRows: 10 }"
-                    :maxlength="8000"
-                    class="criteria-comment"
-                    :readonly="readOnly || currentUser.role == 'Admin'"
-                    @focus="onFocus(criteria)"
-                    @blur="onBlur($event, criteria)"
-                    @input="reviewCommentChange(criteria.comment, criteria.id)"
-                  />
+                  <div v-if="criteria.loading" style="background: #f0f1f2; height: 120px; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                    <div class="el-loading-spinner" style="position: relative; top: 10%;">
+                      <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                      <p class="el-loading-text" style="word-break: break-word;">Đang chấm tiêu chí {{ criteria.name }}</p>
+                    </div>
+                  </div>
+                  <div v-else>
+                    <el-input
+                      v-model="criteria.comment"
+                      :criteria-index="criteriaIndex"
+                      type="textarea"
+                      :placeholder="isAiReview ? 'Cung cấp bình luận cho tiêu chí này. Bạn có thể đánh giá về những phần đã làm tốt và điểm cần cải thiện của bài viết.' : 'Vui lòng chờ trong giây lát'"
+                      :autosize="{ minRows: 5, maxRows: 10 }"
+                      :maxlength="8000"
+                      class="criteria-comment"
+                      :readonly="readOnly || currentUser.role == 'Admin'"
+                      @focus="onFocus(criteria)"
+                      @blur="onBlur($event, criteria)"
+                      @input="reviewCommentChange(criteria.comment, criteria.id)"
+                    />
+                  </div>
+
                 </div>
 
               </div>
@@ -172,9 +154,11 @@ export default ({
   },
   props: {
     questionid: { type: Number, default: null },
-    reviewid: { type: Number, default: null },
+    reviewId: { type: Number, default: null },
     currentUser: { type: Object, default: null },
-    isAiReview: {type: Boolean, default: false}
+    isAiReview: { type: Boolean, default: false },
+    documentText: { type: String, default: null },
+    feedbackLanguage: { type: String, default: null }
   },
   data() {
     return {
@@ -289,16 +273,18 @@ export default ({
       this.dialogVisible = true
     },
     async loadRubric() {
+      localStorage.removeItem('reviewRubricComment')
+      localStorage.removeItem('reviewRubricScore')
       const rs = await rubricService.getByQuestionId(this.questionid)
       if (rs) {
-        this.rubricCriteria = rs.filter(r => this.isAiReview ? true : r.name != 'Critical Errors').map(criteria => ({ ...criteria, mark: criteria.name == 'Critical Errors' ? 0 : null, isFocused: false, comment: '' }))
+        this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, isFocused: false, comment: '', loading: true}))
         if (this.rubricCriteria[0] && this.rubricCriteria[0].bandScoreDescriptions.length == 6) { this.scoreOptions = this.toeflScores } else { this.scoreOptions = this.ieltsSCores }
         // Get rubric data from localstorage first
         var hasComment = false
         var retrievedComment = localStorage.getItem('reviewRubricComment')
         retrievedComment = JSON.parse(retrievedComment)
         if (retrievedComment) {
-          hasComment = retrievedComment.some(r => r.reviewid == this.reviewid)
+          hasComment = retrievedComment.some(r => r.reviewid == this.reviewId)
         } else {
           retrievedComment = []
         }
@@ -314,31 +300,82 @@ export default ({
         if (hasComment || hasScore) {
           this.getLocaleStorageData()
         } else {
-        // If there is nothing in localstorage, load from database
-          reviewService.loadReviewFeedback(this.reviewid).then(rs => {
-            console.log(rs)
-            if (rs.length > 0) {
-              rs.forEach(rc => {
-                this.rubricCriteria.map(criteria => {
-                  if (criteria.id == rc.criteriaId) {
-                    criteria.comment = rc.comment
-                    criteria.mark = criteria.name == 'Critical Errors' ? 0 : rc.score
-                  }
-                })
-                var cmt = { id: rc.criteriaId, content: rc.comment, reviewid: this.reviewid, questionid: this.questionid }
-                retrievedComment.push(cmt)
-
-                var ms = { id: rc.criteriaId, content: rc.name == 'Critical Errors' ? 0 : rc.score, reviewid: this.reviewid, questionid: this.questionid }
-                retrievedScore.push(ms)
+          // If there is nothing in localstorage, load from database
+          const reviewFeedback = await reviewService.loadReviewFeedback(this.reviewId)
+          if (reviewFeedback && reviewFeedback.length > 0) {
+            reviewFeedback.forEach(rc => {
+              this.rubricCriteria.map(criteria => {
+                if (criteria.id == rc.criteriaId) {
+                  criteria.comment = rc.comment
+                  criteria.mark = rc.score
+                }
+                criteria.loading = false
               })
-              if (this.currentUser.role !== 'Admin') { this.readOnly = false } else {
-                this.readOnly = true
-              }
-              // Set localstorage so we don't have to load from db again
-              localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedComment))
-              localStorage.setItem('reviewRubricScore', JSON.stringify(retrievedScore))
+              var cmt = { id: rc.criteriaId, content: rc.comment, reviewid: this.reviewId, questionid: this.questionid }
+              retrievedComment.push(cmt)
+
+              var ms = { id: rc.criteriaId, content: rc.name == 'Critical Errors' ? 0 : rc.score, reviewid: this.reviewId, questionid: this.questionid }
+              retrievedScore.push(ms)
+            })
+            if (this.currentUser.role !== 'Admin') { this.readOnly = false } else {
+              this.readOnly = true
             }
-          })
+            // Set localstorage so we don't have to load from db again
+            localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedComment))
+            localStorage.setItem('reviewRubricScore', JSON.stringify(retrievedScore))
+          } else {
+            if (this.isAiReview) {
+                console.log('Get feedback now')
+                const question = this.$store.getters['question/getSelected']
+                const topic = question.questionsPart.find(q => q.name == 'Question').content
+                let chartDescription = ''
+                const chart = question.questionsPart.find(q => q.name == 'Chart')
+                if (chart) {
+                  chartDescription = await reviewService.getChartDescription(chart.content)
+                }
+                let completedCount = 0
+                this.rubricCriteria.forEach(criteria => {
+                  const model = {
+                    task: question.section,
+                    topic: topic,
+                    essay: this.documentText,
+                    criteriaName: criteria.name,
+                    feedbackLanguage: this.feedbackLanguage,
+                    chartDescription: chartDescription
+                  }
+
+                  reviewService.getAIFeedbackForCriteria(model).then(rs => {
+                    criteria.loading = false
+                    criteria.comment = rs.comment
+                    criteria.mark = rs.bandScore
+                    completedCount++
+                    if (completedCount == 5) {
+                      // update overall band score
+                      const fourCriteria = this.rubricCriteria.filter(c => c.name != 'Overall Score & Feedback')
+                      const index = this.rubricCriteria.findIndex(c => c.name == 'Overall Score & Feedback')
+                      const average = fourCriteria.reduce((total, next) => total + next.mark, 0) / 4
+                      this.rubricCriteria[index].mark = (Math.round(average * 2) / 2).toFixed(1)
+
+                      // Save the criteria synchronously
+                      var reviewData = []
+                      this.rubricCriteria.forEach(r => {
+                        if (r.mark) {
+                          reviewData.push({
+                            CriteriaName: r.name,
+                            Comment: r.comment,
+                            CriteriaId: r.id,
+                            Score: r.mark,
+                            ReviewId: this.reviewId
+                          })
+                        }
+                      })
+
+                      reviewService.saveReviewFeedback(this.reviewId, reviewData)
+                    }
+                  })
+                })
+              }
+          }
         }
       } else {
         console.log('Error: rubric cannot be found!')
@@ -391,18 +428,19 @@ export default ({
       if (retrievedComment) {
         retrievedComment.forEach(rc => {
           this.rubricCriteria.map(criteria => {
-            if (criteria.id == rc.id && rc.reviewid == this.reviewid) {
+            if (criteria.id == rc.id && rc.reviewid == this.reviewId) {
               criteria.comment = rc.content
             }
-          }
-          )
+            criteria.loading = false
+          })
         })
       }
       retrievedScore?.forEach(rc => {
         this.rubricCriteria.map(criteria => {
-          if (criteria.id == rc.id && rc.reviewid == this.reviewid) {
+          if (criteria.id == rc.id && rc.reviewid == this.reviewId) {
             criteria.mark = criteria.name == 'Critical Errors' ? 0 : rc.content
           }
+          criteria.loading = false
         })
       })
     },
@@ -419,17 +457,17 @@ export default ({
         }
 
         retrievedObject = JSON.parse(retrievedObject)
-        var temp = retrievedObject?.filter(r => r.id == criteria.id && r.reviewid == this.reviewid)
+        var temp = retrievedObject?.filter(r => r.id == criteria.id && r.reviewid == this.reviewId)
         if (temp && temp.length > 0) {
           retrievedObject.map(r => {
-            if (r.id == criteria.id && r.reviewid == this.reviewid) {
+            if (r.id == criteria.id && r.reviewid == this.reviewId) {
               r.content = mileStone
-              r.reviewid = this.reviewid
+              r.reviewid = this.reviewId
               r.questionid = this.questionid
             }
           })
         } else {
-          var cmt = { id: criteria.id, content: mileStone, reviewid: this.reviewid, questionid: this.questionid }
+          var cmt = { id: criteria.id, content: mileStone, reviewid: this.reviewId, questionid: this.questionid }
           retrievedObject.push(cmt)
         }
         localStorage.setItem('reviewRubricScore', JSON.stringify(retrievedObject))
@@ -452,17 +490,17 @@ export default ({
         }
 
         retrievedObject = JSON.parse(retrievedObject)
-        var temp = retrievedObject.filter(r => r.id == criteriaId && r.reviewid == this.reviewid)
+        var temp = retrievedObject.filter(r => r.id == criteriaId && r.reviewid == this.reviewId)
         if (temp.length > 0) {
           retrievedObject.map(r => {
-            if (r.id == criteriaId && r.reviewid == this.reviewid) {
+            if (r.id == criteriaId && r.reviewid == this.reviewId) {
               r.content = e
-              r.reviewid = this.reviewid
+              r.reviewid = this.reviewId
               r.questionid = this.questionid
             }
           })
         } else {
-          var cmt = { id: criteriaId, content: e, reviewid: this.reviewid, questionid: this.questionid }
+          var cmt = { id: criteriaId, content: e, reviewid: this.reviewId, questionid: this.questionid }
           retrievedObject.push(cmt)
         }
         localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedObject))

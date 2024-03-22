@@ -159,14 +159,22 @@ export default {
   async created() {
     this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
     this.initialSubmission = this.$store.getters['question/getInitialSubmission']
-    this.googleFormAction = 'api/auth/external/google/' + encodeURIComponent(this.returnUrl)
-    this.facebookFormAction = 'api/auth/external/facebook/' + encodeURIComponent(this.returnUrl)
-    // this.oauthSignIn()
+
+    if (this.$router.currentRoute.query?.returnUrl) {
+      this.googleFormAction = 'api/auth/external/google/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
+      this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
+    } else {
+      this.googleFormAction = 'api/auth/external/google/learner?returnUrl=/'
+      this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=/'
+    }
   },
   methods: {
     ...mapActions('auth', ['register']),
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
+    },
+    submitGoogleLoginForm() {
+      this.$refs.googleLoginForm.submit()
     },
     async signUp() {
       this.$refs['formSignUp'].validate(async valid => {
@@ -181,50 +189,27 @@ export default {
           })
           this.loading = false
           if (user) {
-            // Add user score to by bass select test requirement if
-            // user submits an initial test or review is requested
-            if (this.personalQuestion || this.initialSubmission) {
-              var scores = []
-              const formData = {
-                ieltsTestScore: {
-                  WRITING: 0,
-                  READING: 0,
-                  LISTENING: 0,
-                  SPEAKING: 0
-                },
-                toeflTestScore: {
-                  WRITING: 0,
-                  READING: 0,
-                  LISTENING: 0,
-                  SPEAKING: 0
-                }
+            // Add IELTS test score for all user
+            var scores = []
+            const formData = {
+              ieltsTestScore: {
+                WRITING: 0,
+                READING: 0,
+                LISTENING: 0,
+                SPEAKING: 0
               }
-              if ((this.personalQuestion && this.personalQuestion.Test == 'IELTS') ||
-              (this.initialSubmission && this.initialSubmission.test == 'IELTS')) {
-                for (const key in formData.ieltsTestScore) {
-                  scores.push({
-                    sectionId: SCORES.IELTS[key].sectionId,
-                    score: 0,
-                    updatedDate: moment().format('yyyy-MM-DD')
-                  })
-                }
-              }
-              if ((this.personalQuestion && this.personalQuestion.Test == 'TOEFL') ||
-              (this.initialSubmission && this.initialSubmission.test == 'TOEFL')) {
-                for (const key in formData.toeflTestScore) {
-                  scores.push({
-                    sectionId: SCORES.TOEFL[key].sectionId,
-                    score: 0,
-                    updatedDate: moment().format('yyyy-MM-DD')
-                  })
-                }
-              }
-              userService.addScore(user.id, scores).then(rs => {
-                this.$router.push({ name: PageName.AFTER_LOGIN })
-              })
-            } else {
-              this.$router.push({ name: PageName.AFTER_LOGIN })
             }
+            for (const key in formData.ieltsTestScore) {
+              scores.push({
+                sectionId: SCORES.IELTS[key].sectionId,
+                score: 0,
+                updatedDate: moment().format('yyyy-MM-DD')
+              })
+            }
+
+            userService.addScore(user.id, scores).then(rs => {
+              this.$router.push({ name: PageName.AFTER_LOGIN })
+            })
           }
         } else return false
       })

@@ -38,6 +38,33 @@ namespace Reboost.WebApi.Controllers
             configuration = _configuration;
             db = ctx;
         }
+
+        [Authorize]
+        [HttpGet("get/chart/description/{fileName}")]
+        public async Task<IActionResult> getChartDescription(string fileName)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.getChartDescription(fileName);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpPost("ai/feedback/criteria")]
+        public async Task<IActionResult> getAIFeedbackForCriteria(CriteriaFeedbackModel model)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.getAIFeedbackForCriteria(model);
+            return Ok(rs);
+        }
+
         [Authorize]
         [HttpGet("getAnnotation/{docId}/{reviewId}")]
         public async Task<IActionResult> GetAnnotationsAsync([FromRoute] int docId, [FromRoute] int reviewId)
@@ -181,7 +208,7 @@ namespace Reboost.WebApi.Controllers
 
                 // Get reviewee's Id
                 var reviewee = await _userService.GetByIdAsync(rs.RevieweeId);
-                if (reviewee != null) {
+                if (reviewee != null && result.ReviewRequest.FeedbackType != "AI") {
                     // Send email to reviewee
                     string revieweeSubject = "Bài Viết Của Bạn Đã Được Đánh Giá Bởi Reboost";
                     string url = $"{configuration["ClientUrl"]}/review/" + result.ReviewRequest.Submission.QuestionId + "/" + result.ReviewRequest.Submission.DocId + "/" + result.ReviewId;
@@ -308,7 +335,7 @@ namespace Reboost.WebApi.Controllers
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
-            // Kiểm tra xem học viên cho thể yêu cầu peer review hay không
+            // Kiểm tra xem học viên có thể yêu cầu peer review hay không
             bool isEligible = await _service.EligibleForPeerReview(currentUser.Id);
             if (!isEligible)
             {

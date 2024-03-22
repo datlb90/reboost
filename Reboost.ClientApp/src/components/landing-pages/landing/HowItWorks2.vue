@@ -5,7 +5,7 @@
       <div class="section-title">
         <h3 style="color: white;">{{ messageTranslates('howItWork2', 'title') }}</h3>
         <div class="bar" />
-        <p>{{ messageTranslates('howItWork2', 'description') }}</p>
+        <p style="max-width: 950px;">{{ messageTranslates('howItWork2', 'description') }}</p>
       </div>
 
       <div class="row">
@@ -25,7 +25,7 @@
               <img src="../../../assets/img/icon2.png" alt="image">
             </div>
             <h3>{{ messageTranslates('howItWork2', 'titleBox2') }}</h3>
-            <p style="margin-top: 23px; margin-bottom: 28px; line-height: 2;">{{ messageTranslates('howItWork2', 'contentBox2') }}</p>
+            <p>{{ messageTranslates('howItWork2', 'contentBox2') }}</p>
           </div>
         </div>
 
@@ -35,7 +35,7 @@
               <img src="../../../assets/img/icon3.png" alt="image">
             </div>
             <h3>{{ messageTranslates('howItWork2', 'titleBox3') }}</h3>
-            <p style="margin-top: 23px; margin-bottom: 46px;">{{ messageTranslates('howItWork2', 'contentBox3') }}</p>
+            <p>{{ messageTranslates('howItWork2', 'contentBox3') }}</p>
           </div>
         </div>
       </div>

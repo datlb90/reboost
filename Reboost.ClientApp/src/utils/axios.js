@@ -13,7 +13,7 @@ import { Notification } from 'element-ui'
 
 const config = {
   baseURL: urlUtils.getBaseApiURL(),
-  timeout: 100000
+  timeout: 600000
 }
 
 const instance = axios.create(config)
