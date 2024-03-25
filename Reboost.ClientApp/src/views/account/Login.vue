@@ -122,6 +122,7 @@ export default {
     next()
   },
   async created() {
+    document.title = 'Đăng nhập - Reboost'
     if (this.$router.currentRoute.query?.email && this.$router.currentRoute.query?.email == 'confirmed') {
       this.emailConfirmed = true
     }

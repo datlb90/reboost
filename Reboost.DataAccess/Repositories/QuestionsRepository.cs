@@ -300,22 +300,21 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<QuestionModel> GetByIdAsync(int id)
         {
-
             using (var command = context.Database.GetDbConnection().CreateCommand())
             {
                 command.CommandText = "select q.Id as Id, q.Title, ts.Name as Test, q.type as Type, q.hasSample as Sample, t.Name as Section, " +
                     "q.AverageScore as AverageScore, q.SubmissionCount as Submission, q.LikeCount as LikeCount, q.DisLikeCount as DisLikeCount, " +
                     "t.Direction as Direction, t.Time as Time, q.TaskId as TaskId, s.TestId as TestId, q.UserId as UserId, q.Status as Status, q.Difficulty as Difficulty"
                     + " From Questions q"
-                    + " INNER JOIN Tasks t ON q.TaskId = t.Id"
-                    + " INNER JOIN TestSections s ON t.SectionId = s.Id"
-                    + " INNER JOIN Tests ts ON s.TestId = ts.Id"
+                    + " LEFT JOIN Tasks t ON q.TaskId = t.Id"
+                    + " LEFT JOIN TestSections s ON t.SectionId = s.Id"
+                    + " LEFT JOIN Tests ts ON s.TestId = ts.Id"
                     + " WHERE q.Id = " + id;
 
                 command.CommandType = CommandType.Text;
                 context.Database.OpenConnection();
-                var resultParts = ReboostDbContext.QuestionParts.AsEnumerable().Where(qp => qp.QuestionId == id)?.ToList();
-                var resultPartsModel = new List<QuestionPartModel>();
+                var resultParts = await ReboostDbContext.QuestionParts.Where(qp => qp.QuestionId == id).ToListAsync();
+                List<QuestionPartModel> resultPartsModel = new List<QuestionPartModel>();
                 resultParts.ForEach(rs =>
                 {
                     resultPartsModel.Add(new QuestionPartModel
@@ -519,6 +518,8 @@ namespace Reboost.DataAccess.Repositories
                                          select new SubmissionsForQuestionModel
                                          {
                                              Id = s.Id,
+                                             QuestionId = s.QuestionId,
+                                             DocId = s.DocId,
                                              SubmittedTimeStr = s.SubmittedDate.ToString("MM/dd/yyyy hh:mm tt"),
                                              Status = s.Status,
                                              Action = (s.Status == SubmissionStatus.REVIEWED || s.Status == SubmissionStatus.COMPLETED) ? "View Review" : "",

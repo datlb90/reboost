@@ -124,13 +124,49 @@ export default async (router) => {
           }
           return
         } else if (role === UserRole.LEARNER) {
-          await store.dispatch('auth/setSelectedTest').then(rs => {
-            const tests = store.getters['auth/getSelectedTest']
-            if (tests.length > 0) {
+          await store.dispatch('auth/setSelectedTest')
+
+          // .then(rs => {
+          //   const tests = store.getters['auth/getSelectedTest']
+          //   if (tests.length > 0) {
+          //     return next({ name: PageName.QUESTIONS })
+          //   }
+          //   return next({ name: PageName.SELECT_YOUR_TEST })
+          // })
+
+          // Check if user is requesting a review
+          // Open the request review dialog
+          const personalQuestion = store.getters['question/getPersonalQuestion']
+          if (personalQuestion) {
+            // Create the new submission and new AI review request
+            const rs = await store.dispatch('question/submitPersonalQuestion', currentUser.id)
+            console.log(rs)
+            if (rs) {
+              const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
+              // Send user to the review page for getting feedback
+              next({ path: url })
+            } else {
               return next({ name: PageName.QUESTIONS })
             }
-            return next({ name: PageName.SELECT_YOUR_TEST })
-          })
+          } else {
+            // check for personal review request and initial test here
+            // Check if user is submitting an initial test
+            const initialSubmission = store.getters['question/getInitialSubmission']
+            if (initialSubmission) {
+              // Create the new submission and new AI review request
+              const rs = await store.dispatch('question/submitInitialTest', currentUser.id)
+              // Send user to the review page for getting feedback
+              if (rs) {
+                const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
+                // Send user to the review page for getting feedback
+                next({ path: url })
+              } else {
+                return next({ name: PageName.QUESTIONS })
+              }
+            } else {
+              return next({ name: PageName.QUESTIONS })
+            }
+          }
         } else {
           next({ name: PageName.NOT_FOUND })
           return

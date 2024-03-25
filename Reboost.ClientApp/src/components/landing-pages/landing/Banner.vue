@@ -17,7 +17,7 @@
                 class="btn btn-dark"
                 style="font-size: 18px; padding: 12px 50px; margin-top: 50px; background-color: #4b6f8a;"
                 @click="openRequestReviewDialog()"
-              > Yêu Cầu Chấm Bài Miễn Phí
+              > Chấm Bài Miễn Phí Với ChatGPT-4
               </el-button>
             </div>
           </div>
@@ -48,7 +48,7 @@
                 class="btn btn-dark"
                 style="font-size: 18px; padding: 12px 50px; margin-top: 50px; background-color: #4b6f8a;"
                 @click="openRequestReviewDialog()"
-              > Yêu Cầu Chấm Bài Miễn Phí
+              > Chấm Bài Miễn Phí Với ChatGPT-4
               </el-button>
             </div>
           </div>
@@ -78,9 +78,9 @@
 
               <el-button
                 class="btn btn-dark"
-                style="font-size: 18px; padding: 12px 50px; margin-top: 50px; background-color: #4b6f8a;"
+                style="font-size: 18px; padding: 12px 30px; margin-top: 50px; background-color: #4b6f8a;"
                 @click="openRequestReviewDialog()"
-              > Yêu Cầu Chấm Bài Miễn Phí
+              > Chấm Bài Miễn Phí Với ChatGPT-4
               </el-button>
             </div>
           </div>

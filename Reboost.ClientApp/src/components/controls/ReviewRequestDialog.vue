@@ -22,6 +22,11 @@
           <el-radio v-model="selectedTask" style="margin-right: 5px;" label="TOEFL Integrated" border>TOEFL Integrated</el-radio> -->
         </el-form-item>
 
+        <el-form-item size="mini" label="Ngôn ngữ">
+          <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
+          <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="en" border>Phản hồi tiếng Anh</el-radio>
+        </el-form-item>
+
         <el-form-item prop="topic" :rules="[{ required: true, message: 'Hãy thêm một chủ đề viết' }]" size="mini" label="Chủ đề">
           <el-input
             v-model="form.topic"
@@ -99,7 +104,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" type="primary" @click="submit">{{ messageTranslates('addEditQuestion', 'submit') }}</el-button>
+          <el-button size="mini" type="primary" :loading="isLoading" @click="submit">Xác nhận</el-button>
           <el-button size="mini" @click="cancelRequest()">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
         </el-form-item>
       </el-form>
@@ -133,6 +138,16 @@
             </div> -->
           </div>
 
+        </el-form-item>
+
+        <el-form-item size="small">
+          <label>Ngôn ngữ</label>
+          <div>
+            <div>
+              <el-radio v-model="selectedLanguage" style="margin-right: 10px; margin-left: 0px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
+              <el-radio v-model="selectedLanguage" style="margin-left: 0px;" label="en" border>Phản hồi tiếng Anh</el-radio>
+            </div>
+          </div>
         </el-form-item>
 
         <el-form-item prop="topic" :rules="[{ required: true, message: 'Hãy thêm một chủ đề viết' }]">
@@ -212,7 +227,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" type="primary" @click="submit">{{ messageTranslates('addEditQuestion', 'submit') }}</el-button>
+          <el-button size="mini" type="primary" :loading="isLoading" @click="submit">Xác nhận</el-button>
           <el-button size="mini" @click="cancelRequest()">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
         </el-form-item>
       </el-form>
@@ -234,6 +249,7 @@ export default {
   data() {
     return {
       form: {
+        feedbackLanguage: 'vn',
         topic: null,
         response: null,
         reading: null,
@@ -243,6 +259,7 @@ export default {
       personalQuestion: null,
       dialogVisible: false,
       selectedTask: 'IELTS Task 2',
+      selectedLanguage: 'vn',
       fileUrl: null,
       LISTENING_FILE_MAX_SIZE: 10000000,
       CHART_FILE_MAX_SIZE: 3000000,
@@ -250,7 +267,8 @@ export default {
       CHART_TYPE_FILE: ['image/jpeg', 'image/png'],
       chartList: [],
       listeningList: [],
-      screenWidth: window.innerWidth
+      screenWidth: window.innerWidth,
+      isLoading: false
     }
   },
   computed: {
@@ -307,6 +325,7 @@ export default {
     async submit() {
       this.$refs['personalQuestionForm'].validate(async valid => {
         if (valid) {
+          this.isLoading = true
           console.log('form validated')
           if (this.selectedTask == 'TOEFL Integrated') {
             this.form.part = {
@@ -352,6 +371,7 @@ export default {
            // Setting object to keep in the store
           var personalQuestion = {
             UserId: this.currentUser.id,
+            FeedbackLanguage: this.selectedLanguage,
             TaskName: this.selectedTask,
             TaskId: taskId,
             Text: this.form.response,
@@ -391,6 +411,7 @@ export default {
             console.log('question saved')
             if (!authService.isAuthenticated() || !this.currentUser?.id) {
               console.log('redirecting')
+              this.isLoading = false
               // Redirect to the register page for authentication
               return this.$router.push({ path: '/register' })
             } else {
@@ -398,10 +419,12 @@ export default {
               questionService.createPersonalSubmission(formData).then(submission => {
                 if (submission) {
                   this.resetData()
+                  this.isLoading = false
                   this.dialogVisible = false
                   this.$emit('openCheckoutDialog', {
                     questionId: submission.questionId,
-                    submissionId: submission.id
+                    submissionId: submission.id,
+                    feedbackLanguage: this.selectedLanguage
                   })
                 }
               })

@@ -42,6 +42,7 @@ namespace Reboost.DataAccess.Repositories
         Task<List<GetReviewsModel>> GetRaterReviewsByIdAsync(String userId);
         Task<GetReviewsModel> GetOrCreateReviewByReviewRequestAsync(int requestId, string userId);
         Task<int> CheckUserReviewValidationAsync(string role, User user, int reviewId);
+        Task<SubmissionRequestModel> GetSubmissionRequestModel(int submissionId, string userId);
         Task<ReviewRequests> GetReviewRequestBySubmissionId(int submissionId, string userId);
         Task<int> CheckReviewValidationAsync(string role, User user, int reviewId);
         Task<ReviewRatings> CreateReviewRatingAsync(ReviewRatings data, string userId);
@@ -530,10 +531,25 @@ namespace Reboost.DataAccess.Repositories
 
             return await Task.FromResult(rs);
         }
+        public async Task<SubmissionRequestModel> GetSubmissionRequestModel(int submissionId, string userId)
+        {
+            return await (from request in db.ReviewRequests
+                          join review in db.Reviews
+                              on request.Id equals review.RequestId into rr_join
+                          from rr in rr_join.DefaultIfEmpty()
+                          where request.UserId == userId && request.SubmissionId == submissionId
+                          select new SubmissionRequestModel
+                          {
+                              feedbackType = request.FeedbackType,
+                              hasReview = rr != null && rr.FinalScore != null,
+                              reviewId = rr != null && rr.FinalScore != null ? rr.Id : 0
+                          }).FirstOrDefaultAsync();
+        }
 
         public async Task<ReviewRequests> GetReviewRequestBySubmissionId(int submissionId, string userId)
         {
-            return await db.ReviewRequests.Where(r => r.SubmissionId == submissionId && r.UserId == userId).FirstOrDefaultAsync();
+            return await db.ReviewRequests.Where(r => r.UserId == userId && r.SubmissionId == submissionId).FirstOrDefaultAsync();
+          
         }
         public async Task<int> CheckReviewValidationAsync(string role, User user, int reviewId)
         {

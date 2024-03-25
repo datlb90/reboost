@@ -57,34 +57,11 @@
           </div>
           <div v-html="getQuestion.content" />
         </div>
-        <div v-if="getReading != ''" class="content-con">
-          <p>
-            <b>Reading</b>
-          </p>
-          <div style="margin: 0;">
-            <pre> {{ getReading.content }}</pre>
-          </div>
+
+        <div v-if="getChart != ''">
+          <img :src="'/photo/' + getChart.content" :alt="getChart.content" style="max-height: 100%; max-width: 100%; margin-top: 10px;">
         </div>
-        <div v-if="getListening != ''" class="content-con">
-          <p>
-            <b>Listening</b>
-          </p>
-          <audio controls style="width: 100%; height: 35px; margin-bottom: 3px;">
-            <!-- <source :src="'/assets/' + getListening.content" type="audio/mpeg"> -->
-          </audio>
-          <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
-            <div style="flex-grow: 1;">
-              <i class="el-icon-document-copy" />
-              Audio Script
-            </div>
-            <div :class="{'rotate-icon' : isShowScript}">
-              <i class="fas fa-caret-down" />
-            </div>
-          </div>
-          <div v-if="isShowScript" class="body-transcript" style="margin: 0;">
-            <pre> {{ getTranscript.content }}</pre>
-          </div>
-        </div>
+
       </div>
     </div>
   </div>
@@ -118,12 +95,32 @@ export default ({
     }
   },
   computed: {
+    getDataQuestion() {
+      var data = this.$store.getters['question/getSelected']
+      if (data.direction) {
+        data.direction = data.direction.trim()
+        if (data.direction.substr(data.direction.length - 1) == '\n') {
+          data.direction = data.direction.substring(0, data.direction.length - 1)
+        }
+      }
+      return data
+    },
     getDataQuestionParts() {
       return this.$store.getters['question/getSelected']['questionsPart']
     },
     getQuestionSection() {
       if (this.$store.getters['question/getSelected']) {
         return this.$store.getters['question/getSelected']['test'] + ' ' + this.$store.getters['question/getSelected']['section'] + ' - ' + this.$store.getters['question/getSelected']['title']
+      }
+      return ''
+    },
+    getChart() {
+      if (typeof (this.getDataQuestionParts) != 'undefined') {
+        if (this.getDataQuestionParts.find(u => u.name == 'Chart')) {
+          var chart = this.getDataQuestionParts.find(u => u.name == 'Chart')
+          // chart.content = '../../assets/' + chart.content.trim()
+          return chart
+        }
       }
       return ''
     },

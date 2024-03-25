@@ -22,7 +22,7 @@
             />
           </el-tab-pane>
 
-          <el-tab-pane v-if="currentUser.role != 'rater'" name="guide" label="Hướng Dẫn">
+          <el-tab-pane v-if="currentUser.role != 'rater' && !isAiReview" name="guide" label="Hướng Dẫn">
             <SelfReviewIeltsTask1 v-if="isSelfReview && task == 'Academic Writing Task 1'" ref="tabGuide" />
             <SelfReviewIeltsTask2 v-if="isSelfReview && task == 'Academic Writing Task 2'" ref="tabGuide" />
             <SelfReviewIndependent v-if="isSelfReview && task == 'Independent Writing'" ref="tabGuide" />
@@ -326,7 +326,7 @@
             />
           </el-tab-pane>
 
-          <el-tab-pane v-if="currentUser.role != 'rater'" name="guide" label="Hướng Dẫn">
+          <el-tab-pane v-if="currentUser.role != 'rater' && !isAiReview" name="guide" label="Hướng Dẫn">
             <SelfReviewIeltsTask1 v-if="isSelfReview && task == 'Academic Writing Task 1'" ref="tabGuide" />
             <SelfReviewIeltsTask2 v-if="isSelfReview && task == 'Academic Writing Task 2'" ref="tabGuide" />
             <SelfReviewIndependent v-if="isSelfReview && task == 'Independent Writing'" ref="tabGuide" />

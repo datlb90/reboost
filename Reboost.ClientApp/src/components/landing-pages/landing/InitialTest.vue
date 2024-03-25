@@ -154,7 +154,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Ý tưởng & từ vựng" name="help" style="height: 100%; position: relative;">
+              <el-tab-pane label="Ý tưởng và từ vựng" name="help" style="height: 100%; position: relative;">
                 <div class="par-content">
                   <div v-if="getTip != ''">
                     <el-card class="box-card" style="font-size: 14px; padding: 20px;">
@@ -169,7 +169,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Bài mẫu" name="sample" style="height: 100%; position: relative;">
+              <el-tab-pane label="Bài viết mẫu" name="sample" style="height: 100%; position: relative;">
                 <div class="par-content">
                   <div>
                     <div v-if="getSamples && getSamples.length > 0">
@@ -203,7 +203,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Tiêu chí chuẩn" name="rubric" style="height: 100%; position: relative;">
+              <!-- <el-tab-pane label="Tiêu chí chuẩn" name="rubric" style="height: 100%; position: relative;">
                 <div class="par-content">
                   <div>
                     <div id="rubricList">
@@ -238,7 +238,7 @@
                     </div>
                   </div>
                 </div>
-              </el-tab-pane>
+              </el-tab-pane> -->
 
             </el-tabs>
           </pane>
@@ -270,7 +270,7 @@
                     :disabled="!(writingContent && writingContent.length > 0)"
                     type="primary"
                     @click="submit()"
-                  >Nộp bài
+                  >Nhận phản hồi
                   </el-button>
                   <el-button
                     v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
@@ -279,7 +279,7 @@
                     type="primary"
                     style="float: right; margin-left: 5px;"
                     @click="submit()"
-                  >Nộp bài
+                  >Nhận phản hồi
                   </el-button>
                 </div>
               </div>
@@ -457,7 +457,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Ý tưởng & từ vựng" name="help" style="height: 100%; position: relative;">
+              <el-tab-pane label="Ý tưởng và từ vựng" name="help" style="height: 100%; position: relative;">
                 <div>
                   <div v-if="getTip != ''">
                     <el-card class="box-card" style="font-size: 14px; padding: 20px;">
@@ -472,7 +472,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Bài mẫu" name="sample" style="height: 100%; position: relative;">
+              <el-tab-pane label="Bài viết mẫu" name="sample" style="height: 100%; position: relative;">
                 <div>
                   <div>
                     <div v-if="getSamples && getSamples.length > 0">
@@ -506,7 +506,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="Tiêu chí chuẩn" name="rubric" style="height: 100%; position: relative;">
+              <!-- <el-tab-pane label="Tiêu chí chuẩn" name="rubric" style="height: 100%; position: relative;">
                 <div>
                   <div>
                     <div id="rubricList">
@@ -541,7 +541,7 @@
                     </div>
                   </div>
                 </div>
-              </el-tab-pane>
+              </el-tab-pane> -->
             </el-tabs>
           </div>
 
@@ -572,7 +572,7 @@
                   :disabled="!(writingContent && writingContent.length > 0)"
                   type="primary"
                   @click="submit()"
-                >Nộp bài</el-button>
+                >Nhận phản hồi</el-button>
                 <el-button
                   v-if="isEdit && !isFreeRequested && !isProRequested"
                   style="float: right; margin-left: 5px"
@@ -586,7 +586,7 @@
                   type="primary"
                   style="float: right; margin-left: 5px;"
                   @click="submit()"
-                >Nộp bài</el-button>
+                >Nhận phản hồi</el-button>
                 <!-- <el-button
                   v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
                   size="mini"
@@ -874,7 +874,6 @@ export default {
         timeSpentInSeconds: 0,
         test: this.getDataQuestion.test
       }
-      console.log(this.questionId)
       // clear personal question on initial test submission
       this.$store.dispatch('question/clearPersonalQuestion')
       // save lại submission data in storage và chuyển qua trang đăng ký
@@ -892,15 +891,15 @@ export default {
             this.currentUser = this.$store.getters['auth/getUser']
             submissionData.userId = this.currentUser.id
             documentService.submitDocument(submissionData).then(rs => {
-                if (rs) {
-                  this.$notify.success({
-                      title: 'Success',
-                      message: 'Bài viết của bạn đã được nộp thành công',
-                      type: 'success',
-                      duration: 3000
-                  })
-                  return this.$router.push({ path: '/submissions' })
-                }
+              if (rs) {
+                this.$notify.success({
+                    title: 'Success',
+                    message: 'Bài viết của bạn đã được nộp thành công',
+                    type: 'success',
+                    duration: 3000
+                })
+                return this.$router.push({ path: '/submissions' })
+              }
             })
         }
       })

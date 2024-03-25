@@ -620,10 +620,10 @@ namespace Reboost.Service.Services
             result.score = 0;
             result.feedback = new FeedbackModel
             {
-                performance = "Hệ thống không thể cung phản hồi cho bài viết.",
-                strengths = "Hệ thống không thể cung phản hồi cho bài viết.",
-                recommendations = "Hệ thống không thể cung phản hồi cho bài viế.t",
-                weaknesses = "Hệ thống không thể cung phản hồi cho bài viết.",
+                performance = "Hệ thống không thể cung cấp phản hồi cho bài viết.",
+                strengths = "Hệ thống không thể cung cấp phản hồi cho bài viết.",
+                recommendations = "Hệ thống không thể cung cấp phản hồi cho bài viết",
+                weaknesses = "Hệ thống không thể cung cấp phản hồi cho bài viết.",
             };
 
             try

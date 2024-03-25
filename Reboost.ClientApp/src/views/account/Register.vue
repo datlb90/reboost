@@ -31,12 +31,23 @@
 
               <el-form-item>
                 <el-button
+                  v-if="!user"
                   class="btn btn-gradient"
                   style="width: 100%; margin-right: 20px; padding: 12px 20px;"
                   :loading="loading"
                   @click="signUp()"
                 >
-                  {{ messageTranslates('register', 'createAccount') }}
+                  Đăng Ký Tài Khoản
+                </el-button>
+
+                <el-button
+                  v-if="user && loading && (personalQuestion || initialSubmission)"
+                  class="btn btn-gradient"
+                  style="width: 100%; margin-right: 20px; padding: 12px 20px;"
+                  :loading="loading"
+                  :disabled="true"
+                >
+                  Đánh giá bài luận
                 </el-button>
               </el-form-item>
               <el-form-item style="text-align: center;">
@@ -157,6 +168,7 @@ export default {
     }
   },
   async created() {
+    document.title = 'Đăng ký tài khoản'
     this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
     this.initialSubmission = this.$store.getters['question/getInitialSubmission']
 
@@ -180,15 +192,14 @@ export default {
       this.$refs['formSignUp'].validate(async valid => {
         if (valid) {
           this.loading = true
-          const user = await this.register({
+          this.user = await this.register({
             Email: this.form.email,
             Password: this.form.password,
             FullName: this.form.fullName,
             PhoneNumber: this.form.phoneNumber,
             Role: 'learner'
           })
-          this.loading = false
-          if (user) {
+          if (this.user) {
             // Add IELTS test score for all user
             var scores = []
             const formData = {
@@ -207,9 +218,11 @@ export default {
               })
             }
 
-            userService.addScore(user.id, scores).then(rs => {
+            userService.addScore(this.user.id, scores).then(rs => {
               this.$router.push({ name: PageName.AFTER_LOGIN })
             })
+          } else {
+            this.loading = false
           }
         } else return false
       })

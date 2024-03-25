@@ -151,6 +151,7 @@
       ref="checkoutDialog"
       :question-id="questionId"
       :submission-id="submissionId"
+      :requested-language="feedbackLanguage"
     />
   </header>
 
@@ -162,7 +163,6 @@
 <script>
 import raterService from '../../services/rater.service'
 import reviewService from '../../services/review.service'
-import documentService from '@/services/document.service'
 import { RATER_STATUS } from '../../app.constant'
 import AddEditQuestion from '../../components/controls/AddEditQuestion.vue'
 import ContactDialog from '../../components/controls/ContactDialog.vue'
@@ -193,7 +193,8 @@ export default {
       questionId: null,
       submissionId: null,
       initialSubmission: null,
-      screenWidth: window.innerWidth
+      screenWidth: window.innerWidth,
+      feedbackLanguage: 'Phản hồi bằng tiếng Việt'
     }
   },
   computed: {
@@ -232,20 +233,6 @@ export default {
     } else {
       this.lang = 'English'
     }
-
-    // Check if user is submitting an initial test
-    this.initialSubmission = this.$store.getters['question/getInitialSubmission']
-    if (this.initialSubmission) {
-      // create the new submission and ask AI to review
-      this.processInitialSubmission(this.currentUser, this.initialSubmission)
-    } else {
-      // Check if user is requesting a review
-      // Open the request review dialog
-      this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
-      if (this.personalQuestion) {
-        this.$refs.reviewRequestDialog?.openDialog()
-      }
-    }
     this.checkApprovedRater()
     // this.waitForFeedbackDialogVisible = true
   },
@@ -257,32 +244,6 @@ export default {
     }
   },
   methods: {
-    processInitialSubmission(user, submissionData) {
-      submissionData.userId = user.id
-      // Create a new submission
-      documentService.submitDocument(submissionData).then(rs => {
-        // clear the initial test submission
-        this.$store.dispatch('question/clearInitialSubmission')
-        if (rs) {
-          const submissionId = rs.submissions[0]?.id
-          this.$notify.success({
-            title: 'Bài viết của bạn đang được chấm',
-            message: 'Bạn sẽ được chuyển hướng trong giây lát để nhận phản hồi',
-            type: 'success',
-            duration: 5000
-          })
-          // process AI review
-          reviewService.createAutomatedReview({
-            UserId: user.id,
-            SubmissionId: submissionId,
-            FeedbackLanguage: 'vn'
-          }).then(rs => {
-            const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
-            this.$router.push(url)
-          })
-        }
-      })
-    },
     getRaterRating() {
       if (this.currentUser.id) {
         raterService.getRaterRating().then(rs => {
@@ -348,9 +309,10 @@ export default {
     openContactDialog(e) {
       this.$refs.contactDialog?.openDialog()
     },
-    openCheckoutDialog({questionId, submissionId}) {
+    openCheckoutDialog({questionId, submissionId, feedbackLanguage}) {
       this.questionId = questionId
       this.submissionId = submissionId
+      this.feedbackLanguage = feedbackLanguage == 'vn' ? 'Phản hồi bằng tiếng Việt' : 'Phản hồi bằng tiếng Anh'
       this.$refs.checkoutDialog?.openDialog()
     },
     openRequestReviewDialog() {

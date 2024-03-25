@@ -94,6 +94,9 @@ const reviewService = {
   getPendingReview() {
     return http.get('/review/pending').then(rs => rs.data)
   },
+  getReviewForSubmission(submissionId) {
+    return http.get(`/review/submission/request/${submissionId}`).then(rs => rs.data)
+  },
   getReviewRequestBySubmissionId(submissionId) {
     return http.get(`/review/getRequest/${submissionId}`).then(rs => rs.data)
   },

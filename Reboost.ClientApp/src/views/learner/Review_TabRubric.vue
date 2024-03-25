@@ -47,7 +47,7 @@
                         style="width: 82px;"
                         :readonly="readOnly || currentUser.role == 'Admin'"
                         :disabled="readOnly || currentUser.role == 'Admin'"
-                        @change="rubricMileStoneClick(reviewid, criteria, $event)"
+                        @change="rubricMileStoneClick(reviewId, criteria, $event)"
                       >
                         <el-option
                           v-for="item in scoreOptions"
@@ -70,7 +70,7 @@
                     size="mini"
                     style="min-width: 240px; display:flex; justify-content: space-around;"
                     :disabled="readOnly || currentUser.role == 'Admin'"
-                    @input="rubricMileStoneClick(reviewid, criteria, $event)"
+                    @input="rubricMileStoneClick(reviewId, criteria, $event)"
                   >
                     <el-radio-button
                       v-for="milestone in criteria.bandScoreDescriptions.slice()"
@@ -373,6 +373,11 @@ export default ({
                       reviewService.saveReviewFeedback(this.reviewId, reviewData)
                     }
                   })
+                })
+              } else {
+                this.rubricCriteria.forEach(criteria => {
+                  console.log(criteria)
+                  criteria.loading = false
                 })
               }
           }

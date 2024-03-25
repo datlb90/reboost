@@ -502,6 +502,18 @@ namespace Reboost.WebApi.Controllers
             return Ok(rs);
         }
 
+        [Authorize]
+        [HttpGet("submission/request/{submissionId}")]
+        public async Task<IActionResult> GetSubmissionRequestModel(int submissionId)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.GetSubmissionRequestModel(submissionId, currentUser.Id);
+            return Ok(rs);
+        }
+
         /// <summary>
         /// Create a pro rater request after learner make payment
         /// This is used when there are only master raters like Tuc

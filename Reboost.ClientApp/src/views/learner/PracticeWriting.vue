@@ -295,7 +295,15 @@
         <div style="height: 100%; display: flex; flex-direction: column;">
           <div class="header-passage">
             <el-button
-              v-if="((submissionId && isEdit) || writingSubmitted) && !isProRequested"
+              v-if="hasReview && docId && reviewId"
+              style="float: left; margin-right: 5px"
+              size="mini"
+              type="primary"
+              plain
+              @click="viewFeedback()"
+            >Xem phản hồi</el-button>
+            <el-button
+              v-if="((submissionId && isEdit) || writingSubmitted) && !isProRequested && !hasReview"
               style="float: left; margin-right: 5px"
               size="mini"
               type="primary"
@@ -641,6 +649,24 @@
 
       <div style="height: 100%; display: flex; flex-direction: column;">
         <div style="height: 40px;  font-size: 13px; background-color: #f5f7fa;  border: 1px solid #e2e2e2; padding: 5px;">
+          <el-button
+            v-if="hasReview && docId && reviewId"
+            style="float: left; margin-right: 5px"
+            size="mini"
+            type="primary"
+            plain
+            @click="viewFeedback()"
+          >Xem phản hồi
+          </el-button>
+          <el-button
+            v-if="((submissionId && isEdit) || writingSubmitted) && !isProRequested && !hasReview"
+            style="float: left; margin-right: 5px"
+            size="mini"
+            type="primary"
+            plain
+            @click="requestReview()"
+          >Yêu cầu chấm bài
+          </el-button>
           <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
             <el-tag
               v-if="isShowCountWord && countWord != 0"
@@ -719,7 +745,6 @@
 
 <script>
 import documentService from '../../services/document.service'
-import userService from '../../services/user.service'
 import reviewService from '../../services/review.service'
 import questionService from '../../services/question.service'
 import TabRubric from '../learner/PracticeWriting_TabRubric.vue'
@@ -783,7 +808,10 @@ export default {
       submissions: [],
       editableTabs: [],
       activeTab: 'description',
-      screenWidth: window.innerWidth
+      screenWidth: window.innerWidth,
+      hasReview: false,
+      docId: null,
+      reviewId: null
     }
   },
   computed: {
@@ -866,7 +894,6 @@ export default {
       this.screenWidth = window.innerWidth
     })
     window.component = this
-    // this.questionId = this.$route.params.id
     this.submissionId = this.$route.params.submissionId
     this.$store.dispatch('question/loadQuestion', this.questionId).then(rs => {
       console.log(rs)
@@ -874,34 +901,23 @@ export default {
       this.calculateContainerHeight()
       this.loadCompleted = true
     })
-    userService.hasSubmissionOnTaskOf(this.currentUser.id, this.questionId).then(rs => {
-      if (rs) {
-        this.email = this.currentUser.email
-        this.hideDirection = 'Show'
-      }
-    })
     window.addEventListener('resize', this.calculateContainerHeight.bind(this))
-    // this.setIntervalForScroll = setInterval(() => {
-    //   this.calculateStylePaddingScroll()
-    // }, 80)
     if (this.submissionId) {
       this.idSubmissionStorage = this.currentUser.username + '_QuestionId' + this.questionId + '_SubmissionId' + this.submissionId
       this.isEdit = true
     }
     this.idLocalStorage = this.currentUser.username + '_QuestionId' + this.questionId
     this.loadData()
-    // reviewService.getUnratedReview().then(rs => {
-    //   if (rs.length > 0) {
-    //     this.unRatedList = rs
-    //   }
-    //   console.log('Unrated Reviews: ', rs)
-    // })
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
     clearInterval(this.timeSpentInterval)
   },
   methods: {
+    viewFeedback() {
+      const url = `/review/${this.questionId}/${this.docId}/${this.reviewId}`
+      this.$router.push(url)
+    },
     async loadData() {
       this.submissions = await questionService.getSubmissionsforQuestion(this.currentUser.id, this.questionId)
       console.log('Submissions: ', this.submissions)
@@ -913,10 +929,16 @@ export default {
             this.timeSpent = this.timeSpent = thisSubmission.timeTaken
             this.writingContent = thisSubmission.text
             this.hasSubmitionForThisQuestion = true
-            const reviewRequest = await reviewService.getReviewRequestBySubmissionId(this.submissionId)
+            const reviewRequest = await reviewService.getReviewForSubmission(this.submissionId)
+            console.log(reviewRequest)
             if (reviewRequest) {
               this.isFreeRequested = reviewRequest.feedbackType == 'Free'
               this.isProRequested = reviewRequest.feedbackType == 'Pro'
+              if (reviewRequest.hasReview) {
+                this.hasReview = true
+                this.reviewId = reviewRequest.reviewId
+                this.docId = thisSubmission.docId
+              }
             }
           }
           if (localStorage.getItem(this.idSubmissionStorage) && localStorage.getItem(this.idSubmissionStorage) != '') {

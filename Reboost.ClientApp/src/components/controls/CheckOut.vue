@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <div v-show="selectedReview == 'Pro' || selectedReview == 'AI'" style="padding: 20px; padding-top: 0px;">
+      <div v-show="selectedReview == 'Pro' || (selectedReview == 'AI' && !requestedLanguage)" style="padding: 20px; padding-top: 0px;">
         <div>
           <div>
             <el-divider>
@@ -89,7 +89,7 @@
             </el-divider>
             <div>
               <div style="text-align: center;">
-                <el-radio-group v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;">
+                <el-radio-group v-if="!requestedLanguage" v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;">
                   <el-radio-button label="Phản hồi bằng tiếng Việt" />
                   <el-radio-button label="Phản hồi bằng tiếng Anh" />
                 </el-radio-group>
@@ -142,7 +142,6 @@
     :visible.sync="dlVisible"
     :fullscreen="true"
     :style="'margin-top: 50px;'"
-    :before-close="handleClose"
     @closed="dialogClosed"
   >
     <div slot="title">
@@ -190,13 +189,6 @@
         </div>
         <div v-if="selectedReview == 'Free'">
           <div style="padding-top: 20px; text-align: center;">
-            <!-- <el-alert
-              v-if="unratedCount > 0"
-              title="Bạn hãy đánh giá tất cả phản hồi nhận được trước khi yêu cầu chấm bài từ học viên khác"
-              type="error"
-              :closable="false"
-              style="word-break: break-word;"
-            /> -->
             <el-alert
               title="Để tạo môi trường học tập lành mạnh và khuyến khích các bạn thực hiện đánh giá cho các học viên khác. Chúng tôi sẽ yêu cầu các bạn cung cấp ít nhất 1 đánh giá trước khi có thể nhận phản hồi miễn phí từ học viên khác. Quy định này sẽ không áp dụng cho lần yêu cầu nhận phản hồi đầu tiên."
               type="info"
@@ -221,7 +213,7 @@
           </div>
         </div>
       </div>
-      <div v-show="selectedReview == 'Pro' || selectedReview == 'AI'" style="padding-top: 30px;">
+      <div v-show="selectedReview == 'Pro' || (selectedReview == 'AI' && !requestedLanguage)" style="padding-top: 30px;">
         <div>
           <div>
             <el-divider content-position="center">
@@ -231,7 +223,7 @@
             </el-divider>
             <div>
               <div style="text-align: center;">
-                <el-radio-group v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;" size="small">
+                <el-radio-group v-if="!requestedLanguage" v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;" size="small">
                   <el-radio-button label="Phản hồi bằng tiếng Việt" />
                   <el-radio-button label="Phản hồi bằng tiếng Anh" />
                 </el-radio-group>
@@ -280,14 +272,6 @@
           <el-button v-else :loading="loading" @click="requestReview()">Xác nhận</el-button>
         </div>
       </div>
-
-      <!-- <div v-if="selectedReview == 'AI' && loading" style="height: 150px; margin-bottom: 50px;">
-        <div class="el-loading-spinner" style="position: relative; top: 10%;">
-          <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
-          <p class="el-loading-text" style="word-break: break-word;">Vui lòng chờ từ 1 tới 3 phút trong khi hệ thống chấm bài và cung cấp phản hồi tốt nhất cho bạn. Nếu muốn, bạn có thể đóng cửa sổ này để tiếp tục trại nghiệm ứng dụng.</p>
-        </div>
-      </div> -->
-
     </div>
     <div slot="footer" class="dialog-footer" />
   </el-dialog>
@@ -303,7 +287,8 @@ export default {
   name: 'Checkout',
   props: {
     submissionId: { type: Number, default: null },
-    questionId: { type: Number, default: null }
+    questionId: { type: Number, default: null },
+    requestedLanguage: {type: String, default: null}
   },
   data() {
     return {
@@ -345,7 +330,7 @@ export default {
     this.email = this.currentUser.email
   },
   async created() {
-
+    // console.log(this.requestedLanguage)
   },
   methods: {
     async submitZaloPayRequest() {
@@ -355,7 +340,7 @@ export default {
         reviewType: this.selectedReview,
         amount: this.amount,
         status: 0,
-        feedbackLanguage: this.feedbackLanguage,
+        feedbackLanguage: this.requestedLanguage ? this.requestedLanguage : this.feedbackLanguage,
         specialRequest: this.specialRequest
       }
       var zaloPayUrl = await paymentService.submitZaloPayRequest(model)
@@ -369,7 +354,7 @@ export default {
         reviewType: this.selectedReview,
         amount: this.amount,
         status: 0,
-        feedbackLanguage: this.feedbackLanguage,
+        feedbackLanguage: this.requestedLanguage ? this.requestedLanguage : this.feedbackLanguage,
         specialRequest: this.specialRequest
       }
       var vnPayUrl = await paymentService.submitVNPayRequest(model)
@@ -382,24 +367,6 @@ export default {
     dialogClosed() {
       this.$emit('closed')
     },
-    // handleClose(done) {
-    //   if (this.loading && this.selectedReview == 'AI') {
-    //     this.$confirm('<div>Hệ thống sẽ gửi thông báo khi bài viết của bạn được đánh giá xong. Bạn cũng có thể tìm thấy phản hồi cho bài viết ở trang <b>Bài viết của tôi</b></div>', 'Nhận thông báo khi hoàn thành', {
-    //       confirmButtonText: 'Đồng ý',
-    //       cancelButtonText: 'Tiếp tục chờ',
-    //       dangerouslyUseHTMLString: true
-    //     })
-    //     .then(_ => {
-    //       this.isWaiting = false
-    //       done()
-    //     })
-    //     .catch(_ => {
-
-    //     })
-    //   } else {
-    //     done()
-    //   }
-    // },
     goBack() {
       this.selectedReview = ''
     },
@@ -454,22 +421,14 @@ export default {
         UserId: this.currentUser.id,
         SubmissionId: this.submissionId,
         FeedbackType: 'AI',
-        FeedbackLanguage: this.feedbackLanguage == 'Phản hồi bằng tiếng Việt' ? 'vn' : 'en'
+        FeedbackLanguage: this.requestedLanguage ? this.requestedLanguage == 'Phản hồi bằng tiếng Việt' ? 'vn' : 'en' : this.feedbackLanguage == 'Phản hồi bằng tiếng Việt' ? 'vn' : 'en'
       }).then(rs => {
         this.loading = false
         this.dlVisible = false
         this.selectedReview = ''
-
         this.$emit('reviewRequested')
-        // this.$notify.success({
-        //   title: 'Đã có phản hồi cho bài viết',
-        //   message: 'Bạn đang được chuyển hướng để có thể xem đánh giá',
-        //   type: 'success',
-        //   duration: 3000
-        // })
         const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
         window.location.href = url
-        // this.$router.push(url)
       }).catch(rs => {
         // this.dlVisible = false
         this.loading = false
