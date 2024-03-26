@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 //using OpenAI_API.Moderation;
 //using SendGrid;
@@ -23,6 +24,7 @@ namespace Reboost.Service.Services
     public class SendGridMailService : IMailService
     {
         private IConfiguration _configuration;
+        private string sendGridKey = "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";
 
         public SendGridMailService(IConfiguration configuration)
         {
@@ -49,6 +51,13 @@ namespace Reboost.Service.Services
             emailClient.DeliveryMethod = SmtpDeliveryMethod.Network;
             emailClient.EnableSsl = true;
             await emailClient.SendMailAsync(email);
+
+            //var client = new SendGridClient(sendGridKey);
+            //var from = new EmailAddress("support@reboost.vn", "Reboost");
+            //var to = new EmailAddress(toEmail);
+            //var msg = MailHelper.CreateSingleEmail(from, to, subject, content, content);
+            //var response = await client.SendEmailAsync(msg);
+
         }
 
         public async Task SendSupportEmail(string fromEmail, string fromName, string subject, string content, List<IFormFile>? attachments)
@@ -59,13 +68,13 @@ namespace Reboost.Service.Services
             email.To.Clear();
             email.To.Add(new MailAddress(fromEmail, fromName));
             email.To.Add(new MailAddress("support@reboost.vn", "Reboost"));
-            
+
             email.Subject = subject;
             email.IsBodyHtml = true;
             email.Body = content;
 
             email.Attachments.Clear();
-            if(attachments != null)
+            if (attachments != null)
             {
                 foreach (var item in attachments)
                 {
@@ -81,6 +90,27 @@ namespace Reboost.Service.Services
             emailClient.DeliveryMethod = SmtpDeliveryMethod.Network;
             emailClient.EnableSsl = true;
             await emailClient.SendMailAsync(email);
+
+            //var client = new SendGridClient(sendGridKey);
+            //var from = new EmailAddress("support@reboost.vn", "Reboost");
+            //var to = new EmailAddress("support@reboost.vn", "Reboost");
+            //var msg = MailHelper.CreateSingleEmail(from, to, subject, content, content);
+            //msg.AddTo(new EmailAddress(fromEmail, fromName));
+            //if (attachments != null)
+            //{
+            //    foreach (var item in attachments)
+            //    {
+            //        using (var ms = new MemoryStream())
+            //        {
+            //            item.CopyTo(ms);
+            //            var fileBytes = ms.ToArray();
+            //            string fileContent = Convert.ToBase64String(fileBytes);
+            //            msg.AddAttachment(item.FileName, fileContent);
+            //        }
+            //    }
+            //}
+            //var response = await client.SendEmailAsync(msg);
+
         }
     }
 }

@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
 using Reboost.Service.Services;
@@ -21,12 +22,46 @@ namespace Reboost.WebApi.Controllers
         private readonly IMapper _mapper;
         private IUserService _userService;
         private ISampleService _sampleService;
+        private ILogger<QuestionsController> _logger;
 
-        public QuestionsController(IQuestionsService service, IMapper mapper, IUserService userService, ISampleService sampleService) : base(service)
+        public QuestionsController(IQuestionsService service, IMapper mapper,
+            IUserService userService, ISampleService sampleService, ILogger<QuestionsController> logger) : base(service)
         {
             _mapper = mapper;
             _userService = userService;
             _sampleService = sampleService;
+            _logger = logger;
+        }
+
+        [HttpPost("image/to/text")]
+        public async Task<ImageToTopicAndEssayModel> getWritingTextFromImage()
+        {
+            ImageToTopicAndEssayModel result = new ImageToTopicAndEssayModel
+            {
+                essay = "Không thể trích xuất từ ảnh",
+                topic = "Không thể trích xuất từ ảnh",
+            };
+            IFormFile file = HttpContext.Request.Form.Files.Count() > 0 ? HttpContext.Request.Form.Files[0] : null;
+            if(file != null)
+            {
+                try
+                {
+                    _logger.LogInformation("Image to text requested");
+                    using (var ms = new MemoryStream())
+                    {
+                        file.CopyTo(ms);
+                        byte[] imageData = ms.ToArray();
+                        return await _service.getWritingTextFromImage(imageData);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogInformation("Cannot process Image to text request: ", e.InnerException.Message);
+                    return result;
+                }
+                
+            }
+            return result;
         }
 
         [HttpGet("initial/test")]

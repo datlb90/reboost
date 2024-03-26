@@ -14,7 +14,7 @@
             <div class="icon">
               <i class="flaticon-support" />
             </div>
-            <h3>Phản hồi nhanh, miễn phí, và chất lượng</h3>
+            <h3>Phản hồi miễn phí, chuyên sâu, và chất lượng</h3>
             <p>
               Nhận phản hồi chất lượng giúp bạn sớm cải thiện với các hình thức chấm bài được cá nhân hoá bao gồm đánh giá chi tiết được cung cấp miễn phí bởi ChatGPT-4 và đánh giá chuyên sâu từ các giáo viên giàu kinh nghiệm.
             </p>
@@ -51,7 +51,7 @@
             <div class="icon">
               <i class="flaticon-dashboard" />
             </div>
-            <h3>Một phương pháp luyện tập hiệu quả</h3>
+            <h3>Phương pháp luyện tập mới hiệu quả</h3>
             <p>
               Reboost mang tới cơ hội cải thiện kỹ năng bằng cách cung cấp đánh giá. Quá trình này giúp bạn học hỏi được các kỹ thuật, cách diễn đạt mới, và nhận ra điểm mạnh, điểm yếu trong bài viết của mình để từ đó có hướng cải thiện.
             </p>
@@ -75,7 +75,7 @@
             <div class="icon">
               <i class="flaticon-support" />
             </div>
-            <h3 style="font-size: 18px;">Phản hồi miễn phí và chất lượng</h3>
+            <h3 style="font-size: 18px;">Phản hồi miễn phí, chuyên sâu, và chất lượng</h3>
             <p style="text-align: justify;">
               Nhận phản hồi nhanh và chất lượng giúp bạn sớm cải thiện kỹ năng viết với các hình thức chấm bài được cá nhân hoá, bao gồm đánh giá chi tiết được cung cấp miễn phí bởi ChatGPT-4 và đánh giá chuyên sâu từ các giáo viên giàu kinh nghiệm.
             </p>
@@ -111,7 +111,7 @@
             <div class="icon">
               <i class="flaticon-dashboard" />
             </div>
-            <h3 style="font-size: 18px;">Một phương pháp luyện tập mới</h3>
+            <h3 style="font-size: 18px;">Phương pháp luyện tập mới hiệu quả</h3>
             <p style="text-align: justify;">
               Reboost mang tới cho bạn cơ hội cải thiện kỹ năng bằng cách cung cấp đánh giá. Quá trình này tạo điều kiện giúp bạn học hỏi các kỹ thuật, cách diễn đạt mới, và nhận ra điểm mạnh, điểm yếu trong bài viết của mình để từ đó có hướng cải thiện.
             </p>

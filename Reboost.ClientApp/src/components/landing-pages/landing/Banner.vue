@@ -9,9 +9,10 @@
               <div>
                 <h1 style="font-size: 42px; color: #4a6f8a; font-weight: 500;">Luyện viết IELTS và nhận phản hồi miễn phí</h1>
               </div>
-              <p style="width: 70%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
-                Reboost giúp bạn cải thiện kỹ năng viết hiệu quả bằng cách cung cấp
-                đa dạng các chủ đề viết đã được phân loại, tài nguyên hữu dụng cho từng chủ đề, cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+              <p style="width: 60%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
+                <!-- Reboost giúp bạn cải thiện kỹ năng viết hiệu quả bằng cách cung cấp
+                đa dạng các chủ đề viết đã được phân loại, tài nguyên hữu dụng cho từng chủ đề, cùng phản hồi miễn phí, chuyên sâu, và chất lượng. -->
+                Nâng band IELTS Writing hiệu quả sử dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
               </p>
               <el-button
                 class="btn btn-dark"
@@ -41,8 +42,7 @@
                 <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 500;">Luyện viết IELTS và nhận phản hồi miễn phí</h1>
               </div>
               <p style="width: 70%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
-                Reboost giúp bạn cải thiện kỹ năng viết hiệu quả bằng cách cung cấp
-                đa dạng các chủ đề viết đã được phân loại, tài nguyên hữu dụng cho từng chủ đề, cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+                Nâng band IELTS Writing hiệu quả sử dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
               </p>
               <el-button
                 class="btn btn-dark"
@@ -72,8 +72,7 @@
                 <h1 style="font-size: 35px; color: #4a6f8a; font-weight: 500;">Luyện viết IELTS và nhận phản hồi miễn phí</h1>
               </div>
               <p style="margin-top: 30px; font-size: 16px; color: #4a6f8a;">
-                Reboost giúp bạn cải thiện kỹ năng viết hiệu quả bằng cách cung cấp
-                đa dạng các chủ đề viết đã được phân loại, tài nguyên hữu dụng cho từng chủ đề, cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+                Nâng band IELTS Writing hiệu quả sử dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
               </p>
 
               <el-button

@@ -13,6 +13,7 @@ namespace Reboost.Service.Services
 {
     public interface IQuestionsService
     {
+        Task<ImageToTopicAndEssayModel> getWritingTextFromImage(byte[] imageData);
         Task<List<InitQuestionModel>> GetInitQuestionModels();
         Task<Submissions> CreatePersonalSubmission(RequestReviewForWriting model);
         Task<Questions> GetByTitle(string title);
@@ -40,9 +41,16 @@ namespace Reboost.Service.Services
     public class QuestionsService : BaseService, IQuestionsService
     {
         private readonly IDocumentService _documentService;
-        public QuestionsService(IDocumentService documentService, IUnitOfWork unitOfWork) : base(unitOfWork)
+        private readonly IChatGPTService _chatGPTService;
+        public QuestionsService(IDocumentService documentService, IChatGPTService chatGPTService, IUnitOfWork unitOfWork) : base(unitOfWork)
         {
             _documentService = documentService;
+            _chatGPTService = chatGPTService;
+        }
+
+        public async Task<ImageToTopicAndEssayModel> getWritingTextFromImage(byte[] imageData)
+        {
+            return await _chatGPTService.getWritingTextFromImage(imageData);
         }
 
         public async Task<List<InitQuestionModel>> GetInitQuestionModels()

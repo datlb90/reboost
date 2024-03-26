@@ -1,6 +1,9 @@
 import http from '@/utils/axios'
 
 const questionService = {
+  getWritingTextFromImage(data) {
+    return http.post('/questions/image/to/text', data, { headers: { 'Content-Type': 'multipart/form-data' } }).then(rs => rs.data)
+  },
   getQuestionsForInitialTest() {
     return http.get('/questions/initial/test').then(rs => rs.data)
   },

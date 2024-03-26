@@ -340,7 +340,7 @@
                 v-if="isEdit && !isFreeRequested && !isProRequested"
                 style="float: right; margin-left: 5px"
                 size="mini"
-                @click="isEdit=false"
+                @click="editSubmission()"
               >Sửa</el-button>
               <el-button
                 v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
@@ -914,6 +914,11 @@ export default {
     clearInterval(this.timeSpentInterval)
   },
   methods: {
+    editSubmission() {
+      this.isEdit = false
+      this.writingSubmitted = false
+      this.hasReview = false
+    },
     viewFeedback() {
       const url = `/review/${this.questionId}/${this.docId}/${this.reviewId}`
       this.$router.push(url)
@@ -1022,10 +1027,10 @@ export default {
     save() {
       if (!this.writingContent) {
         this.$notify.error({
-          title: 'Error',
-          message: 'Nothing to submit',
+          title: 'Không thể nộp bài',
+          message: 'Bạn hãy hoàn thiện bài viết trước khi nộp',
           type: 'error',
-          duration: 1000
+          duration: 3000
         })
         return
       }
@@ -1054,10 +1059,10 @@ export default {
         documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
           if (rs) {
             this.$notify.success({
-              title: 'Success',
-              message: 'Saved successfully',
+              title: 'Đã lưu thành công',
+              message: 'Bài viết đã được lưu thành công',
               type: 'success',
-              duration: 2000
+              duration: 3000
             })
           }
         })
@@ -1066,10 +1071,10 @@ export default {
         documentService.saveDocument(data).then(rs => {
           if (rs) {
             this.$notify.success({
-              title: 'Success',
-              message: 'Saved successfully',
+              title: 'Đã lưu thành công',
+              message: 'Bài viết đã được lưu thành công',
               type: 'success',
-              duration: 2000
+              duration: 3000
             })
             this.submissionId = rs.submissions[0]?.id
           }
@@ -1079,30 +1084,25 @@ export default {
     submit() {
       this.dialogVisible = false
       localStorage.removeItem(this.idLocalStorage)
-
       clearInterval(this.timeSpentInterval)
-
       var timeInSeconds
       if (this.isTesting) {
         timeInSeconds = (+this.getDataQuestion.time.slice(0, 2) - this.minute - 1) * 60 + 60 - this.second
       } else {
         timeInSeconds = moment().diff(this.timeStart, 'seconds')
       }
-
       if (!this.writingContent) {
         this.$notify.error({
-          title: 'Error',
-          message: 'Nothing to submit',
+          title: 'Không thể nộp bài',
+          message: 'Bạn hãy hoàn thiện bài viết trước khi nộp',
           type: 'error',
-          duration: 1000
+          duration: 3000
         })
         return
       }
-
       if (this.timeSpent > 0) {
         timeInSeconds += this.timeSpent
       }
-
       var data = {
         filename: new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() + new Date().getDate().toString() + new Date().getHours().toString() + new Date().getMinutes().toString() + new Date().getSeconds().toString() + '.pdf',
         text: this.writingContent,
@@ -1110,31 +1110,29 @@ export default {
         questionId: +this.questionId,
         timeSpentInSeconds: timeInSeconds
       }
-
       this.timeSpent = 0
       this.timeStart = moment()
-      // this.isEdit = true // Edit button should not be visible after submitting?
-      if (this.submissionId) {
-        data.status = 'Submitted'
-        documentService.updateDocumentBySubmissionId(this.submissionId, data).then(rs => {
-          if (rs) {
-            this.writingSubmitted = true
+
+      // Create a new submission everytime user click Submit
+      data.status = 'Submitted'
+      documentService.submitDocument(data).then(rs => {
+        if (rs) {
+          this.hasSubmitionForThisQuestion = true
+          this.submissionId = rs.submissions[0]?.id
+          this.writingSubmitted = true
+
+          this.$nextTick(() => {
+            // Hide View Review button if any
+            this.hasReview = false
+            // Allow editting right after submission
+            this.isEdit = true
+            // Update url for submission
+            this.$router.push('/practice/' + this.questionId + '/' + this.submissionId)
+            // Open the checkout dialog
             this.$refs.checkoutDialog?.openDialog()
-          }
-        })
-      } else {
-        data.status = 'Submitted'
-        documentService.submitDocument(data).then(rs => {
-          if (rs) {
-            this.hasSubmitionForThisQuestion = true
-            this.submissionId = rs.submissions[0]?.id
-            this.writingSubmitted = true
-            this.$nextTick(() => {
-              this.$refs.checkoutDialog?.openDialog()
-            })
-          }
-        })
-      }
+          })
+        }
+      })
     },
     toggleBtnShowTab() {
       this.isShowTimer = true

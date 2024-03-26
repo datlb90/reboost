@@ -83,6 +83,7 @@ body {
 
 .el-textarea__inner {
 	padding: 5px 10px !important;
+	word-break: break-word;
 }
 
 #rubric-wrapper {

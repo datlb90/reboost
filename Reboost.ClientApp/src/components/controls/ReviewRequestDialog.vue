@@ -15,67 +15,32 @@
         :model="form"
         label-width="120px"
       >
-        <el-form-item size="mini" label="Chọn task">
-          <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 1" border>IELTS Task 1</el-radio>
-          <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 2" border>IELTS Task 2</el-radio>
-          <!-- <el-radio v-model="selectedTask" style="margin-right: 5px;" label="TOEFL Independent" border>TOEFL Independent</el-radio>
-          <el-radio v-model="selectedTask" style="margin-right: 5px;" label="TOEFL Integrated" border>TOEFL Integrated</el-radio> -->
+        <el-form-item size="medium">
+          <label slot="label" style="font-size: 16px;">Loại đề</label>
+          <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 2" border>Task 2</el-radio>
+          <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 1" border>Task 1</el-radio>
+          <el-radio v-model="selectedTask" style="margin-right: 5px;" label="Other" border>Đề khác</el-radio>
         </el-form-item>
 
-        <el-form-item size="mini" label="Ngôn ngữ">
-          <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
-          <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="en" border>Phản hồi tiếng Anh</el-radio>
+        <el-form-item size="medium">
+          <label slot="label" style="font-size: 16px;">Kiểu viết</label>
+          <el-radio v-model="selectedWriteType" style="margin-right: 5px;" label="Đánh máy" border>Đánh máy</el-radio>
+          <el-radio v-model="selectedWriteType" style="margin-right: 5px;" label="Viết tay" border>Tải lên bản viết tay</el-radio>
         </el-form-item>
 
-        <el-form-item prop="topic" :rules="[{ required: true, message: 'Hãy thêm một chủ đề viết' }]" size="mini" label="Chủ đề">
+        <el-form-item v-if="selectedWriteType != 'Viết tay'" prop="topic" size="medium">
+          <label slot="label" style="font-size: 16px;">Đề bài</label>
           <el-input
             v-model="form.topic"
             type="textarea"
-            :rows="4"
-            :placeholder="'Điền chủ đề cho bài ' + selectedTask + ''"
+            :rows="3"
+            :placeholder="selectedTask != 'Other' ? 'Đề bài viết cho ' + selectedTask + '' : 'Đê bài viết bất kỳ'"
             style="width: 96%;"
           />
         </el-form-item>
 
-        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" prop="reading" :rules="[{ required: true, message: 'Hãy thêm thông tin bài đọc' }]" size="mini" label="Bài đọc">
-          <el-input
-            v-model="form.reading"
-            type="textarea"
-            :rows="4"
-            placeholder="Điền thông tin bài đọc"
-            style="width: 96%;"
-          />
-        </el-form-item>
-
-        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" size="mini" label="Bài nghe">
-          <el-upload
-            action=""
-            :on-preview="handlePreview"
-            :on-change="handleToeflListeningChange"
-            :on-remove="handleRemove"
-            :multiple="false"
-            :limit="1"
-            :auto-upload="false"
-            :on-exceed="handleExceed"
-            :file-list="listeningList"
-            style="width: 96%;"
-          >
-            <el-button size="small" type="primary">{{ messageTranslates('addEditQuestion', 'uploadButton') }}</el-button>
-            <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateUpload') }}</div>
-          </el-upload>
-        </el-form-item>
-
-        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" size="mini" label="Bản ghi">
-          <el-input
-            v-model="form.transcript"
-            type="textarea"
-            :rows="4"
-            placeholder="Điền bản ghi của bài nghe nếu bạn có"
-            style="width: 96%;"
-          />
-        </el-form-item>
-
-        <el-form-item v-if="selectedTask == 'IELTS Task 1'" size="mini" label="Biểu đồ">
+        <el-form-item v-if="selectedTask == 'IELTS Task 1' && selectedWriteType != 'Viết tay'" size="medium">
+          <label slot="label" style="font-size: 16px;">Biểu đồ</label>
           <el-upload
             action=""
             :on-preview="handlePreview"
@@ -88,24 +53,63 @@
             :file-list="chartList"
             style="width: 96%;"
           >
-            <el-button size="small" type="primary" plain>Nhấn để tải lên</el-button>
-            <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateImgUpload') }}</div>
+            <el-button size="medium" type="primary" plain>Nhấn để tải lên</el-button>
+            <div slot="tip" class="el-upload__tip">
+              <div style="font-size: 15px;">Tệp png / jpeg có kích thước nhỏ hơn 10mb.</div>
+            </div>
           </el-upload>
         </el-form-item>
 
-        <el-form-item prop="response" :rules="[{ required: true, message: 'Hãy thêm bài viết của bạn cho chủ đề này' }]" size="mini" label="Bài viết">
+        <el-form-item v-if="selectedWriteType == 'Viết tay'" size="medium" label="Ảnh viết tay">
+          <label slot="label" style="font-size: 16px;">Ảnh viết tay</label>
+          <el-upload
+            v-if="!gettingTextFromImage"
+            drag
+            action=""
+            :on-change="handleWritingImageChange"
+            :limit="1"
+            :multiple="false"
+            :auto-upload="false"
+          >
+            <i class="el-icon-upload" />
+            <div class="el-upload__text">Kéo thả ảnh hoặc <em>nhấn để tải lên</em></div>
+            <div slot="tip" class="el-upload__tip">
+              <div style="font-size: 15px;">Tệp png / jpeg có kích thước nhỏ hơn 10mb.</div>
+              <div style="font-size: 15px;">Tải ảnh chụp bài viết của bạn kèm đề bài.</div>
+              <div style="font-size: 15px;">Để tối ưu kết quả, hãy crop ảnh gọn gàng nhất có thể.</div>
+            </div>
+
+          </el-upload>
+
+          <div v-if="gettingTextFromImage" style="width: 360px; height: 180px; border: #DCDFE6 solid 1px; padding-top: 60px; border-radius: 5px;">
+            <div class="el-loading-spinner" style="position: relative; top: 10%;">
+              <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+              <p class="el-loading-text" style="word-break: break-word;">Đang trích xuất đề và bài viết từ ảnh</p>
+            </div>
+          </div>
+
+        </el-form-item>
+
+        <el-form-item v-if="selectedWriteType != 'Viết tay'" prop="response" :rules="[{ required: true, message: 'Hãy thêm bài viết của bạn cho chủ đề này' }]" size="medium">
+          <label slot="label" style="font-size: 16px;">Bài viết</label>
           <el-input
             v-model="form.response"
             type="textarea"
-            :rows="8"
+            :rows="5"
             :placeholder="'Bài viết của bạn cho chủ đề này'"
             style="width: 96%;"
           />
         </el-form-item>
 
+        <el-form-item size="medium">
+          <label slot="label" style="font-size: 16px;">Phản hồi</label>
+          <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
+          <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="en" border>Phản hồi tiếng Anh</el-radio>
+        </el-form-item>
+
         <el-form-item>
-          <el-button size="mini" type="primary" :loading="isLoading" @click="submit">Xác nhận</el-button>
-          <el-button size="mini" @click="cancelRequest()">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
+          <el-button size="medium" type="primary" :loading="isLoading" @click="submit">Xác nhận</el-button>
+          <el-button size="medium" @click="cancelRequest()">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -125,80 +129,40 @@
         ref="personalQuestionForm"
         :model="form"
       >
-        <el-form-item size="small">
-          <label>Chọn task</label>
+        <el-form-item size="medium" style="margin-bottom: 10px;">
+          <label>Loại đề</label>
           <div>
             <div>
-              <el-radio v-model="selectedTask" style="margin-right: 10px; margin-left: 0px;" label="IELTS Task 1" border>IELTS Academic Task 1</el-radio>
-              <el-radio v-model="selectedTask" style="margin-left: 0px;" label="IELTS Task 2" border>IELTS Academic Task 2</el-radio>
+              <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 2" border>Task 2</el-radio>
+              <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 1" border>Task 1</el-radio>
+              <el-radio v-model="selectedTask" style="margin-right: 5px;" label="Other" border>Đề khác</el-radio>
             </div>
-            <!-- <div>
-              <el-radio v-model="selectedTask" style="margin-right: 10px;  margin-left: 0px; padding-left: 10px; padding-right: 34px;" label="TOEFL Independent" border>TOEFL Independent</el-radio>
-              <el-radio v-model="selectedTask" style=" margin-left: 0px; padding-left: 10px; padding-right: 46px;" label="TOEFL Integrated" border>TOEFL Integrated</el-radio>
-            </div> -->
           </div>
 
         </el-form-item>
 
-        <el-form-item size="small">
-          <label>Ngôn ngữ</label>
+        <el-form-item size="medium" style="margin-bottom: 10px;">
+          <label>Kiểu viết</label>
           <div>
             <div>
-              <el-radio v-model="selectedLanguage" style="margin-right: 10px; margin-left: 0px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
-              <el-radio v-model="selectedLanguage" style="margin-left: 0px;" label="en" border>Phản hồi tiếng Anh</el-radio>
+              <el-radio v-model="selectedWriteType" style="margin-right: 5px;" label="Đánh máy" border>Đánh máy</el-radio>
+              <el-radio v-model="selectedWriteType" style="margin-right: 5px;" label="Viết tay" border>Tải lên bản viết tay</el-radio>
             </div>
           </div>
+
         </el-form-item>
 
-        <el-form-item prop="topic" :rules="[{ required: true, message: 'Hãy thêm một chủ đề viết' }]">
-          <label>Chủ đề</label>
+        <el-form-item v-if="selectedWriteType != 'Viết tay'" size="medium" style="margin-bottom: 15px;" prop="topic">
+          <label>Đề bài</label>
           <el-input
             v-model="form.topic"
             type="textarea"
-            :rows="4"
-            :placeholder="'Điền chủ đề viết cho ' + selectedTask + ''"
+            :rows="3"
+            :placeholder="selectedTask != 'Other' ? 'Đề bài viết cho ' + selectedTask + '' : 'Đê bài viết bất kỳ'"
           />
         </el-form-item>
 
-        <el-form-item v-if="selectedTask == 'TOEFL Integrated'" prop="reading" :rules="[{ required: true, message: 'Hãy thêm thông tin bài đọc' }]">
-          <label>Bài đọc</label>
-          <el-input
-            v-model="form.reading"
-            type="textarea"
-            :rows="4"
-            placeholder="Điền thông tin bài đọc"
-          />
-        </el-form-item>
-
-        <el-form-item v-if="selectedTask == 'TOEFL Integrated'">
-          <label>Bài nghe</label>
-          <el-upload
-            action=""
-            :on-preview="handlePreview"
-            :on-change="handleToeflListeningChange"
-            :on-remove="handleRemove"
-            :multiple="false"
-            :limit="1"
-            :auto-upload="false"
-            :on-exceed="handleExceed"
-            :file-list="listeningList"
-          >
-            <el-button size="small" type="primary">{{ messageTranslates('addEditQuestion', 'uploadButton') }}</el-button>
-            <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateUpload') }}</div>
-          </el-upload>
-        </el-form-item>
-
-        <el-form-item v-if="selectedTask == 'TOEFL Integrated'">
-          <label>Bản ghi của bài nghe</label>
-          <el-input
-            v-model="form.transcript"
-            type="textarea"
-            :rows="4"
-            placeholder="Điền bản ghi của bài nghe nếu bạn có"
-          />
-        </el-form-item>
-
-        <el-form-item v-if="selectedTask == 'IELTS Task 1'">
+        <el-form-item v-if="selectedTask == 'IELTS Task 1'" size="medium" style="margin-bottom: 10px;">
           <label>Biểu đồ</label>
           <el-upload
             action=""
@@ -211,24 +175,67 @@
             :on-exceed="handleExceed"
             :file-list="chartList"
           >
-            <el-button size="small" type="primary" plain>Nhấn để tải lên</el-button>
+            <el-button size="medium" type="primary" plain>Nhấn để tải lên</el-button>
             <div slot="tip" class="el-upload__tip">{{ messageTranslates('addEditQuestion', 'validateImgUpload') }}</div>
           </el-upload>
         </el-form-item>
 
-        <el-form-item prop="response" :rules="[{ required: true, message: 'Hãy thêm bài viết của bạn cho chủ đề này' }]">
+        <el-form-item v-if="selectedWriteType == 'Viết tay'" size="medium" style="margin-bottom: 15px;">
+          <label>Ảnh chụp bài viết kèm đề bài</label>
+          <el-upload
+            v-if="!gettingTextFromImage"
+            action=""
+            :on-change="handleWritingImageChange"
+            :multiple="false"
+            :limit="1"
+            :auto-upload="false"
+          >
+            <el-button size="medium" type="primary" plain>Nhấn để tải lên</el-button>
+            <div slot="tip" class="el-upload__tip">
+              <div style="font-size: 15px;">Tệp png / jpeg có kích thước nhỏ hơn 10mb.</div>
+              <div style="font-size: 15px;">Tải ảnh chụp bài viết của bạn kèm đề bài.</div>
+              <div style="font-size: 15px;">Để tối ưu kết quả, hãy crop ảnh gọn gàng nhất có thể.</div>
+            </div>
+          </el-upload>
+
+          <div v-if="gettingTextFromImage" style="width: 100%; height: 180px; border: #DCDFE6 solid 1px; padding-top: 60px; border-radius: 5px;">
+            <div class="el-loading-spinner" style="position: relative; top: 10%;">
+              <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+              <p class="el-loading-text" style="word-break: break-word;">Đang trích xuất đề và bài viết từ ảnh</p>
+            </div>
+          </div>
+
+        </el-form-item>
+
+        <el-form-item
+          v-if="selectedWriteType != 'Viết tay'"
+          size="medium"
+          style="margin-bottom: 15px;"
+          prop="response"
+          :rules="[{ required: true, message: 'Hãy thêm bài viết của bạn cho chủ đề này' }]"
+        >
           <label>Bài viết của bạn</label>
           <el-input
             v-model="form.response"
             type="textarea"
-            :rows="8"
-            :placeholder="'Bài viết của bạn cho chủ đề này'"
+            :rows="5"
+            :placeholder="'Bài viết của bạn'"
           />
         </el-form-item>
 
+        <el-form-item size="medium" style="margin-bottom: 15px;">
+          <label>Ngôn ngữ phản hồi</label>
+          <div>
+            <div>
+              <el-radio v-model="selectedLanguage" style="margin-right: 10px; margin-left: 0px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
+              <el-radio v-model="selectedLanguage" style="margin-left: 0px;" label="en" border>Phản hồi tiếng Anh</el-radio>
+            </div>
+          </div>
+        </el-form-item>
+
         <el-form-item>
-          <el-button size="mini" type="primary" :loading="isLoading" @click="submit">Xác nhận</el-button>
-          <el-button size="mini" @click="cancelRequest()">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
+          <el-button size="medium" type="primary" :loading="isLoading" @click="submit">Xác nhận</el-button>
+          <el-button size="medium" @click="cancelRequest()">{{ messageTranslates('addEditQuestion', 'cancel') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -260,15 +267,17 @@ export default {
       dialogVisible: false,
       selectedTask: 'IELTS Task 2',
       selectedLanguage: 'vn',
+      selectedWriteType: 'Đánh máy',
       fileUrl: null,
       LISTENING_FILE_MAX_SIZE: 10000000,
-      CHART_FILE_MAX_SIZE: 3000000,
+      CHART_FILE_MAX_SIZE: 10000000,
       LISTENING_TYPE_FILE: ['video/mp4', 'audio/mpeg'],
       CHART_TYPE_FILE: ['image/jpeg', 'image/png'],
       chartList: [],
       listeningList: [],
       screenWidth: window.innerWidth,
-      isLoading: false
+      isLoading: false,
+      gettingTextFromImage: false
     }
   },
   computed: {
@@ -300,23 +309,7 @@ export default {
           const chart = this.personalQuestion.Parts.find(p => p.Name == 'Chart')
 
           if (chart) {
-            console.log(chart)
             this.chartList.push({ name: chart.FileName, url: chart.Url, raw: chart.UploadedFile})
-            console.log('Chart List:', this.chartList)
-          }
-        }
-        if (this.personalQuestion.TaskName == 'TOEFL Integrated') {
-          const reading = this.personalQuestion.Parts.find(p => p.Name == 'Reading')
-          if (reading) {
-            this.form.reading = reading.Content
-          }
-          const listening = this.personalQuestion.Parts.find(p => p.Name == 'Listening')
-          if (listening) {
-            this.listeningList.push({ name: listening.FileName, url: listening.Url})
-          }
-          const transcript = this.personalQuestion.Parts.find(p => p.Name == 'Transcript')
-          if (transcript) {
-            this.form.transcript = transcript.Content
           }
         }
       }
@@ -326,14 +319,7 @@ export default {
       this.$refs['personalQuestionForm'].validate(async valid => {
         if (valid) {
           this.isLoading = true
-          console.log('form validated')
-          if (this.selectedTask == 'TOEFL Integrated') {
-            this.form.part = {
-              reading: this.form.reading,
-              listening: this.listeningList && this.listeningList.length > 0 ? this.listeningList[0] : null,
-              transcript: this.form.transcript
-            }
-          } else if (this.selectedTask == 'IELTS Task 1') {
+          if (this.selectedTask == 'IELTS Task 1') {
             if (this.chartList && this.chartList.length > 0) {
               this.form.part = {
                 chart: this.chartList[0]
@@ -343,17 +329,13 @@ export default {
             this.form.part = null
           }
           let taskId = 4
-          let test = 'IELTS'
+          const test = 'IELTS'
           if (this.selectedTask == 'IELTS Task 1') {
             taskId = 3
-          } else if (this.selectedTask == 'TOEFL Independent') {
-            taskId = 1
-            test = 'TOEFL'
-          } else if (this.selectedTask == 'TOEFL Integrated') {
-            taskId = 2
-            test = 'TOEFL'
           }
 
+          let topic = 'The writing topic is not provided'
+          if (this.form.topic && this.form.topic != '' && this.form.topic != 'Không thể trích xuất từ ảnh') { topic = this.form.topic }
           // Setup question content to send to the backend
           const formData = new FormData()
           formData.set('UserId', this.currentUser.id)
@@ -364,7 +346,7 @@ export default {
 
           // Setup question content to send to the backend
           formData.set('Question.QuestionParts[0][Name]', 'Question')
-          formData.set('Question.QuestionParts[0][Content]', this.form.topic)
+          formData.set('Question.QuestionParts[0][Content]', topic)
           formData.set('Question.QuestionParts[0][Order]', 1)
           formData.set(`Question.QuestionParts[0][QuestionId]`, 0)
 
@@ -380,7 +362,7 @@ export default {
           }
           const questionTopic = {
             Name: 'Question',
-            Content: this.form.topic
+            Content: topic
           }
           personalQuestion.Parts.push(questionTopic)
 
@@ -433,6 +415,32 @@ export default {
         }
       })
     },
+    async handleWritingImageChange(file, fileList) {
+      if (file.size > this.CHART_FILE_MAX_SIZE) {
+        this.$message.warning(`File tải lên cần nhỏ hơn 10mb`)
+        this.chartList = []
+      } else {
+        if (this.CHART_TYPE_FILE.includes(file.raw.type)) {
+          this.getWritingTextFromImage(file)
+        } else {
+          this.$message.warning(`Hãy tải lên file có định dạng png hoặc jpeg`)
+          this.chartList = []
+        }
+      }
+    },
+    async getWritingTextFromImage(file) {
+      this.gettingTextFromImage = true
+      const formData = new FormData()
+      formData.append(`file`, file.raw)
+      const result = await questionService.getWritingTextFromImage(formData)
+      this.form.response = result.essay
+      this.form.topic = result.topic
+      this.selectedWriteType = 'Đánh máy'
+      this.gettingTextFromImage = false
+    },
+     async fileListToBase64(file) {
+      return await Promise.resolve(this.getBase64(file))
+    },
     handleRemove(file, fileList) {
       this.listeningList = fileList
     },
@@ -461,7 +469,7 @@ export default {
     },
     async handleIeltsChartChange(file, fileList) {
       if (file.size > this.CHART_FILE_MAX_SIZE) {
-        this.$message.warning(`The limit size is 3mb.`)
+        this.$message.warning(`File tải lên cần nhỏ hơn 10mb`)
         this.chartList = []
       } else {
         if (this.CHART_TYPE_FILE.includes(file.raw.type)) {
@@ -469,13 +477,10 @@ export default {
           this.chartList = fileList
           console.log(this.fileUrl)
         } else {
-          this.$message.warning(`Please upload png/jpeg file.`)
+          this.$message.warning(`Hãy tải lên file có định dạng png hoặc jpeg`)
           this.chartList = []
         }
       }
-    },
-     async fileListToBase64(file) {
-      return await Promise.resolve(this.getBase64(file))
     },
     getBase64(file) {
       const reader = new FileReader()

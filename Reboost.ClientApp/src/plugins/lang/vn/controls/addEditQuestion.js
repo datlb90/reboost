@@ -14,7 +14,7 @@ export const AddEditQuestion = {
   chart: 'Biểu đồ',
   uploadButton: 'Nhấn để tải lên',
   validateUpload: 'Tệp mp3 / mp4 có kích thước nhỏ hơn 10mb.',
-  validateImgUpload: 'Tệp png / jpeg có kích thước nhỏ hơn 3mb.',
+  validateImgUpload: 'Tệp png / jpeg có kích thước nhỏ hơn 10mb.',
   cancel: 'Huỷ',
   approve: 'Chấp thuận',
   submit: 'Xác nhận'

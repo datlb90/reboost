@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 namespace Reboost.Shared
 {
+    public class ImageToTopicAndEssayModel
+    {
+        public string topic { get; set; }
+        public string essay { get; set; }
+    }
+
     public class TOEFLEssayFeedbackModel
     {
         public string useOflanguge { get; set; }
