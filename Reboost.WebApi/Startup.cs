@@ -196,6 +196,7 @@ namespace Reboost.WebApi
 
             app.UseCookiePolicy(new CookiePolicyOptions
             {
+                MinimumSameSitePolicy = SameSiteMode.Lax,
                 Secure = CookieSecurePolicy.Always
             });
 
