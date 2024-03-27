@@ -1,6 +1,6 @@
 <template>
   <!-- Start Boxes Area -->
-  <section v-if="screenWidth > 780" class="boxes-area" style=" margin-bottom: 120px;">
+  <section v-if="screenWidth > 780" id="benefit" class="boxes-area" style=" margin-bottom: 100px; padding-top: 260px;">
     <div class="container">
       <div class="section-title">
         <div class="bar" />
@@ -61,7 +61,7 @@
       </div>
     </div>
   </section>
-  <section v-else class="boxes-area" style="margin-bottom: 50px;">
+  <section v-else id="benefit" class="boxes-area" style="margin-bottom: 50px; padding-top: 350px;">
     <div class="container">
       <div class="section-title">
         <div class="bar" />
@@ -69,7 +69,6 @@
       </div>
 
       <div class="row">
-
         <div class="col-lg-3 col-md-6 col-sm-6">
           <div class="single-box bg-f78acb" style="text-align: center;">
             <div class="icon">

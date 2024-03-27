@@ -79,14 +79,6 @@ namespace Reboost.WebApi
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            //services.AddIdentity<IdentityUser, IdentityRole>(options =>
-            //{
-            //    options.Password.RequireDigit = true;
-            //    options.Password.RequireLowercase = true;
-            //    options.Password.RequiredLength = 5;
-            //}).AddEntityFrameworkStores<ApplicationDbContext>()
-            //    .AddDefaultTokenProviders();
-
             services.AddAuthentication(auth =>
             {
                 auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -104,7 +96,6 @@ namespace Reboost.WebApi
                     ValidateIssuerSigningKey = true
                 };
             });
-
             services.AddAuthentication()
                 .AddGoogle("google", opt =>
                 {
@@ -114,13 +105,9 @@ namespace Reboost.WebApi
                     opt.ClientSecret = googleAuth["ClientSecret"];
                     opt.SignInScheme = IdentityConstants.ExternalScheme;
                 });
-            
-
             services.AddAuthentication()
                 .AddFacebook("facebook", opt => {
                     var facebookAuth = Configuration.GetSection("Authentication:Facebook");
-                    //if (_currentEnvironment.IsDevelopment())
-                    //    facebookAuth = Configuration.GetSection("Authentication:FacebookDev");
                     opt.AppId = facebookAuth["AppId"];
                     opt.AppSecret = facebookAuth["AppSecret"];
                     opt.SignInScheme = IdentityConstants.ExternalScheme;

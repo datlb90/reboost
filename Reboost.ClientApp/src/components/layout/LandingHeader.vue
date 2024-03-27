@@ -12,19 +12,19 @@
 
           <div id="top-menu" style="display: flex; width: 560px; float: left; margin-left: 60px;">
             <div class="nav-item">
-              <a href="initialTest" class="nav-link">Trải nghiệm</a>
+              <a href="benefit" class="nav-link">Lợi ích</a>
             </div>
             <div class="nav-item">
-              <a href="howItWorks" class="nav-link">{{ messageTranslates('landingHeader', 'newMethod') }}</a>
+              <a href="howItWorks" class="nav-link">Phương pháp mới</a>
             </div>
             <div class="nav-item">
-              <a href="features" class="nav-link">{{ messageTranslates('landingHeader', 'features') }}</a>
+              <a href="features" class="nav-link">Chức năng</a>
             </div>
             <div>
-              <a href="/rater" class="nav-link"><span style="font-weight: 500; font-size: 15px;">Cho Giáo viên</span></a>
+              <a href="/rater" class="nav-link"><span style="font-weight: 500; font-size: 15px;">Cho giáo viên</span></a>
             </div>
             <div class="nav-item">
-              <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">{{ messageTranslates('landingHeader', 'contact') }}</a>
+              <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">Liên hệ</a>
             </div>
             <!-- <div>
               <el-dropdown class="lang-dropdown" style="margin-left: 15px; margin-top: 8px;" placement="bottom" @command="onChangeLanguage">
@@ -69,24 +69,21 @@
             </router-link>
           </div>
           <div id="top-menu" style="display: flex; width: 550px; float: left; margin-left: 10px;">
-            <div class="nav-item">
-              <a href="initialTest" class="nav-link">Trải nghiệm</a>
-            </div>
-            <div class="nav-item">
-              <a href="howItWorks" class="nav-link">{{ messageTranslates('landingHeader', 'newMethod') }}</a>
-            </div>
 
             <div class="nav-item">
-              <a href="features" class="nav-link">{{ messageTranslates('landingHeader', 'features') }}</a>
+              <a href="benefit" class="nav-link">Lợi ích</a>
             </div>
-            <!-- <div class="nav-item">
-              <a href="pricing" class="nav-link">{{ messageTranslates('landingHeader', 'pricing') }}</a>
-            </div> -->
+            <div class="nav-item">
+              <a href="howItWorks" class="nav-link">Phương pháp mới</a>
+            </div>
+            <div class="nav-item">
+              <a href="features" class="nav-link">Chức năng</a>
+            </div>
             <div>
               <a href="/rater" class="nav-link"><span style="font-weight: 500; font-size: 15px;">Cho giáo viên</span></a>
             </div>
             <div class="nav-item">
-              <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">{{ messageTranslates('landingHeader', 'contact') }}</a>
+              <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">Liên hệ</a>
             </div>
           </div>
 
@@ -128,21 +125,20 @@
             </span>
 
             <el-dropdown-menu id="top-menu" slot="dropdown">
-
               <el-dropdown-item command="a">
                 <div class="nav-item">
-                  <a href="initialTest" class="nav-link">Trải nghiệm</a>
+                  <a href="benefit" class="nav-link">Lợi ích</a>
                 </div>
               </el-dropdown-item>
 
               <el-dropdown-item command="a">
                 <div class="nav-item">
-                  <a href="howItWorks" class="nav-link">{{ messageTranslates('landingHeader', 'newMethod') }}</a>
+                  <a href="howItWorks" class="nav-link">Phương pháp mới</a>
                 </div>
               </el-dropdown-item>
               <el-dropdown-item command="b">
                 <div class="nav-item">
-                  <a href="features" class="nav-link">{{ messageTranslates('landingHeader', 'features') }}</a>
+                  <a href="features" class="nav-link">Chức năng</a>
                 </div>
               </el-dropdown-item>
               <el-dropdown-item command="c">
@@ -152,7 +148,7 @@
               </el-dropdown-item>
               <el-dropdown-item command="d">
                 <div class="nav-item">
-                  <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">{{ messageTranslates('landingHeader', 'contact') }}</a>
+                  <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">Liên hệ</a>
                 </div>
               </el-dropdown-item>
             </el-dropdown-menu>

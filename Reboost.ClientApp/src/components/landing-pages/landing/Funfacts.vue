@@ -1,6 +1,6 @@
 <template>
   <!-- Start Fun Facts Area -->
-  <section id="features" class="funfacts-area ptb-80" style="padding-bottom: 20px;">
+  <section id="features" class="funfacts-area ptb-80" style="padding-bottom: 10px;">
     <div v-if="screenWidth > 780" class="container">
       <div class="section-title">
         <h3>{{ messageTranslates('funfacts', 'title') }}</h3>

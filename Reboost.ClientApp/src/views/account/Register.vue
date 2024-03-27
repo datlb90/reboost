@@ -1,8 +1,8 @@
 <template>
   <div>
     <div>
-      <el-alert v-if="initialSubmission" title="Đăng ký tài khoản để nhận kết quả kiểm tra đầu vào của bạn" type="success" center show-icon />
-      <el-alert v-else-if="personalQuestion" title="Đăng ký tài khoản để gửi yêu cầu chấm bài viết của bạn cho chúng tôi" type="success" center show-icon />
+      <el-alert v-if="initialSubmission" title="Đăng ký tài khoản để nhận phản hồi miễn phí cho bài viết" type="success" center show-icon />
+      <el-alert v-else-if="personalQuestion" title="Đăng ký tài khoản để nhận phản hồi miễn phí cho bài viết" type="success" center show-icon />
       <div class="wrapper">
         <div>
           <div>

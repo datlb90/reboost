@@ -1,19 +1,24 @@
 <template>
   <!-- Start Boxes Area -->
-  <section id="initialTest" class="boxes-area" style="padding-top: 80px; padding-bottom: 100px; background-color: rgb(237, 251, 252);">
+  <section class="boxes-area" style="height: 800px; margin-top: 30px;">
     <div class="container">
-      <div style="text-align: center;">
-        <h3>Viết thử một đề và nhận phản hồi miễn phí ngay</h3>
-        <el-radio-group v-model="initTest" style="margin-top: 10px; margin-bottom: 20px;" @change="switchTest">
-          <el-radio-button label="Đề Task 1" />
-          <el-radio-button label="Đề Task 2" />
-        </el-radio-group>
-      </div>
-      <div v-if="screenWidth > 780" id="practiceWritingContainer" style="height: 800px">
+
+      <div v-if="screenWidth > 992" id="initialTest" style="height: 800px;  padding-top: 25px;">
+        <div class="section-title" style="margin-bottom: 30px;">
+          <div class="bar" />
+        </div>
+        <div style="text-align: center;">
+          <h4>Làm một đề thi thử và nhận phản hồi ngay</h4>
+          <el-radio-group id="radio-select-test" v-model="initTest" style="margin-top: 20px; margin-bottom: 25px; " text-color="#4b6f8a" @change="switchTest">
+            <el-radio label="Đề Task 2" border />
+            <el-radio label="Đề Task 1" border />
+          </el-radio-group>
+
+        </div>
         <splitpanes class="default-theme" vertical style="height: 100%; width: 100%; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);">
           <pane>
             <el-tabs v-model="activeTab" type="border-card" style="height: 100%;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
-              <el-tab-pane label="Chủ đề" name="description">
+              <el-tab-pane label="Đề bài" name="description">
                 <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
                   <div style="margin-bottom: 8px;">
                     <el-row>
@@ -24,13 +29,15 @@
                               <div class="title-tab">
                                 {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
                               </div>
-                              <!-- <div style="float: right;">
+                              <div style="float: right;">
                                 <div>
-                                  <el-tag v-if="isTesting" class="mr-2" type="danger" size="medium" style="height: 30px; line-height: 28px;"><i class="el-icon-timer" style="font-size: 14px; margin-right: 4px;" />{{ minute }} : {{ second }}</el-tag>
-                                  <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" style="padding: 8px 15px;" @click="startTest()">Start Test</el-button>
-                                  <el-checkbox v-model="isTest" size="mini" border style="height: 30px; margin-bottom: 0px;" @change="changedOption()"> Test Mode</el-checkbox>
+                                  <el-tag v-if="isTesting" class="mr-2" type="danger" size="medium">
+                                    <i class="el-icon-timer" style="font-size: 14px; margin-right: 4px;" />{{ minute }} : {{ second }}
+                                  </el-tag>
+                                  <el-button v-if="showStartTestButton && !isTesting" size="mini" @click="startTest()">Start Test</el-button>
+                                  <el-button v-if="!isTest" size="mini" @click="enableTestMode()">Test Mode</el-button>
                                 </div>
-                              </div> -->
+                              </div>
                             </div>
                             <div>
                               <el-tag
@@ -85,14 +92,14 @@
                             </div>
                           </div>
                         </div>
-                        <div class="info" style="margin-top: 5px; font-size: 14px;" v-html="getDataQuestion.direction" />
+                        <div class="info" style="margin-top: 5px; font-size: 16px;" v-html="getDataQuestion.direction" />
                       </el-col>
                     </el-row>
                   </div>
                   <div>
                     <div>
                       <el-row style="margin-bottom: 8px;">
-                        <div id="questionContent" class="tip" style="font-size: 14px;" v-html="getQuestion.content" />
+                        <div id="questionContent" class="tip" style="font-size: 16px;" v-html="getQuestion.content" />
                       </el-row>
                       <el-row v-if="isShowQuestion">
                         <div v-if="!isShowListeningTab && getReading != ''">
@@ -264,7 +271,7 @@
                 </div>
                 <div v-if="getQuestion != ''">
                   <el-button
-                    v-if="!writingSubmitted && hasSubmitionForThisQuestion && !isEdit"
+                    v-if="writingContent && writingContent.length > 0 && writingContent.trim() != '' && !writingSubmitted && hasSubmitionForThisQuestion && !isEdit"
                     style="float: right; margin-left: 5px"
                     size="mini"
                     :disabled="!(writingContent && writingContent.length > 0)"
@@ -273,7 +280,7 @@
                   >Nhận phản hồi
                   </el-button>
                   <el-button
-                    v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
+                    v-if="writingContent && writingContent.length > 0 && writingContent.trim() != '' && !writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
                     size="mini"
                     :disabled="!(writingContent && writingContent.length > 0)"
                     type="primary"
@@ -308,8 +315,18 @@
           </span>
         </el-dialog>
       </div>
-      <div v-else id="practiceWritingContainer">
-        <div style="width: 100%; margin-top: 55px; height: 800px; overflow: auto;">
+      <div v-else id="initialTest">
+        <div class="section-title" style="margin-bottom: 30px;  padding-top: 10px;">
+          <div class="bar" />
+        </div>
+        <div style="text-align: center;">
+          <h5>Làm đề thi thử và nhận phản hồi ngay</h5>
+          <el-radio-group id="radio-select-test" v-model="initTest" style="margin-top: 10px; margin-bottom: 15px; " text-color="#4b6f8a" @change="switchTest">
+            <el-radio label="Đề Task 2" border />
+            <el-radio label="Đề Task 1" border />
+          </el-radio-group>
+        </div>
+        <div style="width: 100%;">
           <div id="tabs-wrapper">
             <el-tabs v-model="activeTab" type="border-card" style="margin-bottom: 10px;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
               <el-tab-pane label="Chủ đề" name="description">
@@ -386,7 +403,7 @@
                           </div>
 
                         </div>
-                        <div class="info" style="margin-top: 5px; font-size: 14px;" v-html="getDataQuestion.direction" />
+                        <div class="info" style="margin-top: 5px; font-size: 16px;" v-html="getDataQuestion.direction" />
                       </el-col>
                     </el-row>
 
@@ -395,7 +412,7 @@
 
                     <div>
                       <el-row style="margin-bottom: 8px;">
-                        <div id="questionContent" class="tip" style="font-size: 14px;" v-html="getQuestion.content" />
+                        <div id="questionContent" class="tip" style="font-size: 16px;" v-html="getQuestion.content" />
                       </el-row>
                       <el-row v-if="isShowQuestion">
                         <div v-if="!isShowListeningTab && getReading != ''">
@@ -545,7 +562,7 @@
             </el-tabs>
           </div>
 
-          <div style="height: 100%; display: flex; flex-direction: column;">
+          <div style="height: 600px; display: flex; flex-direction: column;">
             <div style="height: 40px;  font-size: 13px; background-color: #f5f7fa;  border: 1px solid #e2e2e2; padding: 5px;">
               <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
                 <el-tag
@@ -566,7 +583,7 @@
               </div>
               <div v-if="getQuestion != ''">
                 <el-button
-                  v-if="!writingSubmitted && hasSubmitionForThisQuestion && !isEdit"
+                  v-if="writingContent && writingContent.length > 0 && writingContent.trim() != '' && !writingSubmitted && hasSubmitionForThisQuestion && !isEdit"
                   style="float: right; margin-left: 5px"
                   size="mini"
                   :disabled="!(writingContent && writingContent.length > 0)"
@@ -580,7 +597,7 @@
                   @click="isEdit=false"
                 >Edit</el-button>
                 <el-button
-                  v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
+                  v-if="writingContent && writingContent.length > 0 && writingContent.trim() != '' && !writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
                   size="mini"
                   :disabled="!(writingContent && writingContent.length > 0)"
                   type="primary"
@@ -947,7 +964,15 @@ export default {
         }
       }, 50)
     },
+    enableTestMode() {
+      this.isTest = true
+      const time = +this.getDataQuestion.time.slice(0, 2)
+      this.minute = time
+      this.second = 0
+      this.showStartTestButton = !this.showStartTestButton
+    },
     changedOption() {
+      this.isTest = true
       if (this.isTest) {
         const time = +this.getDataQuestion.time.slice(0, 2)
         this.minute = time
@@ -986,7 +1011,8 @@ export default {
     startTest() {
       // const time = +this.getDataQuestion.time.slice(0, 2)
       this.isTesting = true
-      this.minute = 19 // time
+      this.minute = 39 // time
+      if (this.initTest == 'Đề Task 1') { this.minute = 19 }
       this.second = 59
       // this.isShowQuestion = true
       this.timeSpentInterval = setInterval(() => {
@@ -1002,7 +1028,7 @@ export default {
         }
 
         if (this.minute == 0 && this.second == 0) {
-          console.log('Submitted!')
+          this.submit()
         }
       }, 1000)
     },
@@ -1025,6 +1051,16 @@ export default {
 </script>
 
 <style>
+#tipContent p {
+  line-height: 1.5;
+  color: rgb(13, 13, 13);
+  margin-bottom: 6px;
+}
+
+#tipContent span {
+  color: rgb(13, 13, 13);
+}
+
 .el-tabs__nav-next {
     right: 3px !important;
     top: -2px !important;
@@ -1157,7 +1193,7 @@ export default {
   background-color: #f5f7fa;
   border: 1px solid #e2e2e2;
   padding: 5px;
-  min-width: 500px;
+  min-width: 400px;
 }
 
 .body-passage {

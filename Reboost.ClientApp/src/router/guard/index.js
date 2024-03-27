@@ -74,14 +74,34 @@ export default async (router) => {
       next()
     }
 
+    // Create site links
+    if (to.path == '/experience') {
+      next('/?section=experience')
+      return
+    }
+    if (to.path == '/benefit') {
+      next('/?section=benefit')
+      return
+    }
+    if (to.path == '/new-method') {
+      next('/?section=new-method')
+      return
+    }
+    if (to.path == '/features') {
+      next('/?section=features')
+      return
+    }
+
     if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password') {
       next()
       return
     }
+
     if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password') {
       next()
       return
     }
+
     if (!currentUser || !currentUser.id) {
       if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password') {
         next()
@@ -90,6 +110,7 @@ export default async (router) => {
       next('/login')
       return
     }
+
     if (currentUser.role.trim() === UserRole.LEARNER && ((to.path.includes('/rater/') || to.path.includes('/admin/')) && !to.path.includes('/rater/register'))) {
       next({ name: PageName.NOT_FOUND })
       return

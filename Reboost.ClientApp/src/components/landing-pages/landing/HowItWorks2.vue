@@ -1,6 +1,6 @@
 <template>
   <!-- Start IoT Why Choose Us Area -->
-  <section id="howItWorks" class="iot-why-choose-us ptb-80 pb-0">
+  <section id="howItWorks" class="iot-why-choose-us ptb-80 pb-0" style="padding-top: 80px;">
     <div class="container">
       <div class="section-title">
         <h3 style="color: white;">{{ messageTranslates('howItWork2', 'title') }}</h3>

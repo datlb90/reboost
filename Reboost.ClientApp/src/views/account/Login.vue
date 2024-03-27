@@ -30,11 +30,22 @@
               </el-button> -->
 
               <el-button
+                v-if="!user"
                 class="btn btn-gradient"
                 style="width: 100%; margin-right: 20px; padding: 12px 20px;"
                 :loading="loading"
                 @click="signIn()"
               >{{ messageTranslates('login', 'signIn') }}
+              </el-button>
+
+              <el-button
+                v-if="user && loading && (personalQuestion || initialSubmission)"
+                class="btn btn-gradient"
+                style="width: 100%; margin-right: 20px; padding: 12px 20px;"
+                :loading="loading"
+                @click="signIn()"
+              >
+                Đánh giá bài luận
               </el-button>
 
             </el-form-item>
@@ -102,7 +113,9 @@ export default {
       facebookFormAction: null,
       emailConfirmed: false,
       loading: false,
-      reviewRequested: false
+      reviewRequested: false,
+      personalQuestion: null,
+      initialSubmission: null
     }
   },
   computed: {
@@ -123,6 +136,9 @@ export default {
   },
   async created() {
     document.title = 'Đăng nhập - Reboost'
+    this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
+    this.initialSubmission = this.$store.getters['question/getInitialSubmission']
+
     if (this.$router.currentRoute.query?.email && this.$router.currentRoute.query?.email == 'confirmed') {
       this.emailConfirmed = true
     }
@@ -149,13 +165,14 @@ export default {
         Email: this.form.username,
         Password: this.form.password
       })
-      this.loading = false
       if (user) {
         if (this.$router.currentRoute.query?.returnUrl) {
           this.$router.push({ path: this.$router.currentRoute.query?.returnUrl })
         } else {
           this.$router.push({ name: PageName.AFTER_LOGIN }).catch(() => {})
         }
+      } else {
+        this.loading = false
       }
     }
   }

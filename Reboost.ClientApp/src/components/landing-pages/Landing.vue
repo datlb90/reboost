@@ -2,7 +2,6 @@
   <div>
     <Banner />
     <BoxesArea />
-    <InitialTest />
     <HowItWorks2 />
     <Funfacts />
     <FeaturesArea />
@@ -10,13 +9,11 @@
     <UnlimitedTopics />
     <Matching />
     <ProRater />
-    <!-- <Pricing /> -->
   </div>
 </template>
 
 <script>
 import Banner from './landing/Banner'
-import InitialTest from './landing/InitialTest'
 import BoxesArea from './landing/BoxesArea'
 import FeaturesArea from './landing/FeaturesArea'
 import Features from './landing/Features'
@@ -25,18 +22,11 @@ import Matching from './landing/Matching'
 import HowItWorks2 from './landing/HowItWorks2'
 import Funfacts from './landing/Funfacts'
 import ProRater from './landing/ProRater'
-// import Pricing from './landing/Pricing'
-// import WhyChooseUs from './landing/WhyChooseUs'
-// import Blog from './landing/Blog'
-// import Feedback from './landing/Feedback'
-// import FAQ from './landing/FAQ'
 import $ from 'jquery'
-// import Blog from './developer/Blog'
 export default {
   name: 'Developer',
   components: {
     Banner,
-    InitialTest,
     BoxesArea,
     FeaturesArea,
     Features,
@@ -45,11 +35,6 @@ export default {
     HowItWorks2,
     Funfacts,
     ProRater
-    // Pricing
-    // WhyChooseUs,
-    // Blog,
-    // Feedback,
-    // FAQ
   },
   mounted() {
     $('.nav-item').find('a').click(function(e) {
@@ -61,15 +46,6 @@ export default {
       }
       // return false
     })
-
-    // $('ul.nav').find('a').click(function() {
-    //   var $href = $(this).attr('href')
-    //   var $anchor = $('#' + $href).offset()
-    //   if ($anchor) {
-    //     window.scrollTo($anchor.left, $anchor.top - 20)
-    //   }
-    //   return false
-    // })
 
     // Cache selectors
     var topMenu = $('#top-menu')
@@ -99,6 +75,62 @@ export default {
       // Set/remove active class
       menuItems.removeClass('active').filter("[href='" + id + "']").addClass('active')
     })
+
+    window.scrollTo(0, 1000)
+    console.log('test')
+  },
+  updated: function () {
+    this.$nextTick(function () {
+      const section = this.getUrlParameter('section')
+      if (section) {
+        var href = ''
+        var anchor = ''
+        if (section == 'experience') {
+          href = 'initialTest'
+          anchor = $('#' + href).offset()
+          if (anchor) {
+            window.scrollTo(0, anchor.top - 20)
+          }
+          document.title = 'Reboost - Thi thử IELTS Writing'
+        } else if (section == 'new-method') {
+          href = 'howItWorks'
+          anchor = $('#' + href).offset()
+          if (anchor) {
+            window.scrollTo(anchor.left, anchor.top - 20)
+          }
+          document.title = 'Reboost - Phương pháp học mới'
+        } else if (section == 'benefit') {
+          href = 'benefit'
+          anchor = $('#' + href).offset()
+          if (anchor) {
+            window.scrollTo(0, anchor.top - 20)
+          }
+          document.title = 'Reboost - Lợi ích của thành viên'
+        } else if (section == 'features') {
+          href = 'features'
+          anchor = $('#' + href).offset()
+          if (anchor) {
+            window.scrollTo(0, anchor.top - 20)
+          }
+          document.title = 'Reboost - Chức năng độc đáo'
+        }
+      }
+    })
+  },
+  methods: {
+    getUrlParameter(sParam) {
+      const sPageURL = decodeURIComponent(window.location.search.substring(1))
+      const sURLVariables = sPageURL.split('&')
+      let sParameterName
+      let i
+      for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=')
+
+        if (sParameterName[0] === sParam) {
+          return sParameterName[1] === undefined ? true : sParameterName[1]
+        }
+      }
+    }
   }
 }
 </script>

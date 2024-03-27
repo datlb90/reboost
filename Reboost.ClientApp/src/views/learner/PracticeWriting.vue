@@ -88,7 +88,7 @@
                       </div>
 
                     </div>
-                    <div class="info" style="margin-top: 5px; font-size: 14px;" v-html="getDataQuestion.direction" />
+                    <div class="info" style="margin-top: 5px; font-size: 16px;" v-html="getDataQuestion.direction" />
                   </el-col>
                 </el-row>
 
@@ -97,7 +97,7 @@
 
                 <div>
                   <el-row style="margin-bottom: 8px;">
-                    <div id="questionContent" class="tip" style="font-size: 14px;" v-html="getQuestion.content" />
+                    <div id="questionContent" class="tip" style="font-size: 16px;" v-html="getQuestion.content" />
                   </el-row>
                   <el-row v-if="isShowQuestion">
                     <div v-if="!isShowListeningTab && getReading != ''">
@@ -462,7 +462,7 @@
                       </div>
 
                     </div>
-                    <div class="info" style="margin-top: 5px; font-size: 14px;" v-html="getDataQuestion.direction" />
+                    <div class="info" style="margin-top: 5px; font-size: 16px;" v-html="getDataQuestion.direction" />
                   </el-col>
                 </el-row>
 
@@ -471,7 +471,7 @@
 
                 <div>
                   <el-row style="margin-bottom: 8px;">
-                    <div id="questionContent" class="tip" style="font-size: 14px;" v-html="getQuestion.content" />
+                    <div id="questionContent" class="tip" style="font-size: 16px;" v-html="getQuestion.content" />
                   </el-row>
                   <el-row v-if="isShowQuestion">
                     <div v-if="!isShowListeningTab && getReading != ''">
@@ -1395,7 +1395,7 @@ export default {
   background-color: #f5f7fa;
   border: 1px solid #e2e2e2;
   padding: 5px;
-  min-width: 500px;
+  min-width: 400px;
 }
 
 .body-passage {

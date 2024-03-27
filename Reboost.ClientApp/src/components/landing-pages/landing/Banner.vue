@@ -1,18 +1,18 @@
 <template>
   <!-- Start Main Banner -->
   <div>
-    <div v-if="screenWidth > 1200" id="banner" class="ml-main-section" style="padding-top: 210px; height: 620px; margin-bottom: 80px;">
+    <div v-if="screenWidth > 1200" id="banner" class="ml-main-section" style="padding-top: 200px; padding-bottom: 150px;">
       <div class="container">
         <div style="text-align: center;">
           <div>
             <div>
               <div>
-                <h1 style="font-size: 42px; color: #4a6f8a; font-weight: 500;">Luyện viết IELTS và nhận phản hồi miễn phí</h1>
+                <h1 style="font-size: 42px; color: #4a6f8a; font-weight: 500;">Luyện IELTS Writing và nhận phản hồi miễn phí</h1>
               </div>
-              <p style="width: 60%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
+              <p style="width: 62%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
                 <!-- Reboost giúp bạn cải thiện kỹ năng viết hiệu quả bằng cách cung cấp
                 đa dạng các chủ đề viết đã được phân loại, tài nguyên hữu dụng cho từng chủ đề, cùng phản hồi miễn phí, chuyên sâu, và chất lượng. -->
-                Nâng band IELTS Writing hiệu quả sử dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+                Nâng band IELTS Writing hiệu quả ứng dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
               </p>
               <el-button
                 class="btn btn-dark"
@@ -30,19 +30,21 @@
       <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+
+      <InitialTest />
     </div>
 
-    <div v-else-if="screenWidth > 992" id="banner" class="ml-main-section" style=" padding-top: 180px; margin-bottom: 80px;">
+    <div v-else-if="screenWidth > 670" id="banner" class="ml-main-section" style=" padding-top: 180px; padding-bottom: 150px;">
       <div class="container">
         <div style="text-align: center;">
 
           <div>
             <div>
               <div>
-                <h1 style="font-size: 40px; color: #4a6f8a; font-weight: 500;">Luyện viết IELTS và nhận phản hồi miễn phí</h1>
+                <h1 style="font-size: 32px; color: #4a6f8a; font-weight: 500;">Luyện IELTS Writing và nhận phản hồi miễn phí</h1>
               </div>
-              <p style="width: 70%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
-                Nâng band IELTS Writing hiệu quả sử dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+              <p style="width: 75%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
+                Nâng band IELTS Writing hiệu quả ứng dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
               </p>
               <el-button
                 class="btn btn-dark"
@@ -61,80 +63,31 @@
       <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+
+      <InitialTest />
+
     </div>
 
-    <div v-else id="banner" class="ml-main-section" style="padding-top: 160px; height: 500px; margin-bottom: 70px;">
+    <div v-else id="banner" class="ml-main-section" style="padding-top: 160px; padding-bottom: 60px">
       <div class="container">
         <div class="row">
           <div class="col-lg-6 col-md-12">
             <div class="ml-banner-content">
               <div>
-                <h1 style="font-size: 35px; color: #4a6f8a; font-weight: 500;">Luyện viết IELTS và nhận phản hồi miễn phí</h1>
+                <h1 style="font-size: 35px; color: #4a6f8a; font-weight: 500;">Luyện IELTS Writing và nhận phản hồi miễn phí</h1>
               </div>
               <p style="margin-top: 30px; font-size: 16px; color: #4a6f8a;">
-                Nâng band IELTS Writing hiệu quả sử dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+                Nâng band IELTS Writing hiệu quả ứng dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
               </p>
 
               <el-button
                 class="btn btn-dark"
-                style="font-size: 18px; padding: 12px 30px; margin-top: 50px; background-color: #4b6f8a;"
+                style="font-size: 18px; padding: 12px 30px; margin-top: 30px; background-color: #4b6f8a;"
                 @click="openRequestReviewDialog()"
               > Chấm Bài Miễn Phí Với ChatGPT-4
               </el-button>
             </div>
           </div>
-
-          <!-- <div class="col-lg-5 offset-lg-1">
-            <div class="banner-form">
-              <form>
-                <div class="form-group">
-                  <label>{{ messageTranslates('banner', 'emailAddress') }}</label>
-                  <input v-model="email" type="text" class="form-control" :placeholder="messageTranslates('banner', 'placeholderEmail')">
-                </div>
-
-                <div class="form-group">
-                  <label>{{ messageTranslates('banner', 'password') }}</label>
-                  <input v-model="password" type="password" class="form-control" :placeholder="messageTranslates('banner', 'placeholderPassword')">
-                </div>
-                <el-button
-                  class="btn btn-gradient"
-                  style="width: 100%; margin-right: 20px; padding: 12px 20px;"
-                  :loading="loading"
-                  @click="signIn()"
-                >{{ messageTranslates('banner', 'signIn') }}
-                </el-button>
-
-                <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px; padding-top: 20px;">
-                  {{ messageTranslates('banner', 'signInOther') }}
-                </div>
-
-                <div style="padding-bottom: 40px;">
-                  <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
-                    <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
-                      Facebook
-                    </el-button>
-                  </form>
-                  <form ref="googleLoginForm" method="post" :action="googleFormAction">
-                    <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
-                      Google
-                    </el-button>
-                  </form>
-                </div>
-
-                <div style="font-size: 14px; padding-top: 20px; height: 10px; padding-bottom: 20px;">
-
-                  <div style="width: 50%; float: left;">
-                    <a style="text-decoration: none;" href="/register">{{ messageTranslates('banner', 'signUp') }}</a>
-                  </div>
-
-                  <div style="width: 50%; float: right; text-align: right;">
-                    <a style="text-decoration: none;" href="/forgot/password">{{ messageTranslates('banner', 'forgotPassword') }}</a>
-                  </div>
-
-                </div>
-              </form>
-            </div>
-          </div> -->
 
         </div>
       </div>
@@ -144,7 +97,10 @@
       <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+
+      <InitialTest />
     </div>
+
     <review-request-dialog
       ref="reviewRequestDialog"
     />
@@ -157,11 +113,13 @@
 import { mapActions } from 'vuex'
 import { PageName } from '@/app.constant'
 import ReviewRequestDialog from '../../../components/controls/ReviewRequestDialog.vue'
-// import authService from '@/services/auth.service'
+import InitialTest from '../landing/InitialTest'
+
 export default {
   name: 'Banner',
   components: {
-    'review-request-dialog': ReviewRequestDialog
+    'review-request-dialog': ReviewRequestDialog,
+    InitialTest
   },
   data() {
     return {
