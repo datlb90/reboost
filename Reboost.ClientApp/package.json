@@ -29,6 +29,7 @@
     "moment-timezone": "^0.5.44",
     "nprogress": "^0.2.0",
     "odometer": "^0.4.8",
+    "openai": "^4.29.2",
     "pdf-dist": "^1.0.0",
     "prerender-spa-plugin": "^3.4.0",
     "rxjs": "^6.6.3",

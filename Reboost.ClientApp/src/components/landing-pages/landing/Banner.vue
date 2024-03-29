@@ -1,7 +1,7 @@
 <template>
   <!-- Start Main Banner -->
   <div>
-    <div v-if="screenWidth > 1200" id="banner" class="ml-main-section" style="padding-top: 200px; padding-bottom: 150px;">
+    <div v-if="screenWidth > 1200" id="banner" class="ml-main-section" style="padding-top: 200px; padding-bottom: 60px;">
       <div class="container">
         <div style="text-align: center;">
           <div>
@@ -34,7 +34,7 @@
       <InitialTest />
     </div>
 
-    <div v-else-if="screenWidth > 670" id="banner" class="ml-main-section" style=" padding-top: 180px; padding-bottom: 150px;">
+    <div v-else-if="screenWidth > 670" id="banner" class="ml-main-section" style=" padding-top: 180px; padding-bottom: 60px;">
       <div class="container">
         <div style="text-align: center;">
 

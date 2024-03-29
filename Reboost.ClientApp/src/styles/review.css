@@ -266,7 +266,7 @@ button[disabled='disabled'] .toolbar-icon {
 
 #left-panel {
   float: left;
-  width: 30%;
+  width: 40%;
   position: sticky;
   top: 0px;
   min-width: 320px;
@@ -276,7 +276,7 @@ button[disabled='disabled'] .toolbar-icon {
 #right-panel {
   /* float: left; 
   position: absolute;  */
-  margin-left: max(425px, 30.5%);
+  margin-left: max(425px, 40.5%);
   /* width: 68.5%; */
   height: 100%;
   background: rgb(248, 249, 250);
@@ -285,7 +285,7 @@ button[disabled='disabled'] .toolbar-icon {
 @media only screen and (max-width: 1400px) {
   #left-panel {
     float: left;
-    width: 420px;
+    width: 40%;
     position: sticky;
     top: 0px;
     height: 100%;

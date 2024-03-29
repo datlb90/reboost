@@ -40,6 +40,14 @@ namespace Reboost.WebApi.Controllers
         }
 
         [Authorize]
+        [HttpPost("ai/feedback/criteria/v2")]
+        public async Task<IActionResult> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model)
+        {
+            var rs = await _service.getAIFeedbackForCriteriaV2(model);
+            return Ok(rs);
+        }
+
+        [Authorize]
         [HttpGet("get/chart/description/{fileName}")]
         public async Task<IActionResult> getChartDescription(string fileName)
         {

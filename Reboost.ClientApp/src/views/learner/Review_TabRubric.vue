@@ -12,11 +12,11 @@
             >
               <div slot="header" class="clearfix">
                 <div>
-                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 90px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 110px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
                     {{ criteria.name }}
                   </div>
                   <div style="float: right;">
-                    <el-tooltip v-if="criteria.name != 'Overall Score & Feedback'" placement="right" effect="light" popper-class="rubric-description" sty>
+                    <!-- <el-tooltip v-if="criteria.name != 'Overall Score & Feedback'" placement="right" effect="light" popper-class="rubric-description" sty>
                       <div slot="content">
                         <div>
                           <el-table
@@ -38,21 +38,21 @@
                         </div>
                       </div>
                       <el-button :id="'save-btn-' + criteria.id" type="info" plain icon="el-icon-info" size="mini">Rubric</el-button>
-                    </el-tooltip>
+                    </el-tooltip> -->
                     <div v-if="criteria.name == 'Overall Score & Feedback'">
                       <el-select
                         v-model="criteria.mark"
-                        placeholder="Band"
+                        placeholder="Band score"
                         size="mini"
-                        style="width: 82px;"
+                        style="width: 110px;"
                         :readonly="readOnly || currentUser.role == 'Admin'"
-                        :disabled="readOnly || currentUser.role == 'Admin'"
+                        :disabled="true"
                         @change="rubricMileStoneClick(reviewId, criteria, $event)"
                       >
                         <el-option
                           v-for="item in scoreOptions"
                           :key="item.value"
-                          :label="item.label"
+                          :label="'Band: ' + item.label"
                           :value="item.value"
                         />
                       </el-select>
@@ -89,6 +89,7 @@
                   </div>
                   <div v-else>
                     <el-input
+                      v-if="!isAiReview"
                       v-model="criteria.comment"
                       :criteria-index="criteriaIndex"
                       type="textarea"
@@ -101,6 +102,7 @@
                       @blur="onBlur($event, criteria)"
                       @input="reviewCommentChange(criteria.comment, criteria.id)"
                     />
+                    <pre v-if="isAiReview" style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
                   </div>
 
                 </div>
@@ -325,7 +327,6 @@ export default ({
             localStorage.setItem('reviewRubricScore', JSON.stringify(retrievedScore))
           } else {
             if (this.isAiReview) {
-                console.log('Get feedback now')
                 const question = this.$store.getters['question/getSelected']
                 const topic = question.questionsPart.find(q => q.name == 'Question').content
                 let chartDescription = ''
@@ -344,10 +345,24 @@ export default ({
                     chartDescription: chartDescription
                   }
 
-                  reviewService.getAIFeedbackForCriteria(model).then(rs => {
+                  reviewService.getAIFeedbackForCriteriaV2(model).then(rs => {
+                    let comment = rs
+                    let score = 0
+                    // get the score from the comment
+                    var comments = comment.split('\n')
+                    if (comments && comments.length > 0) {
+                      const scoreString = comments[0].substr(comments[0].length - 3)
+                      score = parseInt(scoreString) || 0
+                      // re-compose the comment
+                      comments.splice(0, 2)
+                      comment = comments.join('\n')
+                    }
+
+                    // show the comment and mark
+                    criteria.comment = comment
+                    criteria.mark = score
+                    // submit the review
                     criteria.loading = false
-                    criteria.comment = rs.comment
-                    criteria.mark = rs.bandScore
                     completedCount++
                     if (completedCount == 5) {
                       // update overall band score
@@ -376,7 +391,6 @@ export default ({
                 })
               } else {
                 this.rubricCriteria.forEach(criteria => {
-                  console.log(criteria)
                   criteria.loading = false
                 })
               }
@@ -385,8 +399,6 @@ export default ({
       } else {
         console.log('Error: rubric cannot be found!')
       }
-
-      console.log('Rubric Criteria: ', this.rubricCriteria)
     },
     onFocus(criteria) {
       criteria.isFocused = true
@@ -426,9 +438,6 @@ export default ({
 
       retrievedComment = JSON.parse(retrievedComment)
       retrievedScore = JSON.parse(retrievedScore)
-
-      // console.log('comment', retrievedComment)
-      // console.log('score', retrievedScore)
 
       if (retrievedComment) {
         retrievedComment.forEach(rc => {

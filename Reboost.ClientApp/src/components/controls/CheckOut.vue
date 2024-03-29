@@ -90,8 +90,8 @@
             <div>
               <div style="text-align: center;">
                 <el-radio-group v-if="!requestedLanguage" v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;">
-                  <el-radio-button label="Phản hồi bằng tiếng Việt" />
                   <el-radio-button label="Phản hồi bằng tiếng Anh" />
+                  <el-radio-button label="Phản hồi bằng tiếng Việt" />
                 </el-radio-group>
 
                 <el-input
@@ -224,8 +224,8 @@
             <div>
               <div style="text-align: center;">
                 <el-radio-group v-if="!requestedLanguage" v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;" size="small">
-                  <el-radio-button label="Phản hồi bằng tiếng Việt" />
                   <el-radio-button label="Phản hồi bằng tiếng Anh" />
+                  <el-radio-button label="Phản hồi bằng tiếng Việt" />
                 </el-radio-group>
 
                 <el-input
@@ -304,7 +304,7 @@ export default {
       paid: false,
       selectedReview: '',
       loadingAutomatedReview: false,
-      feedbackLanguage: 'Phản hồi bằng tiếng Việt',
+      feedbackLanguage: 'Phản hồi bằng tiếng Anh',
       specialRequest: null,
       screenWidth: window.innerWidth,
       loading: false

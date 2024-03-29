@@ -22,6 +22,7 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<string> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model);
         Task<SubmissionRequestModel> GetSubmissionRequestModel(int submissionId, string userId);
         Task<string> getChartDescription(string fileName);
         Task<AutomatedFeedbackModel> getAIFeedbackForCriteria(CriteriaFeedbackModel model);
@@ -117,6 +118,12 @@ namespace Reboost.Service.Services
                 return "";
             }
             return "";
+        }
+
+        public async Task<string> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model)
+        {
+            model.topic = StripHTML(model.topic);
+            return await chatGPTService.getAIFeedbackForCriteriaV2(model);
         }
 
         public async Task<AutomatedFeedbackModel> getAIFeedbackForCriteria(CriteriaFeedbackModel model)

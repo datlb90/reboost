@@ -25,6 +25,7 @@ namespace Reboost.Service.Services
 {
     public interface IChatGPTService
     {
+        Task<string> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model);
         Task<ImageToTopicAndEssayModel> getWritingTextFromImage(byte[] imageData);
         Task<string> getChartDescription(string filePath);
         Task<AutomatedFeedbackModel> getAIFeedbackForCriteria(CriteriaFeedbackModel model);
@@ -104,7 +105,7 @@ namespace Reboost.Service.Services
             string chart = "";
             if (!String.IsNullOrEmpty(filePath))
             {
-                chart = "Given the following chart information associated with the topic delimited by <chart> and </chart> tags:";
+                chart = "Given the following chart information for the IELTS Academic Writing Task 1:\r\n";
 
                 ChatMessage message = new ChatMessage();
                 message.Role = ChatMessageRole.User;
@@ -123,9 +124,127 @@ namespace Reboost.Service.Services
                     }
                 });
 
-                chart += "\r\n\r\n<chart>" + chartResult.Choices[0].Message.TextContent + "\r\n\r\n</chart>\r\n";
+                chart += "\r\n" + chartResult.Choices[0].Message.TextContent + "\r\n";
             }
             return chart;
+        }
+
+        public async Task<string> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string topic = "";
+                string response = "";
+                if (model.topic == "The writing topic is not provided")
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        response = "Given the following IELTS Academic Writing Task 1 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+                        if (!String.IsNullOrEmpty(model.chartDescription))
+                        {
+                            topic = "Given the following chart information for the IELTS Academic Writing Task 1: \r\n\r\n" + model.chartDescription + "\r\n\r\n";
+                        }
+                    }
+                    else // Academic Writing Task 2
+                    {
+                        response = "Given the following IELTS Academic Writing Task 2 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+                    }
+                }
+                else
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        topic = "Given the following IELTS Academic Writing Task 1 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                        if (!String.IsNullOrEmpty(model.chartDescription))
+                        {
+                            topic += model.chartDescription;
+                        }
+                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                    }
+                    else // Academic Writing Task 2
+                    {
+                        topic = "Given the following IELTS Academic Writing Task 2 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+                    }
+                }
+
+
+                string request = "";
+                switch (model.criteriaName)
+                {
+                    case "Task Achievement":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Task Achievement. Phản hồi gồm 4 phần sau:\r\n\r\n- Điểm số: là 1 số từ 0 tới 9.0 tương ứng với điểm của bài luận cho tiêu chí Task Achievement.\r\n\r\n- Điểm mạnh: liệt kê những điểm mà bài luận đã làm tốt cho tiêu chí Task Achievement. Cho mỗi điểm mạnh, giải thích tại sao đó là điểm mạnh và liệt kê các ví dụ cụ thể trong bài viết.\r\n\r\n- Điểm cần cải thiện: liệt kê những điểm mà bài luận chưa làm tốt cho tiêu chí Task Achievement. Cho mỗi điểm, giải thích tại sao điểm đó lại chưa tốt, liệt kê những ví dụ cụ thể trong bài viết, và đưa ra khuyến nghị cụ thể.\r\n\r\n- Hướng dẫn cải thiện: liệt kê các bước học viên cần làm để cải thiện điểm số của mình cho tiêu chí Task Achievement. Hướng dẫn cần bao gồm cả những hướng dẫn chung và những hướng dẫn cụ thể liên quan đến chủ đề viết.\r\n";
+
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay on the Task Achievement criterion. The feedback contains the following 4 parts:\r\n\r\n- Score: a number ranging from 0 to 9.0 associated with the score of the essay for the Task Achievement critierion.\r\n \r\n- Strengths: list the strengths of the essay for the Task Achievement criterion. For each strength, explain why it is a strength and provide specific examples from the essay.\r\n\r\n- Areas of improvement: list the areas of improvement for the essay for the Task Achievement criterion. For each area, the feedback should explain why it need improvement, provide specific examples from the essay, and offer specific recommendations.\r\n\r\n- How to improve: provide the step-by-step guidance on how the learner can improve the score for the Task Achievement criterion. The guidance should include both general advice and specific instructions for the writing topic. \r\n";
+
+                        break;
+                    case "Task Response":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Task Response. Phản hồi gồm 4 phần sau:\r\n\r\n- Điểm số: là 1 số từ 0 tới 9.0 tương ứng với điểm của bài luận cho tiêu chí Task Response.\r\n\r\n- Điểm mạnh: liệt kê những điểm mà bài luận đã làm tốt cho tiêu chí Task Response. Cho mỗi điểm mạnh, giải thích tại sao đó là điểm mạnh và liệt kê các ví dụ cụ thể trong bài viết.\r\n\r\n- Điểm cần cải thiện: liệt kê những điểm mà bài luận chưa làm tốt cho tiêu chí Task Response. Cho mỗi điểm, giải thích tại sao điểm đó lại chưa tốt, liệt kê những ví dụ cụ thể trong bài viết, và đưa ra khuyến nghị cụ thể.\r\n\r\n- Hướng dẫn cải thiện: liệt kê các bước học viên cần làm để cải thiện điểm số của mình cho tiêu chí Task Response. Hướng dẫn cần bao gồm cả những hướng dẫn chung và những hướng dẫn cụ thể liên quan đến chủ đề viết.\r\n";
+
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay on the Task Response criterion. The feedback contains the following 4 parts:\r\n\r\n- Score: a number ranging from 0 to 9.0 associated with the score of the essay for the Task Response critierion.\r\n \r\n- Strengths: list the strengths of the essay for the Task Response criterion. For each strength, explain why it is a strength and provide specific examples from the essay.\r\n\r\n- Areas of improvement: list the areas of improvement for the essay for the Task Response criterion. For each area, the feedback should explain why it need improvement, provide specific examples from the essay, and offer specific recommendations.\r\n\r\n- How to improve: provide the step-by-step guidance on how the learner can improve the score for the Task Response criterion. The guidance should include both general advice and specific instructions for the writing topic.\r\n";
+
+                        break;
+                    case "Coherence & Cohesion":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Coherence & Cohesion. Phản hồi gồm 4 phần sau:\r\n\r\n- Điểm số: là 1 số từ 0 tới 9.0 tương ứng với điểm của bài luận cho tiêu chí Coherence & Cohesion.\r\n\r\n- Điểm mạnh: liệt kê những điểm mà bài luận đã làm tốt cho tiêu chí Coherence & Cohesion. Cho mỗi điểm mạnh, giải thích tại sao đó là điểm mạnh và liệt kê các ví dụ cụ thể trong bài viết.\r\n\r\n- Điểm cần cải thiện: liệt kê những điểm mà bài luận chưa làm tốt cho tiêu chí Coherence & Cohesion. Cho mỗi điểm, giải thích tại sao điểm đó lại chưa tốt, liệt kê những ví dụ cụ thể trong bài viết, và đưa ra khuyến nghị cụ thể.\r\n\r\n- Hướng dẫn cải thiện: liệt kê các bước học viên cần làm để cải thiện điểm số của mình cho tiêu chí Coherence & Cohesion. Hướng dẫn cần bao gồm cả những hướng dẫn chung và những hướng dẫn cụ thể liên quan đến chủ đề viết.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay on the Coherence & Cohesion criterion. The feedback contains the following 4 parts:\r\n\r\n- Score: a number ranging from 0 to 9.0 associated with the score of the essay for the Coherence & Cohesion critierion.\r\n \r\n- Strengths: list the strengths of the essay for the Coherence & Cohesion criterion. For each strength, explain why it is a strength and provide specific examples from the essay.\r\n\r\n- Areas of improvement: list the areas of improvement for the essay for the Coherence & Cohesion criterion. For each area, the feedback should explain why it need improvement, provide specific examples from the essay, and offer specific recommendations.\r\n\r\n- How to improve: provide the step-by-step guidance on how the learner can improve the score for the Coherence & Cohesion criterion. The guidance should include both general advice and specific instructions for the writing topic. \r\n";
+
+                        break;
+                    case "Lexical Resource":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Lexical Resource. Phản hồi gồm 4 phần sau:\r\n\r\n- Điểm số: là 1 số từ 0 tới 9.0 tương ứng với điểm của bài luận cho tiêu chí Lexical Resource.\r\n\r\n- Điểm mạnh: liệt kê những điểm mà bài luận đã làm tốt cho tiêu chí Lexical Resource. Cho mỗi điểm mạnh, giải thích tại sao đó là điểm mạnh và liệt kê các ví dụ cụ thể trong bài viết.\r\n\r\n- Điểm cần cải thiện: liệt kê những điểm mà bài luận chưa làm tốt cho tiêu chí Lexical Resource. Cho mỗi điểm, giải thích tại sao điểm đó lại chưa tốt, liệt kê những ví dụ cụ thể trong bài viết, và đưa ra khuyến nghị cụ thể.\r\n\r\n- Hướng dẫn cải thiện: liệt kê các bước học viên cần làm để cải thiện điểm số của mình cho tiêu chí Lexical Resource. Hướng dẫn cần bao gồm cả những hướng dẫn chung và những hướng dẫn cụ thể liên quan đến chủ đề viết.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay on the Lexical Resource criterion. The feedback contains the following 4 parts:\r\n\r\n- Score: a number ranging from 0 to 9.0 associated with the score of the essay for the Lexical Resource critierion.\r\n \r\n- Strengths: list the strengths of the essay for the Lexical Resource criterion. For each strength, explain why it is a strength and provide specific examples from the essay.\r\n\r\n- Areas of improvement: list the areas of improvement for the essay for the Lexical Resource criterion. For each area, the feedback should explain why it need improvement, provide specific examples from the essay, and offer specific recommendations.\r\n\r\n- How to improve: provide the step-by-step guidance on how the learner can improve the score for the Lexical Resource criterion. The guidance should include both general advice and specific instructions for the writing topic. \r\n";
+
+                        break;
+                    case "Grammatical Range & Accuracy":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Grammatical Range & Accuracy. Phản hồi gồm 4 phần sau:\r\n\r\n- Điểm số: là 1 số từ 0 tới 9.0 tương ứng với điểm của bài luận cho tiêu chí Grammatical Range & Accuracy.\r\n\r\n- Điểm mạnh: liệt kê những điểm mà bài luận đã làm tốt cho tiêu chí Grammatical Range & Accuracy. Cho mỗi điểm mạnh, giải thích tại sao đó là điểm mạnh và liệt kê các ví dụ cụ thể trong bài viết.\r\n\r\n- Điểm cần cải thiện: liệt kê những điểm mà bài luận chưa làm tốt cho tiêu chí Grammatical Range & Accuracy. Cho mỗi điểm, giải thích tại sao điểm đó lại chưa tốt, liệt kê những ví dụ cụ thể trong bài viết, và đưa ra khuyến nghị cụ thể.\r\n\r\n- Hướng dẫn cải thiện: liệt kê các bước học viên cần làm để cải thiện điểm số của mình cho tiêu chí Grammatical Range & Accuracy. Hướng dẫn cần bao gồm cả những hướng dẫn chung và những hướng dẫn cụ thể liên quan đến chủ đề viết.\r\n";
+
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay on the Grammatical Range & Accuracy criterion. The feedback contains the following 4 parts:\r\n\r\n- Score: a number ranging from 0 to 9.0 associated with the score of the essay for the Grammatical Range & Accuracy critierion.\r\n \r\n- Strengths: list the strengths of the essay for the Grammatical Range & Accuracy criterion. For each strength, explain why it is a strength and provide specific examples from the essay.\r\n\r\n- Areas of improvement: list the areas of improvement for the essay for the Grammatical Range & Accuracy criterion. For each area, the feedback should explain why it need improvement, provide specific examples from the essay, and offer specific recommendations.\r\n\r\n- How to improve: provide the step-by-step guidance on how the learner can improve the score for the Grammatical Range & Accuracy criterion. The guidance should include both general advice and specific instructions for the writing topic.\r\n";
+
+                        break;
+                    case "Overall Score & Feedback":
+                        if (model.task == "Academic Writing Task 1")
+                        {
+                            request = "Cung cấp phản hồi tổng quát bằng tiếng Việt cho bài. Phản hồi gồm 4 phần sau:\r\n\r\n- Điểm số: là 1 số từ 0 tới 9.0 tương ứng với điểm tổng quát của bài luận.\r\n\r\n- Đánh giá tổng quan: cung cấp một bức tranh toàn cảnh về chất lượng của bài viết dàn chải qua cả bốn tiêu chí Task Achievement, Coherence & Cohesion, Lexical Resource, và Grammatical Range & Accuracy\r\n\r\n- Những điểm mạnh nổi bật: tóm tắt những điểm mà bài luận làm tốt nhất. \r\n\r\n- Những điểm cần cải thiện: Cung cấp phản hồi về những điểm mà bài luận làm chưa tốt. Nhấn mạnh những khía cạnh mà nếu được tinh chỉnh, sẽ giúp nâng cao đáng kể chất lượng và điểm số của bài viết.\r\n\r\n- Khuyễn nghị cho học viên: Cung cấp hướng dẫn để học viên có thể cải thiện điểm số cho bài viết của mình.\r\n";
+                            if (model.feedbackLanguage != "vn")
+                                request = "Provide overall feedback for the essay. The feedback contains the following 4 parts:\r\n\r\n- Overall band score: a number ranging from 0 to 9.0 associated with the overall band score of the essay.\r\n\r\n- Overall performance: provide a comprehensive overview about the quality of the essay, covering all four criteria: Task Achievement, Coherence & Cohesion, Lexical Resource, and Grammatical Range & Accuracy.\r\n\r\n- Strengths: summarize the standout strengths of the essay.\r\n\r\n- Areas of improvements: provide feedback about the aspects the student needs to improve in the essay. The feedback should emphasize the aspects that, if refined, would significantly enhance the quality and score of the writing.\r\n\r\n- How to improve: provide general guidance for the student to improve. \r\n";
+                        }
+                        else
+                        {
+                            request = "Cung cấp phản hồi tổng quát bằng tiếng Việt cho bài. Phản hồi gồm 4 phần sau:\r\n\r\n- Điểm số: là 1 số từ 0 tới 9.0 tương ứng với điểm tổng quát của bài luận.\r\n\r\n- Đánh giá tổng quan: cung cấp một bức tranh toàn cảnh về chất lượng của bài viết dàn chải qua cả bốn tiêu chí Task Achievement, Coherence & Cohesion, Lexical Resource, và Grammatical Range & Accuracy\r\n\r\n- Những điểm mạnh nổi bật: tóm tắt những điểm mà bài luận làm tốt nhất. \r\n\r\n- Những điểm cần cải thiện: Cung cấp phản hồi về những điểm mà bài luận làm chưa tốt. Nhấn mạnh những khía cạnh mà nếu được tinh chỉnh, sẽ giúp nâng cao đáng kể chất lượng và điểm số của bài viết.\r\n\r\n- Khuyễn nghị cho học viên: Cung cấp hướng dẫn để học viên có thể cải thiện điểm số cho bài viết của mình.\r\n";
+
+                            if (model.feedbackLanguage != "vn")
+                                request = "Provide overall feedback for the essay. The feedback contains the following 4 parts:\r\n\r\n- Overall band score: a number ranging from 0 to 9.0 associated with the overall band score of the essay.\r\n\r\n- Overall performance: provide a comprehensive overview about the quality of the essay, covering all four criteria: Task Achievement, Coherence & Cohesion, Lexical Resource, and Grammatical Range & Accuracy.\r\n\r\n- Strengths: summarize the standout strengths of the essay.\r\n\r\n- Areas of improvements: provide feedback about the aspects the student needs to improve in the essay. The feedback should emphasize the aspects that, if refined, would significantly enhance the quality and score of the writing.\r\n\r\n- How to improve: provide general guidance for the student to improve. \r\n";
+                        }
+
+                        break;
+                    default:
+                        break;
+                }
+
+                var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = Model.ChatGPTTurbo,
+                    Temperature = 0.1,
+                    //MaxTokens = 1000,
+                    Messages = new ChatMessage[] {
+                    new ChatMessage(ChatMessageRole.Assistant, topic),
+                    new ChatMessage(ChatMessageRole.Assistant, response),
+                    new ChatMessage(ChatMessageRole.User, request)
+                    }
+                });
+
+                return taskResponseResult.Choices[0].Message.TextContent;
+            }
+            catch (Exception e)
+            {
+                return "Hệ thống không thể cung cấp phản hồi.";
+            }
         }
 
         public async Task<AutomatedFeedbackModel> getAIFeedbackForCriteria(CriteriaFeedbackModel model)
@@ -180,7 +299,7 @@ namespace Reboost.Service.Services
                     }
                 }
 
-               
+
                 //if (model.task == "Academic Writing Task 1")
                 //{
                 //    rubric = "Given the following rubric descriptors for the IELTS Academic Writing Task 1 delimited by <rubric> and </rubric> tags:\n\n<rubric>\n1. Task Achievement\n1.1. Criteria Description\nThe Task Achievement criterion in IELTS Academic Writing Task 1 evaluates how well you summarize key trends, compare data, cover all task requirements, and report features accurately from visuals like graphs or charts, focusing on your ability to identify and convey the most important information.\n\n1.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. The content is wholly unrelated to the task. Any copied rubric must be discounted.\n\n- Band 2: The content barely relates to the task.\n\n- Band 3: The response does not address the requirements of the task (possibly because of misunderstanding of the data/diagram/situation). Key features/bullet points which are presented may be largely irrelevant. Limited information is presented, and this may be used repetitively.\n\n- Band 4: The response is an attempt to address the task. Few key features have been selected. be confused. The tone may be inappropriate. The format may be inappropriate. Key features/bullet points which are presented may be irrelevant, repetitive, inaccurate, or inappropriate.\n\n- Band 5: The response generally addresses the requirements of the task. The format may be inappropriate in places. Key features which are selected are not adequately covered. The recounting of detail is mainly mechanical. There may be no data to support the description. There may be a tendency to focus on details (without referring to the bigger picture). The inclusion of irrelevant, inappropriate or inaccurate material in key areas detracts from the task achievement. There is limited detail when extending and illustrating the main points.\n\n- Band 6: The response focuses on the requirements of the task and an appropriate format is used. Key features which are selected are covered and adequately highlighted. A relevant overview is attempted. Information is appropriately selected and supported using figures/data. Some irrelevant, inappropriate or inaccurate information may occur in areas of detail or when illustrating or extending the main points. Some details may be missing (or excessive) and further extension or illustration may be needed.\n\n- Band 7: The response covers the requirements of the task. The content is relevant and accurate. There may be a few omissions or lapses. The format is appropriate. Key features which are selected are covered and clearly highlighted but could be more fully or more appropriately illustrated or extended. It presents a clear overview, the data are appropriately categorized, and main trends or differences are identified.\n\n- Band 8: The response covers all the requirements of the task appropriately, relevantly and sufficiently. Key features are skillfully selected, and clearly presented, highlighted and illustrated. There may be occasional omissions or lapses in content.\n\n- Band 9: All the requirements of the task are fully and appropriately satisfied. There may be extremely rare lapses in content.\n\n2. Coherence & Cohesion\n2.1. Criteria Description\nThe Coherence & Cohesion criterion assesses your ability to organize and link information clearly and logically in IELTS Academic Writing Task 1. It focuses on effective paragraphing, logical sequencing of ideas, and the use of cohesive devices (like linking words and pronouns) to help the reader understand the relationships between ideas.\n\n2.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. The writing fails to communicate any message and appears to be by a virtual non writer.\n\n- Band 2: There is little relevant message, or the entire response may be off topic. There is little evidence of control of organizational features.\n\n- Band 3: There is no apparent logical organization. Ideas are discernible but difficult to relate to each other. Minimal use of sequencers or cohesive devices. Those used do not necessarily indicate a logical relationship between ideas. There is difficulty in identifying referencing.\n\n- Band 4: Information and ideas are evident but not arranged coherently, and there is no clear progression within the response. Relationships between ideas can be unclear and/or inadequately marked. There is some use of basic cohesive devices, which may be inaccurate or repetitive. There is inaccurate use or a lack of substitution or referencing.\n\n- Band 5: Organization is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response. The relationship of ideas can be followed but the sentences are not fluently linked to each other. There may be limited/overuse of cohesive devices with some inaccuracy. The writing may be repetitive due to inadequate and/or inaccurate use of reference and substitution.\n\n- Band 6: Information and ideas are generally arranged coherently and there is a clear overall progression. Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission. The use of reference and substitution may lack flexibility or clarity and result in some repetition or error.\n\n- Band 7: Information and ideas are logically organized and there is a clear progression throughout the response. A few lapses may occur. A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use.\n\n- Band 8: The message can be followed with ease. Information and ideas are logically sequenced, and cohesion is well managed. Occasional lapses in coherence or cohesion may occur. Paragraphing is used sufficiently and appropriately.\n\n- Band 9: The message can be followed effortlessly. Cohesion is used in such a way that it very rarely attracts attention. Any lapses in coherence or cohesion are minimal. Paragraphing is skillfully managed.\n\n3. Lexical Resource\n3.1. Criteria Description\nThe Lexical Resource criterion evaluates your range of vocabulary, accuracy in word choice, and ability to use words appropriately to express precise meanings in IELTS Academic Writing Task 1. It focuses on your ability to use a variety of vocabulary to describe data, trends, and processes clearly and accurately.\n\n3.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. No resource is apparent, except for a few isolated words.\n\n- Band 2: The resource is extremely limited with few recognizable strings, apart from memorized phrases. There is no apparent control of word formation and/or spelling.\n\n- Band 3: The resource is inadequate (which may be due to the response being significantly under length). Possible over dependence on input material or memorized language. Control of word choice and/or spelling is very limited, and errors predominate. These errors may severely impede meaning.\n\n- Band 4: The resource is limited and inadequate for or unrelated to the task. Vocabulary is basic and may be used repetitively. There may be inappropriate use of lexical chunks (e. memorized phrases, formulaic language and/or language from the input material). Inappropriate word choice and/or errors in word formation and/or in spelling may impede meaning.\n\n- Band 5: The resource is limited but minimally adequate for the task. Simple vocabulary may be used accurately but the range does not permit much variation in expression. There may be frequent lapses in the appropriacy of word choice, and a lack of flexibility is apparent in frequent simplifications and/or repetitions. Errors in spelling and/or word formation may be noticeable and may cause some difficulty for the reader.\n\n- Band 6: The resource is generally adequate and appropriate for the task. The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice. If the writer is a risk taker, there will be a wider range of vocabulary used but higher degrees of inaccuracy or inappropriacy. There are some errors in spelling and/or word formation, but these do not impede communication.\n\n- Band 7: The resource is sufficient to allow some flexibility and precision. There is some ability to use less common and/or idiomatic items. An awareness of style and collocation is evident, though inappropriacy occur. There are only a few errors in spelling and/or word formation, and they do not detract from overall clarity.\n\n- Band 8: A wide resource is fluently and flexibly used to convey precise meanings within the scope of the task. There is skillful use of uncommon and/or idiomatic items when appropriate, despite occasional inaccuracies in word choice and collocation. Occasional errors in spelling and/or word formation may occur but have minimal impact on communication.\n\n- Band 9: Full flexibility and precise use are evident within the scope of the task. A wide range of vocabulary is used accurately and appropriately with very natural and sophisticated control of lexical features. Minor errors in spelling and word formation are extremely rare and have minimal impact on communication.\n\n4. Grammatical Range & Accuracy\n4.1. Criteria Description\nThe Grammatical Range & Accuracy criterion assesses your use of sentence structures and grammatical accuracy in IELTS Academic Writing Task 1. It focuses on your ability to construct a range of sentence types correctly and use grammar precisely to convey information and ideas effectively.\n\n4.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. No rateable language is evident.\n\n- Band 2: There is little or no evidence of sentence forms (except in memorized phrases).\n\n- Band 3: Sentence forms are attempted, but errors in grammar and punctuation predominate (except in memorized phrases or those taken from the input material). This prevents most meaning from coming through.  Length may be insufficient to provide evidence of control of sentence forms.\n\n- Band 4: A very limited range of structures is used. Subordinate clauses are rare and simple sentences predominate. Some structures are produced accurately but grammatical errors are frequent and may impede meaning. Punctuation is often faulty or inadequate.\n\n- Band 5: The range of structures is limited and rather repetitive. Although complex sentences are attempted, they tend to be faulty, and the greatest accuracy is achieved on simple sentences. Grammatical errors may be frequent and cause some difficulty for the reader. Punctuation may be faulty.\n\n- Band 6: A mix of simple and complex sentence forms is used but flexibility is limited. Examples of more complex structures are not marked by the same level of accuracy as in simple structures. Errors in grammar and punctuation occur, but rarely impede communication\n\n- Band 7: A variety of complex structures is used with some flexibility and accuracy. Grammar and punctuation are generally well controlled, and error free sentences are frequent. A few errors in grammar may persist, but these do not impede communication.\n\n- Band 8: A wide range of structures within the scope of the task is flexibly and accurately used. The majority of sentences are error free, and punctuation is well managed. Occasional, nonsystematic errors and inappropriacy occur, but have minimal impact on communication.\n\n- Band 9: A wide range of structures within the scope of the task is used with full flexibility and control. Punctuation and grammar are used appropriately throughout. Minor errors are extremely rare and have minimal impact on communication.\n</rubric>\n";
@@ -249,6 +368,9 @@ namespace Reboost.Service.Services
                 return result;
             }
         }
+
+
+
 
         public static string StripHTML(string input)
         {

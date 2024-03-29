@@ -1,6 +1,6 @@
 <template>
   <!-- Start Boxes Area -->
-  <section class="boxes-area" style="height: 800px; margin-top: 30px;">
+  <section class="boxes-area" style="margin-top: 30px;">
     <div class="container">
 
       <div v-if="screenWidth > 992" id="initialTest" style="height: 800px;  padding-top: 25px;">
@@ -315,6 +315,7 @@
           </span>
         </el-dialog>
       </div>
+
       <div v-else id="initialTest">
         <div class="section-title" style="margin-bottom: 30px;  padding-top: 10px;">
           <div class="bar" />
