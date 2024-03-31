@@ -47,7 +47,7 @@ namespace Reboost.DataAccess.Repositories
                                join rc in ReboostDbContext.RubricCriteria on r.Id equals rc.RubricId
                                join rm in ReboostDbContext.RubricMilestones on rc.Id equals rm.CriteriaId
                                //into rcm from s in rcm.DefaultIfEmpty()
-                               where q.Id == id && rc.Name != "Critical Errors"
+                               where q.Id == id
                                select new RubricsQuery
                                {
                                    Id = rm.Id,
@@ -56,7 +56,8 @@ namespace Reboost.DataAccess.Repositories
                                    HasScore = rc.HasScore,
                                    Name = rc.Name,
                                    BandScore = rm.BandScore,
-                                   Description = rm.Description
+                                   Description = rm.Description,
+                                   OrderId = rc.OrderId
                                }).ToListAsync();
 
 
@@ -66,13 +67,14 @@ namespace Reboost.DataAccess.Repositories
                 Id = g.FirstOrDefault()?.CriteriaId,
                 Description = g.FirstOrDefault()?.CriteriaDescription,
                 HasScore = g.FirstOrDefault().HasScore,
+                OrderId = g.FirstOrDefault().OrderId,
                 BandScoreDescriptions = g.ElementAt(0).Id == -1 ? new List<BandScoreDescription>() : g.Select(d => new BandScoreDescription
                 {
                     Id = d.Id,
                     BandScore = d.BandScore,
                     Description = d.Description
                 }).ToList()
-            }).ToList();
+            }).OrderBy( g => g.OrderId).ToList();
 
             return group;
 

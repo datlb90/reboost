@@ -13,7 +13,7 @@
               <div slot="header" class="clearfix">
                 <div>
                   <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 200px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
-                    {{ criteria.name }}
+                    <span>{{ criteria.name }}</span>
                   </div>
 
                   <el-tooltip v-if="reviewSaved" class="item" effect="dark" content="Cung cấp đánh giá cho phản hồi" placement="top">
@@ -56,7 +56,7 @@
                 </div>
               </div>
               <div>
-                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Overall Score & Feedback'">
+                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Overall Score & Feedback'">
                   <el-radio-group
                     :id="criteria.id"
                     v-model="criteria.mark"
@@ -96,7 +96,9 @@
                   <div v-if="criteria.loading" style="background: #f0f1f2; height: 120px; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                     <div class="el-loading-spinner" style="position: relative; top: 10%;">
                       <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
-                      <p class="el-loading-text" style="word-break: break-word;">Đang chấm tiêu chí {{ criteria.name }}</p>
+                      <p v-if="criteria.name == 'Critical Errors'" class="el-loading-text" style="word-break: break-word;">Đang tìm các lỗi có trong bài viết</p>
+                      <p v-else-if="criteria.name == 'Arguments Assessment'" class="el-loading-text" style="word-break: break-word;">Đang đánh giá các lập luận</p>
+                      <p v-else class="el-loading-text" style="word-break: break-word;">Đang chấm tiêu chí {{ criteria.name }}</p>
                     </div>
                   </div>
                   <div v-else>
@@ -331,7 +333,7 @@ export default ({
               var cmt = { id: rc.criteriaId, content: rc.comment, reviewid: this.reviewId, questionid: this.questionid }
               retrievedComment.push(cmt)
 
-              var ms = { id: rc.criteriaId, content: rc.name == 'Critical Errors' ? 0 : rc.score, reviewid: this.reviewId, questionid: this.questionid }
+              var ms = { id: rc.criteriaId, content: rc.name == 'Critical Errors' || rc.name == 'Arguments Assessment' ? 0 : rc.score, reviewid: this.reviewId, questionid: this.questionid }
               retrievedScore.push(ms)
             })
             if (this.currentUser.role !== 'Admin') { this.readOnly = false } else {
@@ -361,17 +363,19 @@ export default ({
                     chartDescription: chartDescription
                   }
 
-                  reviewService.getAIFeedbackForCriteriaV1(model).then(rs => {
+                  reviewService.getAIFeedbackForCriteriaV2(model).then(rs => {
                     let comment = rs
                     let score = 0
                     // get the score from the comment
-                    var comments = comment.split('\n')
-                    if (comments && comments.length > 0) {
-                      const scoreString = comments[0].substr(comments[0].length - 3)
-                      score = parseInt(scoreString) || 0
-                      // re-compose the comment
-                      comments.splice(0, 2)
-                      comment = comments.join('\n')
+                    if (criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment') {
+                      var comments = comment.split('\n')
+                      if (comments && comments.length > 0) {
+                        const scoreString = comments[0].substr(comments[0].length - 3)
+                        score = parseInt(scoreString) || 0
+                        // re-compose the comment
+                        comments.splice(0, 2)
+                        comment = comments.join('\n')
+                      }
                     }
 
                     // show the comment and mark
@@ -380,9 +384,9 @@ export default ({
                     // submit the review
                     criteria.loading = false
                     completedCount++
-                    if (completedCount == 5) {
+                    if (completedCount == 7) {
                       // update overall band score
-                      const fourCriteria = this.rubricCriteria.filter(c => c.name != 'Overall Score & Feedback')
+                      const fourCriteria = this.rubricCriteria.filter(c => c.name != 'Overall Score & Feedback' && c.name != 'Critical Errors' && c.name != 'Arguments Assessment')
                       const index = this.rubricCriteria.findIndex(c => c.name == 'Overall Score & Feedback')
                       const average = fourCriteria.reduce((total, next) => total + next.mark, 0) / 4
                       this.rubricCriteria[index].mark = (Math.round(average * 2) / 2).toFixed(1)
@@ -390,16 +394,14 @@ export default ({
                       // Save the criteria synchronously
                       var reviewData = []
                       this.rubricCriteria.forEach(r => {
-                        if (r.mark) {
-                          reviewData.push({
-                            CriteriaName: r.name,
-                            Comment: r.comment,
-                            CriteriaId: r.id,
-                            Score: r.mark,
-                            ReviewId: this.reviewId,
-                            UserFeedback: r.userFeedback
-                          })
-                        }
+                        reviewData.push({
+                          CriteriaName: r.name,
+                          Comment: r.comment,
+                          CriteriaId: r.id,
+                          Score: r.mark,
+                          ReviewId: this.reviewId,
+                          UserFeedback: r.userFeedback
+                        })
                       })
 
                       reviewService.saveReviewFeedback(this.reviewId, reviewData).then(rs => {
@@ -530,7 +532,7 @@ export default ({
       retrievedScore?.forEach(rc => {
         this.rubricCriteria.map(criteria => {
           if (criteria.id == rc.id && rc.reviewid == this.reviewId) {
-            criteria.mark = criteria.name == 'Critical Errors' ? 0 : rc.content
+            criteria.mark = criteria.name == 'Critical Errors' || criteria.name == 'Arguments Assessment' ? 0 : rc.content
           }
           criteria.loading = false
         })

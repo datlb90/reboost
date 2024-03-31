@@ -18,7 +18,7 @@
                 </div> -->
               </div>
               <div>
-                <div v-if="criteria.name != 'Critical Errors'">
+                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment'">
                   <el-radio-group
                     :id="criteria.id"
                     v-model="criteria.mark"

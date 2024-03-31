@@ -10,6 +10,7 @@ namespace Reboost.DataAccess.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public bool HasScore { get; set; }
+        public int OrderId { get; set; }
         public List<BandScoreDescription> BandScoreDescriptions { get; set; }
     }
     public class BandScoreDescription
@@ -27,5 +28,6 @@ namespace Reboost.DataAccess.Models
         public string Name { get; set; }
         public int BandScore { get; set; }
         public string Description { get; set; }
+        public int OrderId { get; set; }
     }
 }
