@@ -15,6 +15,7 @@ namespace Reboost.DataAccess.Entities
         [Column(TypeName = "decimal(4,1)")]
         public Nullable<decimal> Score { get; set; }
         public string Comment { get; set; }
+        public string UserFeedback { get; set; }
         public virtual Reviews Review { get; set; }
     }
 }

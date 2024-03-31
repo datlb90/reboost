@@ -187,6 +187,7 @@ namespace Reboost.DataAccess.Repositories
                 {
                     thisData.Score = item.Score;
                     thisData.Comment = item.Comment;
+                    thisData.UserFeedback = item.UserFeedback;
                     db.ReviewData.Update(thisData);
                 }
             }

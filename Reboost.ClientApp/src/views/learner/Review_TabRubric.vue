@@ -12,54 +12,47 @@
             >
               <div slot="header" class="clearfix">
                 <div>
-                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 110px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 200px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
                     {{ criteria.name }}
                   </div>
-                  <div style="float: right;">
-                    <!-- <el-tooltip v-if="criteria.name != 'Overall Score & Feedback'" placement="right" effect="light" popper-class="rubric-description" sty>
-                      <div slot="content">
-                        <div>
-                          <el-table
-                            :data="criteria.bandScoreDescriptions"
-                            border
-                            style="width: 650px;"
-                            height="800"
-                          >
-                            <el-table-column
-                              prop="bandScore"
-                              label="Band"
-                              width="70"
-                            />
-                            <el-table-column
-                              prop="description"
-                              label="Description"
-                            />
-                          </el-table>
-                        </div>
-                      </div>
-                      <el-button :id="'save-btn-' + criteria.id" type="info" plain icon="el-icon-info" size="mini">Rubric</el-button>
-                    </el-tooltip> -->
-                    <div v-if="criteria.name == 'Overall Score & Feedback'">
-                      <el-select
-                        v-model="criteria.mark"
-                        placeholder="Band score"
-                        size="mini"
-                        style="width: 110px;"
-                        :readonly="readOnly || currentUser.role == 'Admin'"
-                        :disabled="true"
-                        @change="rubricMileStoneClick(reviewId, criteria, $event)"
-                      >
-                        <el-option
-                          v-for="item in scoreOptions"
-                          :key="item.value"
-                          :label="'Band: ' + item.label"
-                          :value="item.value"
-                        />
-                      </el-select>
 
+                  <el-tooltip v-if="reviewSaved" class="item" effect="dark" content="Cung cấp đánh giá cho phản hồi" placement="top">
+                    <div style="float: right;">
+                      <el-dropdown trigger="click">
+                        <span :id="'rate-feedback-' + criteria.id" class="el-dropdown-link">
+                          <i class="fas fa-comment-alt" style="color: rgb(74, 111, 138); font-size: 20px;" />
+                        </span>
+                        <el-dropdown-menu slot="dropdown">
+                          <div style="padding-left: 10px; padding-right: 10px;">
+                            <div>
+                              <el-input
+                                v-model="criteria.userFeedback"
+                                :criteria-index="criteriaIndex"
+                                type="textarea"
+                                placeholder="Cung cấp đánh giá của bạn cho phản hồi này. Dữ liệu bạn cung cấp sẽ được sử dụng để cải thiển phản hồi."
+                                :autosize="{ minRows: 3, maxRows: 5 }"
+                                :maxlength="8000"
+                                style="width: 300px;"
+                                class="criteria-comment"
+                              />
+                            </div>
+                            <div>
+                              <el-button
+                                type="primary"
+                                plain
+                                size="mini"
+                                :disabled="!criteria.userFeedback"
+                                style="margin-top: 10px;"
+                                :loading="sendingFeedback"
+                                @click="sendFeedback(reviewId, criteria)"
+                              >Gửi đánh giá</el-button>
+                            </div>
+                          </div>
+                        </el-dropdown-menu>
+                      </el-dropdown>
                     </div>
+                  </el-tooltip>
 
-                  </div>
                 </div>
               </div>
               <div>
@@ -79,6 +72,25 @@
                       :label="milestone.bandScore"
                     />
                   </el-radio-group>
+                </div>
+                <div v-if="criteria.name == 'Overall Score & Feedback'">
+                  <el-select
+                    v-model="criteria.mark"
+                    placeholder="Band score"
+                    size="mini"
+                    style="width: 110px; margin-bottom: 10px;"
+                    :readonly="readOnly || currentUser.role == 'Admin'"
+                    :disabled="true"
+                    @change="rubricMileStoneClick(reviewId, criteria, $event)"
+                  >
+                    <el-option
+                      v-for="item in scoreOptions"
+                      :key="item.value"
+                      :label="'Band: ' + item.label"
+                      :value="item.value"
+                    />
+                  </el-select>
+
                 </div>
                 <div>
                   <div v-if="criteria.loading" style="background: #f0f1f2; height: 120px; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
@@ -258,7 +270,9 @@ export default ({
           value: 0,
           label: '0'
         }
-      ]
+      ],
+      reviewSaved: false,
+      sendingFeedback: false
     }
   },
   computed: {
@@ -279,7 +293,7 @@ export default ({
       localStorage.removeItem('reviewRubricScore')
       const rs = await rubricService.getByQuestionId(this.questionid)
       if (rs) {
-        this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, isFocused: false, comment: '', loading: true}))
+        this.rubricCriteria = rs.map(criteria => ({ ...criteria, mark: null, isFocused: false, comment: '', userFeedback: null, loading: true}))
         if (this.rubricCriteria[0] && this.rubricCriteria[0].bandScoreDescriptions.length == 6) { this.scoreOptions = this.toeflScores } else { this.scoreOptions = this.ieltsSCores }
         // Get rubric data from localstorage first
         var hasComment = false
@@ -310,6 +324,7 @@ export default ({
                 if (criteria.id == rc.criteriaId) {
                   criteria.comment = rc.comment
                   criteria.mark = rc.score
+                  criteria.userFeedback = rc.userFeedback
                 }
                 criteria.loading = false
               })
@@ -322,6 +337,7 @@ export default ({
             if (this.currentUser.role !== 'Admin') { this.readOnly = false } else {
               this.readOnly = true
             }
+            this.reviewSaved = true
             // Set localstorage so we don't have to load from db again
             localStorage.setItem('reviewRubricComment', JSON.stringify(retrievedComment))
             localStorage.setItem('reviewRubricScore', JSON.stringify(retrievedScore))
@@ -345,7 +361,7 @@ export default ({
                     chartDescription: chartDescription
                   }
 
-                  reviewService.getAIFeedbackForCriteriaV2(model).then(rs => {
+                  reviewService.getAIFeedbackForCriteriaV1(model).then(rs => {
                     let comment = rs
                     let score = 0
                     // get the score from the comment
@@ -380,14 +396,47 @@ export default ({
                             Comment: r.comment,
                             CriteriaId: r.id,
                             Score: r.mark,
-                            ReviewId: this.reviewId
+                            ReviewId: this.reviewId,
+                            UserFeedback: r.userFeedback
                           })
                         }
                       })
 
-                      reviewService.saveReviewFeedback(this.reviewId, reviewData)
+                      reviewService.saveReviewFeedback(this.reviewId, reviewData).then(rs => {
+                        this.reviewSaved = true
+                      })
                     }
                   })
+
+                  // reviewService.getAIFeedbackForCriteriaV1(model).then(rs => {
+                  //   criteria.loading = false
+                  //   criteria.comment = rs.comment
+                  //   criteria.mark = rs.bandScore
+                  //   completedCount++
+                  //   if (completedCount == 5) {
+                  //     // update overall band score
+                  //     const fourCriteria = this.rubricCriteria.filter(c => c.name != 'Overall Score & Feedback')
+                  //     const index = this.rubricCriteria.findIndex(c => c.name == 'Overall Score & Feedback')
+                  //     const average = fourCriteria.reduce((total, next) => total + next.mark, 0) / 4
+                  //     this.rubricCriteria[index].mark = (Math.round(average * 2) / 2).toFixed(1)
+
+                  //     // Save the criteria synchronously
+                  //     var reviewData = []
+                  //     this.rubricCriteria.forEach(r => {
+                  //       if (r.mark) {
+                  //         reviewData.push({
+                  //           CriteriaName: r.name,
+                  //           Comment: r.comment,
+                  //           CriteriaId: r.id,
+                  //           Score: r.mark,
+                  //           ReviewId: this.reviewId
+                  //         })
+                  //       }
+                  //     })
+
+                  //     reviewService.saveReviewFeedback(this.reviewId, reviewData)
+                  //   }
+                  // })
                 })
               } else {
                 this.rubricCriteria.forEach(criteria => {
@@ -414,6 +463,34 @@ export default ({
       }
       criteria.isFocused = false
     },
+    sendFeedback(reviewId, criteria) {
+      this.sendingFeedback = true
+      this.getLocaleStorageData()
+      var reviewData = []
+      this.rubricCriteria.forEach(r => {
+        reviewData.push({
+          Comment: r.comment,
+          CriteriaId: r.id,
+          Score: r.mark,
+          ReviewId: reviewId,
+          UserFeedback: r.userFeedback
+        })
+      })
+      reviewService.saveRubric(reviewId, reviewData).then(rs => {
+        if (rs) {
+          console.log(document.getElementById('rate-feedback-' + criteria.id))
+          document.getElementById('rate-feedback-' + criteria.id).click()
+          this.sendingFeedback = false
+          this.$notify.success({
+            title: 'Cảm ơn đánh giá của bạn!',
+            message: 'Dữ liệu bạn cung cấp sẽ được sử dụng để nâng cấp hệ thống chấm bài tự động và mang lại cho bạn những phản hồi tốt hơn.',
+            type: 'success',
+            duration: 7000
+          })
+        }
+        criteria.isFocused = false
+      })
+    },
     saveRubric(reviewId, criteria) {
       this.getLocaleStorageData()
       var reviewData = []
@@ -422,7 +499,8 @@ export default ({
           Comment: r.comment,
           CriteriaId: r.id,
           Score: r.mark,
-          ReviewId: reviewId
+          ReviewId: reviewId,
+          UserFeedback: r.userFeedback
         })
       })
       reviewService.saveRubric(reviewId, reviewData).then(rs => {

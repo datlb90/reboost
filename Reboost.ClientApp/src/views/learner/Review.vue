@@ -2647,7 +2647,8 @@ export default {
                 Comment: r.comment,
                 CriteriaId: r.id,
                 Score: r.mark,
-                ReviewId: this.reviewId
+                ReviewId: this.reviewId,
+                UserFeedback: r.userFeedback
               })
             }
           })

@@ -7,7 +7,7 @@ const reviewService = {
   getChartDescription(fileName) {
     return http.get('/review/get/chart/description/' + fileName).then(rs => rs.data)
   },
-  getAIFeedbackForCriteria(model) {
+  getAIFeedbackForCriteriaV1(model) {
     return http.post('/review/ai/feedback/criteria', model).then(rs => rs.data)
   },
   createAutomatedReview(request) {
