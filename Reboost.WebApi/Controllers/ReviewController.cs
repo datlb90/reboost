@@ -40,6 +40,27 @@ namespace Reboost.WebApi.Controllers
         }
 
         [Authorize]
+        [HttpPost("ai/score")]
+        public async Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model)
+        {
+            return await _service.getEssayScore(model);
+        }
+
+        [Authorize]
+        [HttpPost("ai/feedback/criteria/v3")]
+        public async Task<string> getCriteriaFeedback(CriteriaFeedbackModel model)
+        {
+            return await _service.getCriteriaFeedback(model);
+        }
+
+        [Authorize]
+        [HttpPost("ai/feedback/errors/v1")]
+        public async Task<string> getFeedbackForErrors(ErrorFeedbackModel model)
+        {
+            return await _service.getFeedbackForErrors(model);
+        }
+
+        [Authorize]
         [HttpPost("ai/feedback/criteria/v2")]
         public async Task<IActionResult> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model)
         {

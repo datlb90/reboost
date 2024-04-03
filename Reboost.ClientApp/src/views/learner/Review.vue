@@ -33,7 +33,7 @@
             <PeerReviewIntegrated v-if="!isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
           </el-tab-pane>
 
-          <el-tab-pane name="rubric" label="Tiêu chí chuẩn">
+          <el-tab-pane name="rubric" label="Phản hồi cho bài viết">
             <tabRubric v-if="review && documentText" ref="tabRubric" :current-user="currentUser" :feedback-language="review.reviewRequest.feedbackLanguage" :document-text="documentText" :questionid="questionId" :is-ai-review="isAiReview" :review-id="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
           <el-tab-pane v-if="isRate && !isAiReview" name="rate" label="Rating">
@@ -336,7 +336,7 @@
             <PeerReviewIndependent v-if="!isSelfReview && task == 'Independent Writing'" ref="tabGuide" />
             <PeerReviewIntegrated v-if="!isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
           </el-tab-pane>
-          <el-tab-pane name="rubric" label="Tiêu chí chuẩn">
+          <el-tab-pane name="rubric" label="Phản hồi cho bài viết">
             <tabRubric v-if="review && documentText" ref="tabRubric" :current-user="currentUser" :feedback-language="review.reviewRequest.feedbackLanguage" :document-text="documentText" :questionid="questionId" :is-ai-review="isAiReview" :review-id="reviewId" @setStatusText="setStatusText" />
           </el-tab-pane>
           <el-tab-pane v-if="isRate && !isDisputed && !isAiReview" name="rate" label="Rating">

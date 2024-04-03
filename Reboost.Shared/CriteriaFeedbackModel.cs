@@ -11,5 +11,11 @@ namespace Reboost.Shared
         public string criteriaName { get; set; }
         public string feedbackLanguage { get; set; }
     }
+
+    public class ErrorFeedbackModel
+    {
+        public string essay { get; set; }
+        public string feedbackLanguage { get; set; }
+    }
 }
 

@@ -68,5 +68,15 @@ namespace Reboost.Shared
         public string type { get; set; }
         public string fix { get; set; }
     }
+
+    public class EssayScoreModel
+    {
+        public decimal taskAchievementScore { get; set; }
+        public decimal taskResponseScore { get; set; }
+        public decimal coherenceScore { get; set; }
+        public decimal lexicalResourceScore { get; set; }
+        public decimal grammarScore { get; set; }
+        public decimal overallScore { get; set; }
+    }
 }
 

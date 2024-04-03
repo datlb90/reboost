@@ -12,8 +12,10 @@
             >
               <div slot="header" class="clearfix">
                 <div>
-                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 200px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
-                    <span>{{ criteria.name }}</span>
+                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                    <span v-if="criteria.name == 'Critical Errors'">Nâng cấp từ vựng và ngữ pháp</span>
+                    <span v-else-if="criteria.name == 'Arguments Assessment'">Củng cố lập luận</span>
+                    <span v-else>{{ criteria.name }}</span>
                   </div>
 
                   <el-tooltip v-if="reviewSaved" class="item" effect="dark" content="Cung cấp đánh giá cho phản hồi" placement="top">
@@ -347,68 +349,557 @@ export default ({
             if (this.isAiReview) {
                 const question = this.$store.getters['question/getSelected']
                 const topic = question.questionsPart.find(q => q.name == 'Question').content
-                let chartDescription = ''
-                const chart = question.questionsPart.find(q => q.name == 'Chart')
-                if (chart) {
-                  chartDescription = await reviewService.getChartDescription(chart.content)
-                }
                 let completedCount = 0
-                this.rubricCriteria.forEach(criteria => {
-                  const model = {
+                if (question.section == 'Academic Writing Task 2') {
+                  // 1. Get scores for the essay
+                  // 1 call
+                  const scoreModel = {
                     task: question.section,
                     topic: topic,
-                    essay: this.documentText,
-                    criteriaName: criteria.name,
-                    feedbackLanguage: this.feedbackLanguage,
-                    chartDescription: chartDescription
+                    essay: this.documentText
                   }
-
-                  reviewService.getAIFeedbackForCriteriaV2(model).then(rs => {
-                    let comment = rs
-                    let score = 0
-                    // get the score from the comment
-                    if (criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment') {
-                      var comments = comment.split('\n')
-                      if (comments && comments.length > 0) {
-                        const scoreString = comments[0].substr(comments[0].length - 3)
-                        score = parseInt(scoreString) || 0
-                        // re-compose the comment
-                        comments.splice(0, 2)
-                        comment = comments.join('\n')
+                  reviewService.getEssayScore(scoreModel).then(scores => {
+                    if (scores) {
+                      this.rubricCriteria.forEach(criteria => {
+                        if (criteria.name == 'Task Achievement') {
+                          criteria.mark = scores.taskAchievementScore
+                        } else if (criteria.name == 'Task Response') {
+                          criteria.mark = scores.taskResponseScore
+                        } else if (criteria.name == 'Coherence & Cohesion') {
+                          criteria.mark = scores.coherenceScore
+                        } else if (criteria.name == 'Lexical Resource') {
+                          criteria.mark = scores.lexicalResourceScore
+                        } else if (criteria.name == 'Grammatical Range & Accuracy') {
+                          criteria.mark = scores.grammarScore
+                        } else if (criteria.name == 'Overall Score & Feedback') {
+                          criteria.mark = scores.overallScore
+                        }
+                      })
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
                       }
                     }
+                  })
+                }
 
-                    // show the comment and mark
-                    criteria.comment = comment
-                    criteria.mark = score
-                    // submit the review
-                    criteria.loading = false
-                    completedCount++
-                    if (completedCount == 7) {
-                      // update overall band score
-                      const fourCriteria = this.rubricCriteria.filter(c => c.name != 'Overall Score & Feedback' && c.name != 'Critical Errors' && c.name != 'Arguments Assessment')
-                      const index = this.rubricCriteria.findIndex(c => c.name == 'Overall Score & Feedback')
-                      const average = fourCriteria.reduce((total, next) => total + next.mark, 0) / 4
-                      this.rubricCriteria[index].mark = (Math.round(average * 2) / 2).toFixed(1)
+                this.rubricCriteria.forEach(criteria => {
+                  if (criteria.name == 'Critical Errors') {
+                    // 2. Get feedback for errors
+                    // 1 call
+                    const split = this.documentText.split('\n')
+                    const paragraphs = split.filter(p => p.length > 50)
+                    const pCount = paragraphs.length
+                    let errorCompletedCount = 0
 
-                      // Save the criteria synchronously
-                      var reviewData = []
-                      this.rubricCriteria.forEach(r => {
-                        reviewData.push({
-                          CriteriaName: r.name,
-                          Comment: r.comment,
-                          CriteriaId: r.id,
-                          Score: r.mark,
-                          ReviewId: this.reviewId,
-                          UserFeedback: r.userFeedback
-                        })
-                      })
+                    const errors = []
+                    for (let i = 0; i < paragraphs.length; i++) {
+                      const paragraph = paragraphs[i]
+                      const order = i + 1
+                      const model = {
+                        essay: paragraph,
+                        feedbackLanguage: this.feedbackLanguage
+                      }
+                      reviewService.getFeedbackForErrors(model).then(rs => {
+                        criteria.loading = false
+                        criteria.comment += rs + '\n'
 
-                      reviewService.saveReviewFeedback(this.reviewId, reviewData).then(rs => {
-                        this.reviewSaved = true
+                        let paragraphLang = 'Đoạn'
+                        if (this.feedbackLanguage != 'vn') { paragraphLang = 'Paragraph' }
+                        errors[i] = paragraphLang + ' ' + order + ':\n' + rs + '\n'
+                        errorCompletedCount++
+                        if (errorCompletedCount == pCount) {
+                          criteria.comment = errors.join('\n')
+                          completedCount++
+                          console.log(completedCount)
+                          if (completedCount == 15) {
+                            this.submitReview()
+                          }
+                        }
                       })
                     }
-                  })
+                  } else if (criteria.name == 'Task Achievement') {
+                    const chart = question.questionsPart.find(q => q.name == 'Chart')
+                    if (chart) {
+                      // Get chart content first
+                      // To do: get chart description when adding new question
+                      reviewService.getChartDescription(chart.content).then(rs => {
+                        const chartDescription = rs
+
+                        // Get score now
+                        const scoreModel = {
+                          task: question.section,
+                          topic: topic,
+                          essay: this.documentText,
+                          chartDescription: chartDescription
+                        }
+                        reviewService.getEssayScore(scoreModel).then(scores => {
+                          if (scores) {
+                            this.rubricCriteria.forEach(criteria => {
+                              if (criteria.name == 'Task Achievement') {
+                                criteria.mark = scores.taskAchievementScore
+                              } else if (criteria.name == 'Task Response') {
+                                criteria.mark = scores.taskResponseScore
+                              } else if (criteria.name == 'Coherence & Cohesion') {
+                                criteria.mark = scores.coherenceScore
+                              } else if (criteria.name == 'Lexical Resource') {
+                                criteria.mark = scores.lexicalResourceScore
+                              } else if (criteria.name == 'Grammatical Range & Accuracy') {
+                                criteria.mark = scores.grammarScore
+                              } else if (criteria.name == 'Overall Score & Feedback') {
+                                criteria.mark = scores.overallScore
+                              }
+                            })
+                            completedCount++
+                            if (completedCount == 15) {
+                              this.submitReview()
+                            }
+                          }
+                        })
+
+                        // 3. Get feedback for Task Achievement
+                        // 3 calls
+                        const model1 = {
+                          task: question.section,
+                          topic: topic,
+                          essay: this.documentText,
+                          criteriaName: 'Fulfilling the Prompt Requirements',
+                          feedbackLanguage: this.feedbackLanguage,
+                          chartDescription: chartDescription
+                        }
+
+                        reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                          rs = rs.replace('Detailed assessment:\n', 'Detailed assessment: ')
+                          // show the comment and mark
+                          criteria.comment += '- Fulfilling the Prompt Requirements:\n\n' + rs + '\n\n'
+                          // submit the review
+                          criteria.loading = false
+                          completedCount++
+                          if (completedCount == 15) {
+                            this.submitReview()
+                          }
+                        })
+
+                        const model2 = {
+                          task: question.section,
+                          topic: topic,
+                          essay: this.documentText,
+                          criteriaName: 'Highlighting Key Features',
+                          feedbackLanguage: this.feedbackLanguage,
+                          chartDescription: chartDescription
+                        }
+
+                        reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                          // show the comment and mark
+                          criteria.comment += '- Highlighting Key Features:\n\n' + rs + '\n\n'
+                          // submit the review
+                          criteria.loading = false
+                          completedCount++
+                          if (completedCount == 15) {
+                            this.submitReview()
+                          }
+                        })
+
+                        const model3 = {
+                          task: question.section,
+                          topic: topic,
+                          essay: this.documentText,
+                          criteriaName: 'Comparing and Contrasting Data',
+                          feedbackLanguage: this.feedbackLanguage,
+                          chartDescription: chartDescription
+                        }
+
+                        reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                          // show the comment and mark
+                          criteria.comment += '- Comparing and Contrasting Data:\n\n' + rs + '\n\n'
+                          // submit the review
+                          criteria.loading = false
+                          completedCount++
+                          if (completedCount == 15) {
+                            this.submitReview()
+                          }
+                        })
+                      })
+                    } else {
+                      // Get score and feedback for Task Achievement without the chart
+                      const scoreModel = {
+                        task: question.section,
+                        topic: topic,
+                        essay: this.documentText
+                      }
+                      reviewService.getEssayScore(scoreModel).then(scores => {
+                        if (scores) {
+                          this.rubricCriteria.forEach(criteria => {
+                            if (criteria.name == 'Task Achievement') {
+                              criteria.mark = scores.taskAchievementScore
+                            } else if (criteria.name == 'Task Response') {
+                              criteria.mark = scores.taskResponseScore
+                            } else if (criteria.name == 'Coherence & Cohesion') {
+                              criteria.mark = scores.coherenceScore
+                            } else if (criteria.name == 'Lexical Resource') {
+                              criteria.mark = scores.lexicalResourceScore
+                            } else if (criteria.name == 'Grammatical Range & Accuracy') {
+                              criteria.mark = scores.grammarScore
+                            } else if (criteria.name == 'Overall Score & Feedback') {
+                              criteria.mark = scores.overallScore
+                            }
+                          })
+                          completedCount++
+                          if (completedCount == 15) {
+                            this.submitReview()
+                          }
+                        }
+                      })
+
+                      // 3. Get feedback for Task Achievement
+                      // 3 calls
+                      const model1 = {
+                        task: question.section,
+                        topic: topic,
+                        essay: this.documentText,
+                        criteriaName: 'Fulfilling the Prompt Requirements',
+                        feedbackLanguage: this.feedbackLanguage
+                      }
+
+                      reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                        rs = rs.replace('Detailed assessment:\n', 'Detailed assessment: ')
+                        // show the comment and mark
+                        criteria.comment += '- Fulfilling the Prompt Requirements:\n\n' + rs + '\n\n'
+                        // submit the review
+                        criteria.loading = false
+                        completedCount++
+                        if (completedCount == 15) {
+                          this.submitReview()
+                        }
+                      })
+
+                      const model2 = {
+                        task: question.section,
+                        topic: topic,
+                        essay: this.documentText,
+                        criteriaName: 'Highlighting Key Features',
+                        feedbackLanguage: this.feedbackLanguage
+                      }
+
+                      reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                        // show the comment and mark
+                        criteria.comment += '- Highlighting Key Features:\n\n' + rs + '\n\n'
+                        // submit the review
+                        criteria.loading = false
+                        completedCount++
+                        if (completedCount == 15) {
+                          this.submitReview()
+                        }
+                      })
+
+                      const model3 = {
+                        task: question.section,
+                        topic: topic,
+                        essay: this.documentText,
+                        criteriaName: 'Comparing and Contrasting Data',
+                        feedbackLanguage: this.feedbackLanguage
+                      }
+
+                      reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                        // show the comment and mark
+                        criteria.comment += '- Comparing and Contrasting Data:\n\n' + rs + '\n\n'
+                        // submit the review
+                        criteria.loading = false
+                        completedCount++
+                        if (completedCount == 15) {
+                          this.submitReview()
+                        }
+                      })
+                    }
+
+                    // const model4 = {
+                    //   task: question.section,
+                    //   topic: topic,
+                    //   essay: this.documentText,
+                    //   criteriaName: 'Data Selection and Relevance',
+                    //   feedbackLanguage: this.feedbackLanguage,
+                    //   chartDescription: chartDescription
+                    // }
+
+                    // reviewService.getAIFeedbackForCriteriaV3(model4).then(rs => {
+                    //   // show the comment and mark
+                    //   criteria.comment += '- Data Selection and Relevance:\n\n' + rs + '\n\n'
+                    //   // submit the review
+                    //   criteria.loading = false
+                    //   completedCount++
+                    //   console.log(completedCount)
+                    //   if (completedCount == 7) {
+                    //     // this.submittedReview()
+                    //   }
+                    // })
+                  } else if (criteria.name == 'Task Response') {
+                    // 3. Get feedback for Task Achievement
+                    // 3 calls
+                    const model1 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Addressing All Parts',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Addressing All Parts of the Question:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+
+                    const model2 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Clarity of Position',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Clarity of Position:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+
+                    const model3 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Development of Ideas',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Development of Ideas:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+                  } else if (criteria.name == 'Coherence & Cohesion') {
+                    // 3. Get feedback for Task Achievement
+                    // 3 calls
+                    const model1 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Logical Organization',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Logical Organization:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+
+                    const model2 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Paragraphing',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Paragraphing:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+
+                    const model3 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Use of Cohesive Devices',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Use of Cohesive Devices:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+                  } else if (criteria.name == 'Lexical Resource') {
+                    // 3. Get feedback for Lexical Resource
+                    // 3 calls
+                    const model1 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Range of Vocabulary',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Range of Vocabulary:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+
+                    const model2 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Accuracy of Word Choice',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Accuracy of Word Choice:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+
+                    const model3 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Spelling and Word Formation',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Spelling and Word Formation:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+                  } else if (criteria.name == 'Grammatical Range & Accuracy') {
+                    // 3. Get feedback for Grammatical Range & Accuracy
+                    // 3 calls
+                    const model1 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Range of Grammatical Structures',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Range of Grammatical Structures:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+
+                    const model2 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Sentence Complexity',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Sentence Complexity:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+
+                    const model3 = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: 'Accuracy in Grammatical Forms',
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                      // show the comment and mark
+                      criteria.comment += '- Accuracy in Grammatical Forms:\n\n' + rs + '\n\n'
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+                  } else {
+                    // This is for Argument Assessment and Overall Score & Feedback
+                    // 2 calls
+                    const model = {
+                      task: question.section,
+                      topic: topic,
+                      essay: this.documentText,
+                      criteriaName: criteria.name,
+                      feedbackLanguage: this.feedbackLanguage
+                    }
+
+                    reviewService.getAIFeedbackForCriteriaV2(model).then(rs => {
+                      let comment = rs
+                      // get the score from the comment
+                      if (criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment') {
+                        var comments = comment.split('\n')
+                        if (comments && comments.length > 0) {
+                          // re-compose the comment
+                          comments.splice(0, 2)
+                          comment = comments.join('\n')
+                        }
+                      }
+                      // show the comment and mark
+                      criteria.comment = comment
+                      // submit the review
+                      criteria.loading = false
+                      completedCount++
+                      console.log(completedCount)
+                      if (completedCount == 15) {
+                        this.submitReview()
+                      }
+                    })
+                  }
 
                   // reviewService.getAIFeedbackForCriteriaV1(model).then(rs => {
                   //   criteria.loading = false
@@ -450,6 +941,24 @@ export default ({
       } else {
         console.log('Error: rubric cannot be found!')
       }
+    },
+    submitReview() {
+      console.log('submitted!')
+      // Save the criteria synchronously
+      var reviewData = []
+      this.rubricCriteria.forEach(r => {
+        reviewData.push({
+          CriteriaName: r.name,
+          Comment: r.comment,
+          CriteriaId: r.id,
+          Score: r.mark,
+          ReviewId: this.reviewId,
+          UserFeedback: r.userFeedback
+        })
+      })
+      reviewService.saveReviewFeedback(this.reviewId, reviewData).then(rs => {
+        this.reviewSaved = true
+      })
     },
     onFocus(criteria) {
       criteria.isFocused = true
