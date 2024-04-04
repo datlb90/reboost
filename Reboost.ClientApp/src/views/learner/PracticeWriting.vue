@@ -14,14 +14,50 @@
                           <div class="title-tab">
                             {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
                           </div>
-                          <!-- <div style="float: right;">
+                          <div style="float: right;">
                             <div>
+                              <el-tooltip v-if="isTesting" class="item" effect="light" content="Nhấn để thoát test mode" placement="bottom">
+                                <el-button
+                                  type="info"
+                                  plain
+                                  icon="el-icon-close"
+                                  size="mini"
+                                  style="padding-left: 8px; padding-right: 8px; "
+                                  @click="cancelTest()"
+                                />
+                              </el-tooltip>
 
-                              <el-checkbox v-model="isTest" size="mini" border style="margin-bottom: 0px;" @change="changedOption()"> Test Mode</el-checkbox>
-                              <el-tag v-if="isTesting" class="mr-2" type="danger" size="medium" style="height: 30px; line-height: 28px;"><i class="el-icon-timer" style="font-size: 14px; margin-right: 4px;" />{{ minute }} : {{ second }}</el-tag>
-                              <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" style="padding: 8px 15px;" @click="startTest()">Start Test</el-button>
+                              <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Nhấn để dừng tính giờ" placement="bottom">
+                                <el-button
+                                  type="info"
+                                  plain
+                                  size="mini"
+                                  style="margin-left: 2px; padding-left: 8px; padding-right: 8px;"
+                                  @click="pauseTest()"
+                                >
+                                  <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-pause" />
+                                  {{ minute }} : {{ getSecond }}
+                                </el-button>
+                              </el-tooltip>
+
+                              <el-tooltip v-if="isTesting && isTestingPaused" class="item" effect="light" content="Nhấn để tiếp tục tính giờ" placement="bottom">
+                                <el-button
+                                  type="info"
+                                  plain
+                                  size="mini"
+                                  style="margin-left: 2px; padding-left: 8px; padding-right: 8px;     font-weight: bold;"
+                                  @click="resumeTest()"
+                                >
+                                  <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-play" />
+                                  {{ minute }} : {{ getSecond }}
+                                </el-button>
+                              </el-tooltip>
+
+                              <el-tooltip v-if="!isTesting && !submissionId" class="item" effect="light" content="Nhấn để bắt đầu tính giờ" placement="bottom">
+                                <el-button size="mini" type="danger" plain @click="enableTestMode()">Test Mode</el-button>
+                              </el-tooltip>
                             </div>
-                          </div> -->
+                          </div>
                         </div>
 
                         <div>
@@ -179,11 +215,6 @@
               <tab-samples :question-id="questionId" />
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Tiêu chí chuẩn" name="rubric" style="height: 100%; position: relative;">
-            <div class="par-content">
-              <tab-rubric :question-id="questionId" />
-            </div>
-          </el-tab-pane>
           <el-tab-pane label="Bài đã nộp" name="submissions" style="height: 100%; position: relative;">
             <div class="par-content" style="padding-right: 10px;">
               <el-table
@@ -333,9 +364,10 @@
                 style="float: right; margin-left: 5px"
                 size="mini"
                 :disabled="!(writingContent && writingContent.length > 0)"
+                :loading="isLoading"
                 type="primary"
                 @click="submit()"
-              >Nộp bài</el-button>
+              >Nhận phản hồi</el-button>
               <el-button
                 v-if="isEdit && !isFreeRequested && !isProRequested"
                 style="float: right; margin-left: 5px"
@@ -346,10 +378,11 @@
                 v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
                 size="mini"
                 :disabled="!(writingContent && writingContent.length > 0)"
+                :loading="isLoading"
                 type="primary"
                 style="float: right; margin-left: 5px;"
                 @click="submit()"
-              >Nộp bài</el-button>
+              >Nhận phản hồi</el-button>
               <el-button
                 v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
                 size="mini"
@@ -458,10 +491,57 @@
                           >
                             {{ getDataQuestion.type }}
                           </el-tag>
+
                         </div>
                       </div>
 
                     </div>
+
+                    <div>
+                      <div>
+                        <el-tooltip v-if="isTesting" class="item" effect="light" content="Nhấn để thoát test mode" placement="bottom">
+                          <el-button
+                            type="info"
+                            plain
+                            icon="el-icon-close"
+                            size="mini"
+                            style="padding-left: 8px; padding-right: 8px; "
+                            @click="cancelTest()"
+                          />
+                        </el-tooltip>
+
+                        <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Nhấn để dừng tính giờ" placement="bottom">
+                          <el-button
+                            type="info"
+                            plain
+                            size="mini"
+                            style="margin-left: 2px; padding-left: 8px; padding-right: 8px;"
+                            @click="pauseTest()"
+                          >
+                            <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-pause" />
+                            {{ minute }} : {{ getSecond }}
+                          </el-button>
+                        </el-tooltip>
+
+                        <el-tooltip v-if="isTesting && isTestingPaused" class="item" effect="light" content="Nhấn để tiếp tục tính giờ" placement="bottom">
+                          <el-button
+                            type="info"
+                            plain
+                            size="mini"
+                            style="margin-left: 2px; padding-left: 8px; padding-right: 8px;     font-weight: bold;"
+                            @click="resumeTest()"
+                          >
+                            <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-play" />
+                            {{ minute }} : {{ getSecond }}
+                          </el-button>
+                        </el-tooltip>
+
+                        <el-tooltip v-if="!isTesting && !submissionId" class="item" effect="light" content="Nhấn để bắt đầu tính giờ" placement="bottom">
+                          <el-button size="mini" type="danger" plain @click="enableTestMode()">Test Mode</el-button>
+                        </el-tooltip>
+                      </div>
+                    </div>
+
                     <div class="info" style="margin-top: 5px; font-size: 16px;" v-html="getDataQuestion.direction" />
                   </el-col>
                 </el-row>
@@ -690,30 +770,32 @@
               style="float: right; margin-left: 5px"
               size="mini"
               :disabled="!(writingContent && writingContent.length > 0)"
+              :loading="isLoading"
               type="primary"
               @click="submit()"
-            >Submit</el-button>
+            >Nhận phản hồi</el-button>
             <el-button
               v-if="isEdit && !isFreeRequested && !isProRequested"
               style="float: right; margin-left: 5px"
               size="mini"
               @click="isEdit=false"
-            >Edit</el-button>
+            >Sửa</el-button>
             <el-button
               v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
               size="mini"
               :disabled="!(writingContent && writingContent.length > 0)"
               type="primary"
               style="float: right; margin-left: 5px;"
+              :loading="isLoading"
               @click="submit()"
-            >Submit</el-button>
+            >Nhận phản hồi</el-button>
             <el-button
               v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
               size="mini"
               :disabled="!(writingContent && writingContent.length > 0)"
               style="float: right;"
               @click="save()"
-            >Save</el-button>
+            >Lưu lại</el-button>
           </div>
         </div>
         <div style="flex-grow: 1;">
@@ -739,7 +821,6 @@
         </span>
       </el-dialog>
     </div>
-
   </div>
 </template>
 
@@ -811,10 +892,19 @@ export default {
       screenWidth: window.innerWidth,
       hasReview: false,
       docId: null,
-      reviewId: null
+      reviewId: null,
+      isTestingPaused: false,
+      isLoading: false
     }
   },
   computed: {
+    getSecond() {
+      if (this.second < 10) {
+        return '0' + this.second.toString()
+      } else {
+        return this.second.toString()
+      }
+    },
     currentUser() {
       return this.$store.getters['auth/getUser']
     },
@@ -914,6 +1004,107 @@ export default {
     clearInterval(this.timeSpentInterval)
   },
   methods: {
+    submit() {
+      this.isLoading = true
+      this.dialogVisible = false
+      localStorage.removeItem(this.idLocalStorage)
+      clearInterval(this.timeSpentInterval)
+      var timeInSeconds
+      if (this.isTesting) {
+        timeInSeconds = (+this.getDataQuestion.time.slice(0, 2) - this.minute - 1) * 60 + 60 - this.second
+      } else {
+        timeInSeconds = moment().diff(this.timeStart, 'seconds')
+      }
+      if (!this.writingContent) {
+        this.$notify.error({
+          title: 'Bài viết để trống',
+          message: 'Bạn hãy hoàn thiện bài viết',
+          type: 'error',
+          duration: 3000
+        })
+        return
+      }
+      if (this.timeSpent > 0) {
+        timeInSeconds += this.timeSpent
+      }
+      var data = {
+        filename: new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() + new Date().getDate().toString() + new Date().getHours().toString() + new Date().getMinutes().toString() + new Date().getSeconds().toString() + '.pdf',
+        text: this.writingContent,
+        userId: this.currentUser.id,
+        questionId: +this.questionId,
+        timeSpentInSeconds: timeInSeconds
+      }
+      this.timeSpent = 0
+      this.timeStart = moment()
+
+      // Create a new submission everytime user click Submit
+      data.status = 'Submitted'
+      documentService.submitDocument(data).then(rs => {
+        if (rs) {
+          this.hasSubmitionForThisQuestion = true
+          this.submissionId = rs.submissions[0]?.id
+          this.writingSubmitted = true
+
+          this.$nextTick(() => {
+            // Hide View Review button if any
+            this.hasReview = false
+            // Allow editting right after submission
+            this.isEdit = true
+            // Update url for submission
+            this.$router.push('/practice/' + this.questionId + '/' + this.submissionId)
+            // Open the checkout dialog
+            this.$refs.checkoutDialog?.openDialog()
+          })
+        }
+      })
+    },
+    enableTestMode() {
+      const time = this.getDataQuestion.time.slice(0, 2)
+      this.isTesting = true
+      this.minute = time
+      this.second = 0
+      this.timeSpentInterval = setInterval(() => {
+        this.second--
+        if (this.second < 0) {
+          this.second = 59
+          this.minute--
+          if (this.minute < 0) {
+            clearInterval(this.timeSpentInterval)
+            this.isTesting = false
+          }
+        }
+        if (this.minute == 0 && this.second == 0) {
+          this.submit()
+          this.isTesting = false
+        }
+      }, 1000)
+    },
+    pauseTest() {
+      this.isTestingPaused = true
+      clearInterval(this.timeSpentInterval)
+    },
+    resumeTest() {
+      this.isTestingPaused = false
+      this.timeSpentInterval = setInterval(() => {
+        this.second--
+        if (this.second < 0) {
+          this.second = 59
+          this.minute--
+          if (this.minute < 0) {
+            clearInterval(this.timeSpentInterval)
+            this.isTesting = false
+          }
+        }
+        if (this.minute == 0 && this.second == 0) {
+          this.submit()
+          this.isTesting = false
+        }
+      }, 1000)
+    },
+    cancelTest() {
+      this.isTesting = false
+      clearInterval(this.timeSpentInterval)
+    },
     editSubmission() {
       this.isEdit = false
       this.writingSubmitted = false
@@ -1081,59 +1272,6 @@ export default {
         })
       }
     },
-    submit() {
-      this.dialogVisible = false
-      localStorage.removeItem(this.idLocalStorage)
-      clearInterval(this.timeSpentInterval)
-      var timeInSeconds
-      if (this.isTesting) {
-        timeInSeconds = (+this.getDataQuestion.time.slice(0, 2) - this.minute - 1) * 60 + 60 - this.second
-      } else {
-        timeInSeconds = moment().diff(this.timeStart, 'seconds')
-      }
-      if (!this.writingContent) {
-        this.$notify.error({
-          title: 'Không thể nộp bài',
-          message: 'Bạn hãy hoàn thiện bài viết trước khi nộp',
-          type: 'error',
-          duration: 3000
-        })
-        return
-      }
-      if (this.timeSpent > 0) {
-        timeInSeconds += this.timeSpent
-      }
-      var data = {
-        filename: new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() + new Date().getDate().toString() + new Date().getHours().toString() + new Date().getMinutes().toString() + new Date().getSeconds().toString() + '.pdf',
-        text: this.writingContent,
-        userId: this.currentUser.id,
-        questionId: +this.questionId,
-        timeSpentInSeconds: timeInSeconds
-      }
-      this.timeSpent = 0
-      this.timeStart = moment()
-
-      // Create a new submission everytime user click Submit
-      data.status = 'Submitted'
-      documentService.submitDocument(data).then(rs => {
-        if (rs) {
-          this.hasSubmitionForThisQuestion = true
-          this.submissionId = rs.submissions[0]?.id
-          this.writingSubmitted = true
-
-          this.$nextTick(() => {
-            // Hide View Review button if any
-            this.hasReview = false
-            // Allow editting right after submission
-            this.isEdit = true
-            // Update url for submission
-            this.$router.push('/practice/' + this.questionId + '/' + this.submissionId)
-            // Open the checkout dialog
-            this.$refs.checkoutDialog?.openDialog()
-          })
-        }
-      })
-    },
     toggleBtnShowTab() {
       this.isShowTimer = true
       this.isShowReading = false
@@ -1184,30 +1322,6 @@ export default {
         }
       }, 50)
     },
-    changedOption() {
-      if (this.isTest) {
-        const time = +this.getDataQuestion.time.slice(0, 2)
-        this.minute = time
-        this.second = 0
-      } else {
-        this.isTesting = false
-        clearInterval(this.timeSpentInterval)
-      }
-      // this.isShowQuestion = !this.isShowQuestion
-      this.showStartTestButton = !this.showStartTestButton
-      // if (!this.isTest) {
-      //   this.isShowReading = true
-      //   this.minute = 0
-      //   this.second = 3
-      //   this.closeTimer = false
-      //   this.isShowScript = false
-      //   this.isShowTimer = false
-      // } else {
-      //   if (!this.closeTimer) {
-      //     this.isShowReading = false
-      //   }
-      // }
-    },
     showDiscussion(e) {
       if (e.label == 'Discussions') {
         this.tabDisCussionShowed = true
@@ -1219,30 +1333,6 @@ export default {
     },
     logSmt(e) {
       console.log(e)
-    },
-    startTest() {
-      // const time = +this.getDataQuestion.time.slice(0, 2)
-      this.isTesting = true
-      this.minute = 19 // time
-      this.second = 59
-      // this.isShowQuestion = true
-
-      this.timeSpentInterval = setInterval(() => {
-        this.second--
-        if (this.second < 0) {
-          this.second = 59
-          this.minute--
-          if (this.minute < 0) {
-            clearInterval(this.timeSpentInterval)
-            this.isTesting = false
-            this.dialogVisible = true
-          }
-        }
-
-        if (this.minute == 0 && this.second == 0) {
-          console.log('Submitted!')
-        }
-      }, 1000)
     },
     onSubmissionChange(id) {
       this.$router.push(`/practice/${this.questionId}/${id}`)
