@@ -219,9 +219,7 @@ export default {
         new ListItem(),
         new BulletList(),
         new OrderedList(),
-        new FontSize({
-          fontSizes: ['8', '10', '12', '14', '16', '18', '20', '22', '24', '26', '28', '30', '32', '34', '36']
-        }),
+        new FontSize(),
         new TextColor(),
         new Indent(),
         new LineHeight()

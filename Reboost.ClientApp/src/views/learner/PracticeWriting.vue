@@ -3,7 +3,8 @@
     <splitpanes class="default-theme" vertical style="height: 100%; width: 100%;">
       <pane>
         <el-tabs v-model="activeTab" type="border-card" style="height: 100%;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
-          <el-tab-pane label="Chủ đề" name="description">
+          <el-tab-pane name="description">
+            <p slot="label" style="font-size: 14px; line-height: 2.6;">Chủ đề</p>
             <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
               <div style="margin-bottom: 8px;">
                 <el-row>
@@ -13,50 +14,6 @@
                         <div style="height: 32px;">
                           <div class="title-tab">
                             {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
-                          </div>
-                          <div style="float: right;">
-                            <div>
-                              <el-tooltip v-if="isTesting" class="item" effect="light" content="Nhấn để thoát test mode" placement="bottom">
-                                <el-button
-                                  type="info"
-                                  plain
-                                  icon="el-icon-close"
-                                  size="mini"
-                                  style="padding-left: 8px; padding-right: 8px; "
-                                  @click="cancelTest()"
-                                />
-                              </el-tooltip>
-
-                              <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Nhấn để dừng tính giờ" placement="bottom">
-                                <el-button
-                                  type="info"
-                                  plain
-                                  size="mini"
-                                  style="margin-left: 2px; padding-left: 8px; padding-right: 8px;"
-                                  @click="pauseTest()"
-                                >
-                                  <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-pause" />
-                                  {{ minute }} : {{ getSecond }}
-                                </el-button>
-                              </el-tooltip>
-
-                              <el-tooltip v-if="isTesting && isTestingPaused" class="item" effect="light" content="Nhấn để tiếp tục tính giờ" placement="bottom">
-                                <el-button
-                                  type="info"
-                                  plain
-                                  size="mini"
-                                  style="margin-left: 2px; padding-left: 8px; padding-right: 8px;     font-weight: bold;"
-                                  @click="resumeTest()"
-                                >
-                                  <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-play" />
-                                  {{ minute }} : {{ getSecond }}
-                                </el-button>
-                              </el-tooltip>
-
-                              <el-tooltip v-if="!isTesting && !submissionId" class="item" effect="light" content="Nhấn để bắt đầu tính giờ" placement="bottom">
-                                <el-button size="mini" type="danger" plain @click="enableTestMode()">Test Mode</el-button>
-                              </el-tooltip>
-                            </div>
                           </div>
                         </div>
 
@@ -195,8 +152,9 @@
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Ý tưởng & từ vựng" name="help" style="height: 100%; position: relative;">
-            <div class="par-content">
+          <el-tab-pane name="idea" style="height: 100%; position: relative;">
+            <p slot="label" style="font-size: 14px; line-height: 2.6;">Ý tưởng</p>
+            <div>
               <div v-if="getTip != ''">
                 <el-card class="box-card" style="font-size: 14px; padding: 20px;">
                   <div id="tipContent" v-html="getTip.content" />
@@ -205,18 +163,184 @@
               <div v-else>
                 <el-card class="box-card" style="font-size: 14px; padding: 20px;">
                   <div> We are working on this section, please check back soon for help on the writing topic including suggesstions on development ideas,
-                    instructions on how to structure your eassy, and useful vocabulary that could be used to improve your band score.</div>
+                    instructions on how to structure your eassy.</div>
                 </el-card>
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Bài mẫu" name="sample" style="height: 100%; position: relative;">
-            <div class="par-content">
+          <el-tab-pane name="vocabulary" style="height: 100%; position: relative;">
+            <p slot="label" style="font-size: 14px; line-height: 2.6;">Từ vựng</p>
+            <div>
+              <div v-if="getVocaburary != ''">
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div id="tipContent" v-html="getVocaburary.content" />
+                </el-card>
+              </div>
+              <div v-else>
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div> We are working on this section, please check back soon for help on the writing topic including suggesstions on useful vocabulary that could be used to improve your band score.</div>
+                </el-card>
+              </div>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane name="sample" style="height: 100%; position: relative;">
+            <p slot="label" style="font-size: 14px; line-height: 2.6;">Bài viết mẫu</p>
+            <div>
               <tab-samples :question-id="questionId" />
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Bài đã nộp" name="submissions" style="height: 100%; position: relative;">
-            <div class="par-content" style="padding-right: 10px;">
+        </el-tabs>
+      </pane>
+      <pane v-if="!tabDisCussionShowed">
+        <el-tabs v-model="activeTab2" type="border-card" style="height: 100%;" @tab-remove="onTabRemove">
+          <el-tab-pane name="essay">
+            <p slot="label" style="font-size: 14px; line-height: 2.6;">Bài làm</p>
+            <div style="height: 100%; display: flex; flex-direction: column;">
+              <div class="header-passage">
+                <div style="float: left; margin-right: 5px; ">
+                  <div>
+                    <el-tooltip v-if="isTesting" class="item" effect="light" content="Huỷ tính giờ" placement="bottom">
+                      <el-button
+                        type="info"
+                        plain
+                        icon="el-icon-close"
+                        size="mini"
+                        style="padding-left: 8px; padding-right: 8px; "
+                        @click="cancelTest()"
+                      />
+                    </el-tooltip>
+
+                    <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Nhấn để tạm dừng tính giờ" placement="bottom">
+                      <el-button
+                        type="info"
+                        plain
+                        size="mini"
+                        style="margin-left: 2px; padding-left: 8px; padding-right: 8px;"
+                        @click="pauseTest()"
+                      >
+                        <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-pause" />
+                        {{ minute }} : {{ getSecond }}
+                      </el-button>
+                    </el-tooltip>
+
+                    <el-tooltip v-if="isTesting && isTestingPaused" class="item" effect="light" content="Nhấn để tiếp tục tính giờ" placement="bottom">
+                      <el-button
+                        type="info"
+                        plain
+                        size="mini"
+                        style="margin-left: 2px; padding-left: 8px; padding-right: 8px;     font-weight: bold;"
+                        @click="resumeTest()"
+                      >
+                        <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-play" />
+                        {{ minute }} : {{ getSecond }}
+                      </el-button>
+                    </el-tooltip>
+
+                    <el-tooltip v-if="!isTesting && !submissionId" class="item" effect="light" content="Nhấn để bắt đầu tính giờ. Bài làm sẽ được nộp khi hết giờ." placement="bottom">
+                      <el-button size="mini" type="danger" plain @click="enableTestMode()">
+                        <i style="font-weight: bold; margin-right: 2px;" class="el-icon-timer" />
+                        Tính giờ</el-button>
+                    </el-tooltip>
+                  </div>
+                </div>
+
+                <el-button
+                  v-if="hasReview && docId && reviewId"
+                  style="float: left; margin-right: 5px"
+                  size="mini"
+                  type="primary"
+                  plain
+                  @click="viewFeedback()"
+                >Xem phản hồi</el-button>
+                <el-button
+                  v-if="((submissionId && isEdit) || writingSubmitted) && !isProRequested && !hasReview"
+                  style="float: left; margin-right: 5px"
+                  size="mini"
+                  type="primary"
+                  plain
+                  @click="requestReview()"
+                >Nhận phản hồi</el-button>
+                <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
+                  <el-tag
+                    v-if="isShowCountWord && countWord != 0"
+                    type="info"
+                    size="medium"
+                    closable
+                    effect="plain"
+                    :disable-transitions="true"
+                    @close="toggleShowCount()"
+                  >
+                    Số từ: {{ countWord }}
+                  </el-tag>
+
+                  <el-button v-if="!isShowCountWord" size="mini" plain @click="toggleShowCount()">
+                    Hiện số từ
+                  </el-button>
+                </div>
+                <div v-if="getQuestion != ''">
+                  <el-button
+                    v-if="!writingSubmitted && hasSubmitionForThisQuestion && !isEdit"
+                    style="float: right; margin-left: 5px"
+                    size="mini"
+                    :disabled="!(writingContent && writingContent.length > 0)"
+                    :loading="isLoading"
+                    type="primary"
+                    @click="submit()"
+                  >Nhận phản hồi</el-button>
+                  <el-button
+                    v-if="isEdit && !isFreeRequested && !isProRequested"
+                    style="float: right; margin-left: 5px"
+                    size="mini"
+                    @click="editSubmission()"
+                  >Sửa</el-button>
+                  <el-button
+                    v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
+                    size="mini"
+                    :disabled="!(writingContent && writingContent.length > 0)"
+                    :loading="isLoading"
+                    type="primary"
+                    style="float: right; margin-left: 5px;"
+                    @click="submit()"
+                  >Nhận phản hồi</el-button>
+                  <!-- <el-button
+                    v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
+                    size="mini"
+                    :disabled="!(writingContent && writingContent.length > 0)"
+                    style="float: right;"
+                    @click="save()"
+                  >Lưu lại</el-button> -->
+                </div>
+              </div>
+              <div style="flex-grow: 1;">
+                <textarea
+                  v-model="writingContent"
+                  :disabled="isEdit || writingSubmitted"
+                  placeholder="Bắt đầu bài viết của bạn ở đây ..."
+                  spellcheck="false"
+                  class="textarea-style"
+                  @keyup="countWords()"
+                />
+              </div>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane name="note" style="height: 100%; position: relative;">
+            <p slot="label" style="font-size: 14px; line-height: 2.6;">Ghi chú</p>
+            <div>
+              <div>
+                <el-tiptap
+                  v-model="questionNote"
+                  placeholder="Ghi chú của bạn cho chủ đề này, bao gồm việc lên ý tưởng, lập kế hoạch viết, xây dựng bố cục bài, cũng như lựa chọn về từ vựng và cấu trúc câu."
+                  :extensions="extensions"
+                  style="height: calc(100vh - 110px); font-size: 14px;"
+                  @onUpdate="onNoteUpdate()"
+                />
+              </div>
+            </div>
+
+          </el-tab-pane>
+          <el-tab-pane name="submissions" style="height: 100%; position: relative;">
+            <p slot="label" style="font-size: 14px; line-height: 2.6;">Bài đã nộp</p>
+            <div style="padding-right: 10px;">
               <el-table
                 :data="submissions"
                 stripe
@@ -283,7 +407,7 @@
               <div slot="header" class="box-card__title" style="min-width: 380px;">
                 <div style="height: 30px;">
                   <div style="width: 260px; float: left; margin-top: 5px; font-size: 14px; font-weight: bold;">
-                    Submitted at {{ item.submittedTimeStr }}
+                    Ngày nộp: {{ item.submittedTimeStr }}
                   </div>
                   <div style="float: right;">
                     <el-tag size="medium">Status: {{ item.status }}</el-tag>
@@ -296,7 +420,7 @@
                       size="medium"
                       effect="plain"
                     >
-                      Time Taken: {{ getTimeTaken(item.timeTaken) }}
+                      Thời gian: {{ getTimeTaken(item.timeTaken) }}
                     </el-tag>
                   </div>
                   <div style="float: left; margin-right: 5px;">
@@ -305,7 +429,7 @@
                       size="medium"
                       effect="plain"
                     >
-                      Word count: {{ item.text ? item.text.trim().split(/\b\S+\b/).length - 1 : 0 }}
+                      Số từ: {{ item.text ? item.text.trim().split(/\b\S+\b/).length - 1 : 0 }}
                     </el-tag>
                   </div>
                   <div style="margin-top: 8px; float: right; " @click="copyTextToClipboard(item.text)">
@@ -321,81 +445,6 @@
             </el-card>
           </el-tab-pane>
         </el-tabs>
-      </pane>
-      <pane v-if="!tabDisCussionShowed">
-        <div style="height: 100%; display: flex; flex-direction: column;">
-          <div class="header-passage">
-            <el-button
-              v-if="hasReview && docId && reviewId"
-              style="float: left; margin-right: 5px"
-              size="mini"
-              type="primary"
-              plain
-              @click="viewFeedback()"
-            >Xem phản hồi</el-button>
-            <el-button
-              v-if="((submissionId && isEdit) || writingSubmitted) && !isProRequested && !hasReview"
-              style="float: left; margin-right: 5px"
-              size="mini"
-              type="primary"
-              plain
-              @click="requestReview()"
-            >Yêu cầu chấm bài</el-button>
-            <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
-              <el-tag
-                v-if="isShowCountWord && countWord != 0"
-                type="info"
-                size="medium"
-                closable
-                effect="plain"
-                :disable-transitions="true"
-                @close="toggleShowCount()"
-              >
-                Word count: {{ countWord }}
-              </el-tag>
-
-              <el-button v-if="!isShowCountWord" size="mini" plain @click="toggleShowCount()">
-                Show Word Count
-              </el-button>
-            </div>
-            <div v-if="getQuestion != ''">
-              <el-button
-                v-if="!writingSubmitted && hasSubmitionForThisQuestion && !isEdit"
-                style="float: right; margin-left: 5px"
-                size="mini"
-                :disabled="!(writingContent && writingContent.length > 0)"
-                :loading="isLoading"
-                type="primary"
-                @click="submit()"
-              >Nhận phản hồi</el-button>
-              <el-button
-                v-if="isEdit && !isFreeRequested && !isProRequested"
-                style="float: right; margin-left: 5px"
-                size="mini"
-                @click="editSubmission()"
-              >Sửa</el-button>
-              <el-button
-                v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
-                size="mini"
-                :disabled="!(writingContent && writingContent.length > 0)"
-                :loading="isLoading"
-                type="primary"
-                style="float: right; margin-left: 5px;"
-                @click="submit()"
-              >Nhận phản hồi</el-button>
-              <el-button
-                v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
-                size="mini"
-                :disabled="!(writingContent && writingContent.length > 0)"
-                style="float: right;"
-                @click="save()"
-              >Lưu lại</el-button>
-            </div>
-          </div>
-          <div style="flex-grow: 1;">
-            <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Bắt đầu bài viết của bạn ở đây ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
-          </div>
-        </div>
       </pane>
     </splitpanes>
     <div>
@@ -420,8 +469,8 @@
   <div v-else id="practiceWritingContainer">
     <div style="width: 100%; margin-top: 55px; height: calc(100vh - 60px); overflow: auto;">
       <div id="tabs-wrapper">
-        <el-tabs v-model="activeTab" type="border-card" style="margin-bottom: 10px;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
-          <el-tab-pane label="Description" name="description">
+        <el-tabs v-model="activeTab" type="border-card" style="margin-bottom: 10px;" @tab-click="showDiscussion">
+          <el-tab-pane label="Chủ đề" name="description">
             <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
               <div style="margin-bottom: 8px;">
                 <el-row>
@@ -432,13 +481,6 @@
                           <div class="title-tab">
                             {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
                           </div>
-                          <!-- <div style="float: right;">
-                            <div>
-                              <el-tag v-if="isTesting" class="mr-2" type="danger" size="medium" style="height: 30px; line-height: 28px;"><i class="el-icon-timer" style="font-size: 14px; margin-right: 4px;" />{{ minute }} : {{ second }}</el-tag>
-                              <el-button v-if="showStartTestButton && !isTesting" class="mr-2" size="mini" style="padding: 8px 15px;" @click="startTest()">Start Test</el-button>
-                              <el-checkbox v-model="isTest" size="mini" border style="height: 30px; margin-bottom: 0px;" @change="changedOption()"> Test Mode</el-checkbox>
-                            </div>
-                          </div> -->
                         </div>
 
                         <div>
@@ -495,51 +537,6 @@
                         </div>
                       </div>
 
-                    </div>
-
-                    <div>
-                      <div>
-                        <el-tooltip v-if="isTesting" class="item" effect="light" content="Nhấn để thoát test mode" placement="bottom">
-                          <el-button
-                            type="info"
-                            plain
-                            icon="el-icon-close"
-                            size="mini"
-                            style="padding-left: 8px; padding-right: 8px; "
-                            @click="cancelTest()"
-                          />
-                        </el-tooltip>
-
-                        <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Nhấn để dừng tính giờ" placement="bottom">
-                          <el-button
-                            type="info"
-                            plain
-                            size="mini"
-                            style="margin-left: 2px; padding-left: 8px; padding-right: 8px;"
-                            @click="pauseTest()"
-                          >
-                            <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-pause" />
-                            {{ minute }} : {{ getSecond }}
-                          </el-button>
-                        </el-tooltip>
-
-                        <el-tooltip v-if="isTesting && isTestingPaused" class="item" effect="light" content="Nhấn để tiếp tục tính giờ" placement="bottom">
-                          <el-button
-                            type="info"
-                            plain
-                            size="mini"
-                            style="margin-left: 2px; padding-left: 8px; padding-right: 8px;     font-weight: bold;"
-                            @click="resumeTest()"
-                          >
-                            <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-play" />
-                            {{ minute }} : {{ getSecond }}
-                          </el-button>
-                        </el-tooltip>
-
-                        <el-tooltip v-if="!isTesting && !submissionId" class="item" effect="light" content="Nhấn để bắt đầu tính giờ" placement="bottom">
-                          <el-button size="mini" type="danger" plain @click="enableTestMode()">Test Mode</el-button>
-                        </el-tooltip>
-                      </div>
                     </div>
 
                     <div class="info" style="margin-top: 5px; font-size: 16px;" v-html="getDataQuestion.direction" />
@@ -613,7 +610,7 @@
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Help" name="help" style="height: 100%; position: relative;">
+          <el-tab-pane label="Ý tưởng" name="idea" style="height: 100%; position: relative;">
             <div>
               <div v-if="getTip != ''">
                 <el-card class="box-card" style="font-size: 14px; padding: 20px;">
@@ -628,17 +625,173 @@
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Samples" name="sample" style="height: 100%; position: relative;">
+          <el-tab-pane label="Từ vựng" name="vocabulary" style="height: 100%; position: relative;">
+
+            <div>
+              <div v-if="getVocaburary != ''">
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div id="tipContent" v-html="getVocaburary.content" />
+                </el-card>
+              </div>
+              <div v-else>
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div> We are working on this section, please check back soon for help on the writing topic including suggesstions on useful vocabulary that could be used to improve your band score.</div>
+                </el-card>
+              </div>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Bài viết mẫu" name="sample" style="height: 100%; position: relative;">
             <div>
               <tab-samples :question-id="questionId" />
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Rubric" name="rubric" style="height: 100%; position: relative;">
-            <div>
-              <tab-rubric :question-id="questionId" />
+        </el-tabs>
+      </div>
+
+      <div style="height: 100%; display: flex; flex-direction: column;">
+        <el-tabs v-model="activeTab2" type="border-card" style="height: 100%;" @tab-remove="onTabRemove">
+          <el-tab-pane label="Bài làm" name="essay">
+            <div style="height: 100%; display: flex; flex-direction: column;">
+              <div class="header-passage">
+                <div style="float: left; margin-right: 5px; ">
+                  <div>
+                    <el-tooltip v-if="isTesting" class="item" effect="light" content="Huỷ tính giờ" placement="bottom">
+                      <el-button
+                        type="info"
+                        plain
+                        icon="el-icon-close"
+                        size="mini"
+                        style="padding-left: 8px; padding-right: 8px; "
+                        @click="cancelTest()"
+                      />
+                    </el-tooltip>
+
+                    <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Nhấn để tạm dừng tính giờ" placement="bottom">
+                      <el-button
+                        type="info"
+                        plain
+                        size="mini"
+                        style="margin-left: 2px; padding-left: 8px; padding-right: 8px;"
+                        @click="pauseTest()"
+                      >
+                        <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-pause" />
+                        {{ minute }} : {{ getSecond }}
+                      </el-button>
+                    </el-tooltip>
+
+                    <el-tooltip v-if="isTesting && isTestingPaused" class="item" effect="light" content="Nhấn để tiếp tục tính giờ" placement="bottom">
+                      <el-button
+                        type="info"
+                        plain
+                        size="mini"
+                        style="margin-left: 2px; padding-left: 8px; padding-right: 8px;     font-weight: bold;"
+                        @click="resumeTest()"
+                      >
+                        <i style="font-weight: bold; margin-right: 2px;" class="el-icon-video-play" />
+                        {{ minute }} : {{ getSecond }}
+                      </el-button>
+                    </el-tooltip>
+
+                    <el-tooltip v-if="!isTesting && !submissionId" class="item" effect="light" content="Nhấn để bắt đầu tính giờ. Bài làm sẽ được nộp khi hết giờ." placement="bottom">
+                      <el-button size="mini" type="danger" plain @click="enableTestMode()">
+                        <i style="font-weight: bold; margin-right: 2px;" class="el-icon-timer" />
+                        Tính giờ</el-button>
+                    </el-tooltip>
+                  </div>
+                </div>
+                <el-button
+                  v-if="hasReview && docId && reviewId"
+                  style="float: left; margin-right: 5px"
+                  size="mini"
+                  type="primary"
+                  plain
+                  @click="viewFeedback()"
+                >Xem phản hồi</el-button>
+                <el-button
+                  v-if="((submissionId && isEdit) || writingSubmitted) && !isProRequested && !hasReview"
+                  style="float: left; margin-right: 5px"
+                  size="mini"
+                  type="primary"
+                  plain
+                  @click="requestReview()"
+                >Nhận phản hồi</el-button>
+                <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
+                  <el-tag
+                    v-if="isShowCountWord && countWord != 0"
+                    type="info"
+                    size="medium"
+                    closable
+                    effect="plain"
+                    :disable-transitions="true"
+                    @close="toggleShowCount()"
+                  >
+                    Số từ: {{ countWord }}
+                  </el-tag>
+
+                  <el-button v-if="!isShowCountWord" size="mini" plain @click="toggleShowCount()">
+                    Hiện số từ
+                  </el-button>
+                </div>
+                <div v-if="getQuestion != ''">
+                  <el-button
+                    v-if="!writingSubmitted && hasSubmitionForThisQuestion && !isEdit"
+                    style="float: right; margin-left: 5px"
+                    size="mini"
+                    :disabled="!(writingContent && writingContent.length > 0)"
+                    :loading="isLoading"
+                    type="primary"
+                    @click="submit()"
+                  >Nhận phản hồi</el-button>
+                  <el-button
+                    v-if="isEdit && !isFreeRequested && !isProRequested"
+                    style="float: right; margin-left: 5px"
+                    size="mini"
+                    @click="editSubmission()"
+                  >Sửa</el-button>
+                  <el-button
+                    v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
+                    size="mini"
+                    :disabled="!(writingContent && writingContent.length > 0)"
+                    :loading="isLoading"
+                    type="primary"
+                    style="float: right; margin-left: 5px;"
+                    @click="submit()"
+                  >Nhận phản hồi</el-button>
+                  <!-- <el-button
+                    v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
+                    size="mini"
+                    :disabled="!(writingContent && writingContent.length > 0)"
+                    style="float: right;"
+                    @click="save()"
+                  >Lưu lại</el-button> -->
+                </div>
+              </div>
+              <div style="flex-grow: 1;">
+                <textarea
+                  v-model="writingContent"
+                  :disabled="isEdit || writingSubmitted"
+                  placeholder="Bắt đầu bài viết của bạn ở đây ..."
+                  spellcheck="false"
+                  class="textarea-style"
+                  @keyup="countWords()"
+                />
+              </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Submissions" name="submissions" style="height: 100%; position: relative;">
+          <el-tab-pane label="Ghi chú" name="note" style="height: 100%; position: relative;">
+            <div>
+              <div>
+                <el-tiptap
+                  v-model="questionNote"
+                  placeholder="Ghi chú của bạn cho chủ đề này, bao gồm việc lên ý tưởng, lập kế hoạch viết, xây dựng bố cục bài, cũng như lựa chọn về từ vựng và cấu trúc câu."
+                  :extensions="extensions"
+                  style="height: calc(100vh - 110px); font-size: 14px;"
+                  @onUpdate="onNoteUpdate()"
+                />
+              </div>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Bài đã nộp" name="submissions" style="height: 100%; position: relative;">
             <div style="padding-right: 10px;">
               <el-table
                 :data="submissions"
@@ -672,6 +825,25 @@
                     <el-tag>{{ scope.row.status }}</el-tag>
                   </template>
                 </el-table-column>
+                <el-table-column
+                  prop="timeTaken"
+                  label="Time Taken"
+                  min-width="120"
+                >
+                  <template slot-scope="scope">
+                    <span>{{ getTimeTaken(scope.row.timeTaken) }}</span>
+                  </template>
+                </el-table-column>
+
+                <el-table-column
+                  label="Word Count"
+                  min-width="100"
+                >
+                  <template slot-scope="scope">
+                    <span>{{ scope.row.text ? scope.row.text.trim().split(/\b\S+\b/).length - 1 : 0 }}</span>
+                  </template>
+                </el-table-column>
+
               </el-table>
             </div>
           </el-tab-pane>
@@ -687,10 +859,10 @@
               <div slot="header" class="box-card__title" style="min-width: 380px;">
                 <div style="height: 30px;">
                   <div style="width: 260px; float: left; margin-top: 5px; font-size: 14px; font-weight: bold;">
-                    Submitted at {{ item.submittedTimeStr }}
+                    Ngày nộp: {{ item.submittedTimeStr }}
                   </div>
                   <div style="float: right;">
-                    <el-tag size="medium">{{ item.status }}</el-tag>
+                    <el-tag size="medium">Status: {{ item.status }}</el-tag>
                   </div>
                 </div>
                 <div style="height: 30px;">
@@ -700,7 +872,7 @@
                       size="medium"
                       effect="plain"
                     >
-                      Time Taken: {{ getTimeTaken(item.timeTaken) }}
+                      Thời gian: {{ getTimeTaken(item.timeTaken) }}
                     </el-tag>
                   </div>
                   <div style="float: left; margin-right: 5px;">
@@ -709,7 +881,7 @@
                       size="medium"
                       effect="plain"
                     >
-                      Word count: {{ item.text ? item.text.trim().split(/\b\S+\b/).length - 1 : 0 }}
+                      Số từ: {{ item.text ? item.text.trim().split(/\b\S+\b/).length - 1 : 0 }}
                     </el-tag>
                   </div>
                   <div style="margin-top: 8px; float: right; " @click="copyTextToClipboard(item.text)">
@@ -725,82 +897,6 @@
             </el-card>
           </el-tab-pane>
         </el-tabs>
-      </div>
-
-      <div style="height: 100%; display: flex; flex-direction: column;">
-        <div style="height: 40px;  font-size: 13px; background-color: #f5f7fa;  border: 1px solid #e2e2e2; padding: 5px;">
-          <el-button
-            v-if="hasReview && docId && reviewId"
-            style="float: left; margin-right: 5px"
-            size="mini"
-            type="primary"
-            plain
-            @click="viewFeedback()"
-          >Xem phản hồi
-          </el-button>
-          <el-button
-            v-if="((submissionId && isEdit) || writingSubmitted) && !isProRequested && !hasReview"
-            style="float: left; margin-right: 5px"
-            size="mini"
-            type="primary"
-            plain
-            @click="requestReview()"
-          >Yêu cầu chấm bài
-          </el-button>
-          <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">
-            <el-tag
-              v-if="isShowCountWord && countWord != 0"
-              type="info"
-              size="medium"
-              closable
-              effect="plain"
-              :disable-transitions="true"
-              @close="toggleShowCount()"
-            >
-              Word count: {{ countWord }}
-            </el-tag>
-
-            <el-button v-if="!isShowCountWord" size="mini" plain @click="toggleShowCount()">
-              Show Word Count
-            </el-button>
-          </div>
-          <div v-if="getQuestion != ''">
-            <el-button
-              v-if="!writingSubmitted && hasSubmitionForThisQuestion && !isEdit"
-              style="float: right; margin-left: 5px"
-              size="mini"
-              :disabled="!(writingContent && writingContent.length > 0)"
-              :loading="isLoading"
-              type="primary"
-              @click="submit()"
-            >Nhận phản hồi</el-button>
-            <el-button
-              v-if="isEdit && !isFreeRequested && !isProRequested"
-              style="float: right; margin-left: 5px"
-              size="mini"
-              @click="isEdit=false"
-            >Sửa</el-button>
-            <el-button
-              v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
-              size="mini"
-              :disabled="!(writingContent && writingContent.length > 0)"
-              type="primary"
-              style="float: right; margin-left: 5px;"
-              :loading="isLoading"
-              @click="submit()"
-            >Nhận phản hồi</el-button>
-            <el-button
-              v-if="!writingSubmitted && !hasSubmitionForThisQuestion && !isEdit"
-              size="mini"
-              :disabled="!(writingContent && writingContent.length > 0)"
-              style="float: right;"
-              @click="save()"
-            >Lưu lại</el-button>
-          </div>
-        </div>
-        <div style="flex-grow: 1;">
-          <textarea v-model="writingContent" :disabled="isEdit || writingSubmitted" placeholder="Bắt đầu bài viết của bạn ở đây ..." spellcheck="false" class="textarea-style" @keyup="countWords()" />
-        </div>
       </div>
       <div>
         <checkout
@@ -828,9 +924,25 @@
 import documentService from '../../services/document.service'
 import reviewService from '../../services/review.service'
 import questionService from '../../services/question.service'
-import TabRubric from '../learner/PracticeWriting_TabRubric.vue'
 import TabSamples from '../learner/PracticeWriting_TabSamples.vue'
 import CheckOut from '../../components/controls/CheckOut.vue'
+import {
+  Doc,
+  Text,
+  Paragraph,
+  Heading,
+  Bold,
+  Underline,
+  Italic,
+  Strike,
+  ListItem,
+  BulletList,
+  OrderedList,
+  FontSize,
+  Indent,
+  // LineHeight,
+  TextColor
+} from 'element-tiptap'
 import {
   Splitpanes,
   Pane
@@ -842,7 +954,6 @@ export default {
   components: {
     'splitpanes': Splitpanes,
     'pane': Pane,
-    'tab-rubric': TabRubric,
     'tab-samples': TabSamples,
     'checkout': CheckOut
   },
@@ -894,7 +1005,26 @@ export default {
       docId: null,
       reviewId: null,
       isTestingPaused: false,
-      isLoading: false
+      isLoading: false,
+      activeTab2: 'essay',
+      questionNote: null,
+      extensions: [
+        new Doc(),
+        new Text(),
+        new Paragraph(),
+        new Heading({ level: 5 }),
+        new Bold(),
+        new Underline(),
+        new Italic(),
+        new Strike(),
+        new ListItem(),
+        new BulletList(),
+        new OrderedList(),
+        new FontSize(),
+        new TextColor(),
+        new Indent()
+        // new LineHeight()
+      ]
     }
   },
   computed: {
@@ -920,6 +1050,14 @@ export default {
     },
     getDataQuestionParts() {
       return this.$store.getters['question/getSelected']['questionsPart']
+    },
+    getVocaburary() {
+      if (typeof (this.getDataQuestionParts) != 'undefined') {
+        if (this.getDataQuestionParts.find(u => u.name == 'Vocabulary')) {
+          return this.getDataQuestionParts.find(u => u.name == 'Vocabulary')
+        }
+      }
+      return ''
     },
     getTip() {
       if (typeof (this.getDataQuestionParts) != 'undefined') {
@@ -998,12 +1136,17 @@ export default {
     }
     this.idLocalStorage = this.currentUser.username + '_QuestionId' + this.questionId
     this.loadData()
+
+    this.questionNote = localStorage.getItem(this.currentUser.username + '_QuestionId' + this.questionId + '_Note')
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
     clearInterval(this.timeSpentInterval)
   },
   methods: {
+    onNoteUpdate() {
+      localStorage.setItem(this.currentUser.username + '_QuestionId' + this.questionId + '_Note', this.questionNote)
+    },
     submit() {
       this.isLoading = true
       this.dialogVisible = false
@@ -1040,6 +1183,7 @@ export default {
       // Create a new submission everytime user click Submit
       data.status = 'Submitted'
       documentService.submitDocument(data).then(rs => {
+        this.isLoading = false
         if (rs) {
           this.hasSubmitionForThisQuestion = true
           this.submissionId = rs.submissions[0]?.id
@@ -1182,12 +1326,12 @@ export default {
         this.editableTabs.splice(index, 1) // 2nd parameter means remove one item only
       }
       // Select the active tab
-      if (this.activeTab == tabName) {
+      if (this.activeTab2 == tabName) {
         if (index == 0) {
-          this.activeTab = 'submissions'
+          this.activeTab2 = 'submissions'
         } else {
           if (this.editableTabs.length > 0) {
-            this.activeTab = this.editableTabs[index - 1].name
+            this.activeTab2 = this.editableTabs[index - 1].name
           }
         }
       }
@@ -1197,8 +1341,7 @@ export default {
       var thisTab = this.editableTabs.find(t => t.id == row.id)
       if (!thisTab) { this.editableTabs.push(row) }
 
-      this.activeTab = 'submission' + row.id
-      console.log(this.activeTab)
+      this.activeTab2 = 'submission' + row.id
     },
     calculateContainerHeight() {
       const headerHeight = document.getElementById('header').clientHeight
@@ -1421,8 +1564,24 @@ export default {
   margin-bottom: 0 !important;
   color: black;
 }
+
+.el-tiptap-editor .ProseMirror{
+  height: 100%;
+}
 </style>
 <style scoped>
+
+.el-tabs--border-card>.el-tabs__header .el-tabs__item>p {
+    color: #909399;
+}
+
+.el-tabs--border-card>.el-tabs__header .el-tabs__item.is-active>p {
+    color: #409EFF;
+}
+
+.el-tabs--border-card>.el-tabs__header .el-tabs__item>p:hover {
+    color: #409EFF;
+}
 
 .payment-method-title{
   display: flex;
@@ -1480,11 +1639,12 @@ export default {
 }
 
 .header-passage {
-  height: 40px;
+  /* height: 40px; */
+  margin-bottom: 10px;
   font-size: 13px;
-  background-color: #f5f7fa;
-  border: 1px solid #e2e2e2;
-  padding: 5px;
+  /* background-color: #f5f7fa; */
+  /* border-bottom: 1px solid #e2e2e2; */
+  /* padding: 5px; */
   min-width: 400px;
 }
 
@@ -1584,10 +1744,11 @@ pre {
   width: 100%;
   padding: 15px;
   border: 1px solid #e2e2e2;
-  border-top: none;
+  /* border-top: none; */
   resize: none;
   outline: none;
   height: 100%;
+  border-radius: 5px;
 }
 .submited-message {
   width: calc(100% - 210px);
