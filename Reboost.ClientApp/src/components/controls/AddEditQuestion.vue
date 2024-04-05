@@ -54,7 +54,6 @@
         <el-form-item prop="content" :rules="[{ required: true }]" size="mini" label="Chủ đề">
           <el-tiptap
             v-model="form.content"
-            lang="vn"
             placeholder="Điền chủ đề của bài viết"
             :extensions="extensions"
             :char-counter-count="false"
@@ -68,7 +67,6 @@
             <el-form-item prop="" size="mini" label="Bài đọc">
               <el-tiptap
                 v-model="toeflReading"
-                lang="en"
                 placeholder="Điền thông tin bài đọc"
                 :extensions="extensions"
                 :char-counter-count="false"
@@ -96,7 +94,6 @@
             <el-form-item prop="" size="mini" label="Đoạn dịch">
               <el-tiptap
                 v-model="toeflTranscript"
-                lang="vn"
                 placeholder="Thêm đoạn dịch cho bài nghe"
                 :extensions="extensions"
                 :char-counter-count="false"
@@ -123,17 +120,29 @@
             </el-form-item>
           </div>
           <div>
-            <el-form-item prop="" size="mini" label="Dữ liệu hỗ trợ">
+            <el-form-item prop="" size="mini" label="Ý tưởng">
               <el-tiptap
                 v-model="questionTip"
-                lang="vn"
-                placeholder="Thêm dữ liệu hỗ trợ cho chủ đề. Ví dụ: ý tưởng phát triển bài, gợi ý bố cục, hoặc từ vựng liên quan"
+                placeholder="Thêm ý tưởng phát triển bài, gợi ý bố cục"
                 :extensions="extensions"
                 :char-counter-count="false"
                 style="width: 95%; overflow: auto; height: 300px;"
               />
             </el-form-item>
           </div>
+
+          <div>
+            <el-form-item prop="" size="mini" label="Từ vựng">
+              <el-tiptap
+                v-model="vocabulary"
+                placeholder="Thêm từ vựng liên quan"
+                :extensions="extensions"
+                :char-counter-count="false"
+                style="width: 95%; overflow: auto; height: 300px;"
+              />
+            </el-form-item>
+          </div>
+
         </el-form-item>
 
         <el-form-item>
@@ -228,7 +237,8 @@ export default {
       isLearnerContributed: false,
       chartFileList: [],
       questionExist: null,
-      questionTip: null
+      questionTip: null,
+      vocabulary: null
     }
   },
   computed: {
@@ -265,6 +275,7 @@ export default {
         this.form.task = rs.taskId
         this.form.content = rs.questionsPart.filter(r => r.name == 'Question')[0]?.content
         this.questionTip = rs.questionsPart.filter(r => r.name == 'Tip')[0]?.content
+        this.vocabulary = rs.questionsPart.filter(r => r.name == 'Vocabulary')[0]?.content
         this.toeflReading = rs.questionsPart.filter(r => r.name == 'Reading')[0]?.content
         this.toeflListening = rs.questionsPart.filter(r => r.name == 'Listening')[0]?.content
         this.toeflTranscript = rs.questionsPart.filter(r => r.name == 'Transcript')[0]?.content
@@ -365,6 +376,15 @@ export default {
           if (this.questionTip) {
             formData.set('QuestionParts[' + count + '][Name]', 'Tip')
             formData.set('QuestionParts[' + count + '][Content]', this.questionTip)
+            formData.set('QuestionParts[' + count + '][Order]', order)
+            formData.set('QuestionParts[' + count + '][QuestionId]', this.questionExist ? this.questionExist?.id : 0)
+          }
+
+          order += 1
+          count += 1
+          if (this.vocabulary) {
+            formData.set('QuestionParts[' + count + '][Name]', 'Vocabulary')
+            formData.set('QuestionParts[' + count + '][Content]', this.vocabulary)
             formData.set('QuestionParts[' + count + '][Order]', order)
             formData.set('QuestionParts[' + count + '][QuestionId]', this.questionExist ? this.questionExist?.id : 0)
           }
@@ -508,6 +528,7 @@ export default {
         this.form.part = null
       }
       this.questionTip = ''
+      this.vocabulary = ''
       this.toeflReading = ''
       this.toeflListening = null
       this.toeflTranscript = ''

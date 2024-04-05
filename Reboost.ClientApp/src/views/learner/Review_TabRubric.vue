@@ -12,13 +12,14 @@
             >
               <div slot="header" class="clearfix">
                 <div>
-                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                  <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
                     <span v-if="criteria.name == 'Critical Errors'">Nâng cấp từ vựng và ngữ pháp</span>
                     <span v-else-if="criteria.name == 'Arguments Assessment'">Củng cố lập luận</span>
-                    <span v-else>{{ criteria.name }}</span>
+                    <span v-else-if="criteria.name == 'Overall Score & Feedback'">Đánh Giá Tổng Quan</span>
+                    <span v-else> Tiêu Chí {{ criteria.name }}</span>
                   </div>
 
-                  <el-tooltip v-if="reviewSaved" class="item" effect="dark" content="Cung cấp đánh giá cho phản hồi" placement="top">
+                  <!-- <el-tooltip v-if="reviewSaved" class="item" effect="dark" content="Cung cấp đánh giá cho phản hồi" placement="top">
                     <div style="float: right;">
                       <el-dropdown trigger="click">
                         <span :id="'rate-feedback-' + criteria.id" class="el-dropdown-link">
@@ -53,7 +54,7 @@
                         </el-dropdown-menu>
                       </el-dropdown>
                     </div>
-                  </el-tooltip>
+                  </el-tooltip> -->
 
                 </div>
               </div>
@@ -125,12 +126,38 @@
 
               </div>
             </el-card>
+
+            <el-card
+              style="margin-bottom: 5px; margin-left: 3px; border: 1px solid rgb(190, 190, 190);"
+              shadow="hover"
+            >
+              <div slot="header" class="clearfix">
+                <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                  <span>Đóng Góp Ý Kiến</span>
+                </div>
+              </div>
+              <div>
+                <div>
+                  <div style="font-size: 15px;">Mời bạn chia sẻ trải nghiệm và cảm nghĩ của mình với tính năng chấm bài tự động mà chúng tôi cung cấp. Hãy cho chúng tôi biết liệu:</div>
+                  <div style="font-size: 15px; margin-top: 8px;">- Phản hồi mà bạn nhận được có hữu ích và dễ hiểu hay không?</div>
+                  <div style="font-size: 15px;">- Có điều gì bạn muốn thấy được cải thiện hoặc thay đổi không?</div>
+                  <div style="font-size: 15px;">- Tính năng này giúp bạn trong việc học tập và giảng dạy như thế nào?</div>
+                  <div style="font-size: 15px; margin-top: 8px;">Chúng tôi trân trọng mọi ý kiến đóng góp và cam kết sử dụng phản hồi của bạn để cải thiện chất lượng dịch vụ của Reboost. Xin chân thành cảm ơn!</div>
+                </div>
+
+                <div style="border-top: #bcbcbc solid 1px; margin-top: 20px; padding-top: 10px;">
+                  <div class="fb-comments" data-href="https://reboost.vn/review/" data-width="100%" data-numposts="20" />
+                </div>
+
+              </div>
+            </el-card>
+
           </div>
         </div>
       </div>
     </div>
 
-    <el-dialog
+    <!-- <el-dialog
       v-if="selectedCriteria"
       title="Rubric Criteria Description"
       :visible.sync="dialogVisible"
@@ -157,7 +184,7 @@
         </el-table>
       </div>
 
-    </el-dialog>
+    </el-dialog> -->
 
   </div>
 </template>
@@ -284,6 +311,9 @@ export default ({
   async mounted() {
     console.log(this.isAiReview)
     this.loadRubric()
+    this.$nextTick(() => {
+      window.FB.XFBML.parse()
+    })
   },
   methods: {
     showDescriptionDialog(criteria) {
@@ -900,6 +930,14 @@ export default ({
                       }
                     })
                   }
+
+                  // const model = {
+                  //   task: question.section,
+                  //   topic: topic,
+                  //   essay: this.documentText,
+                  //   criteriaName: criteria.name,
+                  //   feedbackLanguage: this.feedbackLanguage
+                  // }
 
                   // reviewService.getAIFeedbackForCriteriaV1(model).then(rs => {
                   //   criteria.loading = false

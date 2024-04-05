@@ -240,7 +240,7 @@
                           />
                         </el-tooltip>
 
-                        <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Nhấn để tạm dừng tính giờ" placement="bottom">
+                        <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Bài làm sẽ được nộp khi hết giờ. Nhấn để tạm dừng." placement="bottom">
                           <el-button
                             type="info"
                             plain
@@ -266,11 +266,10 @@
                           </el-button>
                         </el-tooltip>
 
-                        <el-tooltip v-if="!isTesting && !submissionId" class="item" effect="light" content="Nhấn để bắt đầu tính giờ. Bài làm sẽ được nộp khi hết giờ." placement="bottom">
-                          <el-button size="mini" type="danger" plain @click="enableTestMode()">
-                            <i style="font-weight: bold; margin-right: 2px;" class="el-icon-timer" />
-                            Tính giờ</el-button>
-                        </el-tooltip>
+                        <el-button v-if="!isTesting && !submissionId" size="mini" type="danger" plain @click="enableTestMode()">
+                          <i style="font-weight: bold; margin-right: 2px;" class="el-icon-timer" />
+                          Tính giờ
+                        </el-button>
                       </div>
                     </div>
 
@@ -582,7 +581,7 @@
                           />
                         </el-tooltip>
 
-                        <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Nhấn để tạm dừng tính giờ" placement="bottom">
+                        <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Bài làm sẽ được nộp khi hết giờ. Nhấn để tạm dừng." placement="bottom">
                           <el-button
                             type="info"
                             plain
@@ -608,11 +607,11 @@
                           </el-button>
                         </el-tooltip>
 
-                        <el-tooltip v-if="!isTesting && !submissionId" class="item" effect="light" content="Nhấn để bắt đầu tính giờ. Bài làm sẽ được nộp khi hết giờ." placement="bottom">
-                          <el-button size="mini" type="danger" plain @click="enableTestMode()">
-                            <i style="font-weight: bold; margin-right: 2px;" class="el-icon-timer" />
-                            Tính giờ</el-button>
-                        </el-tooltip>
+                        <el-button v-if="!isTesting && !submissionId" size="mini" type="danger" plain @click="enableTestMode()">
+                          <i style="font-weight: bold; margin-right: 2px;" class="el-icon-timer" />
+                          Tính giờ
+                        </el-button>
+
                       </div>
                     </div>
                     <div v-if="getQuestion != '' && !writingSubmitted" style="width: 150px; float: left;">

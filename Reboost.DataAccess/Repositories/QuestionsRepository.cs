@@ -237,7 +237,7 @@ namespace Reboost.DataAccess.Repositories
                     join task in ReboostDbContext.Tasks on quest.TaskId equals task.Id
                     join sec in ReboostDbContext.TestSections on task.SectionId equals sec.Id
                     join test in ReboostDbContext.Tests on sec.TestId equals test.Id
-                    where quest.TaskId != 6 && quest.TaskId != 7
+                    where (quest.TaskId == 3 || quest.TaskId == 4) && quest.Status == "Active"
                     select new QuestionModel
                     {
                         Id = quest.Id,
@@ -254,7 +254,7 @@ namespace Reboost.DataAccess.Repositories
                         Difficulty = quest.Difficulty,
                         AddedDate = quest.AddedDate,
                         LastActivityDate = quest.LastActivityDate,
-                    }).OrderByDescending(q => q.LastActivityDate).ToListAsync();
+                    }).ToListAsync();
 
             //using (var command = context.Database.GetDbConnection().CreateCommand())
             //{

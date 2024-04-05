@@ -16,7 +16,6 @@
                             {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
                           </div>
                         </div>
-
                         <div>
                           <el-tag
                             v-if="getDataQuestion.difficulty == 'Medium'"
@@ -79,15 +78,12 @@
                           </div> -->
                         </div>
                       </div>
-
                     </div>
                     <div class="info" style="margin-top: 5px; font-size: 16px;" v-html="getDataQuestion.direction" />
                   </el-col>
                 </el-row>
-
               </div>
               <div>
-
                 <div>
                   <el-row style="margin-bottom: 8px;">
                     <div id="questionContent" class="tip" style="font-size: 16px;" v-html="getQuestion.content" />
@@ -148,6 +144,30 @@
                   <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))">
                     <img :src="'/photo/' + getChart.content" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
                   </div>
+                  <el-card
+                    style="border: 1px solid rgb(190, 190, 190); margin-top: 5px;"
+                    shadow="hover"
+                  >
+                    <div slot="header" class="clearfix">
+                      <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                        <span>Đóng Góp Ý Kiến</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div>
+                        <div style="font-size: 15px;">Mời bạn chia sẻ trải nghiệm và cảm nghĩ của mình về trung tâm thực hành của Reboost. Hãy cho chúng tôi biết liệu: </div>
+                        <div style="font-size: 15px; margin-top: 8px;">- Các tài nguyên và công cụ được cung cấp có giúp ích cho bạn hay không?</div>
+                        <div style="font-size: 15px;">- Có chủ đề viết hay tài liệu cụ thể nào bạn muốn thấy trên ứng dụng hay không?</div>
+                        <div style="font-size: 15px;">- Có điều gì bạn muốn thấy được cải thiện hoặc thay đổi không?</div>
+                        <div style="font-size: 15px; margin-top: 8px;">Chúng tôi trân trọng mọi ý kiến đóng góp và cam kết sử dụng phản hồi của bạn để cải thiện chất lượng dịch vụ của Reboost. Xin chân thành cảm ơn!</div>
+                      </div>
+
+                      <div style="border-top: #bcbcbc solid 1px; margin-top: 20px; padding-top: 10px;">
+                        <div class="fb-comments" data-href="https://reboost.vn/practice/" data-width="100%" data-numposts="10" />
+                      </div>
+
+                    </div>
+                  </el-card>
                 </div>
               </div>
             </div>
@@ -210,7 +230,7 @@
                       />
                     </el-tooltip>
 
-                    <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Nhấn để tạm dừng tính giờ" placement="bottom">
+                    <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Bài làm sẽ được nộp khi hết giờ. Nhấn để tạm dừng." placement="bottom">
                       <el-button
                         type="info"
                         plain
@@ -236,11 +256,11 @@
                       </el-button>
                     </el-tooltip>
 
-                    <el-tooltip v-if="!isTesting && !submissionId" class="item" effect="light" content="Nhấn để bắt đầu tính giờ. Bài làm sẽ được nộp khi hết giờ." placement="bottom">
-                      <el-button size="mini" type="danger" plain @click="enableTestMode()">
-                        <i style="font-weight: bold; margin-right: 2px;" class="el-icon-timer" />
-                        Tính giờ</el-button>
-                    </el-tooltip>
+                    <el-button v-if="!isTesting && !submissionId" size="mini" type="danger" plain @click="enableTestMode()">
+                      <i style="font-weight: bold; margin-right: 2px;" class="el-icon-timer" />
+                      Tính giờ
+                    </el-button>
+
                   </div>
                 </div>
 
@@ -648,8 +668,8 @@
         </el-tabs>
       </div>
 
-      <div style="height: 100%; display: flex; flex-direction: column;">
-        <el-tabs v-model="activeTab2" type="border-card" style="height: 100%;" @tab-remove="onTabRemove">
+      <div style="height: 800px; display: flex; flex-direction: column;">
+        <el-tabs v-model="activeTab2" type="border-card" style="height: 800px;" @tab-remove="onTabRemove">
           <el-tab-pane label="Bài làm" name="essay">
             <div style="height: 100%; display: flex; flex-direction: column;">
               <div class="header-passage">
@@ -666,7 +686,7 @@
                       />
                     </el-tooltip>
 
-                    <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Nhấn để tạm dừng tính giờ" placement="bottom">
+                    <el-tooltip v-if="isTesting && !isTestingPaused" class="item" effect="light" content="Bài làm sẽ được nộp khi hết giờ. Nhấn để tạm dừng." placement="bottom">
                       <el-button
                         type="info"
                         plain
@@ -692,11 +712,10 @@
                       </el-button>
                     </el-tooltip>
 
-                    <el-tooltip v-if="!isTesting && !submissionId" class="item" effect="light" content="Nhấn để bắt đầu tính giờ. Bài làm sẽ được nộp khi hết giờ." placement="bottom">
-                      <el-button size="mini" type="danger" plain @click="enableTestMode()">
-                        <i style="font-weight: bold; margin-right: 2px;" class="el-icon-timer" />
-                        Tính giờ</el-button>
-                    </el-tooltip>
+                    <el-button v-if="!isTesting && !submissionId" size="mini" type="danger" plain @click="enableTestMode()">
+                      <i style="font-weight: bold; margin-right: 2px;" class="el-icon-timer" />
+                      Tính giờ
+                    </el-button>
                   </div>
                 </div>
                 <el-button
@@ -785,7 +804,7 @@
                   v-model="questionNote"
                   placeholder="Ghi chú của bạn cho chủ đề này, bao gồm việc lên ý tưởng, lập kế hoạch viết, xây dựng bố cục bài, cũng như lựa chọn về từ vựng và cấu trúc câu."
                   :extensions="extensions"
-                  style="height: calc(100vh - 110px); font-size: 14px;"
+                  style="height: calc(740px); font-size: 14px;"
                   @onUpdate="onNoteUpdate()"
                 />
               </div>
@@ -898,6 +917,31 @@
           </el-tab-pane>
         </el-tabs>
       </div>
+
+      <el-card
+        style="border: 1px solid rgb(190, 190, 190); margin-top: 5px;"
+        shadow="hover"
+      >
+        <div slot="header" class="clearfix">
+          <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+            <span>Đóng Góp Ý Kiến</span>
+          </div>
+        </div>
+        <div>
+          <div>
+            <div style="font-size: 15px;">Mời bạn chia sẻ trải nghiệm và cảm nghĩ của mình về trung tâm thực hành của Reboost. Hãy cho chúng tôi biết liệu: </div>
+            <div style="font-size: 15px; margin-top: 8px;">- Các tài nguyên và công cụ được cung cấp có giúp ích cho bạn hay không?</div>
+            <div style="font-size: 15px;">- Có chủ đề viết hay tài liệu cụ thể nào bạn muốn thấy trên ứng dụng hay không?</div>
+            <div style="font-size: 15px;">- Có điều gì bạn muốn thấy được cải thiện hoặc thay đổi không?</div>
+            <div style="font-size: 15px; margin-top: 8px;">Chúng tôi trân trọng mọi ý kiến đóng góp và cam kết sử dụng phản hồi của bạn để cải thiện chất lượng dịch vụ của Reboost. Xin chân thành cảm ơn!</div>
+          </div>
+
+          <div style="border-top: #bcbcbc solid 1px; margin-top: 20px; padding-top: 10px;">
+            <div class="fb-comments" data-href="https://reboost.vn/practice/" data-width="100%" data-numposts="10" />
+          </div>
+
+        </div>
+      </el-card>
       <div>
         <checkout
           ref="checkoutDialog"
@@ -1136,7 +1180,9 @@ export default {
     }
     this.idLocalStorage = this.currentUser.username + '_QuestionId' + this.questionId
     this.loadData()
-
+    this.$nextTick(() => {
+      window.FB.XFBML.parse()
+    })
     this.questionNote = localStorage.getItem(this.currentUser.username + '_QuestionId' + this.questionId + '_Note')
   },
   destroyed() {

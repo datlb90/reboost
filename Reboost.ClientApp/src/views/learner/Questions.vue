@@ -291,6 +291,27 @@
         </div>
 
       </div>
+
+      <el-card
+        style="border: 1px solid rgb(190, 190, 190); margin-top: 5px;"
+        shadow="hover"
+      >
+        <div slot="header" class="clearfix">
+          <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+            <span>Đóng Góp Ý Kiến</span>
+          </div>
+        </div>
+        <div>
+          <div>
+            <div style="font-size: 15px;">Mời bạn chia sẻ cảm nghĩ của mình về các chủ đề viết và tài nguyên hỗ trợ được cung cấp. Chúng tôi trân trọng mọi ý kiến đóng góp và cam kết sử dụng phản hồi của bạn để cải thiện chất lượng dịch vụ của Reboost. Xin chân thành cảm ơn!</div>
+          </div>
+
+          <div style="border-top: #bcbcbc solid 1px; margin-top: 20px; padding-top: 10px;">
+            <div class="fb-comments" data-href="https://reboost.vn/questions" data-width="100%" data-numposts="10" />
+          </div>
+
+        </div>
+      </el-card>
     </el-card>
 
   </div>
@@ -588,6 +609,28 @@
           />
         </div>
       </div>
+
+      <el-card
+        style="border: 1px solid rgb(190, 190, 190); margin-top: 5px;"
+        shadow="hover"
+      >
+        <div slot="header" class="clearfix">
+          <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+            <span>Đóng Góp Ý Kiến</span>
+          </div>
+        </div>
+        <div>
+          <div>
+            <div style="font-size: 15px;">Mời bạn chia sẻ cảm nghĩ của mình về các chủ đề viết và tài nguyên hỗ trợ được cung cấp. Chúng tôi trân trọng mọi ý kiến đóng góp và cam kết sử dụng phản hồi của bạn để cải thiện chất lượng dịch vụ của Reboost. Xin chân thành cảm ơn!</div>
+          </div>
+
+          <div style="border-top: #bcbcbc solid 1px; margin-top: 20px; padding-top: 10px;">
+            <div class="fb-comments" data-href="https://reboost.vn/questions" data-width="100%" data-numposts="10" />
+          </div>
+
+        </div>
+      </el-card>
+
     </el-card>
 
   </div>
@@ -679,6 +722,7 @@ export default {
       this.loadTable()
       this.loadSummary()
       this.$nextTick(function() {
+        window.FB.XFBML.parse()
         this.showArrow()
       })
     })
