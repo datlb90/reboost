@@ -13,70 +13,41 @@
               <div slot="header" class="clearfix">
                 <div>
                   <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                    <span v-if="criteria.name == 'Critical Errors'">Nâng cấp từ vựng và ngữ pháp</span>
-                    <span v-else-if="criteria.name == 'Arguments Assessment'">Củng cố lập luận</span>
+                    <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
+                    <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
                     <span v-else-if="criteria.name == 'Overall Score & Feedback'">Đánh Giá Tổng Quan</span>
                     <span v-else> Tiêu Chí {{ criteria.name }}</span>
                   </div>
-
-                  <!-- <el-tooltip v-if="reviewSaved" class="item" effect="dark" content="Cung cấp đánh giá cho phản hồi" placement="top">
-                    <div style="float: right;">
-                      <el-dropdown trigger="click">
-                        <span :id="'rate-feedback-' + criteria.id" class="el-dropdown-link">
-                          <i class="fas fa-comment-alt" style="color: rgb(74, 111, 138); font-size: 20px;" />
-                        </span>
-                        <el-dropdown-menu slot="dropdown">
-                          <div style="padding-left: 10px; padding-right: 10px;">
-                            <div>
-                              <el-input
-                                v-model="criteria.userFeedback"
-                                :criteria-index="criteriaIndex"
-                                type="textarea"
-                                placeholder="Cung cấp đánh giá của bạn cho phản hồi này. Dữ liệu bạn cung cấp sẽ được sử dụng để cải thiển phản hồi."
-                                :autosize="{ minRows: 3, maxRows: 5 }"
-                                :maxlength="8000"
-                                style="width: 300px;"
-                                class="criteria-comment"
-                              />
-                            </div>
-                            <div>
-                              <el-button
-                                type="primary"
-                                plain
-                                size="mini"
-                                :disabled="!criteria.userFeedback"
-                                style="margin-top: 10px;"
-                                :loading="sendingFeedback"
-                                @click="sendFeedback(reviewId, criteria)"
-                              >Gửi đánh giá</el-button>
-                            </div>
-                          </div>
-                        </el-dropdown-menu>
-                      </el-dropdown>
-                    </div>
-                  </el-tooltip> -->
-
                 </div>
               </div>
               <div>
-                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Overall Score & Feedback'">
-                  <el-radio-group
-                    :id="criteria.id"
-                    v-model="criteria.mark"
-                    size="mini"
-                    style="min-width: 240px; display:flex; justify-content: space-around;"
-                    :disabled="readOnly || currentUser.role == 'Admin'"
-                    @input="rubricMileStoneClick(reviewId, criteria, $event)"
-                  >
-                    <el-radio-button
-                      v-for="milestone in criteria.bandScoreDescriptions.slice()"
-                      id="mileStone"
-                      :key="milestone.id"
-                      :label="milestone.bandScore"
-                    />
-                  </el-radio-group>
+                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment'">
+                  <div v-if="isAiReview">
+                    <div v-if="!criteria.loading" class="band-score">
+                      Band:
+                      {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                    </div>
+                  </div>
+                  <div v-else>
+                    <el-radio-group
+                      :id="criteria.id"
+                      v-model="criteria.mark"
+                      size="mini"
+                      style="min-width: 240px; display:flex; justify-content: space-around;"
+                      :disabled="readOnly || currentUser.role == 'Admin'"
+                      @input="rubricMileStoneClick(reviewId, criteria, $event)"
+                    >
+                      <el-radio-button
+                        v-for="milestone in criteria.bandScoreDescriptions.slice()"
+                        id="mileStone"
+                        :key="milestone.id"
+                        :label="milestone.bandScore"
+                      />
+                    </el-radio-group>
+                  </div>
+
                 </div>
-                <div v-if="criteria.name == 'Overall Score & Feedback'">
+                <!-- <div v-if="criteria.name == 'Overall Score & Feedback'">
                   <el-select
                     v-model="criteria.mark"
                     placeholder="Band score"
@@ -93,8 +64,7 @@
                       :value="item.value"
                     />
                   </el-select>
-
-                </div>
+                </div> -->
                 <div>
                   <div v-if="criteria.loading" style="background: #f0f1f2; height: 120px; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                     <div class="el-loading-spinner" style="position: relative; top: 10%;">
@@ -128,64 +98,46 @@
             </el-card>
 
             <el-card
-              style="margin-bottom: 5px; margin-left: 3px; border: 1px solid rgb(190, 190, 190);"
+              v-if="isAiReview && reviewSaved"
+              style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
               shadow="hover"
             >
               <div slot="header" class="clearfix">
-                <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
-                  <span>Đóng Góp Ý Kiến</span>
+                <div style="color: white; float: left; font-size: 16px; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                  <span>Đánh Giá Phản Hồi</span>
                 </div>
               </div>
               <div>
                 <div>
-                  <div style="font-size: 15px;">Mời bạn chia sẻ trải nghiệm và cảm nghĩ của mình với tính năng chấm bài tự động mà chúng tôi cung cấp. Hãy cho chúng tôi biết liệu:</div>
-                  <div style="font-size: 15px; margin-top: 8px;">- Phản hồi mà bạn nhận được có hữu ích và dễ hiểu hay không?</div>
-                  <div style="font-size: 15px;">- Có điều gì bạn muốn thấy được cải thiện hoặc thay đổi không?</div>
-                  <div style="font-size: 15px;">- Tính năng này giúp bạn trong việc học tập và giảng dạy như thế nào?</div>
-                  <div style="font-size: 15px; margin-top: 8px;">Chúng tôi trân trọng mọi ý kiến đóng góp và cam kết sử dụng phản hồi của bạn để cải thiện chất lượng dịch vụ của Reboost. Xin chân thành cảm ơn!</div>
+                  <div style="font-size: 15px; color: white;">Đánh giá mức độ hữu ích của phản hồi</div>
                 </div>
 
-                <div style="border-top: #bcbcbc solid 1px; margin-top: 20px; padding-top: 10px;">
-                  <div class="fb-comments" data-href="https://reboost.vn/review/" data-width="100%" data-numposts="20" />
+                <div>
+                  <el-rate v-model="rateValue" style="margin-top: 8px; margin-bottom: 4px; color: rgb(177 177 177);" :allow-half="true" />
                 </div>
 
+                <div>
+                  <el-input
+                    id="rubric-rating"
+                    v-model="rateComment"
+                    type="textarea"
+                    :rows="5"
+                    style="margin-top: 10px; margin-bottom: 5px;"
+                    :maxlength="8000"
+                    placeholder="Cảm nghĩ của bạn về điểm số và phản hồi cho bài viết"
+                  />
+                </div>
+                <div style="margin-top: 5px;">
+                  <el-button :disabled="rateValue == 0 && rateComment == ''" size="mini" @click="rateAIReview()">
+                    Gửi đánh giá
+                  </el-button>
+                </div>
               </div>
             </el-card>
-
           </div>
         </div>
       </div>
     </div>
-
-    <!-- <el-dialog
-      v-if="selectedCriteria"
-      title="Rubric Criteria Description"
-      :visible.sync="dialogVisible"
-      width="50%"
-      :before-close="handleClose"
-      style="z-index: 100000;"
-    >
-      <span>RubricName</span>
-      <div>
-        <el-table
-          :data="selectedCriteria.bandScoreDescriptions"
-          border
-          style="width: 900px"
-        >
-          <el-table-column
-            prop="bandScore"
-            label="Band"
-            width="70"
-          />
-          <el-table-column
-            prop="description"
-            label="Desciption"
-          />
-        </el-table>
-      </div>
-
-    </el-dialog> -->
-
   </div>
 </template>
 <script>
@@ -303,7 +255,8 @@ export default ({
         }
       ],
       reviewSaved: false,
-      sendingFeedback: false
+      rateValue: 0,
+      rateComment: ''
     }
   },
   computed: {
@@ -314,6 +267,13 @@ export default ({
     this.$nextTick(() => {
       window.FB.XFBML.parse()
     })
+    // Update fb comment's width for safari
+    setTimeout(function () {
+      const iframes = document.getElementsByClassName('fb_iframe_widget_lift')
+      if (iframes && iframes.length > 0) {
+        iframes[0].style.width = '100%'
+      }
+    }, 2000)
   },
   methods: {
     showDescriptionDialog(criteria) {
@@ -380,6 +340,8 @@ export default ({
                 const question = this.$store.getters['question/getSelected']
                 const topic = question.questionsPart.find(q => q.name == 'Question').content
                 let completedCount = 0
+
+                // -- Start get essay score for version 1.3 ---
                 if (question.section == 'Academic Writing Task 2') {
                   // 1. Get scores for the essay
                   // 1 call
@@ -406,57 +368,541 @@ export default ({
                         }
                       })
                       completedCount++
-                      if (completedCount == 15) {
+                      if (completedCount == 8) {
                         this.submitReview()
                       }
                     }
                   })
                 }
+                // -- End get essay score for version 1.3 ---
 
                 this.rubricCriteria.forEach(criteria => {
-                  if (criteria.name == 'Critical Errors') {
-                    // 2. Get feedback for errors
-                    // 1 call
-                    const split = this.documentText.split('\n')
-                    const paragraphs = split.filter(p => p.length > 50)
-                    const pCount = paragraphs.length
-                    let errorCompletedCount = 0
+                  // --- Start Version 1.3 Review ---
+                  // if (criteria.name == 'Critical Errors') {
+                  //   // 2. Get feedback for errors
+                  //   // 1 call
+                  //   const split = this.documentText.split('\n')
+                  //   const paragraphs = split.filter(p => p.length > 50)
+                  //   const pCount = paragraphs.length
+                  //   let errorCompletedCount = 0
 
-                    const errors = []
-                    for (let i = 0; i < paragraphs.length; i++) {
-                      const paragraph = paragraphs[i]
-                      const order = i + 1
-                      const model = {
-                        essay: paragraph,
-                        feedbackLanguage: this.feedbackLanguage
-                      }
-                      reviewService.getFeedbackForErrors(model).then(rs => {
-                        criteria.loading = false
-                        criteria.comment += rs + '\n'
+                  //   const errors = []
+                  //   for (let i = 0; i < paragraphs.length; i++) {
+                  //     const paragraph = paragraphs[i]
+                  //     const order = i + 1
+                  //     const model = {
+                  //       essay: paragraph,
+                  //       feedbackLanguage: this.feedbackLanguage
+                  //     }
+                  //     reviewService.getFeedbackForErrors(model).then(rs => {
+                  //       criteria.loading = false
+                  //       criteria.comment += rs + '\n'
 
-                        let paragraphLang = 'Đoạn'
-                        if (this.feedbackLanguage != 'vn') { paragraphLang = 'Paragraph' }
-                        errors[i] = paragraphLang + ' ' + order + ':\n' + rs + '\n'
-                        errorCompletedCount++
-                        if (errorCompletedCount == pCount) {
-                          criteria.comment = errors.join('\n')
-                          completedCount++
-                          console.log(completedCount)
-                          if (completedCount == 15) {
-                            this.submitReview()
-                          }
-                        }
-                      })
-                    }
-                  } else if (criteria.name == 'Task Achievement') {
+                  //       let paragraphLang = 'Đoạn'
+                  //       if (this.feedbackLanguage != 'vn') { paragraphLang = 'Paragraph' }
+                  //       errors[i] = paragraphLang + ' ' + order + ':\n' + rs + '\n'
+                  //       errorCompletedCount++
+                  //       if (errorCompletedCount == pCount) {
+                  //         criteria.comment = errors.join('\n')
+                  //         completedCount++
+                  //         console.log(completedCount)
+                  //         if (completedCount == 15) {
+                  //           this.submitReview()
+                  //         }
+                  //       }
+                  //     })
+                  //   }
+                  // } else if (criteria.name == 'Task Achievement') {
+                  //   const chart = question.questionsPart.find(q => q.name == 'Chart')
+                  //   if (chart) {
+                  //     // Get chart content first
+                  //     // To do: get chart description when adding new question
+                  //     reviewService.getChartDescription(chart.content).then(rs => {
+                  //       const chartDescription = rs
+
+                  //       // Get score now
+                  //       const scoreModel = {
+                  //         task: question.section,
+                  //         topic: topic,
+                  //         essay: this.documentText,
+                  //         chartDescription: chartDescription
+                  //       }
+                  //       reviewService.getEssayScore(scoreModel).then(scores => {
+                  //         if (scores) {
+                  //           this.rubricCriteria.forEach(criteria => {
+                  //             if (criteria.name == 'Task Achievement') {
+                  //               criteria.mark = scores.taskAchievementScore
+                  //             } else if (criteria.name == 'Task Response') {
+                  //               criteria.mark = scores.taskResponseScore
+                  //             } else if (criteria.name == 'Coherence & Cohesion') {
+                  //               criteria.mark = scores.coherenceScore
+                  //             } else if (criteria.name == 'Lexical Resource') {
+                  //               criteria.mark = scores.lexicalResourceScore
+                  //             } else if (criteria.name == 'Grammatical Range & Accuracy') {
+                  //               criteria.mark = scores.grammarScore
+                  //             } else if (criteria.name == 'Overall Score & Feedback') {
+                  //               criteria.mark = scores.overallScore
+                  //             }
+                  //           })
+                  //           completedCount++
+                  //           if (completedCount == 15) {
+                  //             this.submitReview()
+                  //           }
+                  //         }
+                  //       })
+
+                  //       // 3. Get feedback for Task Achievement
+                  //       // 3 calls
+                  //       const model1 = {
+                  //         task: question.section,
+                  //         topic: topic,
+                  //         essay: this.documentText,
+                  //         criteriaName: 'Fulfilling the Prompt Requirements',
+                  //         feedbackLanguage: this.feedbackLanguage,
+                  //         chartDescription: chartDescription
+                  //       }
+
+                  //       reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                  //         rs = rs.replace('Detailed assessment:\n', 'Detailed assessment: ')
+                  //         // show the comment and mark
+                  //         criteria.comment += '- Fulfilling the Prompt Requirements:\n\n' + rs + '\n\n'
+                  //         // submit the review
+                  //         criteria.loading = false
+                  //         completedCount++
+                  //         if (completedCount == 15) {
+                  //           this.submitReview()
+                  //         }
+                  //       })
+
+                  //       const model2 = {
+                  //         task: question.section,
+                  //         topic: topic,
+                  //         essay: this.documentText,
+                  //         criteriaName: 'Highlighting Key Features',
+                  //         feedbackLanguage: this.feedbackLanguage,
+                  //         chartDescription: chartDescription
+                  //       }
+
+                  //       reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                  //         // show the comment and mark
+                  //         criteria.comment += '- Highlighting Key Features:\n\n' + rs + '\n\n'
+                  //         // submit the review
+                  //         criteria.loading = false
+                  //         completedCount++
+                  //         if (completedCount == 15) {
+                  //           this.submitReview()
+                  //         }
+                  //       })
+
+                  //       const model3 = {
+                  //         task: question.section,
+                  //         topic: topic,
+                  //         essay: this.documentText,
+                  //         criteriaName: 'Comparing and Contrasting Data',
+                  //         feedbackLanguage: this.feedbackLanguage,
+                  //         chartDescription: chartDescription
+                  //       }
+
+                  //       reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                  //         // show the comment and mark
+                  //         criteria.comment += '- Comparing and Contrasting Data:\n\n' + rs + '\n\n'
+                  //         // submit the review
+                  //         criteria.loading = false
+                  //         completedCount++
+                  //         if (completedCount == 15) {
+                  //           this.submitReview()
+                  //         }
+                  //       })
+                  //     })
+                  //   } else {
+                  //     // Get score and feedback for Task Achievement without the chart
+                  //     const scoreModel = {
+                  //       task: question.section,
+                  //       topic: topic,
+                  //       essay: this.documentText
+                  //     }
+                  //     reviewService.getEssayScore(scoreModel).then(scores => {
+                  //       if (scores) {
+                  //         this.rubricCriteria.forEach(criteria => {
+                  //           if (criteria.name == 'Task Achievement') {
+                  //             criteria.mark = scores.taskAchievementScore
+                  //           } else if (criteria.name == 'Task Response') {
+                  //             criteria.mark = scores.taskResponseScore
+                  //           } else if (criteria.name == 'Coherence & Cohesion') {
+                  //             criteria.mark = scores.coherenceScore
+                  //           } else if (criteria.name == 'Lexical Resource') {
+                  //             criteria.mark = scores.lexicalResourceScore
+                  //           } else if (criteria.name == 'Grammatical Range & Accuracy') {
+                  //             criteria.mark = scores.grammarScore
+                  //           } else if (criteria.name == 'Overall Score & Feedback') {
+                  //             criteria.mark = scores.overallScore
+                  //           }
+                  //         })
+                  //         completedCount++
+                  //         if (completedCount == 15) {
+                  //           this.submitReview()
+                  //         }
+                  //       }
+                  //     })
+
+                  //     // 3. Get feedback for Task Achievement
+                  //     // 3 calls
+                  //     const model1 = {
+                  //       task: question.section,
+                  //       topic: topic,
+                  //       essay: this.documentText,
+                  //       criteriaName: 'Fulfilling the Prompt Requirements',
+                  //       feedbackLanguage: this.feedbackLanguage
+                  //     }
+
+                  //     reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                  //       rs = rs.replace('Detailed assessment:\n', 'Detailed assessment: ')
+                  //       // show the comment and mark
+                  //       criteria.comment += '- Fulfilling the Prompt Requirements:\n\n' + rs + '\n\n'
+                  //       // submit the review
+                  //       criteria.loading = false
+                  //       completedCount++
+                  //       if (completedCount == 15) {
+                  //         this.submitReview()
+                  //       }
+                  //     })
+
+                  //     const model2 = {
+                  //       task: question.section,
+                  //       topic: topic,
+                  //       essay: this.documentText,
+                  //       criteriaName: 'Highlighting Key Features',
+                  //       feedbackLanguage: this.feedbackLanguage
+                  //     }
+
+                  //     reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                  //       // show the comment and mark
+                  //       criteria.comment += '- Highlighting Key Features:\n\n' + rs + '\n\n'
+                  //       // submit the review
+                  //       criteria.loading = false
+                  //       completedCount++
+                  //       if (completedCount == 15) {
+                  //         this.submitReview()
+                  //       }
+                  //     })
+
+                  //     const model3 = {
+                  //       task: question.section,
+                  //       topic: topic,
+                  //       essay: this.documentText,
+                  //       criteriaName: 'Comparing and Contrasting Data',
+                  //       feedbackLanguage: this.feedbackLanguage
+                  //     }
+
+                  //     reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                  //       // show the comment and mark
+                  //       criteria.comment += '- Comparing and Contrasting Data:\n\n' + rs + '\n\n'
+                  //       // submit the review
+                  //       criteria.loading = false
+                  //       completedCount++
+                  //       if (completedCount == 15) {
+                  //         this.submitReview()
+                  //       }
+                  //     })
+                  //   }
+
+                  //   // const model4 = {
+                  //   //   task: question.section,
+                  //   //   topic: topic,
+                  //   //   essay: this.documentText,
+                  //   //   criteriaName: 'Data Selection and Relevance',
+                  //   //   feedbackLanguage: this.feedbackLanguage,
+                  //   //   chartDescription: chartDescription
+                  //   // }
+
+                  //   // reviewService.getAIFeedbackForCriteriaV3(model4).then(rs => {
+                  //   //   // show the comment and mark
+                  //   //   criteria.comment += '- Data Selection and Relevance:\n\n' + rs + '\n\n'
+                  //   //   // submit the review
+                  //   //   criteria.loading = false
+                  //   //   completedCount++
+                  //   //   console.log(completedCount)
+                  //   //   if (completedCount == 7) {
+                  //   //     // this.submittedReview()
+                  //   //   }
+                  //   // })
+                  // } else if (criteria.name == 'Task Response') {
+                  //   // 3. Get feedback for Task Achievement
+                  //   // 3 calls
+                  //   const model1 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Addressing All Parts',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Addressing All Parts of the Question:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+
+                  //   const model2 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Clarity of Position',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Clarity of Position:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+
+                  //   const model3 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Development of Ideas',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Development of Ideas:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+                  // } else if (criteria.name == 'Coherence & Cohesion') {
+                  //   // 3. Get feedback for Task Achievement
+                  //   // 3 calls
+                  //   const model1 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Logical Organization',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Logical Organization:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+
+                  //   const model2 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Paragraphing',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Paragraphing:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+
+                  //   const model3 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Use of Cohesive Devices',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Use of Cohesive Devices:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+                  // } else if (criteria.name == 'Lexical Resource') {
+                  //   // 3. Get feedback for Lexical Resource
+                  //   // 3 calls
+                  //   const model1 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Range of Vocabulary',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Range of Vocabulary:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+
+                  //   const model2 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Accuracy of Word Choice',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Accuracy of Word Choice:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+
+                  //   const model3 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Spelling and Word Formation',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Spelling and Word Formation:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+                  // } else if (criteria.name == 'Grammatical Range & Accuracy') {
+                  //   // 3. Get feedback for Grammatical Range & Accuracy
+                  //   // 3 calls
+                  //   const model1 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Range of Grammatical Structures',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Range of Grammatical Structures:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+
+                  //   const model2 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Sentence Complexity',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Sentence Complexity:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+
+                  //   const model3 = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: 'Accuracy in Grammatical Forms',
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
+                  //     // show the comment and mark
+                  //     criteria.comment += '- Accuracy in Grammatical Forms:\n\n' + rs + '\n\n'
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+                  // } else {
+                  //   // This is for Argument Assessment and Overall Score & Feedback
+                  //   // 2 calls
+                  //   const model = {
+                  //     task: question.section,
+                  //     topic: topic,
+                  //     essay: this.documentText,
+                  //     criteriaName: criteria.name,
+                  //     feedbackLanguage: this.feedbackLanguage
+                  //   }
+
+                  //   reviewService.getAIFeedbackForCriteriaV2(model).then(rs => {
+                  //     let comment = rs
+                  //     // get the score from the comment
+                  //     if (criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment') {
+                  //       var comments = comment.split('\n')
+                  //       if (comments && comments.length > 0) {
+                  //         // re-compose the comment
+                  //         comments.splice(0, 2)
+                  //         comment = comments.join('\n')
+                  //       }
+                  //     }
+                  //     // show the comment and mark
+                  //     criteria.comment = comment
+                  //     // submit the review
+                  //     criteria.loading = false
+                  //     completedCount++
+                  //     console.log(completedCount)
+                  //     if (completedCount == 15) {
+                  //       this.submitReview()
+                  //     }
+                  //   })
+                  // }
+                  // --- End Version 1.3 Review ---
+
+                  // --- Start Version 1.2 Review ---
+
+                  if (criteria.name == 'Task Achievement') {
                     const chart = question.questionsPart.find(q => q.name == 'Chart')
                     if (chart) {
-                      // Get chart content first
-                      // To do: get chart description when adding new question
                       reviewService.getChartDescription(chart.content).then(rs => {
                         const chartDescription = rs
-
-                        // Get score now
                         const scoreModel = {
                           task: question.section,
                           topic: topic,
@@ -481,425 +927,73 @@ export default ({
                               }
                             })
                             completedCount++
-                            if (completedCount == 15) {
+                            if (completedCount == 8) {
                               this.submitReview()
                             }
                           }
                         })
 
-                        // 3. Get feedback for Task Achievement
-                        // 3 calls
-                        const model1 = {
+                        const model = {
                           task: question.section,
                           topic: topic,
                           essay: this.documentText,
-                          criteriaName: 'Fulfilling the Prompt Requirements',
+                          criteriaName: criteria.name,
                           feedbackLanguage: this.feedbackLanguage,
                           chartDescription: chartDescription
                         }
 
-                        reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
-                          rs = rs.replace('Detailed assessment:\n', 'Detailed assessment: ')
-                          // show the comment and mark
-                          criteria.comment += '- Fulfilling the Prompt Requirements:\n\n' + rs + '\n\n'
-                          // submit the review
-                          criteria.loading = false
-                          completedCount++
-                          if (completedCount == 15) {
-                            this.submitReview()
+                        reviewService.getAIFeedbackForCriteriaV2(model).then(rs => {
+                          let comment = rs
+                          // get the score from the comment
+                          if (criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment') {
+                            var comments = comment.split('\n')
+                            if (comments && comments.length > 0) {
+                              // re-compose the comment
+                              comments.splice(0, 2)
+                              comment = comments.join('\n')
+                            }
                           }
-                        })
-
-                        const model2 = {
-                          task: question.section,
-                          topic: topic,
-                          essay: this.documentText,
-                          criteriaName: 'Highlighting Key Features',
-                          feedbackLanguage: this.feedbackLanguage,
-                          chartDescription: chartDescription
-                        }
-
-                        reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
                           // show the comment and mark
-                          criteria.comment += '- Highlighting Key Features:\n\n' + rs + '\n\n'
+                          criteria.comment = comment
                           // submit the review
                           criteria.loading = false
                           completedCount++
-                          if (completedCount == 15) {
-                            this.submitReview()
-                          }
-                        })
-
-                        const model3 = {
-                          task: question.section,
-                          topic: topic,
-                          essay: this.documentText,
-                          criteriaName: 'Comparing and Contrasting Data',
-                          feedbackLanguage: this.feedbackLanguage,
-                          chartDescription: chartDescription
-                        }
-
-                        reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
-                          // show the comment and mark
-                          criteria.comment += '- Comparing and Contrasting Data:\n\n' + rs + '\n\n'
-                          // submit the review
-                          criteria.loading = false
-                          completedCount++
-                          if (completedCount == 15) {
-                            this.submitReview()
+                          if (completedCount == 8) {
+                              this.submitReview()
                           }
                         })
                       })
                     } else {
-                      // Get score and feedback for Task Achievement without the chart
-                      const scoreModel = {
+                      const model = {
                         task: question.section,
                         topic: topic,
-                        essay: this.documentText
+                        essay: this.documentText,
+                        criteriaName: criteria.name,
+                        feedbackLanguage: this.feedbackLanguage
                       }
-                      reviewService.getEssayScore(scoreModel).then(scores => {
-                        if (scores) {
-                          this.rubricCriteria.forEach(criteria => {
-                            if (criteria.name == 'Task Achievement') {
-                              criteria.mark = scores.taskAchievementScore
-                            } else if (criteria.name == 'Task Response') {
-                              criteria.mark = scores.taskResponseScore
-                            } else if (criteria.name == 'Coherence & Cohesion') {
-                              criteria.mark = scores.coherenceScore
-                            } else if (criteria.name == 'Lexical Resource') {
-                              criteria.mark = scores.lexicalResourceScore
-                            } else if (criteria.name == 'Grammatical Range & Accuracy') {
-                              criteria.mark = scores.grammarScore
-                            } else if (criteria.name == 'Overall Score & Feedback') {
-                              criteria.mark = scores.overallScore
-                            }
-                          })
-                          completedCount++
-                          if (completedCount == 15) {
-                            this.submitReview()
+
+                      reviewService.getAIFeedbackForCriteriaV2(model).then(rs => {
+                        let comment = rs
+                        // get the score from the comment
+                        if (criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment') {
+                          var comments = comment.split('\n')
+                          if (comments && comments.length > 0) {
+                            // re-compose the comment
+                            comments.splice(0, 2)
+                            comment = comments.join('\n')
                           }
                         }
-                      })
-
-                      // 3. Get feedback for Task Achievement
-                      // 3 calls
-                      const model1 = {
-                        task: question.section,
-                        topic: topic,
-                        essay: this.documentText,
-                        criteriaName: 'Fulfilling the Prompt Requirements',
-                        feedbackLanguage: this.feedbackLanguage
-                      }
-
-                      reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
-                        rs = rs.replace('Detailed assessment:\n', 'Detailed assessment: ')
                         // show the comment and mark
-                        criteria.comment += '- Fulfilling the Prompt Requirements:\n\n' + rs + '\n\n'
+                        criteria.comment = comment
                         // submit the review
                         criteria.loading = false
                         completedCount++
-                        if (completedCount == 15) {
-                          this.submitReview()
-                        }
-                      })
-
-                      const model2 = {
-                        task: question.section,
-                        topic: topic,
-                        essay: this.documentText,
-                        criteriaName: 'Highlighting Key Features',
-                        feedbackLanguage: this.feedbackLanguage
-                      }
-
-                      reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
-                        // show the comment and mark
-                        criteria.comment += '- Highlighting Key Features:\n\n' + rs + '\n\n'
-                        // submit the review
-                        criteria.loading = false
-                        completedCount++
-                        if (completedCount == 15) {
-                          this.submitReview()
-                        }
-                      })
-
-                      const model3 = {
-                        task: question.section,
-                        topic: topic,
-                        essay: this.documentText,
-                        criteriaName: 'Comparing and Contrasting Data',
-                        feedbackLanguage: this.feedbackLanguage
-                      }
-
-                      reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
-                        // show the comment and mark
-                        criteria.comment += '- Comparing and Contrasting Data:\n\n' + rs + '\n\n'
-                        // submit the review
-                        criteria.loading = false
-                        completedCount++
-                        if (completedCount == 15) {
-                          this.submitReview()
+                        if (completedCount == 8) {
+                            this.submitReview()
                         }
                       })
                     }
-
-                    // const model4 = {
-                    //   task: question.section,
-                    //   topic: topic,
-                    //   essay: this.documentText,
-                    //   criteriaName: 'Data Selection and Relevance',
-                    //   feedbackLanguage: this.feedbackLanguage,
-                    //   chartDescription: chartDescription
-                    // }
-
-                    // reviewService.getAIFeedbackForCriteriaV3(model4).then(rs => {
-                    //   // show the comment and mark
-                    //   criteria.comment += '- Data Selection and Relevance:\n\n' + rs + '\n\n'
-                    //   // submit the review
-                    //   criteria.loading = false
-                    //   completedCount++
-                    //   console.log(completedCount)
-                    //   if (completedCount == 7) {
-                    //     // this.submittedReview()
-                    //   }
-                    // })
-                  } else if (criteria.name == 'Task Response') {
-                    // 3. Get feedback for Task Achievement
-                    // 3 calls
-                    const model1 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Addressing All Parts',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Addressing All Parts of the Question:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-
-                    const model2 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Clarity of Position',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Clarity of Position:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-
-                    const model3 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Development of Ideas',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Development of Ideas:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-                  } else if (criteria.name == 'Coherence & Cohesion') {
-                    // 3. Get feedback for Task Achievement
-                    // 3 calls
-                    const model1 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Logical Organization',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Logical Organization:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-
-                    const model2 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Paragraphing',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Paragraphing:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-
-                    const model3 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Use of Cohesive Devices',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Use of Cohesive Devices:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-                  } else if (criteria.name == 'Lexical Resource') {
-                    // 3. Get feedback for Lexical Resource
-                    // 3 calls
-                    const model1 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Range of Vocabulary',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Range of Vocabulary:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-
-                    const model2 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Accuracy of Word Choice',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Accuracy of Word Choice:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-
-                    const model3 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Spelling and Word Formation',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Spelling and Word Formation:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-                  } else if (criteria.name == 'Grammatical Range & Accuracy') {
-                    // 3. Get feedback for Grammatical Range & Accuracy
-                    // 3 calls
-                    const model1 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Range of Grammatical Structures',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model1).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Range of Grammatical Structures:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-
-                    const model2 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Sentence Complexity',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model2).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Sentence Complexity:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
-
-                    const model3 = {
-                      task: question.section,
-                      topic: topic,
-                      essay: this.documentText,
-                      criteriaName: 'Accuracy in Grammatical Forms',
-                      feedbackLanguage: this.feedbackLanguage
-                    }
-
-                    reviewService.getAIFeedbackForCriteriaV3(model3).then(rs => {
-                      // show the comment and mark
-                      criteria.comment += '- Accuracy in Grammatical Forms:\n\n' + rs + '\n\n'
-                      // submit the review
-                      criteria.loading = false
-                      completedCount++
-                      if (completedCount == 15) {
-                        this.submitReview()
-                      }
-                    })
                   } else {
-                    // This is for Argument Assessment and Overall Score & Feedback
-                    // 2 calls
                     const model = {
                       task: question.section,
                       topic: topic,
@@ -924,13 +1018,14 @@ export default ({
                       // submit the review
                       criteria.loading = false
                       completedCount++
-                      console.log(completedCount)
-                      if (completedCount == 15) {
+                      if (completedCount == 8) {
                         this.submitReview()
                       }
                     })
                   }
+                  // --- End Version 1.2 Review ---
 
+                  // --- Start Version 1.1 Review ---
                   // const model = {
                   //   task: question.section,
                   //   topic: topic,
@@ -943,31 +1038,32 @@ export default ({
                   //   criteria.loading = false
                   //   criteria.comment = rs.comment
                   //   criteria.mark = rs.bandScore
-                  //   completedCount++
-                  //   if (completedCount == 5) {
-                  //     // update overall band score
-                  //     const fourCriteria = this.rubricCriteria.filter(c => c.name != 'Overall Score & Feedback')
-                  //     const index = this.rubricCriteria.findIndex(c => c.name == 'Overall Score & Feedback')
-                  //     const average = fourCriteria.reduce((total, next) => total + next.mark, 0) / 4
-                  //     this.rubricCriteria[index].mark = (Math.round(average * 2) / 2).toFixed(1)
+                  //   // completedCount++
+                  //   // if (completedCount == 5) {
+                  //   //   // update overall band score
+                  //   //   const fourCriteria = this.rubricCriteria.filter(c => c.name != 'Overall Score & Feedback')
+                  //   //   const index = this.rubricCriteria.findIndex(c => c.name == 'Overall Score & Feedback')
+                  //   //   const average = fourCriteria.reduce((total, next) => total + next.mark, 0) / 4
+                  //   //   this.rubricCriteria[index].mark = (Math.round(average * 2) / 2).toFixed(1)
 
-                  //     // Save the criteria synchronously
-                  //     var reviewData = []
-                  //     this.rubricCriteria.forEach(r => {
-                  //       if (r.mark) {
-                  //         reviewData.push({
-                  //           CriteriaName: r.name,
-                  //           Comment: r.comment,
-                  //           CriteriaId: r.id,
-                  //           Score: r.mark,
-                  //           ReviewId: this.reviewId
-                  //         })
-                  //       }
-                  //     })
+                  //   //   // Save the criteria synchronously
+                  //   //   var reviewData = []
+                  //   //   this.rubricCriteria.forEach(r => {
+                  //   //     if (r.mark) {
+                  //   //       reviewData.push({
+                  //   //         CriteriaName: r.name,
+                  //   //         Comment: r.comment,
+                  //   //         CriteriaId: r.id,
+                  //   //         Score: r.mark,
+                  //   //         ReviewId: this.reviewId
+                  //   //       })
+                  //   //     }
+                  //   //   })
 
-                  //     reviewService.saveReviewFeedback(this.reviewId, reviewData)
-                  //   }
+                  //   //   reviewService.saveReviewFeedback(this.reviewId, reviewData)
+                  //   // }
                   // })
+                  // --- End Version 1.1 Review ---
                 })
               } else {
                 this.rubricCriteria.forEach(criteria => {
@@ -996,6 +1092,23 @@ export default ({
       })
       reviewService.saveReviewFeedback(this.reviewId, reviewData).then(rs => {
         this.reviewSaved = true
+      })
+    },
+    rateAIReview() {
+      reviewService.createAIReviewRating({
+        UserId: 'AI Review Version 1.2',
+        ReviewId: this.reviewId,
+        Rate: parseFloat(this.rateValue),
+        Comment: this.rateComment
+      }).then(r => {
+        if (r) {
+          this.$notify.success({
+            title: 'Cảm ơn đánh giá của bạn!',
+            message: 'Dữ liệu bạn cung cấp sẽ được sử dụng để nâng cấp hệ thống chấm bài tự động và mang lại cho bạn những phản hồi tốt hơn.',
+            type: 'success',
+            duration: 7000
+          })
+        }
       })
     },
     onFocus(criteria) {
@@ -1168,6 +1281,15 @@ export default ({
 
 <style scoped>
 @import '../../styles/review.css';
+.band-score{
+  width: 85px;
+  border: #478a9e solid 1px;
+  margin-bottom: 10px;
+  padding: 2px 10px;
+  border-radius: 5px;
+  background: #d6e3e6;
+  font-size: 15px;
+}
 </style>
 
 <style>

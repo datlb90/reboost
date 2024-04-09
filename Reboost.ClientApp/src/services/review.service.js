@@ -1,6 +1,9 @@
 import http from '@/utils/axios'
 
 const reviewService = {
+  createAIReviewRating(data) {
+    return http.post(`/review/rate/ai`, data).then(rs => rs.data)
+  },
   getEssayScore(model) {
     return http.post('/review/ai/score', model).then(rs => rs.data)
   },

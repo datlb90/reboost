@@ -69,7 +69,7 @@ const actions = {
       const rs = await reviewService.createAutomatedReview({
         UserId: userId,
         SubmissionId: response.submissions[0].id,
-        FeedbackLanguage: 'en'
+        FeedbackLanguage: 'vn'
       })
       commit('CLEAR_INITIAL_SUBMISSION')
       return rs

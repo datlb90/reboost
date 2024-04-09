@@ -299,7 +299,7 @@
                         type="primary"
                         style="float: right; margin-left: 5px;"
                         @click="submit()"
-                      >Nhận phản hồi</el-button>
+                      >Nộp bài</el-button>
                     </div>
                   </div>
                   <div style="flex-grow: 1;">
@@ -640,7 +640,7 @@
                         type="primary"
                         style="float: right; margin-left: 5px;"
                         @click="submit()"
-                      >Nhận phản hồi</el-button>
+                      >Nộp bài</el-button>
                     </div>
                   </div>
                   <div style="flex-grow: 1;">

@@ -22,12 +22,16 @@ import Toasted from 'vue-toasted'
 import MultiLanguage from './plugins/index'
 import FlagIcon from 'vue-flag-icon'
 
+// import VueTour from 'vue-tour'
+// import 'vue-tour/dist/vue-tour.css'
+
 import './assets/style/custom.scss'
 import 'element-tiptap/lib/index.css'
 import './plugins/multilanguage'
-// import VueI18n from 'vue-i18n'
 
-// Vue.use(VueI18n)
+import 'shepherd.js/dist/css/shepherd.css'
+
+// Vue.use(VueTour)
 
 Vue.use(VueMeta)
 Vue.use(BootstrapVue)

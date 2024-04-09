@@ -52,6 +52,7 @@
     "vue-multilanguage": "^4.0.18",
     "vue-odometer": "^1.0.2",
     "vue-router": "^3.4.9",
+    "vue-shepherd": "^3.0.0",
     "vue-slick": "^1.1.15",
     "vue-toasted": "^1.1.27",
     "vuex": "^3.6.0",

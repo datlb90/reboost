@@ -75,7 +75,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Task<i class="el-icon-arrow-down el-icon--right" />
+                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -96,7 +96,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
+                    Dạng đề<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -216,7 +216,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="Task"
+            label="Loại đề"
             prop="section"
             width="200"
             sortable
@@ -226,7 +226,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="Loại đề"
+            label="Dạng đề"
             prop="type"
             width="190"
             sortable
@@ -292,7 +292,7 @@
 
       </div>
 
-      <el-card
+      <!-- <el-card
         style="border: 1px solid rgb(190, 190, 190); margin-top: 5px;"
         shadow="hover"
       >
@@ -307,11 +307,11 @@
           </div>
 
           <div style="border-top: #bcbcbc solid 1px; margin-top: 20px; padding-top: 10px;">
-            <div class="fb-comments" data-href="https://reboost.vn/questions" data-width="100%" data-numposts="10" />
+            <div id="fb-comments" class="fb-comments" data-href="https://reboost.vn/questions" data-width="100%" data-numposts="10" />
           </div>
 
         </div>
-      </el-card>
+      </el-card> -->
     </el-card>
 
   </div>
@@ -406,7 +406,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Task<i class="el-icon-arrow-down el-icon--right" />
+                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -427,7 +427,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
+                    Dạng đề<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -536,7 +536,7 @@
           </el-table-column>
 
           <el-table-column
-            label="Task"
+            label="Loại đề"
             prop="section"
             :width="questions.find(q => q.test == 'TOEFL') ? '100' : '80'"
             sortable
@@ -610,7 +610,7 @@
         </div>
       </div>
 
-      <el-card
+      <!-- <el-card
         style="border: 1px solid rgb(190, 190, 190); margin-top: 5px;"
         shadow="hover"
       >
@@ -625,11 +625,11 @@
           </div>
 
           <div style="border-top: #bcbcbc solid 1px; margin-top: 20px; padding-top: 10px;">
-            <div class="fb-comments" data-href="https://reboost.vn/questions" data-width="100%" data-numposts="10" />
+            <div id="fb-comments" class="fb-comments" data-href="https://reboost.vn/questions" data-width="100%" data-numposts="10" />
           </div>
 
         </div>
-      </el-card>
+      </el-card> -->
 
     </el-card>
 
@@ -722,10 +722,23 @@ export default {
       this.loadTable()
       this.loadSummary()
       this.$nextTick(function() {
-        window.FB.XFBML.parse()
         this.showArrow()
       })
-    })
+
+      this.$nextTick(() => {
+        window.FB.XFBML.parse()
+      })
+      // Update fb comment's width for safari
+      setTimeout(function () {
+        const iframes = document.getElementsByClassName('fb_iframe_widget_lift')
+        if (iframes && iframes.length > 0) {
+          iframes[0].style.width = '100%'
+        }
+      }, 2000)
+  })
+  },
+  created() {
+
   },
   methods: {
     rowClicked(row, column, event) {

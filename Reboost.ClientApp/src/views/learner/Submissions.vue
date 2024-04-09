@@ -94,7 +94,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Task<i class="el-icon-arrow-down el-icon--right" />
+                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -115,7 +115,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
+                    Dạng đề<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -206,7 +206,7 @@
           </el-table-column>
 
           <el-table-column
-            label="Task"
+            label="Loại đề"
             prop="task"
             sortable
             width="200"
@@ -216,7 +216,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="Loại đề"
+            label="Dạng đề"
             prop="questionType"
             sortable
             width="190"
@@ -422,7 +422,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Task<i class="el-icon-arrow-down el-icon--right" />
+                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -443,7 +443,7 @@
               >
                 <span class="el-dropdown-link" style="cursor: pointer;">
                   <el-link :underline="false" type="info">
-                    Loại đề<i class="el-icon-arrow-down el-icon--right" />
+                    Dạng đề<i class="el-icon-arrow-down el-icon--right" />
                   </el-link>
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -696,7 +696,8 @@ export default {
     },
     clickPickOne() {
       const questions = this.$store.getters['question/getAll']
-      var listNoCompleted = questions.filter(r => r.status.trim() === 'To do')
+      console.log(questions)
+      var listNoCompleted = questions.filter(r => r.status.trim() === 'Chưa làm')
       var chosenNumber = Math.floor(Math.random() * listNoCompleted.length)
       var id = listNoCompleted[chosenNumber].id
       this.$router.push({

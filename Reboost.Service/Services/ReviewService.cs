@@ -22,6 +22,7 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<ReviewRatings> CreateAIReviewRatingAsync(ReviewRatings data);
         Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model);
         Task<string> getCriteriaFeedback(CriteriaFeedbackModel model);
         Task<string> getFeedbackForErrors(ErrorFeedbackModel model);
@@ -100,7 +101,11 @@ namespace Reboost.Service.Services
             chatGPTService = _chatGPTService;
             configuration = _configuration;
         }
-
+        public async Task<ReviewRatings> CreateAIReviewRatingAsync(ReviewRatings data)
+        {
+            var rs = await _unitOfWork.Review.CreateAIReviewRatingAsync(data);
+            return rs;
+        }
         public async Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model)
         {
             return await chatGPTService.getEssayScore(model);

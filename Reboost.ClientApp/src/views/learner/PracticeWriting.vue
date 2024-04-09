@@ -4,7 +4,7 @@
       <pane>
         <el-tabs v-model="activeTab" type="border-card" style="height: 100%;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
           <el-tab-pane name="description">
-            <p slot="label" style="font-size: 14px; line-height: 2.6;">Chủ đề</p>
+            <p slot="label" style="font-size: 14px; line-height: 2.6;" data-intro="Test intro">Chủ đề</p>
             <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
               <div style="margin-bottom: 8px;">
                 <el-row>
@@ -144,30 +144,6 @@
                   <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))">
                     <img :src="'/photo/' + getChart.content" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
                   </div>
-                  <el-card
-                    style="border: 1px solid rgb(190, 190, 190); margin-top: 5px;"
-                    shadow="hover"
-                  >
-                    <div slot="header" class="clearfix">
-                      <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
-                        <span>Đóng Góp Ý Kiến</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div>
-                        <div style="font-size: 15px;">Mời bạn chia sẻ trải nghiệm và cảm nghĩ của mình về trung tâm thực hành của Reboost. Hãy cho chúng tôi biết liệu: </div>
-                        <div style="font-size: 15px; margin-top: 8px;">- Các tài nguyên và công cụ được cung cấp có giúp ích cho bạn hay không?</div>
-                        <div style="font-size: 15px;">- Có chủ đề viết hay tài liệu cụ thể nào bạn muốn thấy trên ứng dụng hay không?</div>
-                        <div style="font-size: 15px;">- Có điều gì bạn muốn thấy được cải thiện hoặc thay đổi không?</div>
-                        <div style="font-size: 15px; margin-top: 8px;">Chúng tôi trân trọng mọi ý kiến đóng góp và cam kết sử dụng phản hồi của bạn để cải thiện chất lượng dịch vụ của Reboost. Xin chân thành cảm ơn!</div>
-                      </div>
-
-                      <div style="border-top: #bcbcbc solid 1px; margin-top: 20px; padding-top: 10px;">
-                        <div class="fb-comments" data-href="https://reboost.vn/practice/" data-width="100%" data-numposts="10" />
-                      </div>
-
-                    </div>
-                  </el-card>
                 </div>
               </div>
             </div>
@@ -485,6 +461,9 @@
         <el-button type="primary" @click="submit">Submit</el-button>
       </span>
     </el-dialog>
+
+    <!-- <v-tour name="myTour" :steps="steps" :callbacks="tourCallback" /> -->
+
   </div>
   <div v-else id="practiceWritingContainer">
     <div style="width: 100%; margin-top: 55px; height: calc(100vh - 60px); overflow: auto;">
@@ -917,31 +896,6 @@
           </el-tab-pane>
         </el-tabs>
       </div>
-
-      <el-card
-        style="border: 1px solid rgb(190, 190, 190); margin-top: 5px;"
-        shadow="hover"
-      >
-        <div slot="header" class="clearfix">
-          <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
-            <span>Đóng Góp Ý Kiến</span>
-          </div>
-        </div>
-        <div>
-          <div>
-            <div style="font-size: 15px;">Mời bạn chia sẻ trải nghiệm và cảm nghĩ của mình về trung tâm thực hành của Reboost. Hãy cho chúng tôi biết liệu: </div>
-            <div style="font-size: 15px; margin-top: 8px;">- Các tài nguyên và công cụ được cung cấp có giúp ích cho bạn hay không?</div>
-            <div style="font-size: 15px;">- Có chủ đề viết hay tài liệu cụ thể nào bạn muốn thấy trên ứng dụng hay không?</div>
-            <div style="font-size: 15px;">- Có điều gì bạn muốn thấy được cải thiện hoặc thay đổi không?</div>
-            <div style="font-size: 15px; margin-top: 8px;">Chúng tôi trân trọng mọi ý kiến đóng góp và cam kết sử dụng phản hồi của bạn để cải thiện chất lượng dịch vụ của Reboost. Xin chân thành cảm ơn!</div>
-          </div>
-
-          <div style="border-top: #bcbcbc solid 1px; margin-top: 20px; padding-top: 10px;">
-            <div class="fb-comments" data-href="https://reboost.vn/practice/" data-width="100%" data-numposts="10" />
-          </div>
-
-        </div>
-      </el-card>
       <div>
         <checkout
           ref="checkoutDialog"
@@ -965,6 +919,7 @@
 </template>
 
 <script>
+
 import documentService from '../../services/document.service'
 import reviewService from '../../services/review.service'
 import questionService from '../../services/question.service'
@@ -987,12 +942,17 @@ import {
   // LineHeight,
   TextColor
 } from 'element-tiptap'
+
 import {
   Splitpanes,
   Pane
 } from 'splitpanes'
+
 import 'splitpanes/dist/splitpanes.css'
+
 import moment from 'moment-timezone'
+import { useShepherd } from 'vue-shepherd'
+
 export default {
   name: 'PracticeWriting',
   components: {
@@ -1067,8 +1027,97 @@ export default {
         new FontSize(),
         new TextColor(),
         new Indent()
-        // new LineHeight()
-      ]
+      ],
+      steps: [
+        {
+          target: '#tab-description',
+          header: {
+            title: 'Thanh tài nguyên'
+          },
+          content: 'Nơi bạn có thể truy cập các tài nguyên hữu dụng cho chủ đề viết này bao gồm gợi ý về ý tưởng, hướng dẫ phát triển bài viết, từ vựng hữu dụng, và các bài viết mẫu',
+          params: {
+            highlight: true,
+            enableScrolling: false,
+            placement: 'bottom' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+          }
+        },
+        {
+          target: '#v-step-1', // We're using document.querySelector() under the hood
+          header: {
+            title: 'Summary Tile'
+          },
+          content: `Academic progress and GPA information. Completed credits are shown in green, in-progress credits in yellow, and remaining credits in gray. Upon completing degree requirements, initiate degree certification from here. Click on GPA to see calculation details.`,
+          params: {
+            highlight: true,
+            enableScrolling: false,
+            placement: 'bottom' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+          }
+        },
+        {
+          target: '#v-step-2', // We're using document.querySelector() under the hood
+          header: {
+            title: 'Milestones Tile'
+          },
+          content: `Academic milestones specified by program faculty. Completion recorded by program advisors.`,
+          params: {
+            highlight: true,
+            enableScrolling: false,
+            placement: 'bottom' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+          }
+        },
+        {
+          target: '#program', // We're using document.querySelector() under the hood
+          header: {
+            title: 'Program Canvas'
+          },
+          content: `Program specifications in the selected catalog. Courses from transcript are automatically assigned to maximize degree progress. Automated assignments can be over-ridden by program advisors.`,
+          params: {
+            highlight: true,
+            enableScrolling: false,
+            placement: 'top' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+          }
+        },
+        {
+          target: '#coursesTaken', // We're using document.querySelector() under the hood
+          header: {
+            title: 'Transcript Canvas'
+          },
+          content: `Courses taken and grades earned. Courses assigned to degree requirements are highlighted in green (completed) or yellow (in-progress).`,
+          params: {
+            highlight: true,
+            enableScrolling: false,
+            placement: 'top' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+          }
+        },
+        {
+          target: '#group-view', // We're using document.querySelector() under the hood
+          header: {
+            title: 'Group View'
+          },
+          content: `Courses grouped by catalog requirement categories.`,
+          params: {
+            highlight: true,
+            enableScrolling: false,
+            placement: 'bottom' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+          }
+        },
+        {
+          target: '#list-view', // We're using document.querySelector() under the hood
+          header: {
+            title: 'Chronological View'
+          },
+          content: `Courses shown in order taken, earliest first.`,
+          params: {
+            highlight: true,
+            enableScrolling: false,
+            placement: 'bottom' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+          }
+        }
+      ],
+      tourCallback: {
+        onStop: this.customOnStopTour,
+        onSkip: this.customOnSkipTour
+      }
     }
   },
   computed: {
@@ -1179,17 +1228,204 @@ export default {
       this.isEdit = true
     }
     this.idLocalStorage = this.currentUser.username + '_QuestionId' + this.questionId
-    this.loadData()
-    this.$nextTick(() => {
-      window.FB.XFBML.parse()
-    })
+    await this.loadData()
     this.questionNote = localStorage.getItem(this.currentUser.username + '_QuestionId' + this.questionId + '_Note')
+
+    this.setupTour()
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
     clearInterval(this.timeSpentInterval)
   },
   methods: {
+    setupTour() {
+      var tourCompleted = this.getCookie('tour')
+      if (!tourCompleted) {
+        const tour = useShepherd({
+          useModalOverlay: true
+        })
+
+        tour.addSteps([
+          {
+            attachTo: { element: '#tab-description', on: 'bottom'},
+            // title: 'Chủ đề viết',
+            text: 'Nơi chứa thông tin về yêu cầu của đề bài, dạng đề, và mức độc khó.',
+            classes: 'intro-step',
+            buttons: [
+              {
+                text: 'Bỏ qua',
+                action: () => {
+                  this.setCookie('tour', 'completed')
+                  tour.complete()
+                },
+                secondary: true
+              },
+              {
+                text: 'Tiếp tục',
+                action: tour.next
+              }
+            ]
+          },
+          {
+            attachTo: { element: '#tab-idea', on: 'bottom'},
+            text: 'Gợi ý về ý tưởng và hướng phát triển bài viết.',
+            classes: 'intro-step',
+            buttons: [
+              {
+                text: 'Bỏ qua',
+                action: () => {
+                  this.setCookie('tour', 'completed')
+                  tour.complete()
+                },
+                secondary: true
+              },
+              {
+                text: 'Quay lại',
+                action: tour.back,
+                secondary: true
+              },
+              {
+                text: 'Tiếp tục',
+                action: tour.next
+              }
+            ]
+          },
+          {
+            attachTo: { element: '#tab-vocabulary', on: 'bottom'},
+            text: 'Từ vựng hữu dụng cho chủ đề này.',
+            classes: 'intro-step',
+            buttons: [
+              {
+                text: 'Bỏ qua',
+                action: () => {
+                  this.setCookie('tour', 'completed')
+                  tour.complete()
+                },
+                secondary: true
+              },
+              {
+                text: 'Quay lại',
+                action: tour.back,
+                secondary: true
+              },
+              {
+                text: 'Tiếp tục',
+                action: tour.next
+              }
+            ]
+          },
+          {
+            attachTo: { element: '#tab-sample', on: 'bottom'},
+            text: 'Các bài viết mẫu kèm theo phân tích chi tiết.',
+            classes: 'intro-step',
+            buttons: [
+            {
+                text: 'Bỏ qua',
+                action: () => {
+                  this.setCookie('tour', 'completed')
+                  tour.complete()
+                },
+                secondary: true
+              },
+              {
+                text: 'Quay lại',
+                action: tour.back,
+                secondary: true
+              },
+              {
+                text: 'Tiếp tục',
+                action: tour.next
+              }
+            ]
+          },
+          {
+            attachTo: { element: '#tab-essay', on: 'bottom'},
+            text: 'Nơi bạn viết bài luận của mình.',
+            classes: 'intro-step',
+            buttons: [
+            {
+                text: 'Bỏ qua',
+                action: () => {
+                  this.setCookie('tour', 'completed')
+                  tour.complete()
+                },
+                secondary: true
+              },
+              {
+                text: 'Quay lại',
+                action: tour.back,
+                secondary: true
+              },
+              {
+                text: 'Tiếp tục',
+                action: tour.next
+              }
+            ]
+          },
+          {
+            attachTo: { element: '#tab-note', on: 'bottom'},
+            text: 'Nơi bạn lên ý tưởng, lập kế hoạch viết, và lựa chọn từ vựng cho chủ đề này. Trước khi viết mỗi đề, hãy bắt đầu từ đây.',
+            classes: 'intro-step',
+            buttons: [
+              {
+                text: 'Bỏ qua',
+                action: () => {
+                  this.setCookie('tour', 'completed')
+                  tour.complete()
+                },
+                secondary: true
+              },
+              {
+                text: 'Quay lại',
+                action: tour.back,
+                secondary: true
+              },
+              {
+                text: 'Tiếp tục',
+                action: tour.next
+              }
+            ]
+          },
+          {
+            attachTo: { element: '#tab-submissions', on: 'bottom'},
+            text: 'Các bài viết đã nộp cho chủ đề này.',
+            classes: 'intro-step',
+            buttons: [
+              {
+                text: 'Quay lại',
+                action: tour.back,
+                secondary: true
+              },
+              {
+                text: 'Hoàn tất',
+                action: () => {
+                  this.setCookie('tour', 'completed')
+                  tour.complete()
+                }
+              }
+            ]
+          }
+        ])
+        tour.start()
+      }
+    },
+    setCookie(name, value) {
+      var expires = '; expires=Fri, 31 Dec 9999 23:59:59 GMT'
+      document.cookie = name + '=' + (value || '') + expires + '; path=/'
+    },
+    getCookie(name) {
+      var nameEQ = name + '='
+      var ca = document.cookie.split(';')
+      for (var i = 0; i < ca.length; i++) {
+        var c = ca[i]
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length)
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length)
+      }
+      return null
+    },
+    eraseCookie(name) {
+      document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+    },
     onNoteUpdate() {
       localStorage.setItem(this.currentUser.username + '_QuestionId' + this.questionId + '_Note', this.questionNote)
     },
@@ -1542,6 +1778,9 @@ export default {
 </script>
 
 <style>
+.intro-step{
+  margin-top: 12px;
+}
 .el-tabs__nav-next {
     right: 3px !important;
     top: -2px !important;

@@ -451,6 +451,17 @@ namespace Reboost.WebApi.Controllers
             }
         }
         [Authorize]
+        [HttpPost("rate/ai")]
+        public async Task<IActionResult> CreateAIReviewRatingAsync([FromBody] ReviewRatings data)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.CreateAIReviewRatingAsync(data);
+            return Ok(rs);
+        }
+        [Authorize]
         [HttpPost("rate")]
         public async Task<IActionResult> CreateReviewRatingAsync([FromBody] ReviewRatings data)
         {

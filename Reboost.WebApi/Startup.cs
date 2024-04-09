@@ -104,6 +104,9 @@ namespace Reboost.WebApi
                     opt.ClientId = googleAuth["ClientId"];
                     opt.ClientSecret = googleAuth["ClientSecret"];
                     opt.SignInScheme = IdentityConstants.ExternalScheme;
+                    opt.AccessDeniedPath = "/login";
+                    //opt.CallbackPath = "/auth/external/callback";
+                    //opt.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
                 });
             services.AddAuthentication()
                 .AddFacebook("facebook", opt => {
@@ -111,6 +114,8 @@ namespace Reboost.WebApi
                     opt.AppId = facebookAuth["AppId"];
                     opt.AppSecret = facebookAuth["AppSecret"];
                     opt.SignInScheme = IdentityConstants.ExternalScheme;
+                    opt.AccessDeniedPath = "/login";
+                    //opt.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
                 });
 
 

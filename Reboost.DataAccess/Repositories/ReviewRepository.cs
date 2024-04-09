@@ -18,6 +18,7 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IReviewRepository
     {
+        Task<ReviewRatings> CreateAIReviewRatingAsync(ReviewRatings data);
         Task<ReviewRequests> CreateReviewRequest(ReviewRequests request);
         Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId);
         Task<bool> EligibleForPeerReview(string userId);
@@ -78,6 +79,13 @@ namespace Reboost.DataAccess.Repositories
         {
             db = context;
         }
+        public async Task<ReviewRatings> CreateAIReviewRatingAsync(ReviewRatings data)
+        {
+            await db.ReviewRatings.AddAsync(data);
+            await db.SaveChangesAsync();
+            return data;
+        }
+
         public async Task<ReviewRequests> CreateReviewRequest(ReviewRequests request)
         {
             await db.ReviewRequests.AddAsync(request);
@@ -661,7 +669,7 @@ namespace Reboost.DataAccess.Repositories
         }
         public async Task<ReviewRatings> GetReviewRatingsByReviewIdAsync(int reviewId)
         {
-            var rs = await db.ReviewRatings.Where(r => r.ReviewId == reviewId).FirstOrDefaultAsync();
+            var rs = await db.ReviewRatings.Where(r => r.ReviewId == reviewId && !r.UserId.Contains("AI")).FirstOrDefaultAsync();
             return rs;
         }
         public async Task<RequestQueue> AddRequestQueue(RequestQueue data, string userID)

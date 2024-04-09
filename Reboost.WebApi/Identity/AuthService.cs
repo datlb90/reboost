@@ -63,6 +63,7 @@ namespace Reboost.WebApi.Identity
             var identityUser = new ApplicationUser
             {
                 Email = model.Email,
+                EmailConfirmed = true,
                 UserName = GetUsernameFromEmail(model.Email),
                 FirstName = model.FullName,
                 LastName = "",
@@ -168,6 +169,7 @@ namespace Reboost.WebApi.Identity
                     var identityUser = new ApplicationUser
                     {
                         Email = email,
+                        EmailConfirmed = true,
                         UserName = username,
                         FirstName = firstName == null ? username : firstName,
                         LastName = lastName == null ? "" : lastName,
