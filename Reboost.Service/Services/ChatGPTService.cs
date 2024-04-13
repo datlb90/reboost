@@ -26,13 +26,20 @@ namespace Reboost.Service.Services
 {
     public interface IChatGPTService
     {
+        // Version 1.4
+        Task<string> getAIFeedbackForCriteriaV4(CriteriaFeedbackModel model);
+        // Version 1.2
+        Task<string> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model);
+        // Version 1.1
+        Task<AutomatedFeedbackModel> getAIFeedbackForCriteria(CriteriaFeedbackModel model);
         Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model);
+        // Version 1.3
         Task<string> getCriteriaFeedback(CriteriaFeedbackModel model);
         Task<string> getFeedbackForErrors(ErrorFeedbackModel model);
-        Task<string> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model);
+       
         Task<ImageToTopicAndEssayModel> getWritingTextFromImage(byte[] imageData);
         Task<string> getChartDescription(string filePath);
-        Task<AutomatedFeedbackModel> getAIFeedbackForCriteria(CriteriaFeedbackModel model);
+        
         Task GetDifficultyLevelForAllQuestions();
         Task<TOEFLIndependentFeedbackModel> GetTOEFLIndependentEssayFeedback(string question, string essay, string feedbackLanguage);
         Task<TOEFLIntegratedFeedbackModel> GetTOEFLIntegratedEssayFeedback(string question, string essay, string feedbackLanguage);
@@ -50,6 +57,133 @@ namespace Reboost.Service.Services
            
             configuration = _configuration;
         }
+
+        public async Task<string> getAIFeedbackForCriteriaV4(CriteriaFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string topic = "";
+                string response = "";
+                if (model.topic == "The writing topic is not provided")
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        response = "Given the following IELTS Academic Writing Task 1 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+                        if (!String.IsNullOrEmpty(model.chartDescription))
+                        {
+                            topic = "Given the following chart information for the IELTS Academic Writing Task 1: \r\n\r\n" + model.chartDescription + "\r\n\r\n";
+                        }
+                    }
+                    else // Academic Writing Task 2
+                    {
+                        response = "Given the following IELTS Academic Writing Task 2 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+                    }
+                }
+                else
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        topic = "Given the following IELTS Academic Writing Task 1 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                        if (!String.IsNullOrEmpty(model.chartDescription))
+                        {
+                            topic += model.chartDescription;
+                        }
+                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                    }
+                    else // Academic Writing Task 2
+                    {
+                        topic = "Given the following IELTS Academic Writing Task 2 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+                    }
+                }
+
+
+                string request = "";
+                switch (model.criteriaName)
+                {
+                    case "Critical Errors":
+                        request = "Xác định những lỗi về từ vựng và ngữ pháp trong bài luận. Với mỗi lỗi, đề xuất một bản chỉnh sửa và giải thích bằng tiếng Việt tại sao nó phù hợp hơn với ngữ cảnh được cho.";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Identify words or phrases in the writing essay where vocabulary or grammar are not correctly used. For each word or phrase, offer a suggested revision and explain why it is more appropriate in the given context.";
+                        break;
+                    case "Arguments Assessment":
+                        request = "Xác định lập luận chính cho mỗi đoạn văn trong bài viết. Cho mỗi lập luận, cung cấp các thông tin sau:\r\n- Lập luận: viết lại chính xác từng câu từng chữ lập luận đó như xuất hiện trong bài viết bằng tiếng anh.\r\n- Đánh giá: đánh giá điểm mạnh và điểm yếu của luận điểm xét về các khía cạnh như tính rõ ràng, tính chặt chẽ, sự mạch lạc và sức nặng của bằng chứng.\r\n- Phiên bản cải thiện: cung cấp một phiên bản đã được cải thiện của lập luận đó bằng tiếng anh. \r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Identify the main argument of each paragraph in the writing essay. For each argument, provide the following information:\r\n- Argument: write the argument exactly like how it appears in the writing\r\n- Assessment: provide feedback for the argument in term of strengths and weaknesses.\r\non clarity, relevance, coherence, and strength of evidence.\r\n- Improved version: provide an improved version of the argument\r\n";
+                        break;
+                    case "Task Achievement":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Task Achievement. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Task Achievement.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Task Achievement.\r\n\r\n- Nếu có thông tin hay yếu tố nào của đề bài bị thiếu hoặc bỏ sót, chỉ ra những thông tin này này và đề xuất cách để bao gồm chúng ở trong bài luận.\r\n- Nếu bài luận không nhắc tới các xu hướng hoặc các phần quan trọng nhất trong thông tin được cung cấp, chỉ ra những thiếu sót này và đề xuất cách tích hợp vào bài luận.\r\n- Nếu bài luận thiếu sự so sánh giữa các điểm dữ liệu, đề xuất các so sánh cụ thể có thể làm giàu thêm phân tích của bài luận.\r\n- Nếu bài luận không lựa chọn dữ liệu từ thông tin được cung cấp một cách phù hợp, cung cấp gợi ý về các dữ liệu phù hợp nhất.\r\n";
+                        // "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Task Achievement. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Task Achievement.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Task Achievement.\r\n\r\n- Nếu có thông tin hay yếu tố nào của đề bài bị thiếu hoặc bỏ sót, chỉ ra điều này và đề xuất cách để bao gồm thông tin đó trong bài luận.\r\n- Nếu bài luận không nhắc tới các xu hướng hoặc các phần quan trọng nhất trong thông tin được cung cấp, chỉ ra những thiếu sót này và đề xuất cách tích hợp vào bài luận.\r\n- Nếu bài luận thiếu sự so sánh giữa các điểm dữ liệu, đề xuất các so sánh cụ thể có thể làm giàu thêm phân tích của bài luận.\r\n- Nếu bài luận không lựa chọn dữ liệu từ thông tin được cung cấp một cách phù hợp, cung cấp gợi ý về các dữ liệu phù hợp nhất.\r\n";
+
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay based on the Task Achievement criterion. The feedback includes the following two parts:\r\n\r\n1. Strengths: Identify two points where the essay performed well regarding the Task Achievement criterion.\r\n\r\n2. Areas for improvement: Identify the aspects that the essay needs to improve for the Task Achievement criterion.\r\n\r\n- If any information or elements from the prompt are missing or overlooked, highlight them and suggest ways to include them in the essay.\r\n- If the essay fails to mention significant trends or features from the provided information, highlight these omissions and suggest ways to integrate them into the essay.\r\n- If the essay lacks comparisons between data points, propose specific comparisons that could enrich the analysis of the essay.\r\n- If the essay does not appropriately select data from the provided information, provide suggestions on the most relevant data to include.\r\n";
+                        break;
+                    case "Task Response":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Task Response. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Task Response.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Task Response.\r\n- Nếu bài luận không trả lời đầy đủ mọi khía cạnh của đề bài, chỉ ra những khía cạnh bị thiếu sót và gợi ý cách bổ sung chúng vào bài luận.\r\n- Nếu quan điểm của tác giả không được trình bày một cách rõ ràng và nhất quán, giải thích và đề xuất gợi ý cải thiện.\r\n- Nếu các ý tưởng không được mở rộng để hỗ trợ các luận điểm chính, chỉ ra các ý tưởng thiếu chiều sâu này và đề xuất cách thức để mở rộng và phát triển chúng.\r\n- Nếu các ý tưởng không được hỗ trợ bởi lý lẽ logic, bằng chứng, hoặc ví dụ cụ thể, chỉ ra các dẫn chứng có trong bài viết và gợi ý cách hỗ trợ những ý tưởng đó.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay based on the Task Response criterion. The feedback includes the following two parts:\r\n\r\n1. Strengths: Identify two points where the essay performed well regarding the Task Response criterion.\r\n\r\n2. Areas for improvement: Identify the aspects that the essay needs to improve for the Task Response criterion.\r\n- If the essay does not fully address all aspects of the prompt, point out these missing aspects and suggest ways to incorporate them into the essay.\r\n- If the author's viewpoint is not clearly and consistently presented throughout the essay, provide detailed explanation and recommend strategies for improvement.\r\n- If the ideas are not expanded to support the main arguments, point out these shallow ideas and propose ways to expand and develop them.\r\n- If the ideas are not supported by logical reasoning, evidence, or specific examples, point out the evidence in the text and suggest how to support these ideas.\r\n";
+                        break;
+                    case "Coherence & Cohesion":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Coherence and Cohesion. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Coherence and Cohesion.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Coherence and Cohesion.\r\n- Nếu cấu trúc của bài luận không rõ ràng và hợp lý, gây cản trở dòng chảy logic, đưa ra ví dụ cụ thể trong bài viết và gợi ý cách sắp xếp lại cấu trúc bài luận.\r\n- Nếu các đoạn văn thiếu sự tập trung, thiếu câu chủ đề, hoặc bao gồm nhiều ý tưởng, đưa ra ví dụ cụ thể trong bài viết và khuyến nghị phương án sửa đổi.\r\n- Nếu các thiết bị liên kết (như liên từ, đại từ, và cụm từ nối) được sử dụng một cách không thích hợp, đưa ra ví dụ cụ thể trong bài viết và cung cấp các phương án thay thế thích hợp hơn.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay based on the Coherence and Cohesion criterion. The feedback includes the following two parts:\r\n\r\n1. Strengths: Identify two strengths that the essay demonstrated regarding the Coherence and Cohesion criterion.\r\n\r\n2. Areas for improvement: Point out the aspects that the essay needs to improve for the Coherence and Cohesion criterion.\r\n\r\n- If the structure of the essay is not clear and logical, hindering the logical flow, provide specific evidence from the text and suggest ways to improve the essay’s structure to ensure a logical organization.\r\n- If paragraphs lack focus, lack a topic sentence, or include multiple ideas, provide specific examples from the text and recommend revision strategies.\r\n- If linking devices (such as conjunctions, pronouns, and linking phrases) are used inappropriately, provide specific examples from the text and offer more appropriate alternative options.\r\n";
+                        break;
+                    case "Lexical Resource":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Lexical Resource. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Lexical Resource.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Lexical Resource.\r\n- Nếu có bất kỳ từ hay cụm từ nào trong bài luận được sử dụng quá mức hoặc lặp lại không cần thiết, chỉ ra những từ hay cụm từ đó và cung cấp cách thay thế.\r\n- Nếu có bất kỳ sự không chính xác nào trong việc lựa chọn từ hoặc sử dụng từ, chỉ ra các dẫn chứng cụ thể trong bài viết, giải thích tại sao chúng không chính xác hoặc không phù hợp, và cung cấp các lựa chọn thay thế chính xác hơn.\r\n- Nếu ngôn ngữ được sử dụng không phù hợp hoặc thiếu sự trang trọng với một bài luận học thuật, chỉ ra các dẫn chứng cụ thể trong bài viết và đề xuất các lựa chọn thay thế.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay based on the Lexical Resource criterion. The feedback includes the following two parts:\r\n\r\n1. Strengths: Identify two points where the essay performed well regarding the Lexical Resource criterion.\r\n\r\n2. Areas for improvement: Identify the aspects that the essay needs to improve for the Lexical Resource criterion.\r\n- If any words or phrases are overused or unnecessarily repeated in the essay, point out these words or phrases and provide alternatives.\r\n- If there are any inaccuracies in word choice or usage, point out specific evidence in the text, explain why they are incorrect or inappropriate, and provide more accurate alternatives.\r\n- If the language used is not appropriate or lacks the formality required for an academic essay, highlight specific evidence in the text and suggest alternative choices.\r\n";
+                        break;
+                    case "Grammatical Range & Accuracy":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Grammatical Range & Accuracy. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Grammatical Range & Accuracy.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Grammatical Range & Accuracy.\r\n- Nếu bài luận phụ thuộc quá mức vào chỉ một hay hai loại cấu trúc ngữ pháp, đưa ra ví dụ cụ thể và gợi ý những cấu trúc mới.\r\n- Nếu có phẩn nào của bài luận mà các loại câu phức tạp bao gồm câu ghép và câu phức có thể sử dụng thay thế để tăng cường sự rõ ràng và hấp dẫn, gợi ý những thay đổi cụ thể đó.\r\n- Nếu có bất kỳ lỗi ngữ pháp nào trong bài luận, chỉ ra ví dụ cụ thể, giải thích, và cung cấp cách sửa.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay based on the Grammatical Range & Accuracy. The feedback includes the following two parts:\r\n\r\n1. Strengths: Identify two strengths that the essay demonstrated regarding the Grammatical Range & Accuracy criterion.\r\n\r\n2. Areas for improvement: Point out the aspects that the essay needs to improve for the Grammatical Range & Accuracy criterion.\r\n\r\n- If the essay relies too much on just one or two types of grammatical structures, provide specific examples and suggest new structures to use.\r\n- If there are parts of the essay where complex sentence types, including compound and complex sentences, could be used to enhance clarity and engagement, suggest those specific changes.\r\n- If there are any grammatical errors in the essay, point out specific examples, explain, and provide corrections.\r\n";
+                        break;
+                    case "Overall Score & Feedback":
+                        if (model.task == "Academic Writing Task 1")
+                        {
+                            request = "Cung cấp phản hồi tổng quát bằng tiếng Việt cho bài. Phản hồi gồm 2 phần sau:\r\n\r\n- Đánh giá tổng quan: cung cấp một bức tranh toàn cảnh về chất lượng của bài viết dàn chải qua cả bốn tiêu chí Task Achievement, Coherence & Cohesion, Lexical Resource, và Grammatical Range & Accuracy\r\n\r\n- Khuyễn nghị cho học viên: Cung cấp hướng dẫn để học viên có thể cải thiện điểm số cho bài viết của mình.\r\n";
+
+                            if (model.feedbackLanguage != "vn")
+                                request = "Provide overall feedback for the essay. The feedback contains the following 2 parts:\r\n\r\n- Overall performance: provide a comprehensive overview about the quality of the essay, covering all four criteria: Task Achievement, Coherence & Cohesion, Lexical Resource, and Grammatical Range & Accuracy.\r\n\r\n- How to improve: provide general guidance for the student to improve.\r\n";
+                        }
+                        else
+                        {
+                            request = "Cung cấp phản hồi tổng quát bằng tiếng Việt cho bài. Phản hồi gồm 2 phần sau:\r\n\r\n- Đánh giá tổng quan: cung cấp một bức tranh toàn cảnh về chất lượng của bài viết dàn chải qua cả bốn tiêu chí Task Achievement, Coherence & Cohesion, Lexical Resource, và Grammatical Range & Accuracy\r\n\r\n- Khuyễn nghị cho học viên: Cung cấp hướng dẫn để học viên có thể cải thiện điểm số cho bài viết của mình.\r\n";
+
+                            if (model.feedbackLanguage != "vn")
+                                request = "Provide overall feedback for the essay. The feedback contains the following 2 parts:\r\n\r\n- Overall performance: provide a comprehensive overview about the quality of the essay, covering all four criteria: Task Achievement, Coherence & Cohesion, Lexical Resource, and Grammatical Range & Accuracy.\r\n\r\n- How to improve: provide general guidance for the student to improve.\r\n";
+                        }
+
+                        break;
+                    default:
+                        break;
+                }
+
+                var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = model.feedbackLanguage != "vn" ? Model.ChatGPTTurbo : Model.ChatGPTTurbo_16k,
+                    //Model = Model.ChatGPTTurbo,//_16k,
+                    Temperature = 0.1,
+                    //MaxTokens = 2000,
+                    Messages = new ChatMessage[] {
+                            new ChatMessage(ChatMessageRole.Assistant, topic),
+                            new ChatMessage(ChatMessageRole.Assistant, response),
+                            new ChatMessage(ChatMessageRole.User, request)
+                        }
+                });
+
+                return taskResponseResult.Choices[0].Message.TextContent;
+
+
+            }
+            catch (Exception e)
+            {
+                return "Hệ thống không thể cung cấp phản hồi.";
+            }
+        }
+
 
         public async Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model)
         {
@@ -523,11 +657,9 @@ namespace Reboost.Service.Services
             string chart = "";
             if (!String.IsNullOrEmpty(filePath))
             {
-                chart = "Given the following chart information for the IELTS Academic Writing Task 1:\r\n";
-
                 ChatMessage message = new ChatMessage();
                 message.Role = ChatMessageRole.User;
-                message.TextContent = "Provide me with the full content of the attached chart. Do not miss any information or data.";
+                message.TextContent = "Provide me with the full content of the attached chart.";
                 // Add the chart to the message 
                 message.Images = new List<ChatMessage.ImageInput>();
                 message.Images.Add(ChatMessage.ImageInput.FromFile(filePath));
@@ -536,13 +668,13 @@ namespace Reboost.Service.Services
                 {
                     Model = Model.GPT4_Vision,
                     Temperature = 0.1,
-                    MaxTokens = 1000,
+                    //MaxTokens = 1000,
                     Messages = new ChatMessage[] {
                         message
                     }
                 });
 
-                chart += "\r\n" + chartResult.Choices[0].Message.TextContent + "\r\n";
+                chart = "\r\n" + chartResult.Choices[0].Message.TextContent + "\r\n";
             }
             return chart;
         }
@@ -611,6 +743,16 @@ namespace Reboost.Service.Services
                 string request = "";
                 switch (model.criteriaName)
                 {
+                    case "Critical Errors":
+                        request = "Xác định những lỗi về từ vựng và ngữ pháp trong bài luận. Với mỗi lỗi, đề xuất một bản chỉnh sửa và giải thích bằng tiếng Việt tại sao nó phù hợp hơn với ngữ cảnh được cho.";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Identify words or phrases in the writing essay where vocabulary or grammar are not correctly used. For each word or phrase, offer a suggested revision and explain why it is more appropriate in the given context.";
+                        break;
+                    case "Arguments Assessment":
+                        request = "Xác định các lập luận chính của bài luận. Cho mỗi lập luận, cung cấp các thông tin sau:\r\n- Lập luận: viết lại chính xác từng câu từng chữ lập luận đó như xuất hiện trong bài viết bằng tiếng anh.\r\n- Đánh giá: đánh giá điểm mạnh và điểm yếu của luận điểm xét về các khía cạnh như tính rõ ràng, tính chặt chẽ, sự mạch lạc và sức nặng của bằng chứng.\r\n- Phiên bản cải thiện: cung cấp một phiên bản đã được cải thiện của lập luận đó bằng tiếng anh. \r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Identify the main arguments the writing essay. For each argument, provide the following information:\r\n- Argument: write the argument exactly like how it appears in the writing\r\n- Assessment: provide feedback for the argument in term of strengths and weaknesses.\r\non clarity, relevance, coherence, and strength of evidence.\r\n- Improved version: provide an improved version of the argument\r\n";
+                        break;
                     case "Task Achievement":
                         request = "Cung cấp phản hồi cho bài luận cho tiêu chí Task Achievement sử dụng định dạng JSON. Đối tượng JSON chứa 2 thuộc tính có tên là score và feedback. Thuộc tính score là điểm của bài luận cho tiêu chí Task Achievement dựa theo band descriptors đã cung cấp. Thuộc tính feedback là 1 đối tượng chứa 3 thuộc tính có tên lần lượt là strengths, weaknesses, và recommendations. Ba thuộc tính này chứa thông tin như sau:\r\n\r\n- Thuộc tính strenghs: Chứa phản hồi bằng tiếng việt về những điểm mà học viên đã làm tốt trong bài luận cho tiêu chí Task Achievement. Cho mỗi điểm mạnh, phản hồi cần phải giải thích tại sao đó là điểm manh, liệt kê các ví dụ cụ thể tương ứng ở trong bài viết, và khuyến khích học viên phát triển hơn những điểm đó.\r\n- Thuộc tính weaknesses: Chứa phản hồi bằng tiếng việt về những điểm mà học viên làm chưa tốt trong bài luận cho tiêu chí Task Achievement. Cho mỗi điểm chưa làm tốt, phản hồi cần phải giải thích tại sao điểm đó lại chưa tốt, liệt kê ra những ví dụ cụ thể tương ứng trong bài viết, và đưa ra khuyến nghị cụ thể cho từng điểm. Nếu điểm chưa làm tốt là một lỗi viết cụ thể, cung cấp cách sửa lại cho đúng.\r\n- Thuộc tính recommendations: Cung cấp hướng dẫn để học viên có thể cải thiện điểm số của mình cho tiêu chí Task Achievement, bao gồm cả những hướng dẫn chung và những hướng dẫn cụ thể cho chủ đề viết đã được cung cấp. Hướng dẫn này cần được viết bằng tiếng Việt và phải cung cấp các bước cụ thể để giúp học viên tiến bộ một cách hiệu quả nhất dựa vào năng lực hiện tại và bài viết của học viên.\r\n";
                         if (model.feedbackLanguage != "vn")
@@ -659,6 +801,8 @@ namespace Reboost.Service.Services
                     new ChatMessage(ChatMessageRole.User, request)
                 }
                 });
+
+                Console.Write(taskResponseResult.Choices[0].Message.TextContent);
 
                 result = JsonConvert.DeserializeObject<AutomatedFeedbackModel>(taskResponseResult.Choices[0].Message.TextContent);
 

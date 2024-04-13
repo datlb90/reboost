@@ -724,10 +724,6 @@ export default {
       this.$nextTick(function() {
         this.showArrow()
       })
-
-      this.$nextTick(() => {
-        window.FB.XFBML.parse()
-      })
       // Update fb comment's width for safari
       setTimeout(function () {
         const iframes = document.getElementsByClassName('fb_iframe_widget_lift')

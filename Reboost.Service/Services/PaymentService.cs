@@ -70,7 +70,7 @@ namespace Reboost.Service.Services
 
         public async Task<string> GetVNPayUrl(VNPayRequestModel model)
         {
-            model.amount = 50000;
+            model.amount = 150000;
             // Create Reboost's order
             Orders order = new Orders
             {
@@ -352,7 +352,7 @@ namespace Reboost.Service.Services
 
         public async Task<string> GetZaloPayUrl(ZaloPayRequestModel model)
         {
-            model.amount = 50000;
+            model.amount = 150000;
             // Create Reboost's order
             Orders order = new Orders
             {

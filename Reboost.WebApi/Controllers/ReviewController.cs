@@ -38,14 +38,18 @@ namespace Reboost.WebApi.Controllers
             configuration = _configuration;
             db = ctx;
         }
-
+        [Authorize]
+        [HttpPost("ai/feedback/criteria/v4")]
+        public async Task<string> getAIFeedbackForCriteriaV4(CriteriaFeedbackModel model)
+        {
+            return await _service.getAIFeedbackForCriteriaV4(model);
+        }
         [Authorize]
         [HttpPost("ai/score")]
         public async Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model)
         {
             return await _service.getEssayScore(model);
         }
-
         [Authorize]
         [HttpPost("ai/feedback/criteria/v3")]
         public async Task<string> getCriteriaFeedback(CriteriaFeedbackModel model)
@@ -59,7 +63,6 @@ namespace Reboost.WebApi.Controllers
         {
             return await _service.getFeedbackForErrors(model);
         }
-
         [Authorize]
         [HttpPost("ai/feedback/criteria/v2")]
         public async Task<IActionResult> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model)

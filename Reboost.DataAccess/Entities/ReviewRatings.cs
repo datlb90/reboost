@@ -14,11 +14,9 @@ namespace Reboost.DataAccess.Entities
         [Required]
         public int ReviewId { get; set; }
 
-        [Required]
         [Column(TypeName = "decimal(2,1)")]
         public decimal Rate { get; set; }
 
-        [Required(ErrorMessage = "Comment is required")]
         public string Comment { get; set; }
     }
 }
