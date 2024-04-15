@@ -31,7 +31,7 @@
               </div>
 
             </div>
-            <div class="review-price">150.000 VNĐ</div>
+            <div class="review-price">100.000 VNĐ</div>
           </div>
         </div>
 
@@ -168,7 +168,7 @@
                 Giáo viên có thể đánh giá sự tiến bộ của bạn dựa theo những bài đã nộp trước đó và phản hồi theo yêu cầu cụ thể.
               </div>
             </div>
-            <div class="pricing-option-price" style="width: 120px;">150.000 VNĐ</div>
+            <div class="pricing-option-price" style="width: 120px;">100.000 VNĐ</div>
           </div>
         </div>
 
@@ -298,7 +298,7 @@ export default {
       clientSecret: null,
       checkoutDisable: true,
       newMethod: false,
-      amount: 150000,
+      amount: 100000,
       paymentIntent: null,
       epaySelected: false,
       paid: false,
@@ -372,10 +372,10 @@ export default {
     },
     onReviewSelect(reviewType) {
       if (reviewType === 'Pro') {
-        this.amount = 150000
+        this.amount = 100000
         this.selectedReview = reviewType
       } else if (reviewType === 'AI') {
-        this.amount = 15000
+        this.amount = 100000
         this.selectedReview = reviewType
         if (this.requestedLanguage) {
           this.requestAIReview()

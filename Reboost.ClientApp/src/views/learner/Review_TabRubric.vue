@@ -16,12 +16,14 @@
                     <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
                     <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
                     <span v-else-if="criteria.name == 'Overall Score & Feedback'">Đánh Giá Tổng Quan</span>
+                    <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
+                    <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
                     <span v-else> Tiêu Chí {{ criteria.name }}</span>
                   </div>
                 </div>
               </div>
               <div>
-                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment'">
+                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
                   <div v-if="isAiReview">
                     <div v-if="!criteria.loading && criteria.mark" class="band-score">
                       Band:
@@ -45,32 +47,15 @@
                       />
                     </el-radio-group>
                   </div>
-
                 </div>
-                <!-- <div v-if="criteria.name == 'Overall Score & Feedback'">
-                  <el-select
-                    v-model="criteria.mark"
-                    placeholder="Band score"
-                    size="mini"
-                    style="width: 110px; margin-bottom: 10px;"
-                    :readonly="readOnly || currentUser.role == 'Admin'"
-                    :disabled="true"
-                    @change="rubricMileStoneClick(reviewId, criteria, $event)"
-                  >
-                    <el-option
-                      v-for="item in scoreOptions"
-                      :key="item.value"
-                      :label="'Band: ' + item.label"
-                      :value="item.value"
-                    />
-                  </el-select>
-                </div> -->
                 <div>
                   <div v-if="criteria.loading" style="background: #f0f1f2; height: 120px; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                     <div class="el-loading-spinner" style="position: relative; top: 10%;">
                       <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
-                      <p v-if="criteria.name == 'Critical Errors'" class="el-loading-text" style="word-break: break-word;">Đang tìm các lỗi có trong bài viết</p>
+                      <p v-if="criteria.name == 'Critical Errors'" class="el-loading-text" style="word-break: break-word;">Đang chấm từ vựng và ngữ pháp</p>
                       <p v-else-if="criteria.name == 'Arguments Assessment'" class="el-loading-text" style="word-break: break-word;">Đang đánh giá các lập luận</p>
+                      <p v-else-if="criteria.name == 'Vocabulary'" class="el-loading-text" style="word-break: break-word;">Đang tìm từ vựng phù hợp</p>
+                      <p v-else-if="criteria.name == 'Improved Version'" class="el-loading-text" style="word-break: break-word;">Đang viết phiên bải cải thiện</p>
                       <p v-else class="el-loading-text" style="word-break: break-word;">Đang chấm tiêu chí {{ criteria.name }}</p>
                     </div>
                   </div>
@@ -365,7 +350,7 @@ export default ({
                         }
                       })
                       completedCount++
-                      if (completedCount == 8) {
+                      if (completedCount == 9) {
                         this.submitReview()
                       }
                     }
@@ -404,7 +389,7 @@ export default ({
                               }
                             })
                             completedCount++
-                            if (completedCount == 8) {
+                            if (completedCount == 9) {
                               this.submitReview()
                             }
                           }
@@ -424,7 +409,7 @@ export default ({
                           // submit the review
                           criteria.loading = false
                           completedCount++
-                          if (completedCount == 8) {
+                          if (completedCount == 9) {
                               this.submitReview()
                           }
                         })
@@ -443,7 +428,7 @@ export default ({
                         // submit the review
                         criteria.loading = false
                         completedCount++
-                        if (completedCount == 8) {
+                        if (completedCount == 9) {
                             this.submitReview()
                         }
                       })
@@ -462,7 +447,7 @@ export default ({
                       // submit the review
                       criteria.loading = false
                       completedCount++
-                      if (completedCount == 8) {
+                      if (completedCount == 9) {
                         this.submitReview()
                       }
                     })
@@ -1019,7 +1004,7 @@ export default ({
                   //             }
                   //           })
                   //           completedCount++
-                  //           if (completedCount == 8) {
+                  //           if (completedCount == 9) {
                   //             this.submitReview()
                   //           }
                   //         }
@@ -1050,7 +1035,7 @@ export default ({
                   //         // submit the review
                   //         criteria.loading = false
                   //         completedCount++
-                  //         if (completedCount == 8) {
+                  //         if (completedCount == 9) {
                   //             this.submitReview()
                   //         }
                   //       })
@@ -1080,7 +1065,7 @@ export default ({
                   //       // submit the review
                   //       criteria.loading = false
                   //       completedCount++
-                  //       if (completedCount == 8) {
+                  //       if (completedCount == 9) {
                   //           this.submitReview()
                   //       }
                   //     })
@@ -1110,7 +1095,7 @@ export default ({
                   //     // submit the review
                   //     criteria.loading = false
                   //     completedCount++
-                  //     if (completedCount == 8) {
+                  //     if (completedCount == 9) {
                   //       this.submitReview()
                   //     }
                   //   })

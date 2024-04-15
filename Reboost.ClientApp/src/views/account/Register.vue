@@ -57,7 +57,7 @@
                   </a>
                 </p>
               </el-form-item>
-              <hr>
+              <!-- <hr>
               <div style="font-size: 14px; text-align: center; padding-bottom: 10px;">
                 {{ messageTranslates('register', 'orSignInWith') }}
               </div>
@@ -82,7 +82,7 @@
                   chính sách bảo mật
                 </a>
                 của chúng tôi
-              </div>
+              </div> -->
             </el-form>
           </div>
         </div>

@@ -262,10 +262,13 @@ namespace Reboost.DataAccess.Repositories
             }
 
             // Get the final score from data
-            ReviewData finalScore = data.Find(r => r.CriteriaName == "Overall Score & Feedback");
-            if(finalScore != null)
+            var mainCriteria = data.Where(r => r.CriteriaName != "Overall Score & Feedback" && r.CriteriaName != "Improved Version" && r.CriteriaName != "Vocabulary"
+            && r.CriteriaName != "Critical Errors" && r.CriteriaName != "Arguments Assessment" && r.Score != null);
+
+            if(mainCriteria != null)
             {
-                review.FinalScore = finalScore.Score;
+                decimal finalScore = (decimal)mainCriteria.Average(r => r.Score);
+                review.FinalScore = (decimal)(Math.Round(finalScore * 2, MidpointRounding.AwayFromZero) / 2);
             }
             review.Status = ReviewStatus.COMPLETED;
             review.LastActivityDate = DateTime.UtcNow;
