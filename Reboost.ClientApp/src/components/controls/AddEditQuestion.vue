@@ -51,6 +51,17 @@
             </el-select>
           </el-form-item>
         </div>
+
+        <el-form-item prop="testDate" size="mini" label="Ngày thi">
+          <el-date-picker
+            v-model="form.testDate"
+            type="date"
+            placeholder="Chọn ngày thi"
+            style="width: 200px;"
+          />
+
+        </el-form-item>
+
         <el-form-item prop="content" :rules="[{ required: true }]" size="mini" label="Chủ đề">
           <el-tiptap
             v-model="form.content"
@@ -273,6 +284,7 @@ export default {
         this.form.difficulty = rs.difficulty
         this.form.type = rs.type
         this.form.task = rs.taskId
+        if (rs.testDate != null) { this.form.testDate = new Date(rs.testDate) }
         this.form.content = rs.questionsPart.filter(r => r.name == 'Question')[0]?.content
         this.questionTip = rs.questionsPart.filter(r => r.name == 'Tip')[0]?.content
         this.vocabulary = rs.questionsPart.filter(r => r.name == 'Vocabulary')[0]?.content
@@ -312,6 +324,14 @@ export default {
     testChange() {
       this.form.task = this.tasksList[0].id
     },
+    getDateStr(date) {
+    return date.getUTCFullYear() + '-' +
+      ('00' + (date.getUTCMonth() + 1)).slice(-2) + '-' +
+      ('00' + date.getUTCDate()).slice(-2) + ' ' +
+      ('00' + date.getUTCHours()).slice(-2) + ':' +
+      ('00' + date.getUTCMinutes()).slice(-2) + ':' +
+      ('00' + date.getUTCSeconds()).slice(-2)
+    },
     submit() {
       this.$refs['questionForm'].validate(async valid => {
         if (valid) {
@@ -336,14 +356,14 @@ export default {
           }
 
           const formData = new FormData()
-
+          console.log(this.form.testDate)
           formData.set('Title', this.form.name)
           formData.set('Test', this.form.test)
           formData.set('TaskId', this.form.task)
           formData.set('Difficulty', this.form.difficulty)
           formData.set('Type', this.form.type)
           formData.set('Status', this.currentUser.role == UserRole.ADMIN ? QUESTION_STATUS.APPROVED : QUESTION_STATUS.CONTRIBUTED)
-
+          if (this.form.testDate) { formData.set('TestDate', this.getDateStr(this.form.testDate)) }
           formData.set('QuestionParts[0][Name]', 'Question')
           formData.set('QuestionParts[0][Content]', this.form.content)
           formData.set('QuestionParts[0][Order]', 1)
@@ -378,10 +398,11 @@ export default {
             formData.set('QuestionParts[' + count + '][Content]', this.questionTip)
             formData.set('QuestionParts[' + count + '][Order]', order)
             formData.set('QuestionParts[' + count + '][QuestionId]', this.questionExist ? this.questionExist?.id : 0)
+            order += 1
+            count += 1
           }
 
-          order += 1
-          count += 1
+          console.log(this.formData)
           if (this.vocabulary) {
             formData.set('QuestionParts[' + count + '][Name]', 'Vocabulary')
             formData.set('QuestionParts[' + count + '][Content]', this.vocabulary)

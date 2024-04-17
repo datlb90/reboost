@@ -21,5 +21,6 @@ namespace Reboost.DataAccess.Entities
         public System.DateTime LastActivityDate { get; set; }
         public string UserId { get; set; }
         public virtual Tasks Task { get; set; }
+        public DateTime? TestDate { get; set; }
     }
 }

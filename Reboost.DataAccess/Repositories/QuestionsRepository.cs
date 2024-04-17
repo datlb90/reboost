@@ -254,6 +254,7 @@ namespace Reboost.DataAccess.Repositories
                         Difficulty = quest.Difficulty,
                         AddedDate = quest.AddedDate,
                         LastActivityDate = quest.LastActivityDate,
+                        TestDate = quest.TestDate
                     }).ToListAsync();
 
             //using (var command = context.Database.GetDbConnection().CreateCommand())
@@ -300,58 +301,126 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<QuestionModel> GetByIdAsync(int id)
         {
-            using (var command = context.Database.GetDbConnection().CreateCommand())
+
+            //            entities.Id = result.GetFieldValue<int>("Id");
+            //            entities.Title = result.GetFieldValue<string>("Title");
+            //            entities.Section = result.GetFieldValue<string>("Section");
+            //            entities.Test = result.GetFieldValue<string>("Test");
+            //            entities.Time = result.GetFieldValue<string>("Time");
+            //            entities.Type = result.GetFieldValue<string>("Type");
+            //            entities.Sample = result.GetFieldValue<bool>("Sample");
+            //            entities.Status = result.GetFieldValue<string>("Status");
+            //            entities.AverageScore = result.GetFieldValue<string>("AverageScore");
+            //            entities.Submission = result.GetFieldValue<int>("Submission");
+            //            entities.Like = result.GetFieldValue<int>("LikeCount");
+            //            entities.Direction = result.GetFieldValue<string>("Direction");
+            //            entities.Dislike = result.GetFieldValue<int>("DisLikeCount");
+            //            entities.QuestionsPart = resultPartsModel;
+            //            entities.TaskId = result.GetFieldValue<int>("TaskId");
+            //            entities.TestId = result.GetFieldValue<int>("TestId");
+            //            entities.UserId = result.GetFieldValue<string>("UserId");
+            //            entities.Difficulty = result.GetFieldValue<string>("Difficulty");
+            //            entities.TestDate = result.IsDBNull(10) ? null : result.GetFieldValue<DateTime>("TestDate");
+
+            var resultParts = await ReboostDbContext.QuestionParts.Where(qp => qp.QuestionId == id).ToListAsync();
+            List<QuestionPartModel> resultPartsModel = new List<QuestionPartModel>();
+            resultParts.ForEach(rs =>
             {
-                command.CommandText = "select q.Id as Id, q.Title, ts.Name as Test, q.type as Type, q.hasSample as Sample, t.Name as Section, " +
-                    "q.AverageScore as AverageScore, q.SubmissionCount as Submission, q.LikeCount as LikeCount, q.DisLikeCount as DisLikeCount, " +
-                    "t.Direction as Direction, t.Time as Time, q.TaskId as TaskId, s.TestId as TestId, q.UserId as UserId, q.Status as Status, q.Difficulty as Difficulty"
-                    + " From Questions q"
-                    + " LEFT JOIN Tasks t ON q.TaskId = t.Id"
-                    + " LEFT JOIN TestSections s ON t.SectionId = s.Id"
-                    + " LEFT JOIN Tests ts ON s.TestId = ts.Id"
-                    + " WHERE q.Id = " + id;
-
-                command.CommandType = CommandType.Text;
-                context.Database.OpenConnection();
-                var resultParts = await ReboostDbContext.QuestionParts.Where(qp => qp.QuestionId == id).ToListAsync();
-                List<QuestionPartModel> resultPartsModel = new List<QuestionPartModel>();
-                resultParts.ForEach(rs =>
+                resultPartsModel.Add(new QuestionPartModel
                 {
-                    resultPartsModel.Add(new QuestionPartModel
-                    {
-                        QuestionId = rs.QuestionId,
-                        Content = rs.Content,
-                        Name = rs.Name
-                    });
+                    QuestionId = rs.QuestionId,
+                    Content = rs.Content,
+                    Name = rs.Name
                 });
-                using (var result = command.ExecuteReader())
-                {
-                    var entities = new QuestionModel();
+            });
 
-                    while (result.Read())
-                    {
-                        entities.Id = result.GetFieldValue<int>("Id");
-                        entities.Title = result.GetFieldValue<string>("Title");
-                        entities.Section = result.GetFieldValue<string>("Section");
-                        entities.Test = result.GetFieldValue<string>("Test");
-                        entities.Time = result.GetFieldValue<string>("Time");
-                        entities.Type = result.GetFieldValue<string>("Type");
-                        entities.Sample = result.GetFieldValue<bool>("Sample");
-                        entities.Status = result.GetFieldValue<string>("Status");
-                        entities.AverageScore = result.GetFieldValue<string>("AverageScore");
-                        entities.Submission = result.GetFieldValue<int>("Submission");
-                        entities.Like = result.GetFieldValue<int>("LikeCount");
-                        entities.Direction = result.GetFieldValue<string>("Direction");
-                        entities.Dislike = result.GetFieldValue<int>("DisLikeCount");
-                        entities.QuestionsPart = resultPartsModel;
-                        entities.TaskId = result.GetFieldValue<int>("TaskId");
-                        entities.TestId = result.GetFieldValue<int>("TestId");
-                        entities.UserId = result.GetFieldValue<string>("UserId");
-                        entities.Difficulty = result.GetFieldValue<string>("Difficulty");
-                    }
-                    return await Task.FromResult(entities);
-                }
-            }
+            return await (from quest in ReboostDbContext.Questions
+                          join task in ReboostDbContext.Tasks
+                            on quest.TaskId equals task.Id into qt
+                            from questTask in qt.DefaultIfEmpty()
+                          join sec in ReboostDbContext.TestSections
+                            on questTask.SectionId equals sec.Id into ts
+                            from taskSection in ts.DefaultIfEmpty()
+                          join test in ReboostDbContext.Tests
+                            on taskSection.TestId equals test.Id into tt
+                            from testSection in tt.DefaultIfEmpty()
+                          where quest.Id == id
+                          select new QuestionModel
+                          {
+                              Id = quest.Id,
+                              Title = quest.Title,
+                              Section = taskSection.Name,
+                              Test = testSection.Name,
+                              Time = questTask.Time,
+                              Type = quest.Type,
+                              Sample = quest.HasSample,
+                              Status = quest.Status,
+                              AverageScore = quest.AverageScore,
+                              Submission = quest.SubmissionCount,
+                              Like = quest.LikeCount,
+                              Direction = questTask.Direction,
+                              Dislike = quest.DisLikeCount,
+                              QuestionsPart = resultPartsModel,
+                              TaskId = questTask.Id,
+                              TestId = testSection.Id,
+                              UserId = quest.UserId,
+                              Difficulty = quest.Difficulty,
+                              TestDate = quest.TestDate
+                          }).FirstOrDefaultAsync();
+
+            //using (var command = context.Database.GetDbConnection().CreateCommand())
+            //{
+            //    command.CommandText = "select q.Id as Id, q.Title, ts.Name as Test, q.type as Type, q.hasSample as Sample, t.Name as Section, " +
+            //        "q.AverageScore as AverageScore, q.SubmissionCount as Submission, q.LikeCount as LikeCount, q.DisLikeCount as DisLikeCount, q.TestDate as TestDate, " +
+            //        "t.Direction as Direction, t.Time as Time, q.TaskId as TaskId, s.TestId as TestId, q.UserId as UserId, q.Status as Status, q.Difficulty as Difficulty"
+            //        + " From Questions q"
+            //        + " LEFT JOIN Tasks t ON q.TaskId = t.Id"
+            //        + " LEFT JOIN TestSections s ON t.SectionId = s.Id"
+            //        + " LEFT JOIN Tests ts ON s.TestId = ts.Id"
+            //        + " WHERE q.Id = " + id;
+
+            //    command.CommandType = CommandType.Text;
+            //    context.Database.OpenConnection();
+            //    var resultParts = await ReboostDbContext.QuestionParts.Where(qp => qp.QuestionId == id).ToListAsync();
+            //    List<QuestionPartModel> resultPartsModel = new List<QuestionPartModel>();
+            //    resultParts.ForEach(rs =>
+            //    {
+            //        resultPartsModel.Add(new QuestionPartModel
+            //        {
+            //            QuestionId = rs.QuestionId,
+            //            Content = rs.Content,
+            //            Name = rs.Name
+            //        });
+            //    });
+            //    using (var result = command.ExecuteReader())
+            //    {
+            //        var entities = new QuestionModel();
+
+            //        while (result.Read())
+            //        {
+            //            entities.Id = result.GetFieldValue<int>("Id");
+            //            entities.Title = result.GetFieldValue<string>("Title");
+            //            entities.Section = result.GetFieldValue<string>("Section");
+            //            entities.Test = result.GetFieldValue<string>("Test");
+            //            entities.Time = result.GetFieldValue<string>("Time");
+            //            entities.Type = result.GetFieldValue<string>("Type");
+            //            entities.Sample = result.GetFieldValue<bool>("Sample");
+            //            entities.Status = result.GetFieldValue<string>("Status");
+            //            entities.AverageScore = result.GetFieldValue<string>("AverageScore");
+            //            entities.Submission = result.GetFieldValue<int>("Submission");
+            //            entities.Like = result.GetFieldValue<int>("LikeCount");
+            //            entities.Direction = result.GetFieldValue<string>("Direction");
+            //            entities.Dislike = result.GetFieldValue<int>("DisLikeCount");
+            //            entities.QuestionsPart = resultPartsModel;
+            //            entities.TaskId = result.GetFieldValue<int>("TaskId");
+            //            entities.TestId = result.GetFieldValue<int>("TestId");
+            //            entities.UserId = result.GetFieldValue<string>("UserId");
+            //            entities.Difficulty = result.GetFieldValue<string>("Difficulty");
+            //            entities.TestDate = result.IsDBNull(10) ? null : result.GetFieldValue<DateTime>("TestDate");
+            //        }
+            //        return await Task.FromResult(entities);
+            //    }
+            //}
         }
 
         public async Task<List<SummaryPerUser>> GetSummaryByUserId(string userId)
@@ -632,6 +701,7 @@ namespace Reboost.DataAccess.Repositories
 
             exist.TaskId = q.TaskId;
             exist.Title = q.Title;
+            exist.TestDate = q.TestDate;
             exist.Type = q.Type;
             exist.Difficulty = q.Difficulty;
             exist.LastActivityDate = DateTime.UtcNow;

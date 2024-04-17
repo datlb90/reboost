@@ -24,6 +24,7 @@ namespace Reboost.Shared
         public string Direction { get; set; }
         public string UserId { get; set; }
         public string CreatedBy { get; set; }
+        public DateTime? TestDate { get; set; }
         public DateTime AddedDate { get; set; }
         public DateTime LastActivityDate { get; set; }
         public List<QuestionPartModel> QuestionsPart { get; set; }
