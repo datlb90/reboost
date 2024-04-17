@@ -60,6 +60,22 @@ namespace Reboost.WebApi.Identity
             if (model == null)
                 throw new NullReferenceException("Dữ liệu không hợp lệ. Vui lòng nhập đầy đủ dữ liệu.");
 
+            // Check if phone number exist
+            bool usernameExist = await _userService.UsernameExist(model.Email, model.PhoneNumber);
+
+            if (usernameExist)
+            {
+                List<string> errors = new List<string>();
+                errors.Add("Địa chỉ email hoặc số điện thoại đã được sử dụng.");
+
+                return new UserManagerResponse
+                {
+                    Message = "Lỗi đăng ký tài khoản",
+                    IsSuccess = false,
+                    Errors = errors
+                };
+            }
+
             var identityUser = new ApplicationUser
             {
                 Email = model.Email,
@@ -106,12 +122,15 @@ namespace Reboost.WebApi.Identity
                             IsSuccess = false,
                         };
                     }
+                    // Record user login
+                    await _userService.RecordUserLogin(identityUser.Id);
+
                     UserLoginModel userModel = new UserLoginModel
                     {
                         Id = identityUser.Id,
                         Username = identityUser.UserName,
                         Email = identityUser.Email,
-                        Role = roles.FirstOrDefault(), // Each user has only one role
+                        Role = roles.FirstOrDefault(),
                         Token = tokenAsString,
                         ExpireDate = token.ValidTo,
                         FirstName = model.FullName,
@@ -243,6 +262,10 @@ namespace Reboost.WebApi.Identity
                     expires: DateTime.UtcNow.AddDays(30),
                     signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
                 string tokenAsString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                // Record user login
+                await _userService.RecordUserLogin(user.Id);
+
                 UserLoginModel userModel = new UserLoginModel
                 {
                     Id = user.Id,
@@ -327,23 +350,25 @@ namespace Reboost.WebApi.Identity
 
         public async Task<UserManagerResponse> LoginUserAsync(LoginViewModel model)
         {
-            Regex regex = new Regex(@"^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$",RegexOptions.CultureInvariant | RegexOptions.Singleline);
-            if (!regex.IsMatch(model.Email))
+            //Regex regex = new Regex(@"^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$",RegexOptions.CultureInvariant | RegexOptions.Singleline);
+            //if (!regex.IsMatch(model.EmailOrPhone))
+            //{
+            //    return new UserManagerResponse
+            //    {
+            //        Message = "Địa chỉ email không chính xác. Vui lòng nhập lại.",
+            //        IsSuccess = false,
+            //    };
+            //}
+
+            //var user = await _userManger.FindByEmailAsync(model.Email);
+
+            var user = _userManger.Users.Where(u => u.Email == model.Username || u.PhoneNumber == model.Username).FirstOrDefault();
+
+            if(user == null)
             {
                 return new UserManagerResponse
                 {
-                    Message = "Địa chỉ email không chính xác. Vui lòng nhập lại.",
-                    IsSuccess = false,
-                };
-            }
-
-            var user = await _userManger.FindByEmailAsync(model.Email);
-
-            if (user == null)
-            {
-                return new UserManagerResponse
-                {
-                    Message = "Địa chỉ email không chính xác. Vui lòng nhập lại.",
+                    Message = "Email hoặc số điện thoại không chính xác. Vui lòng nhập lại.",
                     IsSuccess = false,
                 };
             }
@@ -369,7 +394,7 @@ namespace Reboost.WebApi.Identity
 
             var claims = new[]
             {
-                new Claim("Email", model.Email),
+                new Claim("Email", user.Email),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim("Role", roles.FirstOrDefault())
             };
@@ -394,20 +419,21 @@ namespace Reboost.WebApi.Identity
                 };
             }
 
-            User _user = await _userService.GetByEmailAsync(user.Email);
-            //var account = await _stripeService.GetAccount(_user.Id);
+            //User _user = await _userService.GetByEmailAsync(user.Email);
+
+            // Record user login
+            await _userService.RecordUserLogin(user.Id);
 
             UserLoginModel userModel = new UserLoginModel
             {
                 Id = user.Id,
-                FirstName = _user.FirstName,
-                LastName = _user.LastName,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Username = user.UserName,
                 Email = user.Email,
-                Role = roles.FirstOrDefault(), // Each user has only one role
+                Role = roles.FirstOrDefault(),
                 Token = tokenAsString,
-                ExpireDate = token.ValidTo,
-                StripeCustomerId = _user.StripeCustomerID
+                ExpireDate = token.ValidTo
             };
 
             StripeList<Subscription> listSubs = await _stripeService.GetSubscriptionAsync(userModel.StripeCustomerId);

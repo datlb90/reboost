@@ -148,6 +148,21 @@
               </div>
             </div>
           </el-tab-pane>
+          <el-tab-pane name="vocabulary" style="height: 100%; position: relative;">
+            <p slot="label" style="font-size: 14px; line-height: 2.6;">Từ vựng</p>
+            <div>
+              <div v-if="getVocaburary != ''">
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div id="tipContent" v-html="getVocaburary.content" />
+                </el-card>
+              </div>
+              <div v-else>
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div> We are working on this section, please check back soon for help on the writing topic including suggesstions on useful vocabulary that could be used to improve your band score.</div>
+                </el-card>
+              </div>
+            </div>
+          </el-tab-pane>
           <el-tab-pane name="idea" style="height: 100%; position: relative;">
             <p slot="label" style="font-size: 14px; line-height: 2.6;">Ý tưởng</p>
             <div>
@@ -164,21 +179,7 @@
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane name="vocabulary" style="height: 100%; position: relative;">
-            <p slot="label" style="font-size: 14px; line-height: 2.6;">Từ vựng</p>
-            <div>
-              <div v-if="getVocaburary != ''">
-                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
-                  <div id="tipContent" v-html="getVocaburary.content" />
-                </el-card>
-              </div>
-              <div v-else>
-                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
-                  <div> We are working on this section, please check back soon for help on the writing topic including suggesstions on useful vocabulary that could be used to improve your band score.</div>
-                </el-card>
-              </div>
-            </div>
-          </el-tab-pane>
+
           <el-tab-pane name="sample" style="height: 100%; position: relative;">
             <p slot="label" style="font-size: 14px; line-height: 2.6;">Bài viết mẫu</p>
             <div>
@@ -609,6 +610,20 @@
               </div>
             </div>
           </el-tab-pane>
+          <el-tab-pane label="Từ vựng" name="vocabulary" style="height: 100%; position: relative;">
+            <div>
+              <div v-if="getVocaburary != ''">
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div id="tipContent" v-html="getVocaburary.content" />
+                </el-card>
+              </div>
+              <div v-else>
+                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
+                  <div> We are working on this section, please check back soon for help on the writing topic including suggesstions on useful vocabulary that could be used to improve your band score.</div>
+                </el-card>
+              </div>
+            </div>
+          </el-tab-pane>
           <el-tab-pane label="Ý tưởng" name="idea" style="height: 100%; position: relative;">
             <div>
               <div v-if="getTip != ''">
@@ -624,21 +639,7 @@
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="Từ vựng" name="vocabulary" style="height: 100%; position: relative;">
 
-            <div>
-              <div v-if="getVocaburary != ''">
-                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
-                  <div id="tipContent" v-html="getVocaburary.content" />
-                </el-card>
-              </div>
-              <div v-else>
-                <el-card class="box-card" style="font-size: 14px; padding: 20px;">
-                  <div> We are working on this section, please check back soon for help on the writing topic including suggesstions on useful vocabulary that could be used to improve your band score.</div>
-                </el-card>
-              </div>
-            </div>
-          </el-tab-pane>
           <el-tab-pane label="Bài viết mẫu" name="sample" style="height: 100%; position: relative;">
             <div>
               <tab-samples :question-id="questionId" />

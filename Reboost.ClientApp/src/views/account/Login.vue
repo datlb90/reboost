@@ -12,7 +12,7 @@
               </router-link>
             </div>
             <el-form-item style="text-align: left;">
-              <el-input id="email" v-model="form.username" type="text" :placeholder="messageTranslates('login', 'usernameEmail')" />
+              <el-input id="email" v-model="form.username" type="text" placeholder="Email hoặc số điện thoại" />
             </el-form-item>
             <el-form-item style="text-align: left;">
 
@@ -79,13 +79,14 @@
             <hr>
 
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px; margin-top: 30px;">
-              {{ messageTranslates('login', 'byLoggingIn') }}
+              Khi đăng nhập, bạn đồng ý với
               <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
                 {{ messageTranslates('login', 'terms') }}
               </a> {{ messageTranslates('login', 'and') }}
               <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
-                {{ messageTranslates('login', 'policies') }}
+                chính sách bảo mật
               </a>
+              của chúng tôi.
             </div>
 
           </el-form>
@@ -151,6 +152,13 @@ export default {
       this.googleFormAction = 'api/auth/external/google/learner?returnUrl=/'
       this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=/'
     }
+
+    const that = this
+    document.addEventListener('keydown', function (e) {
+      if (e.code === 'Enter') {
+        that.signIn()
+      }
+    })
   },
   methods: {
     ...mapActions('auth', ['login']),
@@ -161,10 +169,11 @@ export default {
       this.$refs.googleLoginForm.submit()
     },
     async signIn() {
+      document.activeElement.blur()
       this.$store.dispatch('auth/logout')
       this.loading = true
       const user = await this.login({
-        Email: this.form.username,
+        Username: this.form.username,
         Password: this.form.password
       })
       if (user) {

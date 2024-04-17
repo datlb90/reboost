@@ -6,8 +6,7 @@ namespace Reboost.Shared
     public class LoginViewModel
     {
         [Required]
-        [StringLength(50)]
-        public string Email { get; set; }
+        public string Username { get; set; }
 
         [Required]
         [StringLength(50, MinimumLength = 6)]

@@ -22,9 +22,9 @@
               <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="padding-bottom: 12px;">
                 <router-link to="/submissions" class="nav-link">Bài viết của tôi</router-link>
               </li>
-              <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="padding-bottom: 12px;">
+              <!-- <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="padding-bottom: 12px;">
                 <router-link to="/reviews" class="nav-link">Đánh giá của tôi</router-link>
-              </li>
+              </li> -->
               <li class="nav-item" style="padding-bottom: 12px;">
                 <a href="/" class="nav-link" @click.prevent="openContactDialog()">Liên hệ</a>
               </li>
@@ -44,14 +44,16 @@
                     <div style="padding:12px 0px;  text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
                       {{ displayName }}
                     </div>
+
+                    <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                      Email: {{ currentUser.email }}
+                    </div>
+                    <!--
                     <div v-if="role == userRole.LEARNER" style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
                       Band Score: chưa xác định
                     </div>
                     <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
                       Kỹ năng đánh giá: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold;" />
-                    </div>
-                    <!-- <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="selectTest()">
-                      Bài thi đã chọn: {{ testsToText() }}
                     </div> -->
                     <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="openAddQuestionDialog()">
                       Đóng góp một chủ đề
@@ -115,22 +117,25 @@
               </span>
               <el-dropdown-menu slot="dropdown">
                 <div style="padding:0px 20px; margin-bottom: 0px; display:inline-grid">
-                  <span style="padding:5px 0px; font-weight:500;font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap; max-width: 200px;">
+                  <span style="padding:5px 0px; font-weight:500; font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap; max-width: 200px;">
                     {{ displayName }}
                   </span>
+
+                  <div style="font-size:14px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                    Email: {{ currentUser.email }}
+                  </div>
+
                 </div>
-                <el-dropdown-item v-if="role == userRole.LEARNER" divided>
+
+                <!-- <el-dropdown-item v-if="role == userRole.LEARNER" divided>
                   Band score:  chưa xác định
                 </el-dropdown-item>
                 <el-dropdown-item>
                   Kỹ năng đánh giá: {{ toFix(raterRating) }}
                   <i class="fas fa-star" style="color: gold;" />
                 </el-dropdown-item>
-
-                <!-- <el-dropdown-item command="selectTest" divided>
-                  Bài thi đã chọn: {{ testsToText() }}
-                </el-dropdown-item> -->
-                <el-dropdown-item command="addQuestion">
+                -->
+                <el-dropdown-item command="addQuestion" divided>
                   Đóng góp một chủ đề
                 </el-dropdown-item>
                 <el-dropdown-item command="logout" divided>

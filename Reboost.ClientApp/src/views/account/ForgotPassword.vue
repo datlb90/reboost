@@ -14,7 +14,7 @@
             <el-form ref="formForgot" :model="form" :rules="rules">
               <el-form-item style="margin-bottom: 25px;" prop="email">
                 <label>Địa chỉ email của bạn</label>
-                <el-input id="email" v-model="form.email" type="text" placeholder="Ví dụ: rater@reboost.vn" />
+                <el-input id="email" v-model="form.email" type="text" placeholder="Ví dụ: learner@reboost.vn" />
               </el-form-item>
 
               <el-form-item>

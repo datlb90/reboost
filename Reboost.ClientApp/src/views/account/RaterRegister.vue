@@ -20,7 +20,7 @@
             </el-form-item>
             <el-form-item style="margin-bottom: 16px;" prop="email">
               <label class="m-0">Địa chỉ email</label>
-              <el-input id="email" v-model="form.email" type="text" placeholder="Địa chỉ email của bạn. Ví dụ rater@reboost.vn" />
+              <el-input id="email" v-model="form.email" type="text" placeholder="Địa chỉ email của bạn. Ví dụ learner@reboost.vn" />
             </el-form-item>
             <el-form-item prop="password">
               <label class="m-0">Mật khẩu</label>

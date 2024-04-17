@@ -10,6 +10,8 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IUserRepository
     {
+        Task<bool> UsernameExist(string email, string phoneNumber);
+        Task RecordUserLogin(string userId);
         Task<User> GetByIdAsync(string id);
         Task<User> GetByUsernameAsync(string username);
         Task<User> GetByEmailAync(string email);
@@ -28,7 +30,20 @@ namespace Reboost.DataAccess.Repositories
         {
             _context = context;
         }
-
+        public async Task<bool> UsernameExist(string email, string phoneNumber)
+        {
+            return await _context.Users.AnyAsync(u => u.Email == email || u.PhoneNumber == phoneNumber);
+        }
+        public async Task RecordUserLogin(string userId)
+        {
+            UserLogins newLogin = new UserLogins
+            {
+                UserId = userId,
+                LoginDate = DateTime.UtcNow
+            };
+            await _context.UserLogins.AddAsync(newLogin);
+            await _context.SaveChangesAsync();
+        }
         public async Task<User> UpdateScoreAsync(string userId, List<UserScores> scores)
         {
             List<UserScores> listScore = await _context.UserScores.Where(sc => sc.UserId == userId).ToListAsync();

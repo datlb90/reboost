@@ -16,13 +16,13 @@
                 <label class="m-0">Họ và tên</label>
                 <el-input id="fullName" v-model="form.fullName" type="text" placeholder="Họ và tên của bạn. Ví dụ: Nguyễn Văn A" />
               </el-form-item>
+              <el-form-item style="margin-bottom: 16px;" prop="email">
+                <label class="m-0">Địa chỉ email</label>
+                <el-input id="email" v-model="form.email" type="text" placeholder="Địa chỉ email của bạn. Ví dụ: learner@reboost.vn" />
+              </el-form-item>
               <el-form-item style="margin-bottom: 16px;" prop="phoneNumber">
                 <label class="m-0">Số điện thoại</label>
                 <el-input id="phoneNumber" v-model="form.phoneNumber" type="text" placeholder="Số điện thoại của bạn. Ví dụ: 0981234567" />
-              </el-form-item>
-              <el-form-item style="margin-bottom: 16px;" prop="email">
-                <label class="m-0">Địa chỉ email</label>
-                <el-input id="email" v-model="form.email" type="text" placeholder="Địa chỉ email của bạn. Ví dụ rater@reboost.vn" />
               </el-form-item>
               <el-form-item prop="password">
                 <label class="m-0">Mật khẩu</label>
@@ -52,11 +52,25 @@
               </el-form-item>
               <el-form-item style="text-align: center;">
                 <p href="/forgot/password" style="color: black; text-decoration: none;">
-                  {{ messageTranslates('register', 'alreadyHave') }}  <a href="/login" style="color: rgb(101 139 179); text-decoration: none;">
+                  Đã có tài khoản? <a href="/login" style="color: rgb(101 139 179); text-decoration: none;">
                     {{ messageTranslates('register', 'signInNow') }}
                   </a>
                 </p>
               </el-form-item>
+
+              <hr>
+
+              <div style="font-size: 14px; text-align: center; padding-bottom: 5px; margin-top: 30px;">
+                Khi tạo tài khoản, bạn đồng ý với
+                <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
+                  {{ messageTranslates('login', 'terms') }}
+                </a> {{ messageTranslates('login', 'and') }}
+                <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
+                  chính sách bảo mật
+                </a>
+                của chúng tôi.
+              </div>
+
               <!-- <hr>
               <div style="font-size: 14px; text-align: center; padding-bottom: 10px;">
                 {{ messageTranslates('register', 'orSignInWith') }}
@@ -179,6 +193,13 @@ export default {
       this.googleFormAction = 'api/auth/external/google/learner?returnUrl=/'
       this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=/'
     }
+
+    const that = this
+    document.addEventListener('keydown', function (e) {
+      if (e.code === 'Enter') {
+        that.signUp()
+      }
+    })
   },
   methods: {
     ...mapActions('auth', ['register']),
@@ -189,6 +210,7 @@ export default {
       this.$refs.googleLoginForm.submit()
     },
     async signUp() {
+      document.activeElement.blur()
       this.$refs['formSignUp'].validate(async valid => {
         if (valid) {
           this.loading = true

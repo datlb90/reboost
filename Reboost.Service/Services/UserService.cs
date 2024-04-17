@@ -10,6 +10,8 @@ namespace Reboost.Service.Services
 {
     public interface IUserService
     {
+        Task<bool> UsernameExist(string email, string phoneNumber);
+        Task RecordUserLogin(string userId);
         Task<ContactRequestModel> SendSupportEmail(ContactRequestModel model);
         Task<List<User>> GetAllAsync();
         Task<User> GetByIdAsync(string id);
@@ -27,6 +29,14 @@ namespace Reboost.Service.Services
         public UserService(IUnitOfWork unitOfWork, IMailService _mailService) : base(unitOfWork)
         {
             mailService = _mailService;
+        }
+        public async Task<bool> UsernameExist(string email, string phoneNumber)
+        {
+            return await _unitOfWork.Users.UsernameExist(email, phoneNumber);
+        }
+        public async Task RecordUserLogin(string userId)
+        {
+            await _unitOfWork.Users.RecordUserLogin(userId);
         }
         public async Task<ContactRequestModel> SendSupportEmail(ContactRequestModel model)
         {
