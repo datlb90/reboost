@@ -1029,92 +1029,6 @@ export default {
         new TextColor(),
         new Indent()
       ],
-      steps: [
-        {
-          target: '#tab-description',
-          header: {
-            title: 'Thanh tài nguyên'
-          },
-          content: 'Nơi bạn có thể truy cập các tài nguyên hữu dụng cho chủ đề viết này bao gồm gợi ý về ý tưởng, hướng dẫ phát triển bài viết, từ vựng hữu dụng, và các bài viết mẫu',
-          params: {
-            highlight: true,
-            enableScrolling: false,
-            placement: 'bottom' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-          }
-        },
-        {
-          target: '#v-step-1', // We're using document.querySelector() under the hood
-          header: {
-            title: 'Summary Tile'
-          },
-          content: `Academic progress and GPA information. Completed credits are shown in green, in-progress credits in yellow, and remaining credits in gray. Upon completing degree requirements, initiate degree certification from here. Click on GPA to see calculation details.`,
-          params: {
-            highlight: true,
-            enableScrolling: false,
-            placement: 'bottom' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-          }
-        },
-        {
-          target: '#v-step-2', // We're using document.querySelector() under the hood
-          header: {
-            title: 'Milestones Tile'
-          },
-          content: `Academic milestones specified by program faculty. Completion recorded by program advisors.`,
-          params: {
-            highlight: true,
-            enableScrolling: false,
-            placement: 'bottom' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-          }
-        },
-        {
-          target: '#program', // We're using document.querySelector() under the hood
-          header: {
-            title: 'Program Canvas'
-          },
-          content: `Program specifications in the selected catalog. Courses from transcript are automatically assigned to maximize degree progress. Automated assignments can be over-ridden by program advisors.`,
-          params: {
-            highlight: true,
-            enableScrolling: false,
-            placement: 'top' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-          }
-        },
-        {
-          target: '#coursesTaken', // We're using document.querySelector() under the hood
-          header: {
-            title: 'Transcript Canvas'
-          },
-          content: `Courses taken and grades earned. Courses assigned to degree requirements are highlighted in green (completed) or yellow (in-progress).`,
-          params: {
-            highlight: true,
-            enableScrolling: false,
-            placement: 'top' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-          }
-        },
-        {
-          target: '#group-view', // We're using document.querySelector() under the hood
-          header: {
-            title: 'Group View'
-          },
-          content: `Courses grouped by catalog requirement categories.`,
-          params: {
-            highlight: true,
-            enableScrolling: false,
-            placement: 'bottom' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-          }
-        },
-        {
-          target: '#list-view', // We're using document.querySelector() under the hood
-          header: {
-            title: 'Chronological View'
-          },
-          content: `Courses shown in order taken, earliest first.`,
-          params: {
-            highlight: true,
-            enableScrolling: false,
-            placement: 'bottom' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-          }
-        }
-      ],
       tourCallback: {
         onStop: this.customOnStopTour,
         onSkip: this.customOnSkipTour
@@ -1268,8 +1182,8 @@ export default {
             ]
           },
           {
-            attachTo: { element: '#tab-idea', on: 'bottom'},
-            text: 'Gợi ý về ý tưởng và hướng phát triển bài viết.',
+            attachTo: { element: '#tab-vocabulary', on: 'bottom'},
+            text: 'Từ vựng hữu dụng cho chủ đề này.',
             classes: 'intro-step',
             buttons: [
               {
@@ -1292,8 +1206,8 @@ export default {
             ]
           },
           {
-            attachTo: { element: '#tab-vocabulary', on: 'bottom'},
-            text: 'Từ vựng hữu dụng cho chủ đề này.',
+            attachTo: { element: '#tab-idea', on: 'bottom'},
+            text: 'Gợi ý về ý tưởng và hướng phát triển bài viết.',
             classes: 'intro-step',
             buttons: [
               {
