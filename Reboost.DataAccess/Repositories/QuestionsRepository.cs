@@ -301,27 +301,6 @@ namespace Reboost.DataAccess.Repositories
 
         public async Task<QuestionModel> GetByIdAsync(int id)
         {
-
-            //            entities.Id = result.GetFieldValue<int>("Id");
-            //            entities.Title = result.GetFieldValue<string>("Title");
-            //            entities.Section = result.GetFieldValue<string>("Section");
-            //            entities.Test = result.GetFieldValue<string>("Test");
-            //            entities.Time = result.GetFieldValue<string>("Time");
-            //            entities.Type = result.GetFieldValue<string>("Type");
-            //            entities.Sample = result.GetFieldValue<bool>("Sample");
-            //            entities.Status = result.GetFieldValue<string>("Status");
-            //            entities.AverageScore = result.GetFieldValue<string>("AverageScore");
-            //            entities.Submission = result.GetFieldValue<int>("Submission");
-            //            entities.Like = result.GetFieldValue<int>("LikeCount");
-            //            entities.Direction = result.GetFieldValue<string>("Direction");
-            //            entities.Dislike = result.GetFieldValue<int>("DisLikeCount");
-            //            entities.QuestionsPart = resultPartsModel;
-            //            entities.TaskId = result.GetFieldValue<int>("TaskId");
-            //            entities.TestId = result.GetFieldValue<int>("TestId");
-            //            entities.UserId = result.GetFieldValue<string>("UserId");
-            //            entities.Difficulty = result.GetFieldValue<string>("Difficulty");
-            //            entities.TestDate = result.IsDBNull(10) ? null : result.GetFieldValue<DateTime>("TestDate");
-
             var resultParts = await ReboostDbContext.QuestionParts.Where(qp => qp.QuestionId == id).ToListAsync();
             List<QuestionPartModel> resultPartsModel = new List<QuestionPartModel>();
             resultParts.ForEach(rs =>
@@ -349,7 +328,7 @@ namespace Reboost.DataAccess.Repositories
                           {
                               Id = quest.Id,
                               Title = quest.Title,
-                              Section = taskSection.Name,
+                              Section = questTask.Name,
                               Test = testSection.Name,
                               Time = questTask.Time,
                               Type = quest.Type,

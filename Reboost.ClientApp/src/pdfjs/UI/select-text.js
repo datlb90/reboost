@@ -79,8 +79,8 @@ export function enableTextSelection(parent) {
       }
       // hide text tool buttons
       if (!e.target.classList.contains('textToolBtn') &&
-            !e.target.classList.contains('svg-inline--fa') &&
-            !e.target.parentElement.classList.contains('svg-inline--fa')) {
+        !e.target.classList.contains('svg-inline--fa') &&
+        !e.target.parentElement.classList.contains('svg-inline--fa')) {
         const rectTool = document.getElementById('rectTool')
         rectTool.style.visibility = 'hidden'
         const textToolGroup = document.getElementById('textToolGroup')
