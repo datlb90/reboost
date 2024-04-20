@@ -18,6 +18,7 @@ import ForgotPassword from '../views/account/ForgotPassword.vue'
 import ResetPassword from '../views/account/ResetPassword.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
 import Review from '../views/learner/Review.vue'
+import Review2 from '../views/learner/Review2.vue'
 import ReviewTest from '../views/learner/ReviewTest.vue'
 // Pages
 import Landing from '../components/landing-pages/Landing'
@@ -251,6 +252,24 @@ const router = new VueRouter({
       meta: {
         plainLayout: true,
         landingPage: false
+      }
+    },
+    {
+      path: '/review2/:questionId/:docId/:reviewId',
+      name: PageName.REVIEW,
+      component: Review2,
+      beforeEnter: async (to, from, next) => {
+        const check = await userReviewAuthentication(to.params.reviewId)
+        if (check) {
+          next({ name: PageName.NOT_FOUND })
+        } else {
+          next()
+        }
+      },
+      meta: {
+        plainLayout: false,
+        landingPage: false,
+        loginRequired: true
       }
     },
     {
