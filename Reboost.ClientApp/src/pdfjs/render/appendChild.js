@@ -1,9 +1,10 @@
 import objectAssign from 'object-assign'
-import renderLine from './renderLine'
-import renderPath from './renderPath'
-import renderPoint from './renderPoint'
-import renderRect from './renderRect'
-import renderText from './renderText'
+import renderRects from './renderRect'
+// import renderLine from './renderLine'
+// import renderPath from './renderPath'
+// import renderPoint from './renderPoint'
+// import renderRect from './renderRect'
+// import renderText from './renderText'
 // import { wrap } from 'module';
 
 const isFirefox = /firefox/i.test(navigator.userAgent)
@@ -113,43 +114,80 @@ export default function appendChild(svg, annotation, viewport) {
     viewport = JSON.parse(svg.getAttribute('data-pdf-annotate-viewport'))
   }
 
-  let child
+  let children
   switch (annotation.type) {
-    case 'area':
-    case 'comment-area':
     case 'comment-highlight':
-    case 'highlight':
-      child = renderRect(annotation)
-      break
-    case 'strikeout':
-      child = renderLine(annotation)
-      break
-    case 'point':
-      child = renderPoint(annotation)
-      break
-    case 'textbox':
-      child = renderText(annotation)
-      break
-    case 'drawing':
-      child = renderPath(annotation)
+      children = renderRects(annotation)
       break
   }
 
   // If no type was provided for an annotation it will result in node being null.
   // Skip appending/transforming if node doesn't exist.
-  if (child) {
-    // Set attributes
-    child.setAttribute('data-pdf-annotate-id', annotation.uuid)
-    child.setAttribute('data-pdf-annotate-type', annotation.type)
-    child.setAttribute('aria-hidden', true)
+  if (children) {
+    children.forEach(child => {
+      // Set attributes
+      child.setAttribute('data-pdf-annotate-id', annotation.uuid)
+      child.setAttribute('data-pdf-annotate-type', annotation.type)
+      child.setAttribute('aria-hidden', true)
 
-    // INSERT the group element into its CORRECT order, not before its wrapper
-    const wrapperNode = findWrapperNode(svg, child)
-    if (wrapperNode != null) { wrapperNode.before(transform(child, viewport)) } else { svg.appendChild(transform(child, viewport)) }
+      // INSERT the group element into its CORRECT order, not before its wrapper
+      const wrapperNode = findWrapperNode(svg, child)
+      if (wrapperNode != null) { wrapperNode.before(transform(child, viewport)) } else { svg.appendChild(transform(child, viewport)) }
+    })
   }
-
-  return child
+  return children
 }
+
+/**
+ * Append an annotation as a child of an SVG.
+ *
+ * @param {SVGElement} svg The SVG element to append the annotation to
+ * @param {Object} annotation The annotation definition to render and append
+ * @param {Object} viewport The page's viewport data
+ * @return {SVGElement} A node that was created and appended by this function
+ */
+// export default function appendChild(svg, annotation, viewport) {
+//   if (!viewport) {
+//     viewport = JSON.parse(svg.getAttribute('data-pdf-annotate-viewport'))
+//   }
+
+//   let child
+//   switch (annotation.type) {
+//     case 'area':
+//     case 'comment-area':
+//     case 'comment-highlight':
+//     case 'highlight':
+//       child = renderRect(annotation)
+//       break
+//     case 'strikeout':
+//       child = renderLine(annotation)
+//       break
+//     case 'point':
+//       child = renderPoint(annotation)
+//       break
+//     case 'textbox':
+//       child = renderText(annotation)
+//       break
+//     case 'drawing':
+//       child = renderPath(annotation)
+//       break
+//   }
+
+//   // If no type was provided for an annotation it will result in node being null.
+//   // Skip appending/transforming if node doesn't exist.
+//   if (child) {
+//     // Set attributes
+//     child.setAttribute('data-pdf-annotate-id', annotation.uuid)
+//     child.setAttribute('data-pdf-annotate-type', annotation.type)
+//     child.setAttribute('aria-hidden', true)
+
+//     // INSERT the group element into its CORRECT order, not before its wrapper
+//     const wrapperNode = findWrapperNode(svg, child)
+//     if (wrapperNode != null) { wrapperNode.before(transform(child, viewport)) } else { svg.appendChild(transform(child, viewport)) }
+//   }
+//   console.log(child)
+//   return child
+// }
 
 function isArrayInArray(arr, childArr) {
   let isWrapped = true
@@ -179,13 +217,13 @@ function findWrapperNode(svg, node) {
       } else {
         // node has more than 1 rects
         let wrapper = null
-        const rectsY = Array.prototype.slice.call(rects).map(function(r) { return r.getAttribute('y') })
+        const rectsY = Array.prototype.slice.call(rects).map(function (r) { return r.getAttribute('y') })
         // check all parents of wrapperRects
         for (let i = 0; i < wrapperRects.length; i++) {
           const item = wrapperRects[i]
           const wrapperChildRects = item.parentNode.childNodes
           if (rects.length <= wrapperChildRects.length) {
-            const wrapperY = Array.prototype.slice.call(wrapperChildRects).map(function(r) { return r.getAttribute('y') })
+            const wrapperY = Array.prototype.slice.call(wrapperChildRects).map(function (r) { return r.getAttribute('y') })
             if (isArrayInArray(wrapperY, rectsY)) {
               wrapper = item.parentNode
               break

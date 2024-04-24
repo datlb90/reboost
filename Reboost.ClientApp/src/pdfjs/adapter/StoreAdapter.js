@@ -13,7 +13,7 @@ export default class StoreAdapter {
     // Copy each function from definition if it is a function we know about
     Object.keys(definition).forEach((key) => {
       if (typeof definition[key] === 'function' &&
-          typeof this[key] === 'function') {
+        typeof this[key] === 'function') {
         this[key] = definition[key]
       }
     })
@@ -140,10 +140,10 @@ export default class StoreAdapter {
    * @param {Object} content The definition of the comment
    * @return {Promise}
    */
-  __addComment(documentId, annotation, content, selectedText, topPos) { abstractFunction('addComment') }
+  __addComment(documentId, annotation, text, type, category, comment, topPos) { abstractFunction('addComment') }
   get addComment() { return this.__addComment }
   set addComment(fn) {
-    this.__addComment = function addComment(documentId, annotation, content, selectedText, topPos) {
+    this.__addComment = function addComment(documentId, annotation, text, type, category, comment, topPos) {
       return fn(...arguments).then((comment) => {
         fireEvent('comment:add', documentId, annotation.uuid, comment)
         return comment

@@ -3278,7 +3278,8 @@ export default {
   overflow: auto !important;
 }
 .comment-card >.el-card__header, .add-new-comment >.el-card__header {
-  background: #b3d4f4;
+  /* background: #b3d4f4; */
+  padding: 0px !important;
 }
 
 @keyframes cursor-blink {

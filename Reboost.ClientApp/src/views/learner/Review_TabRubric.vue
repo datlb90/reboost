@@ -241,21 +241,35 @@ export default ({
       ],
       reviewSaved: false,
       rateValue: 0,
-      rateComment: ''
+      rateComment: '',
+      errors: [
+        {
+          error: 'demographics of Iceland',
+          type: 'Từ vựng',
+          comment: 'Từ vụng không phù hợp trong ngữ cảnh này',
+          category: 'Lỗi lựa chọn từ'
+        },
+        {
+          error: 'the other profiles',
+          type: 'Ngữ pháp',
+          comment: 'Từ vụng không phù hợp trong ngữ cảnh này',
+          category: 'Lỗi ngữ pháp'
+
+        },
+        {
+          error: 'still maintaining the status quo. Furthermore, showing a decade of consistency, the data for the oldest group slightly rose until the end. Regarding the other age brackets,',
+          type: 'Từ vựng',
+          comment: 'Từ vụng không phù hợp trong ngữ cảnh này',
+          category: 'Lỗi chấm câu'
+        }
+      ]
     }
   },
   computed: {
   },
   async mounted() {
     console.log(this.isAiReview)
-    this.loadRubric()
-    // Update fb comment's width for safari
-    setTimeout(function () {
-      const iframes = document.getElementsByClassName('fb_iframe_widget_lift')
-      if (iframes && iframes.length > 0) {
-        iframes[0].style.width = '100%'
-      }
-    }, 2000)
+    await this.loadRubric()
   },
   methods: {
     showDescriptionDialog(criteria) {

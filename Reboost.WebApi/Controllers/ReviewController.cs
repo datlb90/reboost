@@ -38,6 +38,13 @@ namespace Reboost.WebApi.Controllers
             configuration = _configuration;
             db = ctx;
         }
+
+        [HttpPost("ai/feedback/errors/intext")]
+        public async Task<ErrorsInText> getErrorsInText(CriteriaFeedbackModel model)
+        {
+            return await _service.getErrorsInText(model);
+        }
+
         [Authorize]
         [HttpPost("ai/feedback/criteria/v4")]
         public async Task<string> getAIFeedbackForCriteriaV4(CriteriaFeedbackModel model)

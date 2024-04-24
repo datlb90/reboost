@@ -31,20 +31,18 @@
       </div>
 
       <!-- Note -->
-      <div v-if="!disableAnnotation" class="toolbar-btn-wrapper">
+      <!-- <div v-if="!disableAnnotation" class="toolbar-btn-wrapper">
         <el-tooltip class="item" effect="dark" content="Note (N)" placement="bottom">
           <button class="toolbar-btn" :class="[activeButton=='point'?'active':'']" data-tooltype="point" type="button" @click="toolBarButtonClick('point')">
             <div class="icon">
               <i class="toolbar-icon fas fa-sticky-note" />
-
-              <!-- <i class="toolbar-icon far fa-sticky-note" /> -->
             </div>
           </button>
         </el-tooltip>
-      </div>
+      </div> -->
 
       <!-- Free text -->
-      <div v-if="!disableAnnotation" class="toolbar-btn-wrapper">
+      <!-- <div v-if="!disableAnnotation" class="toolbar-btn-wrapper">
         <el-tooltip class="item" effect="dark" content="Free Text (T)" placement="bottom">
           <button class="toolbar-btn" :class="[activeButton=='text'?'active':'']" data-tooltype="text" type="button" @click="toolBarButtonClick('text')">
             <div class="icon">
@@ -52,10 +50,10 @@
             </div>
           </button>
         </el-tooltip>
-      </div>
+      </div> -->
 
       <!-- Rectangle -->
-      <div v-if="!disableAnnotation" class="toolbar-btn-wrapper">
+      <!-- <div v-if="!disableAnnotation" class="toolbar-btn-wrapper">
         <el-tooltip class="item" effect="dark" content="Rectangle (R)" placement="bottom">
           <button class="toolbar-btn" :class="[activeButton=='rectangle'?'active':'']" data-tooltype="rectangle" type="button" @click="toolBarButtonClick('rectangle')">
             <div class="icon" style="height: 17px;">
@@ -64,7 +62,7 @@
 
           </button>
         </el-tooltip>
-      </div>
+      </div> -->
 
       <!-- Color picker control -->
       <!-- <div :style="{display: (activeButton || clickedAnnotation) && !disableAnnotation? 'block':'none'}">
@@ -73,7 +71,7 @@
 
       <!-- :expandcolorpicker.sync="expandColorPicker" -->
       <!-- Text selection tools -->
-      <div v-if="!disableAnnotation" id="textTool" data-element="textToolGroupButton" class="tool-group-button text-tool-group-button">
+      <!-- <div v-if="!disableAnnotation" id="textTool" data-element="textToolGroupButton" class="tool-group-button text-tool-group-button">
         <div class="devider" />
         <div class="toolbar-btn-wrapper">
           <el-tooltip class="item" effect="dark" content="Highlight" placement="bottom">
@@ -105,7 +103,7 @@
           </el-tooltip>
         </div>
         <div class="devider" />
-      </div>
+      </div> -->
 
       <!-- Text size -->
       <!-- <select v-if="!disableAnnotation" :style="{ 'display': activeButton == 'text' ? 'block' : 'none' }" class="text-size" /> -->
@@ -143,7 +141,7 @@
         </button>
       </div>
 
-      <div v-if="!disableAnnotation" class="devider" />
+      <!-- <div v-if="!disableAnnotation" class="devider" />
 
       <button v-if="!disableAnnotation" :disabled="undoHistory.length == 0" class="toolbar-btn" @click="undoAnnotation()">
         <div class="icon">
@@ -160,12 +158,16 @@
       <el-button type="success" size="mini" @click="approveTraining()">{{ messageTranslates('viewerToolBar', 'approve') }}</el-button>
       <el-button type="danger" size="mini" @click="openDialogRevise()">{{ messageTranslates('viewerToolBar', 'revise') }}</el-button>
     </div>
-    <!-- Submit button -->
     <div id="submit-container" class="submit-button" style="align-items: center;">
       <div v-if="statusText!=''" class="submit-button__text">{{ statusText }}</div>
       <el-button v-if="isAuthor" :disabled="readOnly||isRate||isSubmit" :loading="loading" type="primary" size="mini" @click="submitReview()">Gửi đánh giá</el-button>
-      <!-- <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="primary" size="mini" @click="rateReview()">{{ messageTranslates('viewerToolBar', 'rateReview') }}</el-button> -->
-      <!-- <el-button v-if="isRate && !isAuthor && !isRated && !dispute" type="danger" size="mini" @click="disputeReview()">{{ messageTranslates('viewerToolBar', 'dispute') }}</el-button> -->
+    </div> -->
+
+      <div id="submit-container" class="submit-button" style="align-items: center;">
+        <div v-if="statusText!=''" class="submit-button__text">{{ statusText }}</div>
+        <el-button v-if="isAuthor" :disabled="readOnly||isRate||isSubmit" :loading="loading" type="primary" size="mini" @click="submitReview()">Gửi đánh giá</el-button>
+      </div>
+
     </div>
   </div>
 </template>

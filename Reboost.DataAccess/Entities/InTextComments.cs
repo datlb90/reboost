@@ -11,6 +11,8 @@ namespace Reboost.DataAccess.Entities
         public string Text { get; set; }
         [Column("Comment")]
         public string Content { get; set; }
+        public string Type { get; set; }
+        public string Category { get; set; }
         [Column("TopPosition")]
         public double TopPosition { get; set; }
         public string Data { get; set; }

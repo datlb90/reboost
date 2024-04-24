@@ -69,6 +69,23 @@ namespace Reboost.Shared
         public string fix { get; set; }
     }
 
+    public class ErrorsInText
+    {
+        public List<ErrorInText> errors { get; set; }
+       
+    }
+
+    public class ErrorInText
+    {
+        public string error { get; set; }
+        public int position { get; set; }
+        public string type { get; set; }
+        public string category { get; set; }
+        public string fix { get; set; }
+        public string reason { get; set; }
+        public string comment { get; set; }
+    }
+
     public class EssayScoreModel
     {
         public decimal taskAchievementScore { get; set; }

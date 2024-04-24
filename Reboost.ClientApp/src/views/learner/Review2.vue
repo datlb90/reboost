@@ -21,23 +21,18 @@
               element-loading-background="white"
             />
           </el-tab-pane>
-
-          <el-tab-pane v-if="currentUser.role != 'rater' && !isAiReview" name="guide" label="Hướng Dẫn">
-            <SelfReviewIeltsTask1 v-if="isSelfReview && task == 'Academic Writing Task 1'" ref="tabGuide" />
-            <SelfReviewIeltsTask2 v-if="isSelfReview && task == 'Academic Writing Task 2'" ref="tabGuide" />
-            <SelfReviewIndependent v-if="isSelfReview && task == 'Independent Writing'" ref="tabGuide" />
-            <SelfReviewIntegrated v-if="isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
-            <PeerReviewIeltsTask1 v-if="!isSelfReview && task == 'Academic Writing Task 1'" ref="tabGuide" />
-            <PeerReviewIeltsTask2 v-if="!isSelfReview && task == 'Academic Writing Task 2'" ref="tabGuide" />
-            <PeerReviewIndependent v-if="!isSelfReview && task == 'Independent Writing'" ref="tabGuide" />
-            <PeerReviewIntegrated v-if="!isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
-          </el-tab-pane>
-
           <el-tab-pane name="rubric" label="Phản hồi cho bài viết">
-            <tabRubric v-if="review && documentText" ref="tabRubric" :current-user="currentUser" :feedback-language="review.reviewRequest.feedbackLanguage" :document-text="documentText" :questionid="questionId" :is-ai-review="isAiReview" :review-id="reviewId" @setStatusText="setStatusText" />
-          </el-tab-pane>
-          <el-tab-pane v-if="isRate && !isAiReview" name="rate" label="Rating">
-            <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
+            <tabRubric
+              v-if="review && documentText"
+              ref="tabRubric"
+              :current-user="currentUser"
+              :feedback-language="review.reviewRequest.feedbackLanguage"
+              :document-text="documentText"
+              :questionid="questionId"
+              :is-ai-review="isAiReview"
+              :review-id="reviewId"
+              @setStatusText="setStatusText"
+            />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -76,7 +71,7 @@
             <div
               v-loading="true"
               style="height: 545px;"
-              element-loading-text="Đang tải bài viết của bạn"
+              element-loading-text="Đang tìm các lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
               element-loading-background="rgb(248 249 250)"
             />
           </div>
@@ -93,34 +88,8 @@
     </div>
     <!-- <rubric :question-id="questionId" :review-id="reviewId" /> -->
     <div id="comment-wrapper">
-      <el-card id="add-new-comment" class="box-card add-new-comment" style="width: 100%; display: none;">
-        <div slot="header" class="clearfix">
-          <div>
-            <div style="font-weight: 500; font-size: 15px; text-align: left;">
-              Thêm bình luận mới
-            </div>
-          </div>
-        </div>
-        <div>
-          <el-input
-            id="comment-text-area"
-            v-model="newComment"
-            type="textarea"
-            autosize
-            placeholder="Add comment"
-          />
-          <div style="height: 20px; margin-top: 10px;">
-            <el-button type="primary" :disabled="newComment.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="addCommentText(true)">
-              Comment
-            </el-button>
-            <el-button style="float: right; padding: 5px;" @click="cancelCommentText()">
-              Cancel
-            </el-button>
-          </div>
-        </div>
-      </el-card>
       <el-card
-        v-for="(comment, idx) in comments"
+        v-for="comment in comments"
         :key="comment.uuid"
         class="box-card comment-card"
         :highlight-id="comment.uuid"
@@ -131,51 +100,49 @@
         :page-height="comment.annotation.pageHeight"
         :style="{top: comment.topPosition + 'px', width: '100%'}"
       >
-        <div slot="header" class="clearfix">
+        <div
+          slot="header"
+          class="clearfix"
+          :style="comment.type.toLowerCase() == 'grammar' || comment.type.toLowerCase() == 'ngữ pháp' ? 'padding: 8px 12px; background: #ffd6d0;' : 'padding: 8px 12px; background: rgb(213 204 255);'"
+        >
           <div>
             <div
-              v-if="comment.text"
-              style="font-weight: 500; font-size: 15px; text-align: left;  width: 180px; text-overflow: ellipsis; word-break: break-word;  overflow: hidden; white-space: nowrap;"
+              v-if="comment.category"
+              style="font-weight: 500; font-size: 15px; text-align: left;  width: 220px; text-overflow: ellipsis; word-break: break-word;  overflow: hidden; white-space: nowrap;"
             >
-              "{{ comment.text }}"
-            </div>
-            <div v-else-if="comment.annotation.type =='point'" style="font-weight: 500; font-size: 15px; text-align: left;">
-              Ghi chú
-            </div>
-            <div v-else style="font-weight: 500; font-size: 15px; text-align: left;">
-              Bình luận chung
+              {{ comment.category }}
             </div>
           </div>
-          <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
+          <!-- <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
             <i class="far fa-trash-alt" />
           </el-button>
           <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
             <i class="far fa-edit" />
-          </el-button>
+          </el-button> -->
         </div>
         <div>
           <div
             v-show="!comment.isSelected "
             :id="'comment-text-' + comment.uuid"
             :style="{'-webkit-line-clamp': isInShowMoreList(comment.uuid).value==0 ? '3':'inherit'}"
-            style="text-align: left; overflow-wrap: break-word; white-space: pre-wrap; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
+            style="text-align: left; overflow-wrap: break-word; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
           >
-            {{ comment.content }}
+            {{ comment.comment }}
           </div>
           <div v-if="isInShowMoreList(comment.uuid)" class="show__more-container" @click="toggleShowMore(comment.uuid)">
-            {{ isInShowMoreList(comment.uuid).value==0 ? 'Show more':'Show less' }}
+            {{ isInShowMoreList(comment.uuid).value==0 ? 'Xem thêm':'Rút gọn' }}
           </div>
           <el-input
             v-show="comment.isSelected == true || comment.isSaved == false"
             :id="'comment-input-' + comment.uuid"
             :ref="'comment' + comment.uuid"
-            v-model="comment.content"
+            v-model="comment.comment"
             type="textarea"
             resize="none"
             autosize
           />
           <div v-show="comment.isSelected == true || comment.isSaved == false" style="height: 20px; margin-top: 10px;">
-            <el-button type="primary" :disabled="comment.content.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="editCommentCard(comment)">
+            <el-button type="primary" :disabled="comment.comment.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="editCommentCard(comment)">
               Save
             </el-button>
             <el-button style="float: right; padding: 5px;" @click="cancelCommentText('edit',comment)">
@@ -217,89 +184,7 @@
       </ul>
     </div>
     <!-- /Inline color picker -->
-    <!-- revise dialog -->
-    <el-dialog
-      title="Revision Request"
-      :visible.sync="reviseDialogVisible"
-      width="30%"
-      center
-    >
-      <el-form ref="formNote" :model="form">
-        <el-form-item prop="noteRevision" :rules="[{ required: true, message: 'Note is required', trigger: 'blur' }]">
-          <el-input
-            v-model="form.noteRevision"
-            type="textarea"
-            :rows="4"
-            placeholder="Please input note"
-          />
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="reviseDialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="onSubmitRevise">Submit</el-button>
-      </span>
-    </el-dialog>
 
-    <!-- dispute create dialog -->
-    <el-dialog
-      title="Dispute Review"
-      :visible.sync="disputeDialogVisible"
-      width="30%"
-      center
-    >
-      <el-form ref="formDispute" :model="disputeForm">
-        <el-form-item prop="name" :rules="[{ required: true }]">
-          <el-input
-            v-model="disputeForm.name"
-            :disabled="true"
-            type="text"
-          />
-        </el-form-item>
-        <el-form-item prop="questionId" :rules="[{ required: true }]">
-          <el-input
-            v-if="false"
-            v-model="disputeForm.questionId"
-            :disabled="true"
-            type="text"
-          />
-        </el-form-item>
-        <el-form-item prop="reasons" :rules="[{ required: true, message: 'Reasons is required.', trigger: 'blur' }]">
-          <el-input
-            v-model="disputeForm.reasons"
-            type="textarea"
-            :rows="4"
-            placeholder="Please input reasons for dispute"
-          />
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="disputeDialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="submitDispute">Submit</el-button>
-      </span>
-    </el-dialog>
-
-    <!-- dispute note dialog -->
-    <el-dialog
-      title="Dispute Note"
-      :visible.sync="disputeNoteDialogVisible"
-      width="30%"
-      center
-    >
-      <el-form ref="formDisputeNote" :model="disputeNote">
-        <el-form-item prop="note" :rules="[{ required: true }]">
-          <el-input
-            v-model="disputeNote.note"
-            type="textarea"
-            :rows="4"
-            placeholder="Please input note for dispute"
-          />
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="disputeNoteDialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="submitDisputeNote">Submit</el-button>
-      </span>
-    </el-dialog>
   </div>
   <!-- Optimize for mobile -->
   <div v-else id="reviewContainer">
@@ -325,22 +210,8 @@
               element-loading-background="white"
             />
           </el-tab-pane>
-
-          <el-tab-pane v-if="currentUser.role != 'rater' && !isAiReview" name="guide" label="Hướng Dẫn">
-            <SelfReviewIeltsTask1 v-if="isSelfReview && task == 'Academic Writing Task 1'" ref="tabGuide" />
-            <SelfReviewIeltsTask2 v-if="isSelfReview && task == 'Academic Writing Task 2'" ref="tabGuide" />
-            <SelfReviewIndependent v-if="isSelfReview && task == 'Independent Writing'" ref="tabGuide" />
-            <SelfReviewIntegrated v-if="isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
-            <PeerReviewIeltsTask1 v-if="!isSelfReview && task == 'Academic Writing Task 1'" ref="tabGuide" />
-            <PeerReviewIeltsTask2 v-if="!isSelfReview && task == 'Academic Writing Task 2'" ref="tabGuide" />
-            <PeerReviewIndependent v-if="!isSelfReview && task == 'Independent Writing'" ref="tabGuide" />
-            <PeerReviewIntegrated v-if="!isSelfReview && task == 'Integrated Writing'" ref="tabGuide" />
-          </el-tab-pane>
           <el-tab-pane name="rubric" label="Phản hồi cho bài viết">
             <tabRubric v-if="review && documentText" ref="tabRubric" :current-user="currentUser" :feedback-language="review.reviewRequest.feedbackLanguage" :document-text="documentText" :questionid="questionId" :is-ai-review="isAiReview" :review-id="reviewId" @setStatusText="setStatusText" />
-          </el-tab-pane>
-          <el-tab-pane v-if="isRate && !isDisputed && !isAiReview" name="rate" label="Rating">
-            <tabRate ref="tabRate" :reviewid="reviewId" :is-review-auth="isReviewAuth" @rated="isRated=true" />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -378,7 +249,7 @@
             <div
               v-loading="true"
               style="height: 545px;"
-              element-loading-text="Đang tải bài viết của bạn"
+              element-loading-text="Đang tìm các lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
               element-loading-background="rgb(248 249 250)"
             />
           </div>
@@ -392,35 +263,10 @@
 
         </div>
       </div>
+
       <div id="comment-wrapper">
-        <el-card id="add-new-comment" class="box-card add-new-comment" style="width: 100%; display: none;">
-          <div slot="header" class="clearfix">
-            <div>
-              <div style="font-size: 15px; text-align: left;">
-                {{ commentUserName() }}
-              </div>
-            </div>
-          </div>
-          <div>
-            <el-input
-              id="comment-text-area"
-              v-model="newComment"
-              type="textarea"
-              autosize
-              placeholder="Add comment"
-            />
-            <div style="height: 20px; margin-top: 10px;">
-              <el-button type="primary" :disabled="newComment.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="addCommentText(true)">
-                Comment
-              </el-button>
-              <el-button style="float: right; padding: 5px;" @click="cancelCommentText()">
-                Cancel
-              </el-button>
-            </div>
-          </div>
-        </el-card>
         <el-card
-          v-for="(comment, idx) in comments"
+          v-for="comment in comments"
           :key="comment.uuid"
           class="box-card comment-card"
           :highlight-id="comment.uuid"
@@ -431,42 +277,49 @@
           :page-height="comment.annotation.pageHeight"
           :style="{top: comment.topPosition + 'px', width: '100%'}"
         >
-          <div slot="header" class="clearfix">
+          <div
+            slot="header"
+            class="clearfix"
+            :style="comment.type.toLowerCase() == 'grammar' || comment.type.toLowerCase() == 'ngữ pháp' ? 'padding: 8px 12px; background: #ffd6d0;' : 'padding: 8px 12px; background: rgb(213 204 255);'"
+          >
             <div>
-              <div style="font-size: 15px; text-align: left;">
-                {{ commentUserName() }}
+              <div
+                v-if="comment.category"
+                style="font-weight: 500; font-size: 15px; text-align: left;  width: 220px; text-overflow: ellipsis; word-break: break-word;  overflow: hidden; white-space: nowrap;"
+              >
+                {{ comment.category }}
               </div>
             </div>
-            <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
-              <i class="far fa-trash-alt" />
-            </el-button>
-            <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
-              <i class="far fa-edit" />
-            </el-button>
+          <!-- <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
+            <i class="far fa-trash-alt" />
+          </el-button>
+          <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
+            <i class="far fa-edit" />
+          </el-button> -->
           </div>
           <div>
             <div
               v-show="!comment.isSelected "
               :id="'comment-text-' + comment.uuid"
               :style="{'-webkit-line-clamp': isInShowMoreList(comment.uuid).value==0 ? '3':'inherit'}"
-              style="text-align: left; overflow-wrap: break-word; white-space: pre-wrap; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
+              style="text-align: left; overflow-wrap: break-word; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
             >
-              {{ comment.content }}
+              {{ comment.comment }}
             </div>
             <div v-if="isInShowMoreList(comment.uuid)" class="show__more-container" @click="toggleShowMore(comment.uuid)">
-              {{ isInShowMoreList(comment.uuid).value==0 ? 'Show more':'Show less' }}
+              {{ isInShowMoreList(comment.uuid).value==0 ? 'Xem thêm':'Rút gọn' }}
             </div>
             <el-input
               v-show="comment.isSelected == true || comment.isSaved == false"
               :id="'comment-input-' + comment.uuid"
               :ref="'comment' + comment.uuid"
-              v-model="comment.content"
+              v-model="comment.comment"
               type="textarea"
               resize="none"
               autosize
             />
             <div v-show="comment.isSelected == true || comment.isSaved == false" style="height: 20px; margin-top: 10px;">
-              <el-button type="primary" :disabled="comment.content.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="editCommentCard(comment)">
+              <el-button type="primary" :disabled="comment.comment.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="editCommentCard(comment)">
                 Save
               </el-button>
               <el-button style="float: right; padding: 5px;" @click="cancelCommentText('edit',comment)">
@@ -476,6 +329,7 @@
           </div>
         </el-card>
       </div>
+
       <div id="text-tools-wrapper">
         <textToolGroup ref="textToolGroup" @highLightText="highlightEvent($event)" />
         <el-button-group id="rectTool" style="display: none;">
@@ -513,16 +367,7 @@ import PDFJS from 'pdf-dist/webpack.js'
 import ToolBar from '../../components/controls/Viewer_ToolBar'
 import TabQuestion from './Review_TabQuestion'
 import TabRubric from './Review_TabRubric'
-import TabRate from './Review_TabRate'
 import TextToolGroup from '../../components/controls/TextToolGroup'
-import SelfReviewIeltsTask1 from '../../components/guides/SelfReviewIeltsTask1'
-import SelfReviewIeltsTask2 from '../../components/guides/SelfReviewIeltsTask2'
-import SelfReviewIntegrated from '../../components/guides/SelfReviewIntegrated'
-import SelfReviewIndependent from '../../components/guides/SelfReviewIndependent'
-import PeerReviewIeltsTask1 from '../../components/guides/PeerReviewIeltsTask1'
-import PeerReviewIeltsTask2 from '../../components/guides/PeerReviewIeltsTask2'
-import PeerReviewIntegrated from '../../components/guides/PeerReviewIntegrated'
-import PeerReviewIndependent from '../../components/guides/PeerReviewIndependent'
 // PDFJSAnnotate
 import PDFJSAnnotate from '@/pdfjs/PDFJSAnnotate'
 const { UI } = PDFJSAnnotate
@@ -539,7 +384,7 @@ import { addEventListener, removeEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
 import docService from '@/services/document.service.js'
 import reviewService from '@/services/review.service.js'
-import { enableEdit, disableEdit } from '@/pdfjs/UI/edit'
+// import { enableEdit, disableEdit } from '@/pdfjs/UI/edit'
 import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
@@ -554,16 +399,7 @@ export default {
     'toolbar': ToolBar,
     'tabQuestion': TabQuestion,
     'tabRubric': TabRubric,
-    'textToolGroup': TextToolGroup,
-    'tabRate': TabRate,
-     'SelfReviewIeltsTask1': SelfReviewIeltsTask1,
- 'SelfReviewIeltsTask2': SelfReviewIeltsTask2,
- 'SelfReviewIntegrated': SelfReviewIntegrated,
- 'SelfReviewIndependent': SelfReviewIndependent,
-  'PeerReviewIeltsTask1': PeerReviewIeltsTask1,
- 'PeerReviewIeltsTask2': PeerReviewIeltsTask2,
- 'PeerReviewIntegrated': PeerReviewIntegrated,
- 'PeerReviewIndependent': PeerReviewIndependent
+    'textToolGroup': TextToolGroup
     // 'rubric': Rubric
   },
   data() {
@@ -641,7 +477,7 @@ export default {
       isRate: false,
       rateValue: 0,
       rateComment: null,
-      selectedTab: 'question',
+      selectedTab: 'rubric',
       isReviewAuth: false,
       isRated: false,
       isSubmit: false,
@@ -661,7 +497,30 @@ export default {
       isSelfReview: false,
       task: null,
       documentText: null,
-      textNodes: []
+      textNodes: [],
+      docData: null,
+      // errors: null
+      errors: [
+        {
+          error: 'It is often argued',
+          type: 'Từ vựng',
+          comment: 'use "There is ongoing debate" - This phrase is more concise and formal, and it accurately reflects the ongoing discussion on the topic.',
+          category: 'Lỗi lựa chọn từ'
+        },
+        {
+          error: 'fundamental',
+          type: 'Ngữ pháp',
+          comment: '"Crucial" is a stronger word that emphasizes the importance of the family environment in shaping a child\'s values and norms.',
+          category: 'Lỗi ngữ pháp'
+
+        },
+        {
+          error: 'structured environments',
+          type: 'Từ vựng',
+          comment: '"Organized settings" là một thuật ngữ tổng quát hơn, bao gồm nhiều loại môi trường giáo dục.',
+          category: 'Lỗi chấm câu'
+        }
+      ]
     }
   },
   computed: {
@@ -713,33 +572,55 @@ export default {
     localStorage.setItem(`${this.documentId}/tooltype`, 'cursor')
     localStorage.setItem(`${this.documentId}/color`, '#ff0000')
     PDFJSAnnotate.getStoreAdapter().clearAnnotations(this.documentId)
-    // load the document and annotations
-    this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId }).then(async() => {
-      PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
-      this.completeLoading = true
-      await this.render()
-      this.highlightErrors()
-      this.$refs.toolBar?.handleScale('fitPage')
-      this.$refs.toolBar?.insertExpandMenu()
-      this.handleCommentPositionsRestore()
-      this.hideDeleteToolBar()
-    })
+
     // Load question and get task info
     const question = await this.$store.dispatch('question/loadQuestion', this.questionId)
     this.task = question.section
     document.title = 'Đánh giá - ' + question.title
-    // Load review
-    await this.loadReview()
-    // Show/hide tools based on role
-    if (this.currentUser.role === 'Admin' || this.isView || this.isRate) {
-      this.disableToolbarSubmit()
-    } else {
-      enableEdit()
+
+    // Load document and its data
+    const doc = await docService.getDocument(this.documentId)
+    this.documentText = doc.data.text
+    this.docData = this.base64ToArrayBuffer(doc.data.data)
+
+    // Load review data and review request
+    this.review = await reviewService.getById(this.$route.params.reviewId)
+    if (this.review.review.reviewerId === 'AI') {
+      this.isAiReview = true
     }
-    // const that = this
-    // setTimeout(function () {
-    //   that.highlightErrors()
-    // }, 5000)
+
+    // Get errors here if there is no final score
+    // This has to be called before loading completed to show the loading sign
+    if (!this.review.review.finalScore) {
+      const model = {
+        task: question.section,
+        topic: question.questionsPart.find(q => q.name == 'Question').content,
+        essay: this.documentText,
+        feedbackLanguage: this.review.reviewRequest.feedbackLanguage
+      }
+      const response = await reviewService.getErrorsInText(model)
+      this.errors = response.errors
+    } else {
+      // If there is a final score, load the  annotations
+      await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
+      PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
+    }
+
+    // render the document
+    this.completeLoading = true
+    await this.render()
+
+    // Highlight errors here if there is no final score
+    if (!this.review.review.finalScore) {
+      if (this.errors && this.errors.length > 0) {
+        this.highlightErrors()
+      }
+    } else {
+      this.handleCommentPositionsRestore()
+    }
+
+    this.$refs.toolBar?.handleScale('fitPage')
+    this.$refs.toolBar?.insertExpandMenu()
   },
   beforeCreate() {
     document.body.style = 'overflow: hidden'
@@ -768,529 +649,355 @@ export default {
     async highlightErrors() {
       // this.generateAnnotation()
       // getTextNodes() should be called before highlightErrors()
+      this.svg = document.getElementsByClassName('annotationLayer')[0]
+      if (!this.svg) {
+        return
+      }
+      const { documentId, pageNumber } = getMetadata(this.svg)
+      const boundingRect = this.svg.getBoundingClientRect()
       this.getTextNodes()
+      // const searchPhrases = ['demographics of Iceland', 'the other profiles', 'still maintaining the status quo. Furthermore, showing a decade of consistency, the data for the oldest group slightly rose until the end. Regarding the other age brackets,']
 
-      const phrase = 'minor drop'
-      // Trim the search phrase and split into word
-      const phrases = phrase.trim().split(' ')
-      // k is the counter for iterating through phrases
-      let k = 0
-      // rects is list of hilighted rectangles for the search phrase. Each rect associated with each line.
-      let rects = []
+      let count = 1
+      // this.errors.forEach(error => {
+      for (let m = 0; m < this.errors.length; m++) {
+        const error = this.errors[m]
+        // Trim the search phrase and split into word
+        const phrase = error.error
+        const phrases = phrase.trim().split(' ')
+        // k is the counter for iterating through phrases
+        let k = 0
+        // rects is list of hilighted rectangles for the search phrase. Each rect associated with each line.
+        let rects = []
 
-      // Looping through the lines of text in the document
-      for (let i = 0; i < this.textNodes.length; i++) {
-        // Record matched and unmatched string for each line
-        let matchedString = ''
-        let unmatchedString = ''
+        // Looping through the lines of text in the document
+        for (let i = 0; i < this.textNodes.length; i++) {
+          // Record matched and unmatched string for each line
+          let matchedString = ''
+          let unmatchedString = ''
 
-        // Get all words in a line
-        const words = this.textNodes[i].data.split(' ')
-        // iterating through earch word
-        for (let j = 0; j < words.length; j++) {
-          // If current word in the text line matches the current word in the search phrase
-          if (words[j] == phrases[k] || words[j] == (phrases[k] + '.') || words[j] == (phrases[k] + ',')) {
-            // append to matched string
-            if (k == phrase.length - 1) {
-              // last word in search phrase
-              matchedString += phrases[k]
-            } else {
-              matchedString += phrases[k] + ' '
-            }
-            // increase search phrase counter
-            k++
-            // ends the text line interation if the whole search phrase is found
-            if (k == phrases.length) { break }
-          } else {
-            // If the current word in the text line does not match the current word in the search phrase,
-            // check if matchedString has a value, if it is the case, remove the matched string, and check for match again
-            // else, append the word in the text line to unmatched string
-            if (matchedString != '') {
-              // add the matched string to the unmatched string
-              unmatchedString += matchedString
-              // reset the matched string
-              matchedString = ''
-              // reset search phrase count
-              k = 0
-            }
-            if (rects.length > 0) {
-              rects = [] // reset the rects
-              k = 0 // check again
-            }
-            unmatchedString += words[j] + ' '
-          }
-        }
-        // After interating through each text line, we must have a matched or unmatched string, or both
-        if (matchedString != '') {
-          // If there is a matched string for the line, we generate the highlighted rectangle for this line
-          console.log('Matched string:', matchedString)
-           // Get the width of the matched string
-           const matchedWidth = this.getTextWidth(matchedString.trim())
-          console.log('Matched width:', matchedWidth)
-
-          console.log('Unmatched string:', unmatchedString)
-          // Get the width of the unmatched string
-          const unmatchedWidth = this.getTextWidth(unmatchedString)
-          console.log('Unmatched width:', unmatchedWidth)
-
-          // Get the rectange bouding the text line
-          // this.textNodes[i] will always have a parent div node
-          const textRect = this.textNodes[i].parentNode.getBoundingClientRect()
-          console.log('Bouding div rect:', textRect)
-          // the rect for this text line based on the 2 calculated widths and the textRect
-          const rect = {
-            x: textRect.x + unmatchedWidth,
-            y: textRect.y,
-            width: matchedWidth,
-            height: textRect.height,
-            top: textRect.top,
-            right: textRect.x + unmatchedWidth + matchedWidth,
-            bottom: textRect.bottom,
-            left: textRect.x + unmatchedWidth
-          }
-          console.log('Highlighted rect:', rect)
-          rects.push(rect)
-          // rects.push(textRect)
-        }
-
-        if (k == phrases.length) { break }
-      }
-
-      this.svg = document.getElementsByClassName('annotationLayer')[0]
-      if (!this.svg) {
-        return
-      }
-
-      const boundingRect = this.svg.getBoundingClientRect()
-      console.log('Bounding Rect:', boundingRect)
-
-      const rectagles = [...rects].map((r) => {
-          const offset = 0
-          return scaleDown(this.svg, {
-            y: r.top + offset - boundingRect.top,
-            x: r.left - boundingRect.left,
-            width: r.width,
-            height: r.height
-          })
-        })
-        .filter((r) => r.width > 0 && r.height > 0 && r.x > -1 && r.y > -1)
-
-      console.log('Rectangles: ', rectagles)
-
-      var color = 'red'
-      var type = 'highlight'
-      // Initialize the annotation
-      const annotation = {
-        type,
-        color,
-        left: (rects[0].left - boundingRect.left) / this.RENDER_OPTIONS.scale,
-        rectangles: rectagles
-      }
-
-      const { documentId, pageNumber } = getMetadata(this.svg)
-
-      // format top with scale 100%
-      annotation.color = color
-      annotation.top = annotation.rectangles[0].y
-      annotation.pageNum = pageNumber
-      annotation.pageHeight = parseInt(this.svg.getAttribute('height') / this.RENDER_OPTIONS.scale)
-      this.annotation = annotation
-
-      console.log(this.annotation)
-      // Add the annotation
-      await PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
-        .then((annotation) => {
-          appendChild(this.svg, annotation)
-          this.addCommentForErrors()
-        })
-    },
-    async addCommentForErrors() {
-      const newComment = await PDFJSAnnotate.getStoreAdapter().addComment(
-        this.documentId,
-        this.annotation,
-        'test',
-        'minor drop',
-        this.annotation.top)
-
-      this.$refs.toolBar?.handleAnnotationClicked(null)
-      this.selectedText = null
-      console.log('New comment', newComment)
-      this.comments.push(newComment)
-
-      this.$forceUpdate()
-      await this.comments.sort(this.compareTopAnnoAttributes)
-      newComment.annotation.documentId = this.documentId
-
-      this.registerEvents()
-
-      await this.updatePositionsAfterCommentAdded()
-
-      this.newComment = ''
-    },
-    // async updateCommentPositions() {
-    //   // const newComment = document.querySelector(".comment-card[highlight-id='" + this.annotation.uuid + "']")
-    //   // if (!this.hasSpace) {
-    //   //   // await this.comments.sort(this.compareTopAttributes)
-    //   //   const commentCardTemp = document.querySelectorAll('.comment-card')
-    //   //   var commentCards = Array.prototype.slice.call(commentCardTemp)
-    //   //   commentCards.sort(this.compareTopAttributes)
-    //   //   if (newComment) {
-    //   //     const endPos = parseInt(newComment.getAttribute('top-position')) + newComment.offsetHeight
-    //   //     if (this.order < (commentCards.length - 1)) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
-    //   //   }
-    //   //   // const endPos = parseInt(newComment.getAttribute('top-position')) + newComment.offsetHeight
-    //   //   // if (this.order < (commentCards.length - 1)) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
-    //   // }
-    //   const that = this
-
-    //   const commentTextContainer = document.getElementById('comment-text-' + this.annotation.uuid)
-
-    //   if (commentTextContainer && commentTextContainer.clientHeight > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 3)) {
-    //     commentTextContainer.style.webkitLineClamp = '3'
-    //     if (this.showMoreList.filter(item => item.id === this.annotation.uuid) == 0) {
-    //       this.showMoreList.push({ id: this.annotation.uuid, value: 0 })
-    //     }
-    //   }
-
-    //   if (newComment) {
-    //     newComment.addEventListener('click', function commentCardClick() {
-    //       that.handleCommentCardClick(this)
-    //     })
-    //   }
-    // },
-    getRectangesFromText(text) {
-
-    },
-    async generateAnnotation() {
-      this.svg = document.getElementsByClassName('annotationLayer')[0]
-      if (!this.svg) {
-        return
-      }
-
-      const boundingRect = this.svg.getBoundingClientRect()
-
-      const testRects = []
-      const thisRect = new DOMRect(1244, 320, 100, 15)
-      console.log('This Rect: ', thisRect)
-      const rect1 = {
-        'x': thisRect.x,
-        'y': thisRect.y,
-        'width': thisRect.width,
-        'height': thisRect.height,
-        'top': thisRect.top,
-        'right': thisRect.right,
-        'bottom': thisRect.bottom,
-        'left': thisRect.left
-      }
-
-      testRects.push(rect1)
-
-      const thisRect2 = new DOMRect(1300, 200, 200, 15)
-
-      const rect2 = {
-        'x': thisRect2.x,
-        'y': thisRect2.y,
-        'width': thisRect2.width,
-        'height': thisRect2.height,
-        'top': thisRect2.top,
-        'right': thisRect2.right,
-        'bottom': thisRect2.bottom,
-        'left': thisRect2.left
-      }
-      testRects.push(rect2)
-
-      const rectagles = [...testRects].map((r) => {
-          const offset = 0
-          return scaleDown(this.svg, {
-            y: r.top + offset - boundingRect.top,
-            x: r.left - boundingRect.left,
-            width: r.width,
-            height: r.height
-          })
-        })
-        .filter((r) => r.width > 0 && r.height > 0 && r.x > -1 && r.y > -1)
-
-      console.log('Rectangles: ', rectagles)
-
-      var color = 'FFFF00'
-      var type = 'highlight'
-      // Initialize the annotation
-      const annotation = {
-        type,
-        color,
-        left: (testRects[0].left - boundingRect.left) / this.RENDER_OPTIONS.scale,
-        rectangles: rectagles
-      }
-
-      const { documentId, pageNumber } = getMetadata(this.svg)
-
-      // format top with scale 100%
-      annotation.color = color
-      annotation.top = annotation.rectangles[0].y
-      annotation.pageNum = pageNumber
-      annotation.pageHeight = parseInt(this.svg.getAttribute('height') / this.RENDER_OPTIONS.scale)
-      this.annotation = annotation
-
-      console.log(this.annotation)
-      // Add the annotation
-      await PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
-        .then((annotation) => {
-          appendChild(this.svg, annotation)
-          // this.undoHistory.push({ action: 'added', annotation: annotation })
-          // this.updateUndoList()
-          // this.hideTextToolBar()
-          // this.hideTextToolGroup()
-          // this.hideRectToolBar()
-          // this.hideDeleteToolBar()
-          // this.hideColorPickerTool()
-          // annotation.documentId = this.documentId
-          // if (type != 'comment-highlight') {
-          //   var obj = {
-          //     DocumentId: this.documentId,
-          //     ReviewId: this.reviewId,
-          //     Type: type,
-          //     PageNum: annotation.pageNum,
-          //     Top: annotation.top,
-          //     Color: annotation.color,
-          //     Uuid: annotation.uuid,
-          //     Data: JSON.stringify(annotation)
-          //   }
-          //   this.$store.dispatch('review/addReviewAnnotation', obj).then(async rs => {
-          //     if (this.$store.getters['review/getAddedAnnotation']) {
-          //       annotation.id = this.$store.getters['review/getAddedAnnotation']['id']
-
-          //       await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation, 'added')
-          //     }
-          //   })
-          // }
-          // this.setStatusText()
-        })
-    },
-    async highlightText(type) {
-      if (!this.svg) {
-        return
-      }
-      console.log(this.svg.getBoundingClientRect())
-      const boundingRect = this.boundingRect
-
-      var color = 'FFFF00'
-      if (type == 'strikeout') {
-        // color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) ? color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) : 'FF0000'
-        color = 'FF0000'
-      }
-      if (type == 'highlight') {
-        color = 'FFFF00'
-      }
-      if (type == 'comment-highlight') {
-        // color = 'FF00FF'
-        color = '0000FF'
-      }
-
-      // Initialize the annotation
-      const annotation = {
-        type,
-        color,
-        left: (this.rects[0].left - boundingRect.left) / this.RENDER_OPTIONS.scale,
-        rectangles: [...this.rects].map((r) => {
-          let offset = 0
-          if (type == 'strikeout') { offset = r.height / 2 }
-          return scaleDown(this.svg, {
-            y: r.top + offset - boundingRect.top,
-            x: r.left - boundingRect.left,
-            width: r.width,
-            height: r.height
-          })
-        }).filter((r) => r.width > 0 && r.height > 0 && r.x > -1 && r.y > -1)
-      }
-
-      console.log(annotation)
-      // Short circuit if no rectangles exist
-      if (annotation.rectangles.length === 0) {
-        return
-      }
-
-      if (annotation.rectangles.length > 2) {
-        annotation.rectangles = this.removeMaxHeigthRects(annotation.rectangles)
-      }
-
-      const { documentId, pageNumber } = getMetadata(this.svg)
-      // format top with scale 100%
-      annotation.color = color
-      annotation.top = annotation.rectangles[0].y
-      annotation.pageNum = pageNumber
-      annotation.pageHeight = parseInt(this.svg.getAttribute('height') / this.RENDER_OPTIONS.scale)
-      this.annotation = annotation
-      // Add the annotation
-      await PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
-        .then((annotation) => {
-          appendChild(this.svg, annotation)
-          this.undoHistory.push({ action: 'added', annotation: annotation })
-          this.updateUndoList()
-          this.hideTextToolBar()
-          this.hideTextToolGroup()
-          this.hideRectToolBar()
-          this.hideDeleteToolBar()
-          this.hideColorPickerTool()
-          annotation.documentId = this.documentId
-          if (type != 'comment-highlight') {
-            var obj = {
-              DocumentId: this.documentId,
-              ReviewId: this.reviewId,
-              Type: type,
-              PageNum: annotation.pageNum,
-              Top: annotation.top,
-              Color: annotation.color,
-              Uuid: annotation.uuid,
-              Data: JSON.stringify(annotation)
-            }
-            this.$store.dispatch('review/addReviewAnnotation', obj).then(async rs => {
-              if (this.$store.getters['review/getAddedAnnotation']) {
-                annotation.id = this.$store.getters['review/getAddedAnnotation']['id']
-
-                await PDFJSAnnotate.getStoreAdapter().editAnnotation(this.documentId, annotation.uuid, annotation, 'added')
+          // Get all words in a line
+          const words = this.textNodes[i].data.split(' ')
+          // iterating through earch word
+          for (let j = 0; j < words.length; j++) {
+            // If current word in the text line matches the current word in the search phrase
+            if (words[j] == phrases[k] || words[j] == (phrases[k] + '.') || words[j] == (phrases[k] + ',')) {
+              // append to matched string
+              if (k == phrase.length - 1) {
+                // last word in search phrase
+                matchedString += phrases[k]
+              } else {
+                matchedString += phrases[k] + ' '
               }
+              // increase search phrase counter
+              k++
+              // ends the text line interation if the whole search phrase is found
+              if (k == phrases.length) { break }
+            } else {
+              // If the current word in the text line does not match the current word in the search phrase,
+              // check if matchedString has a value, if it is the case, remove the matched string, and check for match again
+              // else, append the word in the text line to unmatched string
+              if (matchedString != '') {
+                // add the matched string to the unmatched string
+                unmatchedString += matchedString
+                // reset the matched string
+                matchedString = ''
+                // reset search phrase count
+                k = 0
+              }
+              if (rects.length > 0) {
+                rects = [] // reset the rects
+                k = 0 // check again
+              }
+              unmatchedString += words[j] + ' '
+            }
+          }
+          // After interating through each text line, we must have a matched or unmatched string, or both
+          if (matchedString != '') {
+            // If there is a matched string for the line, we generate the highlighted rectangle for this line
+            // console.log('Matched string:', matchedString)
+            // Get the width of the matched string
+            const matchedWidth = this.getTextWidth(matchedString.trim())
+            // console.log('Matched width:', matchedWidth)
+
+            // console.log('Unmatched string:', unmatchedString)
+            // Get the width of the unmatched string
+            const unmatchedWidth = this.getTextWidth(unmatchedString)
+            // console.log('Unmatched width:', unmatchedWidth)
+
+            // Get the rectange bouding the text line
+            // this.textNodes[i] will always have a parent div node
+            const textRect = this.textNodes[i].parentNode.getBoundingClientRect()
+            // console.log('Bouding div rect:', textRect)
+            // the rect for this text line based on the 2 calculated widths and the textRect
+            const rect = {
+              x: textRect.x + unmatchedWidth,
+              y: textRect.y,
+              width: matchedWidth,
+              height: textRect.height,
+              top: textRect.top,
+              right: textRect.x + unmatchedWidth + matchedWidth,
+              bottom: textRect.bottom,
+              left: textRect.x + unmatchedWidth
+            }
+            // console.log('Highlighted rect:', rect)
+            rects.push(rect)
+            // rects.push(textRect)
+          }
+
+          if (k == phrases.length) { break }
+        }
+
+        if (rects.length > 0) {
+                  // Create the highlighted rectangles
+          const rectagles = [...rects].map((r) => {
+              const offset = 0
+              return scaleDown(this.svg, {
+                y: r.top + offset - boundingRect.top,
+                x: r.left - boundingRect.left - 1,
+                width: r.width + 3,
+                height: r.height
+              })
             })
-          }
-          this.setStatusText()
-        })
-    },
-    async addErrorComment(top, left) {
-      const type = ''
-      const boundingRect = null
-      var color = 'FFFF00'
-      if (type == 'strikeout') {
-        // color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) ? color = localStorage.getItem(`${this.RENDER_OPTIONS.documentId}/color`) : 'FF0000'
-        color = 'FF0000'
-      }
-      if (type == 'highlight') {
-        color = 'FFFF00'
-      }
-      if (type == 'comment-highlight') {
-        // color = 'FF00FF'
-        color = '0000FF'
-      }
+            .filter((r) => r.width > 0 && r.height > 0 && r.x > -1 && r.y > -1)
 
-      // Initialize the annotation
-      let annotation = {
-        type,
-        color,
-        left: left,
-        rectangles: [...this.rects].map((r) => {
-          let offset = 0
-          if (type == 'strikeout') { offset = r.height / 2 }
-          return scaleDown(this.svg, {
-            y: r.top + offset - boundingRect.top,
-            x: r.left - boundingRect.left,
-            width: r.width,
-            height: r.height
+          // console.log('Rectangles: ', rectagles)
+
+          // red for grammar
+          var color = 'red'
+
+          if (error.category.toLowerCase() == 'word choice') { error.type = 'vocabulary' }
+          if (error.type.toLowerCase() == 'vocabulary') { color = 'blue' }
+
+          var type = 'comment-highlight'
+          // Initialize the annotation
+          const annotation = {
+            type,
+            color,
+            left: (rects[0].left - boundingRect.left) / this.RENDER_OPTIONS.scale,
+            rectangles: rectagles
+          }
+          // format top with scale 100%
+          annotation.color = color
+          annotation.top = annotation.rectangles[0].y
+          annotation.pageNum = pageNumber
+          annotation.pageHeight = parseInt(this.svg.getAttribute('height') / this.RENDER_OPTIONS.scale)
+
+          // Add the annotation
+          // PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
+          // .then(annotation => {
+          //   appendChild(this.svg, annotation)
+          //   // add the comment asoociated with the newly created annotation
+          //   this.addCommentForErrors(annotation, error.error, error.type, error.category, error.comment)
+          // })
+
+          PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
+          .then(annotation => {
+            appendChild(this.svg, annotation)
+            // add the comment asoociated with the newly created annotation
+            PDFJSAnnotate.getStoreAdapter().addComment(this.documentId, annotation, error.error, error.type, this.titleCase(error.category), error.comment, annotation.top)
+            .then(newComment => {
+              newComment.annotation.documentId = this.documentId
+              this.comments.push(newComment)
+              this.$nextTick(() => {
+                const thisComment = document.querySelector(".comment-card[highlight-id='" + annotation.uuid + "']")
+                const that = this
+                // handle onclick event for this comment
+                thisComment.addEventListener('click', function commentCardClick() {
+                  that.handleCommentCardClick(this)
+                })
+
+                // Add intext comment into database
+                var anno = {
+                  DocumentId: this.documentId,
+                  ReviewId: this.reviewId,
+                  Type: annotation.type,
+                  PageNum: typeof (annotation.pageNum) != 'undefined' ? annotation.pageNum : annotation.page,
+                  Top: typeof (annotation.top) != 'undefined' ? annotation.top : parseInt(annotation.y),
+                  Color: annotation.color,
+                  Uuid: annotation.uuid,
+                  Data: JSON.stringify(annotation),
+                  Id: annotation.id
+                }
+
+                var newCmt = {
+                  Text: newComment.text,
+                  Type: newComment.type,
+                  Category: newComment.category,
+                  Content: newComment.comment,
+                  TopPosition: newComment.topPosition,
+                  Uuid: newComment.uuid,
+                  Data: JSON.stringify(newComment)
+                }
+                reviewService.addInTextComment(this.documentId, this.reviewId, newCmt, anno)
+
+                // Highlight the first comment
+                count++
+                if (count == this.errors.length) {
+                  this.handleCommentPositionsRestore()
+                }
+
+                // .then(async rs => {
+                //   if (rs.data) {
+                //     // this.updateCommentId(rs)
+
+                //   }
+                // })
+              })
+            })
           })
-        }).filter((r) => r.width > 0 && r.height > 0 && r.x > -1 && r.y > -1)
-      }
-      // Short circuit if no rectangles exist
-      if (annotation.rectangles.length === 0) {
-        return
-      }
-
-      if (annotation.rectangles.length > 2) {
-        annotation.rectangles = this.removeMaxHeigthRects(annotation.rectangles)
-      }
-      // format top with scale 100%
-      annotation.color = color
-      annotation.top = annotation.rectangles[0].y
-      annotation.pageNum = this.pageNumber
-      annotation.pageHeight = parseInt(this.svg.getAttribute('height') / this.RENDER_OPTIONS.scale)
-      // this.annotation = annotation
-      // Add the annotation
-      annotation = await PDFJSAnnotate.getStoreAdapter().addAnnotation(this.documentId, this.pageNumber, annotation)
-
-      const commentWrapper = document.getElementById('add-new-comment')
-      const uuid = commentWrapper.getAttribute('highlight-id')
-      if (!status) {
-        this.annotation = await PDFJSAnnotate.getStoreAdapter().getAnnotation(this.documentId, uuid)
-      }
-      const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
-      const newComment = await PDFJSAnnotate.getStoreAdapter().addComment(
-        this.documentId,
-        this.annotation,
-        this.newComment,
-        this.selectedText,
-        topPos)
-      this.selectedText = null
-      console.log('New comment', newComment)
-      await this.undoHistory.push({ action: 'added', annotation: newComment })
-      this.updateUndoList()
-      await this.comments.push(newComment)
-      if (status == false) {
-        this.comments.forEach(cmt => {
-          if (cmt.uuid == uuid) {
-            cmt.isSaved = false
-            cmt.isSelected = true
-          }
-        })
-        this.commentsNotSaved.push(uuid)
-      } else {
-        this.comments.forEach(cmt => {
-          if (cmt.uuid == uuid) {
-            cmt.isSaved = true
-            cmt.isSelected = false
-          }
-        })
-      }
-      this.$forceUpdate()
-      await this.comments.sort(this.compareTopAnnoAttributes)
-      newComment.annotation.documentId = this.documentId
-
-      if (this.annotation.type == 'area') {
-        this.annotation.type = 'comment-area'
-        await this.updateTypeOfRect('comment-area', status)
-      }
-      if (this.annotation.type == 'point') {
-        this.$refs.toolBar?.handleAnnotationClicked(null)
-      }
-      this.disableToolbarButtons()
-
-      // Need to investigate on why #add-new-comment need to be hidden late
-      setTimeout(function() {
-        document.getElementById('add-new-comment').style.display = 'none'
-      }, 10)
-
-      if (status) {
-        var anno = {
-          DocumentId: this.documentId,
-          ReviewId: this.reviewId,
-          Type: this.annotation.type,
-          PageNum: typeof (this.annotation.pageNum) != 'undefined' ? this.annotation.pageNum : this.annotation.page,
-          Top: typeof (this.annotation.top) != 'undefined' ? this.annotation.top : parseInt(this.annotation.y),
-          Color: this.annotation.color,
-          Uuid: this.annotation.uuid,
-          Data: JSON.stringify(this.annotation),
-          Id: this.annotation.id
         }
+      }
 
-        var newCmt = {
-          Text: newComment.text != null ? newComment.text : '',
-          Content: newComment.content,
-          TopPosition: newComment.topPosition,
-          Uuid: newComment.uuid,
-          Data: JSON.stringify(newComment)
-        }
-
-        reviewService.addInTextComment(this.documentId, this.reviewId, newCmt, anno).then(async rs => {
-          if (rs.data) {
-            this.updateCommentId(rs)
+      // this.handleCommentPositionsRestore()
+    },
+    async handleCommentAnnotationClick(target) {
+      // Display text tool bar if text is selected.
+      if (target != null) {
+        // Get the type of the annotation from the target
+        // Currently only suppprt comment highlight
+        const type = target.getAttribute('data-pdf-annotate-type')
+        this.annotationClicked = target
+        if (type == 'comment-highlight') {
+          // Get the currently selected one
+          const selectedVocabulary = document.getElementsByClassName('vocabulary-highlight-selected')
+          for (const element of selectedVocabulary) {
+            element.classList.remove('vocabulary-highlight-selected')
           }
+
+          const selectedGrammar = document.getElementsByClassName('grammar-highlight-selected')
+          for (const element of selectedGrammar) {
+            element.classList.remove('grammar-highlight-selected')
+          }
+
+          // const selectedRect = document.getElementsByClassName('rectangle-selected')
+          // if (selectedRect.length > 0) {
+          //    // remove the selected class from the existing one
+          //   selectedRect[0].classList.remove('rectangle-selected')
+          // }
+
+           // add selected class to all groups associated with this annotation
+           const annotationId = target.getAttribute('data-pdf-annotate-id')
+          // Instead of geting the order from the highlights, get the index directly from the comment using the annotation id
+          this.order = this.comments.findIndex(c => c.annotation.uuid == annotationId)
+          const errorType = this.comments[this.order].type
+
+          const groups = document.querySelectorAll("g[data-pdf-annotate-id='" + annotationId + "']")
+          groups.forEach(element => {
+            if (errorType.toLowerCase() === 'vocabulary') { element.classList.add('vocabulary-highlight-selected') } else { element.classList.add('grammar-highlight-selected') }
+          })
+
+          const commentCards = document.querySelectorAll('.comment-card')
+
+          // Get the top position of the annotation
+          var gTop = parseInt(parseInt(target.getAttribute('top')) * this.RENDER_OPTIONS.scale) - 34
+
+          // Get the height of the svg
+          const svgHeight = parseInt(target.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12
+          const svgPageNum = parseInt(target.getAttribute('page-num'))
+
+          // Update the top position if there are more than 1 page
+          if (svgPageNum > 1) { gTop += ((svgPageNum - 1) * svgHeight) }
+
+          // If the comment associated with this annotation exist.
+          if (this.order > -1 && this.comments[this.order] && commentCards[this.order]) {
+            // Get the comment's top position
+            const cTop = this.comments[this.order].topPosition
+
+            // remove current selected comment card class if any
+            const selected = document.getElementsByClassName('comment-card-selected')
+            if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
+            // Set this card as selected
+            // console.log('this.order', this.order)
+            commentCards[this.order].classList.add('comment-card-selected')
+            // cmtSelected.classList.add('comment-card-selected')
+            // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
+            if (cTop != gTop) {
+            // Move the comment up to gTop
+              this.comments[this.order].topPosition = gTop
+              // cmtSelected.setAttribute('top-position', gTop)
+              // cmtSelected.style.top = gTop + 'px'
+
+              const selected = document.getElementsByClassName('comment-card-selected')
+              if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
+              commentCards[this.order].classList.add('comment-card-selected')
+
+              // cmtSelected.classList.add('comment-card-selected')
+              const endPos = gTop + commentCards[this.order].offsetHeight
+
+              // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
+              // const endPos = gTop + cmtSelected.offsetHeight
+              if (cTop > gTop) {
+              // Move up other uppen comments
+                if (this.order > 0) { this.moveUpFromTopPos(commentCards, this.order - 1, gTop) }
+                // Move up other lower comments
+                if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
+              } else if (cTop <= gTop) {
+              // Move down other uppen comments
+                if (this.order > 0) { this.moveDownToTopPos(commentCards, this.order - 1, gTop) }
+                // Move down other lower comments
+                if (this.order < commentCards.length - 1) { this.moveDownFromEndPos(commentCards, this.order + 1, endPos) }
+              }
+            } else {
+              const endPos = gTop + commentCards[this.order].offsetHeight
+              if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
+            }
+          }
+        }
+      }
+    },
+    async handleCommentPositionsRestore(e) {
+      this.svg = document.getElementsByClassName('annotationLayer')[0]
+      // re-order annotation
+      if (this.svg) {
+        [...this.svg.children]
+        .sort(this.compareTopAttributes)
+        .forEach(node => this.svg.appendChild(node))
+
+        this.comments.sort(this.orderCommentByAnnotation)
+
+        this.$nextTick(() => {
+          const highlights = document.querySelectorAll("g[data-pdf-annotate-type='comment-highlight']")
+          this.handleCommentAnnotationClick(highlights[0])
         })
       }
-
-      await this.updatePositionsAfterCommentAdded()
-      // await this.handleCommentPositionsRestore()
-      if (status) {
-        const target = this.getHighlightByCommentId(this.annotation.uuid)
-        this.handleCommentAnnotationClick(target)
+    },
+    orderCommentByAnnotation(a, b) {
+      if (a.annotation.top > b.annotation.top) return 1
+      if (a.annotation.top < b.annotation.top) return -1
+      if (a.annotation.top == b.annotation.top) {
+        // compare left position
+        if (a.annotation.left > b.annotation.left) return 1
+        if (a.annotation.left < b.annotation.left) return -1
       }
-      this.newComment = ''
-      this.isAddingNewComment = false
-      console.log(this.isAddingNewComment)
+      return 0
+    },
+    compareTopAttributes(a, b) {
+      let top1 = parseInt(a.getAttribute('top')) * this.RENDER_OPTIONS.scale
+      if (a.getAttribute('page-num') > 1) { top1 += ((a.getAttribute('page-num') - 1) * (parseInt(a.getAttribute('page-height'))) * this.RENDER_OPTIONS.scale + 12) }
+
+      let top2 = parseInt(b.getAttribute('top')) * this.RENDER_OPTIONS.scale
+      if (b.getAttribute('page-num') > 1) { top2 += ((b.getAttribute('page-num') - 1) * (parseInt(b.getAttribute('page-height'))) * this.RENDER_OPTIONS.scale + 12) }
+      if (top1 > top2) return 1
+      if (top2 > top1) return -1
+      if (top2 == top1) {
+        // compare order attributes
+        const left1 = parseInt(a.getAttribute('left'))
+        const left2 = parseInt(b.getAttribute('left'))
+        if (left1 > left2) return 1
+        if (left2 > left1) return -1
+      }
+      return 0
+    },
+    titleCase(str) {
+      var splitStr = str.toLowerCase().split(' ')
+      for (var i = 0; i < splitStr.length; i++) {
+          // You do not need to check if i is larger than splitStr length, as your for does that for you
+          // Assign it back to the array
+          splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1)
+      }
+      // Directly return the joined string
+      return splitStr.join(' ')
     },
     getTextWidth(text) {
       const inputText = text
@@ -1303,11 +1010,7 @@ export default {
     },
     async render() {
       const self = this
-      const response = await docService.getDocument(this.documentId)
-      this.documentText = response.data.text
-      const arrayBuffer = self.base64ToArrayBuffer(response.data.data)
-
-      const pdf = await PDFJS.getDocument(arrayBuffer).promise
+      const pdf = await PDFJS.getDocument(this.docData).promise
       self.RENDER_OPTIONS.documentId = this.documentId
       self.RENDER_OPTIONS.pdfDocument = pdf
       self.viewer = document.getElementById('viewer')
@@ -1355,64 +1058,6 @@ export default {
       this.registerEvents()
       enableTextSelection(this)
       await this.reRenderPages()
-    },
-    async loadReview() {
-      // Get the review data and display the tab accordingly
-      const rs = await reviewService.getById(this.$route.params.reviewId)
-      console.log('Review:', rs)
-      if (this.currentUser.role === UserRole.ADMIN) {
-        this.$store.dispatch('rater/setSelectedRater', rs.rater)
-      }
-      if (rs.review) {
-        this.review = rs
-        if (rs.review.status === 'Completed') {
-          this.isView = true
-          this.isSubmit = true
-          // this.selectedTab = 'rubric'
-        }
-        this.$refs.toolBar?.loadReviewData(rs)
-        if (rs.review.reviewerId === 'AI') {
-          this.isAiReview = true
-        }
-        if (rs.review.reviewerId === rs.review.revieweeId) {
-          // this.selectedTab = 'guide'
-          this.isSelfReview = true
-        }
-      }
-
-      // Check if the current user is the review author
-      if (rs.review && this.currentUser.id === rs.review.reviewerId) {
-        this.isReviewAuth = true
-      }
-
-      if (rs.review && (this.currentUser.id === rs.review.reviewerId || this.currentUser.id === rs.review.revieweeId) &&
-      (rs.review.status === 'Completed' || rs.review.status === 'Rated')) {
-        this.isRate = true
-        const reviewRating = await reviewService.getReviewRating(this.$route.params.reviewId)
-
-        if (reviewRating) {
-          this.isRated = true
-          // this.selectedTab = 'rate'
-          this.$refs.tabRate?.updateData({ value: reviewRating.rate, comment: reviewRating.comment, rated: true })
-          this.isView = true
-        } else if (this.isReviewAuth) {
-          this.isRate = false
-        }
-      } else if (rs.review && this.currentUser.id === rs.review.revieweeId && rs.review.reviewerId !== rs.review.revieweeId) {
-        this.isView = true
-      }
-
-      // Decide which tab to open based on review status
-      if (rs.review.status == 'In Progress') { // Làm mới hoặc đang làm dở
-        if (this.isSelfReview) { this.selectedTab = 'guide' } // Hiển thì tab hướng dẫn cho self review
-        if (this.isAiReview) { this.selectedTab = 'rubric' }
-        // Nếu không phải là self review thì hiển thị tab chủ đề
-      } else if (rs.review.status === 'Completed') { // Nếu bài chấm đã được hoàn thiện
-        // hiển thị tab rubric
-        this.selectedTab = 'rubric'
-      } else if (this.isRated) {
-        this.selectedTab = 'rate'
-      }
     },
     async annotationAdded(documentId, pageNumber, annotation) {
       if (annotation.type == 'textbox' || annotation.type == 'area') {
@@ -1484,7 +1129,6 @@ export default {
         })
       }
     },
-
     base64ToArrayBuffer(base64) {
       const binaryString = window.atob(base64)
       const binaryLen = binaryString.length
@@ -1752,173 +1396,6 @@ export default {
         this.hideDeleteToolBar()
       })
     },
-    async handleCommentAnnotationClick(target) {
-      this.hideRectToolBar()
-      const text = window.getSelection().toString().trim()
-      const newCommentWrapper = document.getElementById('add-new-comment')
-      if (newCommentWrapper && newCommentWrapper.style.display != 'none') {
-        return
-      }
-      // Display text tool bar if text is selected.
-      this.unselectHighlightComment()
-      this.isTextbox = null
-      this.isRect = false
-      if (!text && (typeof (target) != 'undefined') && (target != null)) {
-        const type = target.getAttribute('data-pdf-annotate-type')
-        this.annotationClicked = target
-        if (type == 'strikeout' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
-          this.colorChosen = target.getAttribute('stroke')
-          uuid = target.getAttribute('data-pdf-annotate-id')
-          this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
-          var rect = target.getBoundingClientRect()
-          // Display rect tool bar if text is selected.
-          if (target.getAttribute('top') == '') {
-            // window.getSelection().removeAllRanges()
-            this.hideDeleteToolBar()
-          } else {
-            const deleteTool = document.getElementById('deleteTool')
-            // 54 is the width of deleteTool
-            var posXX = parseInt(rect.left) + parseInt(rect.width / 2) - 54 / 2
-            var posYY = parseInt(rect.top) + parseInt(rect.height) + 15
-            deleteTool.style = 'position: absolute; top: ' + posYY + 'px; left: ' + posXX + 'px;'
-          }
-        } else if (type == 'highlight' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
-          this.colorChosen = target.getAttribute('stroke')
-          uuid = target.getAttribute('data-pdf-annotate-id')
-          this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
-          var rects = target.getBoundingClientRect()
-          // Display rect tool bar if text is selected.
-          if (target.getAttribute('top') == '') {
-            // window.getSelection().removeAllRanges()
-            this.hideDeleteToolBar()
-          } else {
-            const rectTool = document.getElementById('rectTool')
-            // 110 is the width of rectTool
-            const posX = parseInt(rects.left) + parseInt(rects.width / 2) - 110 / 2
-            const posY = parseInt(rects.top) + parseInt(rects.height) + 7
-            rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
-          }
-        }
-        if (type == 'comment-highlight' || type == 'point' || type == 'comment-area') {
-          const selectedHighlight = document.getElementsByClassName('comment-highlight-selected')
-          const selectedRect = document.getElementsByClassName('rectangle-selected')
-          if (selectedHighlight.length > 0) { selectedHighlight[0].classList.remove('comment-highlight-selected') }
-          if (selectedRect.length > 0) {
-            selectedRect[0].classList.remove('rectangle-selected')
-          }
-          if (type == 'comment-area') {
-            target.classList.add('rectangle-selected')
-          } else {
-            target.classList.add('comment-highlight-selected')
-          }
-
-          const commentCards = document.querySelectorAll('.comment-card')
-          const commentHighlights = document.querySelectorAll("g[data-pdf-annotate-type='comment-highlight']")
-          const commentPoints = document.querySelectorAll("svg[data-pdf-annotate-type='point']")
-          const commentAreas = document.querySelectorAll("rect[data-pdf-annotate-type='comment-area']")
-          const areaArr = Array.prototype.slice.call(commentAreas)
-          const highlightArr = Array.prototype.slice.call(commentHighlights)
-          var pointsArr = Array.prototype.slice.call(commentPoints)
-          var combineArr = highlightArr.concat(pointsArr)
-          combineArr = combineArr.concat(areaArr)
-          combineArr.sort(this.compareTopAttributes)
-          // this.comments.sort(this.compareTopAnnoAttributes)
-          // Get order of the current highlight
-          this.order = combineArr.findIndex(item => {
-            return item.dataset.pdfAnnotateId == target.getAttribute('data-pdf-annotate-id')
-          })
-          var gTop = parseInt(parseInt(target.getAttribute('top')) * this.RENDER_OPTIONS.scale) - 34
-          const svgHeight = parseInt(target.getAttribute('page-height')) * this.RENDER_OPTIONS.scale + 12
-          const svgPageNum = parseInt(target.getAttribute('page-num'))
-          if (svgPageNum > 1) { gTop += ((svgPageNum - 1) * svgHeight) }
-          if (this.order > -1 && this.comments[this.order] && commentCards[this.order]) {
-            const cTop = this.comments[this.order].topPosition
-
-            // remove current selected comment card class if any
-            const selected = document.getElementsByClassName('comment-card-selected')
-            if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
-            // Set this card as selected
-            // console.log('this.order', this.order)
-            commentCards[this.order].classList.add('comment-card-selected')
-            // cmtSelected.classList.add('comment-card-selected')
-            // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
-            if (cTop != gTop) {
-            // Move the comment up to gTop
-              this.comments[this.order].topPosition = gTop
-              // cmtSelected.setAttribute('top-position', gTop)
-              // cmtSelected.style.top = gTop + 'px'
-
-              const selected = document.getElementsByClassName('comment-card-selected')
-              if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
-              commentCards[this.order].classList.add('comment-card-selected')
-
-              // cmtSelected.classList.add('comment-card-selected')
-              const endPos = gTop + commentCards[this.order].offsetHeight
-
-              // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
-              // const endPos = gTop + cmtSelected.offsetHeight
-              if (cTop > gTop) {
-              // Move up other uppen comments
-                if (this.order > 0) { this.moveUpFromTopPos(commentCards, this.order - 1, gTop) }
-                // Move up other lower comments
-                if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
-              } else if (cTop <= gTop) {
-              // Move down other uppen comments
-                if (this.order > 0) { this.moveDownToTopPos(commentCards, this.order - 1, gTop) }
-                // Move down other lower comments
-                if (this.order < commentCards.length - 1) { this.moveDownFromEndPos(commentCards, this.order + 1, endPos) }
-              }
-            } else {
-              const endPos = gTop + commentCards[this.order].offsetHeight
-              if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
-            }
-          }
-        } else if (type == 'area' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
-          target.classList.add('rectangle-selected')
-          this.isRect = true
-          this.isTextbox = null
-          this.colorChosen = target.getAttribute('stroke')
-          var uuid = target.getAttribute('data-pdf-annotate-id')
-          this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
-          rect = target.getBoundingClientRect()
-          // Display rect tool bar if text is selected.
-          if (target.getAttribute('x') == '') {
-            // window.getSelection().removeAllRanges()
-            this.hideRectToolBar()
-            this.hideDeleteToolBar()
-          } else {
-            const rectTool = document.getElementById('rectTool')
-            var posX = parseInt(rect.left) + parseInt(target.getAttribute('width') * this.RENDER_OPTIONS.scale / 2) - 167 / 2
-            // if (this.showQuestion) {
-            // posX += parseInt(document.getElementById('left-panel').offsetWidth)
-            // }
-            const posY = parseInt(rect.top) + parseInt(target.getAttribute('height')) * this.RENDER_OPTIONS.scale + 7
-            rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
-          }
-        } else if (type == 'textbox' && (this.currentUser.role != 'Admin' && !this.isView && !this.isRate)) {
-          this.isTextbox = target
-          this.isRect = false
-          this.colorChosen = target.getAttribute('stroke')
-          uuid = target.getAttribute('data-pdf-annotate-id')
-          this.annotation = this.loadedAnnotation.annotations.filter(r => { return r.uuid === uuid })[0]
-          rect = target.getBoundingClientRect()
-          // Display rect tool bar if text is selected.
-          if (target.getAttribute('x') == '') {
-            // window.getSelection().removeAllRanges()
-            this.hideRectToolBar()
-            this.hideDeleteToolBar()
-          } else {
-            const rectTool = document.getElementById('rectTool')
-            posX = (parseInt(target.getAttribute('x')) + parseInt(target.getAttribute('width')) / 4) * this.RENDER_OPTIONS.scale
-            if (this.showQuestion) {
-              posX += parseInt(document.getElementById('left-panel').offsetWidth)
-            }
-            const posY = parseInt(rect.top) + parseInt(target.getAttribute('height')) * this.RENDER_OPTIONS.scale + 10
-            rectTool.style = 'position: absolute; top: ' + posY + 'px; left: ' + posX + 'px;'
-          }
-        }
-      }
-    },
     changeColor(e) {
       this.colorChosen = e
       this.updateRectangleAnotation(e)
@@ -1989,42 +1466,6 @@ export default {
       const highlight = document.querySelector("[data-pdf-annotate-id='" + highlightId + "']")
       this.handleCommentAnnotationClick(highlight)
       this.hideDeleteToolBar()
-    },
-    async handleCommentPositionsRestore(e) {
-      const highlights = document.querySelectorAll("g[data-pdf-annotate-type='comment-highlight']")
-      const points = document.querySelectorAll("svg[data-pdf-annotate-type='point']")
-      const commentAreas = document.querySelectorAll("rect[data-pdf-annotate-type='comment-area']")
-      const areaArr = Array.prototype.slice.call(commentAreas)
-      const highlightArr = Array.prototype.slice.call(highlights)
-      var pointsArr = Array.prototype.slice.call(points)
-
-      var combineArr = highlightArr.concat(pointsArr)
-      combineArr = combineArr.concat(areaArr)
-      combineArr.sort(this.compareTopAttributes)
-      combineArr.forEach(cmt => {
-        this.handleCommentAnnotationClick(cmt)
-      })
-      this.hideDeleteToolBar()
-      this.handleCommentAnnotationClick(combineArr[0])
-
-      var viewer = document.getElementById('viewer')
-      if (viewer) {
-        const documentId = viewer.getAttribute('document-id')
-        const comments = await this.updateCommentAnnotations(documentId, e)
-        await PDFJSAnnotate.getStoreAdapter().updateComments(documentId, comments)
-      }
-      const selected = document.getElementsByClassName('comment-card-selected')
-      if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
-      const annoSelected = document.querySelector('.comment-highlight-selected')
-      if (annoSelected) {
-        annoSelected.classList.remove('comment-highlight-selected')
-      }
-      const rectSelected = document.querySelectorAll('.rectangle-selected')
-      if (rectSelected.length > 0) {
-        for (let i = 0; i < rectSelected.length; i++) {
-          rectSelected[i].classList.remove('rectangle-selected')
-        }
-      }
     },
     async handleCommentPositionsRestoreAfterMove(target, e) {
       this.hideDeleteToolBar()
@@ -2110,446 +1551,6 @@ export default {
       })
       this.hideDeleteToolBar()
       return comments
-    },
-    async HighlightText() {
-      await this.highlightText('highlight')
-    },
-    async StrikethroughText() {
-      await this.highlightText('strikeout')
-      this.hideTextToolBar()
-      this.hideTextToolGroup()
-    },
-    // Migration code starts here
-    async CommentText() {
-      if (document.getElementById('comment-wrapper').offsetWidth == 0) {
-        document.getElementById('comment-wrapper').style.display = 'block'
-      }
-      if (this.newComment.replace(/\s/g, '').length != 0) {
-        // Save in-progress comment
-        await this.addCommentText(false)
-      }
-      await this.commentText()
-    },
-    async addCommentText(status) {
-      const commentWrapper = document.getElementById('add-new-comment')
-      const uuid = commentWrapper.getAttribute('highlight-id')
-      if (!status) {
-        this.annotation = await PDFJSAnnotate.getStoreAdapter().getAnnotation(this.documentId, uuid)
-      }
-      const topPos = parseInt(commentWrapper.style.top.substring(0, commentWrapper.style.top.length - 2))
-      const newComment = await PDFJSAnnotate.getStoreAdapter().addComment(
-        this.documentId,
-        this.annotation,
-        this.newComment,
-        this.selectedText,
-        topPos)
-      this.selectedText = null
-      console.log('New comment', newComment)
-      await this.undoHistory.push({ action: 'added', annotation: newComment })
-      this.updateUndoList()
-      await this.comments.push(newComment)
-      if (status == false) {
-        this.comments.forEach(cmt => {
-          if (cmt.uuid == uuid) {
-            cmt.isSaved = false
-            cmt.isSelected = true
-          }
-        })
-        this.commentsNotSaved.push(uuid)
-      } else {
-        this.comments.forEach(cmt => {
-          if (cmt.uuid == uuid) {
-            cmt.isSaved = true
-            cmt.isSelected = false
-          }
-        })
-      }
-      this.$forceUpdate()
-      await this.comments.sort(this.compareTopAnnoAttributes)
-      newComment.annotation.documentId = this.documentId
-
-      if (this.annotation.type == 'area') {
-        this.annotation.type = 'comment-area'
-        await this.updateTypeOfRect('comment-area', status)
-      }
-      if (this.annotation.type == 'point') {
-        this.$refs.toolBar?.handleAnnotationClicked(null)
-      }
-      this.disableToolbarButtons()
-
-      // Need to investigate on why #add-new-comment need to be hidden late
-      setTimeout(function() {
-        document.getElementById('add-new-comment').style.display = 'none'
-      }, 10)
-
-      if (status) {
-        var anno = {
-          DocumentId: this.documentId,
-          ReviewId: this.reviewId,
-          Type: this.annotation.type,
-          PageNum: typeof (this.annotation.pageNum) != 'undefined' ? this.annotation.pageNum : this.annotation.page,
-          Top: typeof (this.annotation.top) != 'undefined' ? this.annotation.top : parseInt(this.annotation.y),
-          Color: this.annotation.color,
-          Uuid: this.annotation.uuid,
-          Data: JSON.stringify(this.annotation),
-          Id: this.annotation.id
-        }
-
-        var newCmt = {
-          Text: newComment.text != null ? newComment.text : '',
-          Content: newComment.content,
-          TopPosition: newComment.topPosition,
-          Uuid: newComment.uuid,
-          Data: JSON.stringify(newComment)
-        }
-
-        reviewService.addInTextComment(this.documentId, this.reviewId, newCmt, anno).then(async rs => {
-          if (rs.data) {
-            this.updateCommentId(rs)
-          }
-        })
-      }
-
-      await this.updatePositionsAfterCommentAdded()
-      // await this.handleCommentPositionsRestore()
-      if (status) {
-        const target = this.getHighlightByCommentId(this.annotation.uuid)
-        this.handleCommentAnnotationClick(target)
-      }
-      this.newComment = ''
-      this.isAddingNewComment = false
-      console.log(this.isAddingNewComment)
-    },
-    // Begin migrating code from select.js to document.vue
-    async commentText(note) {
-      // Highlight the text first
-      if (typeof (note) == 'undefined') {
-        await this.highlightText('comment-highlight')
-      }
-      // if (!this.target) {
-      //   this.target = this.getHighlightByCommentId(this.annotation.uuid)
-      // }
-      // this.target = this.getHighlightByCommentId(this.annotation.uuid)
-      // Update positions of comment boxes
-      this.updateCommentPositions(note)
-      // Display add new form
-      this.displayAddNewCommentForm(note)
-      event.stopPropagation()
-    },
-    async highlightEvent(type) {
-      if (type == 'comment-highlight') {
-        await this.CommentText()
-      } else {
-        await this.highlightText(type)
-      }
-    },
-    updateCommentPositions(note) {
-      // const commentCardTemp = document.querySelectorAll('.comment-card')
-      // var commentCards = Array.prototype.slice.call(commentCardTemp)
-      // commentCards.sort(this.compareTopAttributes)
-      const commentCards = document.querySelectorAll('.comment-card')
-      const commentHighlights = document.querySelectorAll("g[data-pdf-annotate-type='comment-highlight']")
-      const commentPoints = document.querySelectorAll("svg[data-pdf-annotate-type='point']")
-      const commentAreas = document.querySelectorAll("rect[data-pdf-annotate-type='comment-area']")
-      const areaArr = Array.prototype.slice.call(commentAreas)
-      const highlightArr = Array.prototype.slice.call(commentHighlights)
-      var pointsArr = Array.prototype.slice.call(commentPoints)
-      var combineArr = highlightArr.concat(pointsArr)
-      combineArr = combineArr.concat(areaArr)
-      combineArr.sort(this.compareTopAttributes)
-      // Get order of the current highlight
-      if (this.annotation) {
-        this.target = this.getHighlightByCommentId(this.annotation.uuid)
-      }
-      this.order = combineArr.findIndex(item => {
-        return item.dataset.pdfAnnotateId == this.target.getAttribute('data-pdf-annotate-id')
-      })
-      this.hasSpace = this.hasEnoughSpace(commentCards, note)
-      if (!this.hasSpace) {
-        // Update comment positions
-
-        // get add new form's top position
-        const svg = this.svg
-        var rectTop = 0
-
-        if (typeof (note) == 'undefined') {
-          rectTop = parseInt(this.target.getAttribute('top')) * this.RENDER_OPTIONS.scale
-        } else {
-          rectTop = parseInt(note.y) * this.RENDER_OPTIONS.scale
-        }
-        // const rectTop = parseInt(this.target.style.top.substring(0, this.target.style.top.length - 2))
-        const svgHeight = parseInt(svg.getAttribute('height')) + 12
-        const svgPageNum = svg.getAttribute('data-pdf-annotate-page')
-        var svgTop = 0
-        if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * svgHeight) }
-        const topPos = parseInt(svgTop) + rectTop - 35
-        var endPos = topPos
-        var cmtSelected = document.querySelector('comment-card-selected')
-        if (cmtSelected) {
-          endPos += cmtSelected.offsetHeight
-        } else {
-          endPos += 126
-        }
-        if (this.order == 0) {
-          // Move down all comment cards
-          this.moveDownFromEndPos(commentCards, 0, endPos)
-        } else if (this.order == combineArr.length - 1) {
-          // Move up all comment cards
-          this.moveUpFromTopPos(commentCards, commentCards.length - 1, topPos)
-        } else {
-          // Move up commentCards[0] -> commentCards[i - 1]
-          const upperTop = parseInt(commentCards[this.order - 1].style.top.substring(0, commentCards[this.order - 1].style.top.length - 2))
-          const upperEnd = upperTop + commentCards[this.order - 1].offsetHeight
-          // Check if move up is necessary
-          if (upperEnd > (topPos - 10)) {
-            this.moveUpFromTopPos(commentCards, this.order - 1, topPos)
-            this.moveUpToEndPos(commentCards, this.order, endPos)
-          } else {
-            this.moveDownToTopPos(commentCards, this.order - 1, topPos)
-            this.moveDownFromEndPos(commentCards, this.order, endPos)
-          }
-          // Move down commentCards[i] -> commentCards[commentCards.length - 1]
-          var lowerTop = 0
-          if (typeof (note) == 'undefined') {
-            lowerTop = parseInt(commentCards[this.order].style.top.substring(0, commentCards[this.order].style.top.length - 2))
-          } else {
-            lowerTop = parseInt(note.y)
-          }
-          // const lowerTop = parseInt(commentCards[this.order].style.top.substring(0, commentCards[this.order].style.top.length - 2))
-          if (lowerTop < (endPos + 10)) {
-            this.moveDownFromEndPos(commentCards, this.order, endPos)
-          } else {
-            // Check if move up is necessary
-            const commentId = commentCards[this.order].getAttribute('highlight-id')
-            const g = this.getHighlightByCommentId(commentId)
-            let gTop = parseInt(g.getAttribute('top')) - 35
-            if (g.getAttribute('page-num') > 1) { gTop += ((g.getAttribute('page-num') - 1) * (parseInt(g.getAttribute('page-height')) + 12) * this.RENDER_OPTIONS.scale) }
-            if (lowerTop > gTop) {
-              this.moveUpToEndPos(commentCards, this.order, endPos)
-            }
-          }
-        }
-      }
-    },
-    async updatePositionsAfterCommentAdded() {
-      const newComment = document.querySelector(".comment-card[highlight-id='" + this.annotation.uuid + "']")
-      if (!this.hasSpace) {
-        // await this.comments.sort(this.compareTopAttributes)
-        const commentCardTemp = document.querySelectorAll('.comment-card')
-        var commentCards = Array.prototype.slice.call(commentCardTemp)
-        commentCards.sort(this.compareTopAttributes)
-        if (newComment) {
-          const endPos = parseInt(newComment.getAttribute('top-position')) + newComment.offsetHeight
-          if (this.order < (commentCards.length - 1)) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
-        }
-        // const endPos = parseInt(newComment.getAttribute('top-position')) + newComment.offsetHeight
-        // if (this.order < (commentCards.length - 1)) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
-      }
-      const that = this
-
-      const commentTextContainer = document.getElementById('comment-text-' + this.annotation.uuid)
-
-      if (commentTextContainer && commentTextContainer.clientHeight > (parseInt(window.getComputedStyle(commentTextContainer).lineHeight, 10) * 3)) {
-        commentTextContainer.style.webkitLineClamp = '3'
-        if (this.showMoreList.filter(item => item.id === this.annotation.uuid) == 0) {
-          this.showMoreList.push({ id: this.annotation.uuid, value: 0 })
-        }
-      }
-
-      if (newComment) {
-        newComment.addEventListener('click', function commentCardClick() {
-          that.handleCommentCardClick(this)
-        })
-      }
-    },
-    async updateCommentCardPosition(uuid) {
-      const newComment = document.querySelector(".comment-card[highlight-id='" + uuid + "']")
-
-      if (!this.hasSpace) {
-        const commentCards = document.querySelectorAll('.comment-card')
-        const endPos = parseInt(newComment.getAttribute('top-position')) + newComment.offsetHeight
-        if (this.order < (commentCards.length - 1)) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
-      }
-    },
-    displayAddNewCommentForm(note) {
-      this.isAddingNewComment = true
-      const newCommentWrapper = document.getElementById('add-new-comment')
-      newCommentWrapper.style.visibility = 'visible'
-      var rectTop = 0
-      if (note) {
-        rectTop = parseInt(note.y) * this.RENDER_OPTIONS.scale
-        newCommentWrapper.setAttribute('highlight-id', note.uuid)
-      } else {
-        rectTop = parseInt(this.target.getAttribute('top')) * this.RENDER_OPTIONS.scale
-        newCommentWrapper.setAttribute('highlight-id', this.target.getAttribute('data-pdf-annotate-id'))
-      }
-      if (this.target.getAttribute('page-num')) {
-        this.svg = document.querySelector(`svg[data-pdf-annotate-page='${this.target.getAttribute('page-num')}']`)
-      }
-      const svg = this.svg
-      const svgHeight = svg.getAttribute('height')
-      const svgPageNum = svg.getAttribute('data-pdf-annotate-page')
-      let svgTop = 0
-      if (svgPageNum > 1) { svgTop += ((svgPageNum - 1) * (parseInt(svgHeight) + 12)) }
-      var topPos = svgTop + rectTop - 35
-      newCommentWrapper.style = 'width: 100%; position: absolute; left: -20px; top: ' + topPos + 'px;'
-      this.hideTextToolBar()
-      this.hideTextToolGroup()
-      this.hideRectToolBar()
-      this.hideDeleteToolBar()
-      this.hideColorPickerTool()
-      const textArea = document.getElementById('comment-text-area')
-      textArea.focus()
-      this.inputHeight = parseInt(textArea.style.height.substring(0, textArea.style.height.length - 2))
-      const that = this
-      textArea.addEventListener('keydown', function() {
-        const commentCards = document.querySelectorAll('.comment-card')
-        if (commentCards.length > 0) {
-          setTimeout(function() {
-            const newHeight = parseInt(textArea.style.height.substring(0, textArea.style.height.length - 2))
-            const newCommentWrapper = document.getElementById('add-new-comment')
-            const topPos = parseInt(newCommentWrapper.style.top.substring(0, newCommentWrapper.style.top.length - 2))
-            const endPos = topPos + newCommentWrapper.offsetHeight
-            if (that.inputHeight < newHeight) {
-              if (that.order <= commentCards.length - 1) { that.moveDownFromEndPos(commentCards, that.order, endPos) }
-            } else if (that.inputHeight > newHeight) {
-              if (that.order < commentCards.length) { that.moveUpToEndPos(commentCards, that.order, endPos) }
-            }
-            that.inputHeight = newHeight
-          }, 100)
-        }
-      })
-    },
-    async cancelCommentText(e, comment) {
-      this.isEditing = null
-      if (e == 'edit') {
-        if (this.newComment.replace(/\s/g, '').length != 0) {
-        // Save in-progress comment
-          await this.addCommentText(false)
-        }
-        if (!comment.isSaved) {
-          const documentId = this.documentId
-          if (comment.annotation.type != 'comment-area' && comment.annotation.type != 'area') {
-            await PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, comment.annotation.uuid, true)
-              .then((isDeleted) => {
-                if (isDeleted) {
-                // remove highlight in UI
-                  document.querySelector("[data-pdf-annotate-id='" + comment.annotation.uuid + "']").remove()
-                  if (document.querySelector("[data-target-id='" + comment.annotation.uuid + "']")) {
-                    document.querySelector("[data-target-id='" + comment.annotation.uuid + "']").remove()
-                  }
-                }
-              })
-          } else {
-            const draftCommentText = document.querySelector('[draft-comment-id]')
-            if (draftCommentText) {
-              const draftUuid = draftCommentText.getAttribute('draft-comment-id')
-              if (document.querySelector("[data-pdf-annotate-id='" + draftUuid + "']")) {
-                document.querySelector("[data-pdf-annotate-id='" + draftUuid + "']").remove()
-              }
-            }
-            const target = this.getHighlightByCommentId(comment.uuid)
-            target.setAttribute('data-pdf-annotate-type', 'area')
-          }
-
-          await PDFJSAnnotate.getStoreAdapter().deleteComment(this.documentId, comment.uuid, false)
-          this.comments = await PDFJSAnnotate.getStoreAdapter().getComments(this.documentId)
-          this.commentsNotSaved.splice(this.commentsNotSaved.indexOf(comment.uuid), 1)
-          await this.comments.forEach(function(element) {
-            element.isSelected = false
-            element.isSaved = true
-          })
-
-          if (this.commentsNotSaved) {
-            this.comments.forEach(cmt => {
-              this.commentsNotSaved.forEach(el => {
-                if (el == cmt.uuid) {
-                  cmt.isSaved = false
-                  cmt.isSelected = true
-                }
-              })
-            })
-          }
-          this.$forceUpdate()
-
-          await this.comments.sort(this.compareTopAnnoAttributes)
-          await this.handleCommentPositionsRestore()
-          this.disableToolbarButtons()
-        } else {
-          this.comments.forEach(cmt => {
-            if (cmt.uuid == comment.uuid) {
-              cmt.isSelected = false
-            }
-          })
-          this.$forceUpdate()
-          comment.content = this.preEditedAnno.content
-          this.svg = document.querySelector(`svg[data-pdf-annotate-page='${comment.annotation.page}']`)
-          const target = this.getHighlightByCommentId(comment.uuid)
-          if (target) {
-            this.handleCommentAnnotationClick(target)
-          } else {
-            this.updateCommentPositions()
-          }
-        }
-      } else {
-        this.newComment = ''
-        const documentId = this.documentId
-
-        const newCommentWrapper = document.getElementById('add-new-comment')
-        const uuid = newCommentWrapper.getAttribute('highlight-id')
-        const topPos = parseInt(newCommentWrapper.style.top.substring(0, newCommentWrapper.style.top.length - 2))
-        const endPos = topPos + newCommentWrapper.offsetHeight
-        newCommentWrapper.style.display = 'none'
-        this.isAddingNewComment = false
-        const commentCards = document.querySelectorAll('.comment-card')
-        if (commentCards.length > 0) {
-          if (this.order <= (commentCards.length - 1)) {
-            this.moveUpToEndPos(commentCards, this.order, topPos)
-            if (this.order > 0) {
-              const orderTopPos = this.comments[this.order].topPosition
-              // parseInt(commentCards[this.order].style.top.substring(0, commentCards[this.order].style.top.length - 2));
-              this.moveDownToTopPos(commentCards, this.order - 1, orderTopPos)
-            }
-          }
-          if (this.order == commentCards.length) {
-            this.moveDownToTopPos(commentCards, this.order - 1, endPos)
-          }
-        }
-        if (this.annotation && this.annotation.type != 'area' && this.annotation.type != 'comment-area') {
-          // Delete annotation and text selection
-          PDFJSAnnotate.getStoreAdapter().deleteAnnotation(documentId, this.annotation.uuid, true)
-            .then((isDeleted) => {
-              if (isDeleted) {
-                // remove highlight in UI
-                document.querySelector("[data-pdf-annotate-id='" + this.annotation.uuid + "']").remove()
-                if (document.querySelector("[data-target-id='" + this.annotation.uuid + "']")) {
-                  document.querySelector("[data-target-id='" + this.annotation.uuid + "']").remove()
-                }
-                this.annotation = null
-              }
-            })
-        } else {
-          const draftCommentText = document.querySelector('[draft-comment-id]')
-          if (draftCommentText) {
-            const draftUuid = draftCommentText.getAttribute('draft-comment-id')
-            if (document.querySelector("[data-pdf-annotate-id='" + draftUuid + "']")) {
-              document.querySelector("[data-pdf-annotate-id='" + draftUuid + "']").remove()
-            }
-          }
-          const target = this.getHighlightByCommentId(uuid)
-          target.setAttribute('data-pdf-annotate-type', 'area')
-        }
-        this.disableToolbarButtons()
-      // Remove the annotation
-      }
-    },
-    unselectHighlightComment() {
-      const selectedHighlight = document.getElementsByClassName('comment-highlight-selected')
-      if (selectedHighlight.length > 0) { selectedHighlight[0].classList.remove('comment-highlight-selected') }
-      const selectedRect = document.getElementsByClassName('rectangle-selected')
-      if (selectedRect.length > 0) { selectedRect[0].classList.remove('rectangle-selected') }
-      const selectedComment = document.getElementsByClassName('comment-card-selected')
-      if (selectedComment.length > 0) { selectedComment[0].classList.remove('comment-card-selected') }
     },
     moveUpFromTopPos(commentCards, startIndex, topPos) {
       const g = this.getHighlightByCommentId(this.comments[startIndex].uuid)
@@ -2765,23 +1766,6 @@ export default {
         return false
       }
       return true
-    },
-    compareTopAttributes(a, b) {
-      let top1 = parseInt(a.getAttribute('top')) * this.RENDER_OPTIONS.scale
-      if (a.getAttribute('page-num') > 1) { top1 += ((a.getAttribute('page-num') - 1) * (parseInt(a.getAttribute('page-height'))) * this.RENDER_OPTIONS.scale + 12) }
-
-      let top2 = parseInt(b.getAttribute('top')) * this.RENDER_OPTIONS.scale
-      if (b.getAttribute('page-num') > 1) { top2 += ((b.getAttribute('page-num') - 1) * (parseInt(b.getAttribute('page-height'))) * this.RENDER_OPTIONS.scale + 12) }
-      if (top1 > top2) return 1
-      if (top2 > top1) return -1
-      if (top2 == top1) {
-        // compare order attributes
-        const left1 = parseInt(a.getAttribute('left'))
-        const left2 = parseInt(b.getAttribute('left'))
-        if (left1 > left2) return 1
-        if (left2 > left1) return -1
-      }
-      return 0
     },
     compareTopAnnoAttributes(a, b) {
       let top1 = a.annotation.top * this.RENDER_OPTIONS.scale
@@ -3602,7 +2586,7 @@ export default {
       this.$refs.tabRubric?.disableRubric()
       document.getElementById('viewerContainer').style.userSelect = 'none'
       this.$refs.toolBar?.disableAnnotationCreate()
-      disableEdit()
+      // disableEdit()
       this.isView = true
     },
     isInShowMoreList(e) {
@@ -3747,7 +2731,8 @@ export default {
   overflow: auto !important;
 }
 .comment-card >.el-card__header, .add-new-comment >.el-card__header {
-  background: #b3d4f4;
+  /* background: #b3d4f4; */
+  padding: 0px !important;
 }
 
 @keyframes cursor-blink {

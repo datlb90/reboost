@@ -51,8 +51,13 @@ body {
 	border: 1px solid #cfcfd0;
 }
 
-.comment-highlight-selected {
+.vocabulary-highlight-selected {
 	fill: blue;
+	fill-opacity: 0.4;
+}
+
+.grammar-highlight-selected {
+	fill: red;
 	fill-opacity: 0.4;
 }
 

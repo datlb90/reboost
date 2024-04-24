@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { type } from 'jquery'
 import uuid from '../utils/uuid'
 import StoreAdapter from './StoreAdapter'
 
@@ -38,7 +39,7 @@ export default class LocalStoreAdapter extends StoreAdapter {
       },
 
       editAnnotation(documentId, annotationId, annotation) {
-        return new Promise(async(resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
           var annotations = getAnnotations(documentId, annotation.pageNum)
           annotations[findAnnotation(documentId, annotationId)] = annotation
           await updateAnnotations(documentId, annotations)
@@ -81,21 +82,23 @@ export default class LocalStoreAdapter extends StoreAdapter {
         })
       },
 
-      addComment(documentId, annotation, content, selectedText, topPos, id) {
+      addComment(documentId, annotation, text, type, category, comment, topPos, id) {
         return new Promise((resolve, reject) => {
-          const comment = {
+          const newComment = {
             class: 'Comment',
             uuid: annotation.uuid,
             annotation: annotation,
-            content: content,
-            text: selectedText,
+            comment: comment,
+            text: text,
+            type: type,
+            category: category,
             topPosition: topPos,
             id: id
           }
           const annotations = getAnnotations(documentId)
-          annotations.push(comment)
+          annotations.push(newComment)
           updateAnnotations(documentId, annotations)
-          resolve(comment)
+          resolve(newComment)
         })
       },
 
@@ -147,7 +150,7 @@ export default class LocalStoreAdapter extends StoreAdapter {
       loadAnnotations(docId, { annotations, comments }) {
         localStorage.setItem(`${docId}/annotations`, JSON.stringify(annotations))
         comments.forEach(cmt => {
-          this.addComment(cmt.documentId, cmt.annotation, cmt.content, cmt.text, cmt.topPosition, cmt.id)
+          this.addComment(cmt.documentId, cmt.annotation, cmt.text, cmt.type, cmt.category, cmt.comment, cmt.topPosition, cmt.id)
         })
       }
     })

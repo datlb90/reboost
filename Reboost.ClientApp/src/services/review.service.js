@@ -1,6 +1,9 @@
 import http from '@/utils/axios'
 
 const reviewService = {
+  getErrorsInText(model) {
+    return http.post('/review/ai/feedback/errors/intext', model).then(rs => rs.data)
+  },
   getAIFeedbackForCriteriaV4(model) {
     return http.post('/review/ai/feedback/criteria/v4', model).then(rs => rs.data)
   },

@@ -2,7 +2,7 @@
   box-sizing: border-box;
 }
 
-.tool-group-buttons-container{
+.tool-group-buttons-container {
   overflow: hidden;
   position: relative;
   display: -webkit-box;
@@ -10,12 +10,12 @@
   flex-wrap: nowrap;
 }
 
-.tool-group-button{
+.tool-group-button {
   display: flex;
   min-width: 45px;
-    scroll-behavior: smooth;
-    height: 100%;
-    align-items: center;
+  scroll-behavior: smooth;
+  height: 100%;
+  align-items: center;
 }
 
 .toolbar {
@@ -25,42 +25,42 @@
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
   height: 40px;
-  padding: 0 5px;
+  padding: 0 0px;
 }
 
-.toolbar-btn-wrapper{
+.toolbar-btn-wrapper {
   margin: 0 6px;
 }
 
-.toolbar-btn{
-    padding: 0;
-    border: none;
-    background-color: transparent;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    border-radius: 4px;
-    width: 32px;
-    height: 32px;
-    color: #485056;
+.toolbar-btn {
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  color: #485056;
 }
 
-.toolbar-btn:hover:enabled{
+.toolbar-btn:hover:enabled {
   border-radius: 4px;
   background: #d5dde4;
 }
 
-.icon{
-    width: 20px;
-    height: 18px;
-    pointer-events: none;
-    color: #868e96;
+.icon {
+  width: 20px;
+  height: 18px;
+  pointer-events: none;
+  color: #868e96;
 }
 
-.toolbar-icon{
-  color: #868e96; 
+.toolbar-icon {
+  color: #868e96;
   font-size: 16px;
 }
 
