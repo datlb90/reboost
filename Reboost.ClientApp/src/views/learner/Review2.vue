@@ -598,6 +598,27 @@ export default {
         essay: this.documentText,
         feedbackLanguage: this.review.reviewRequest.feedbackLanguage
       }
+
+      // const results = await Promise.all([reviewService.getVocabularyErrorsInText(model), reviewService.getGrammarErrorsInText(model)])
+      // // .then(function (results) {
+
+      // // })
+
+      // const vocabErrors = results[0].errors
+      // console.log('Vocab errors:', vocabErrors)
+      // const grammarErrors = results[1].errors
+      // console.log('Grammar errors:', grammarErrors)
+
+      // const errors = [...vocabErrors]
+      // grammarErrors.forEach(grammarError => {
+      //   if (!errors.some(e => e.error == grammarError.error)) {
+      //     errors.push(grammarError)
+      //   }
+      // })
+
+      // this.errors = errors
+      // console.log('All errors:', this.errors)
+
       const response = await reviewService.getErrorsInText(model)
       this.errors = response.errors
     } else {
@@ -1551,6 +1572,14 @@ export default {
       })
       this.hideDeleteToolBar()
       return comments
+    },
+    unselectHighlightComment() {
+      const selectedHighlight = document.getElementsByClassName('comment-highlight-selected')
+      if (selectedHighlight.length > 0) { selectedHighlight[0].classList.remove('comment-highlight-selected') }
+      const selectedRect = document.getElementsByClassName('rectangle-selected')
+      if (selectedRect.length > 0) { selectedRect[0].classList.remove('rectangle-selected') }
+      const selectedComment = document.getElementsByClassName('comment-card-selected')
+      if (selectedComment.length > 0) { selectedComment[0].classList.remove('comment-card-selected') }
     },
     moveUpFromTopPos(commentCards, startIndex, topPos) {
       const g = this.getHighlightByCommentId(this.comments[startIndex].uuid)

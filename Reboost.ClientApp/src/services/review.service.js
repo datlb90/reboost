@@ -1,6 +1,12 @@
 import http from '@/utils/axios'
 
 const reviewService = {
+  getVocabularyErrorsInText(model) {
+    return http.post('/review/ai/vocabulary/errors/intext', model).then(rs => rs.data)
+  },
+  getGrammarErrorsInText(model) {
+    return http.post('/review/ai/grammar/errors/intext', model).then(rs => rs.data)
+  },
   getErrorsInText(model) {
     return http.post('/review/ai/feedback/errors/intext', model).then(rs => rs.data)
   },

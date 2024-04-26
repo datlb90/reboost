@@ -26,6 +26,8 @@ namespace Reboost.Service.Services
 {
     public interface IChatGPTService
     {
+        Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model);
+        Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model);
         Task<ErrorsInText> getErrorsInText(CriteriaFeedbackModel model);
         // Version 1.4
         Task<string> getAIFeedbackForCriteriaV4(CriteriaFeedbackModel model);
@@ -64,80 +66,188 @@ namespace Reboost.Service.Services
             try
             {
                 OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
-                string topic = "";
-                string response = "";
-                if (model.topic == "The writing topic is not provided")
-                {
-                    if (model.task == "Academic Writing Task 1")
-                    {
-                        response = "Given the following IELTS Academic Writing Task 1 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
-                    }
-                    else // Academic Writing Task 2
-                    {
-                        response = "Given the following IELTS Academic Writing Task 2 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
-                    }
-                }
-                else
-                {
-                    if (model.task == "Academic Writing Task 1")
-                    {
-                        topic = "Given the following IELTS Academic Writing Task 1 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
-                        if (!String.IsNullOrEmpty(model.chartDescription))
-                        {
-                            topic += model.chartDescription;
-                        }
-                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+                string response = "Given the following writing essay:\r\n\r\n" + model.essay + "\r\n\r\n";
 
-                    }
-                    else // Academic Writing Task 2
-                    {
-                        topic = "Given the following IELTS Academic Writing Task 2 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
-                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
-                    }
-                }
-
-                string request = "Provide a JSON object that contains a list called errors. Objects in this list represent 10 errors or issues in the essay. Each object contains the following properties:\r\n- error: A word or a phrase in the essay that can be improved\r\n- type: The type of the error. It can be either “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- fix: the fix for the word or phrases \r\n- reason: the reason why the fix is better. Written in Vietnamese.\r\n";
-                // "Provide a JSON object that contains a list of 10 objects called errors. Each object in the list contains the following properties:\r\n\r\n- error: A word or a phrase in the essay that can be improved\r\n- type: The type of the error. It can be either “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- fix: the fix for the word or phrases \r\n- reason: the reason why the fix is better. Written in Vietnamese.\r\n";
-                // "Provide a JSON object that contains a list of 10 objects called errors. Each object in the list contains the following properties:\r\n\r\n- error: A word or a phrase in the essay that can be improved\r\n- position: the ordinal number of the first character of the word or phrase as it appears in the essay. \r\n- type: The type of the error. It can be either “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- fix: the fix for the word or phrases \r\n- reason: the reason why the fix is better. Written in Vietnamese.\r\n";
-                // "Provide a JSON object that contains a list of 10 objects called errors. Each object in the list contains the following properties:\r\n\r\n- error: A word or a phrase in the essay that can be improved\r\n- position: the orginal number of the first character of the word or phrase as it appears in the essay. \r\n- type: The type of the error. It can be either “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- fix: the fix for the word or phrases \r\n- reason: the reason why the fix is better. Written in Vietnamese.\r\n";
-                // "Provide a JSON object that contains a list of 10 objects called errors. Each object in the list contains the following properties:\r\n\r\n- error: A word or a phrase in the essay that can be improved\r\n- type: The type of the error. It can be either “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- fix: the fix for the word or phrases \r\n- reason: the reason why the fix is better. Written in Vietnamse\r\n";
+                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake. \r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error. \r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The replacement for the word or phrase.\r\n";
                 if (model.feedbackLanguage != "vn")
-                    request = "Provide a JSON object that contains a list called errors. Objects in this list represent 10 errors or issues in the essay. Each object contains the following properties:\r\n- error: A word or a phrase in the essay that can be improved\r\n- type: The type of the error. It can be either “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- fix: the fix for the word or phrases \r\n- reason: the reason why the fix is better.\r\n";
-                // "Provide a JSON object that contains a list of 10 objects called errors. Each object in the list contains the following properties:\r\n\r\n- error: A word or a phrase in the essay that can be improved\r\n- type: The type of the error. It can be either “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- fix: the fix for the word or phrases \r\n- reason: the reason why the fix is better.\r\n";
-                // "Provide a JSON object that contains a list of 10 objects called errors. Each object in the list contains the following properties:\r\n\r\n- error: A word or a phrase in the essay that can be improved\r\n- position: the ordinal number of the first character of the word or phrase as it appears in the essay. \r\n- type: The type of the error. It can be either “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- fix: the fix for the word or phrases \r\n- reason: the reason why the fix is better.\r\n";
-                // "Provide a JSON object that contains a list of 10 objects called errors. Each object in the list contains the following properties:\r\n\r\n- error: A word or a phrase in the essay that can be improved\r\n- position: the orginal number of the first character of the word or phrase as it appears in the essay. \r\n- type: The type of the error. It can be either “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- fix: the fix for the word or phrases \r\n- reason: the reason why the fix is better.\r\n";
-                // "Provide a JSON object that contains a list of 10 objects called errors. Each object in the list contains the following properties:\r\n\r\n- error: A word or a phrase in the essay that can be improved\r\n- type: The type of the error. It can be either “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- fix: the fix for the word or phrases \r\n- reason: the reason why the fix is better.\r\n";
-             
+                    request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake. \r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error. \r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
+                ErrorsInText result = new ErrorsInText();
+                List<ErrorInText> errors = new List<ErrorInText>();
+
+                // Get vocabulary error first
+                var errorResponse = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = Model.GPT4_Turbo,
+                    ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
+                    Temperature = 0.1,
+                    Messages = new ChatMessage[] {
+                        new ChatMessage(ChatMessageRole.Assistant, response),
+                        new ChatMessage(ChatMessageRole.User, request)
+                    }
+                });
+
+                ErrorsInText errorResult = JsonConvert.DeserializeObject<ErrorsInText>(errorResponse.Choices[0].Message.TextContent);
+                
+                if (errorResult != null)
+                {
+                    foreach (ErrorInText error in errorResult.errors)
+                    {
+                        if (!errors.Any(e => e.error == error.error))
+                        {
+                            if (!error.comment.Contains(error.fix))
+                            {
+                                if (error.comment.EndsWith('.'))
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += " Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += " Thay thế bằng: '" + error.fix + "'";
+                                }
+                                else
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += ". Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += ". Thay thế bằng: '" + error.fix + "'";
+                                }
+                            }
+                            errors.Add(error);
+                        }
+                    }
+                }
+
+                result.errors = errors;
+                return result;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
+        public async Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string response = "Given the following writing essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                string grammarRequest = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with grammar mistake.\r\n- category: The category of the error. This can be: “verb tense mistake”, “subject-verb agreement”, “sentence structure”, “article errors”, “preposition mistake”, or “punctuation misuse”. \r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The replacement for the word or phrase.\r\n";
+
+                if (model.feedbackLanguage != "vn")
+                    grammarRequest = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with grammar mistake.\r\n- category: The category of the error. This can be: “verb tense mistake”, “subject-verb agreement”, “sentence structure”, “article errors”, “preposition mistake”, or “punctuation misuse”. \r\n- comment: Explain the issue. \r\n- fix: The replacement for the word or phrase.\r\n";
+
+                var grammarResponse = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    // Use GPT-4 for essay with grammar score > 7
+                    Model = Model.GPT4_Turbo, // model.grammarScore <= 7 ? Model.ChatGPTTurbo : Model.GPT4_Turbo,
+                    ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
+                    Temperature = 0.1,
+                    Messages = new ChatMessage[] {
+                             new ChatMessage(ChatMessageRole.Assistant, response),
+                            new ChatMessage(ChatMessageRole.User, grammarRequest)
+                        }
+                });
+
+                ErrorsInText grammarResult = JsonConvert.DeserializeObject<ErrorsInText>(grammarResponse.Choices[0].Message.TextContent);
+                List<ErrorInText> errors = new List<ErrorInText>();
+                if (grammarResult != null)
+                {
+                    foreach (ErrorInText error in grammarResult.errors)
+                    {
+                        if (!errors.Any(e => e.error == error.error))
+                        {
+                            error.type = "grammar";
+                            if (!error.comment.Contains(error.fix))
+                            {
+                                if (error.comment.EndsWith('.'))
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += " Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += " Thay thế bằng: '" + error.fix + "'";
+                                }
+                                else
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += ". Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += ". Thay thế bằng: '" + error.fix + "'";
+                                }
+                            }
+                            errors.Add(error);
+                        }
+                    }
+                    grammarResult.errors = errors;
+                }
+                return grammarResult;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
+        public async Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string response = "Given the following writing essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary mistake. \r\n- category: The category of the error. This can be: “limited range”, “word choice”, “collocation”, “vague term”, or “misuse of idioms or phrases”.\r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The replacement for the word or phrase.\r\n";
+
+                if (model.feedbackLanguage != "vn")
+                    request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary mistake.\r\n- category: The category of the error. This can be: “limited range”, “word choice”, “collocation”, “vague term”, or “misuse of idioms or phrases”.\r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
 
                 var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
-                    Model = Model.ChatGPTTurbo,
+                    Model = Model.GPT4_Turbo,
                     ResponseFormat  = ChatRequest.ResponseFormats.JsonObject,
                     Temperature = 0.1,
                     Messages = new ChatMessage[] {
-                            new ChatMessage(ChatMessageRole.Assistant, topic),
                              new ChatMessage(ChatMessageRole.Assistant, response),
                             new ChatMessage(ChatMessageRole.User, request)
                         }
                 });
 
                 ErrorsInText result = JsonConvert.DeserializeObject<ErrorsInText>(taskResponseResult.Choices[0].Message.TextContent);
-
-                if(result != null)
+                List<ErrorInText> errors = new List<ErrorInText>();
+                if (result != null)
                 {
-                    result.errors.OrderBy(e => e.position);
-                    foreach(ErrorInText error in result.errors)
+                    foreach (ErrorInText error in result.errors)
                     {
-                        error.comment = error.reason + " Nên sửa thành: '" + error.fix + "'";
-                        if (model.feedbackLanguage != "vn")
-                            error.comment = error.reason + " Replace with: '" + error.fix + "'";
+                        if(!errors.Any(e => e.error == error.error))
+                        {
+                            error.type = "vocabulary";
+                            if (!error.comment.Contains(error.fix))
+                            {
+                                if (error.comment.EndsWith('.'))
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += " Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += " Thay thế bằng: '" + error.fix + "'";
+
+                                }
+                                else
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += ". Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += ". Thay thế bằng: '" + error.fix + "'";
+                                }
+                            }
+                            errors.Add(error);
+                        }
                     }
+                    result.errors = errors;
                 }
                 return result;
             }
             catch (Exception e)
             {
-                return null;
+                 return null;
             }
         }
 
