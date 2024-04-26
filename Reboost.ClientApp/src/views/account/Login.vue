@@ -152,16 +152,16 @@ export default {
       this.googleFormAction = 'api/auth/external/google/learner?returnUrl=/'
       this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=/'
     }
-
-    const that = this
-    document.addEventListener('keydown', function (e) {
-      if (e.code === 'Enter') {
-        that.signIn()
-      }
-    })
+    document.addEventListener('keydown', this.pressEnterToLogin)
   },
   methods: {
     ...mapActions('auth', ['login']),
+    pressEnterToLogin(e) {
+      if (e.code === 'Enter') {
+        console.log(e.code)
+        this.signIn()
+      }
+    },
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
     },
@@ -169,6 +169,7 @@ export default {
       this.$refs.googleLoginForm.submit()
     },
     async signIn() {
+      document.removeEventListener('keydown', this.pressEnterToLogin)
       document.activeElement.blur()
       this.$store.dispatch('auth/logout')
       this.loading = true

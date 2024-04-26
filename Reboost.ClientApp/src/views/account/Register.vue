@@ -194,15 +194,16 @@ export default {
       this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=/'
     }
 
-    const that = this
-    document.addEventListener('keydown', function (e) {
-      if (e.code === 'Enter') {
-        that.signUp()
-      }
-    })
+    document.addEventListener('keydown', this.pressEnterToLogin)
   },
   methods: {
     ...mapActions('auth', ['register']),
+    pressEnterToLogin(e) {
+      if (e.code === 'Enter') {
+        console.log(e.code)
+        this.signIn()
+      }
+    },
     submitFacebookLoginForm() {
       this.$refs.facebookLoginForm.submit()
     },
@@ -210,6 +211,7 @@ export default {
       this.$refs.googleLoginForm.submit()
     },
     async signUp() {
+      document.removeEventListener('keydown', this.pressEnterToLogin)
       document.activeElement.blur()
       this.$refs['formSignUp'].validate(async valid => {
         if (valid) {
