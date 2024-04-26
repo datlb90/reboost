@@ -3,20 +3,20 @@
     v-if="screenWidth > 780"
     id="practiceWritingCheckoutContainer"
     :visible.sync="dlVisible"
-    width="760px"
+    width="620px"
     height="820px"
     @closed="dialogClosed"
   >
     <div slot="title">
-      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Nhận Phản Hồi Cho Bài Viết</div>
+      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Lựa Chọn Ngôn Ngữ Phản Hồi</div>
     </div>
     <div class="dialog-body">
       <div style="padding: 20px; padding-top: 20px;">
-        <div v-if="selectedReview == ''" class="tip">
-          <span style="font-size: 15px; color: #6084a4;"> Nhận phản hồi là cách tốt nhất giúp bạn tiến bộ, hãy lựa chọn 1 phản hồi thích hợp dưới đây:</span>
-        </div>
-        <el-page-header v-if="selectedReview == 'Pro'" class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
-        <el-page-header v-if="selectedReview == 'Free' || selectedReview == 'AI'" class="tip" content="Xác nhận lựa chọn của bạn và gửi yêu cầu chấm bài" @back="goBack" />
+        <!-- <div class="tip">
+          <span style="font-size: 15px; color: #6084a4;">Xác nhận lựa chọn cho ngôn ngữ phản hồi</span>
+        </div> -->
+        <!-- <el-page-header v-if="selectedReview == 'Pro'" class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
+        <el-page-header v-if="selectedReview == 'Free' || selectedReview == 'AI'" class="tip" content="Xác nhận lựa chọn của bạn và gửi yêu cầu chấm bài" @back="goBack" /> -->
 
         <div v-if="selectedReview == '' || selectedReview == 'Pro'" id="pro-review-card" class="box-card review-card" style="height: 140px;" @click="onReviewSelect('Pro')">
           <div>
@@ -37,14 +37,12 @@
 
         <div v-if="selectedReview == '' || selectedReview == 'AI'" id="ai-review-card" class="box-card review-card" @click="onReviewSelect('AI')">
           <div>
-            <div class="review-icon-wrapper"><i class="fas fa-robot review-icon" /></div>
+            <div class="review-icon-wrapper"><i class="el-icon-chat-line-square review-icon" /></div>
             <div class="review-description-wrapper">
-              <!-- <div class="review-title">Instant Feedback from AI Rater</div> -->
-              <div class="review-title">Phản Hồi Nhanh và Chi Tiết Từ ChatGPT-4</div>
+
+              <div class="review-title">Phản Hồi Chi Tiết Từ AI</div>
               <div class="review-description">
-                Nhận phản hồi nhanh chóng, chi tiết, và chính xác cho bài viết của bạn từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4.
-                <!-- (<a href="#">đánh giá mẫu</a>) -->
-                <!-- Get insighful feedback and score from our powerful writing review AI within seconds (<a href="#">sample feedback</a>) -->
+                Nhận phản hồi chi tiết, chuyên sâu, và chính xác cho bài viết của bạn từ hệ thống chấm bài tự động.
               </div>
             </div>
             <div class="review-price">Miễn phí</div>
@@ -82,14 +80,14 @@
       <div v-show="selectedReview == 'Pro' || (selectedReview == 'AI' && !requestedLanguage)" style="padding: 20px; padding-top: 0px;">
         <div>
           <div>
-            <el-divider>
+            <!-- <el-divider>
               <div class="review-title">
-                Yêu cầu cho phản hồi
+                Lựa chọn ngôn ngữ cho phản hồi
               </div>
-            </el-divider>
+            </el-divider> -->
             <div>
               <div style="text-align: center;">
-                <el-radio-group v-if="!requestedLanguage" v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;">
+                <el-radio-group v-if="!requestedLanguage" v-model="feedbackLanguage" style="margin-top: 20px; margin-bottom: 10px;">
                   <el-radio-button label="Phản hồi bằng tiếng Việt" />
                   <el-radio-button label="Phản hồi bằng tiếng Anh" />
                 </el-radio-group>
@@ -128,7 +126,7 @@
       </div>
 
       <div v-if="selectedReview == 'Free'|| selectedReview == 'AI'">
-        <div style="padding-top: 20px; text-align: center;">
+        <div style="padding-top: 0px; text-align: center;">
           <el-button v-if="selectedReview == 'Free'" type="primary" :loading="loading" @click="requestReview()">Xác nhận</el-button>
           <el-button v-else :loading="loading" @click="requestReview()">Xác nhận</el-button>
         </div>
@@ -145,15 +143,15 @@
     @closed="dialogClosed"
   >
     <div slot="title">
-      <div style="padding: 0px 20px; font-size: 18px; text-align:center;">Nhận Phản Hồi Cho Bài Viết</div>
+      <div style="padding: 0px 20px; font-size: 18px; text-align:center;">Lựa Chọn Ngôn Ngữ Phản Hồi</div>
     </div>
     <div class="dialog-body">
       <div>
-        <div v-if="selectedReview == ''" class="tip">
+        <!-- <div v-if="selectedReview == ''" class="tip">
           <span style="font-size: 15px; color: #6084a4; word-break: break-word;">Cảm ơn bạn đã gửi bài viết cho chúng tôi! Để nhận phản hồi, hãy chọn 1 trong các dịch vụ dưới đây:</span>
         </div>
         <el-page-header v-if="selectedReview == 'Pro' " class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
-        <el-page-header v-if="selectedReview == 'Free' || selectedReview == 'AI'" class="tip" content="Hãy xác nhận lựa chọn của bạn và gửi yêu cầu chấm bài" @back="goBack" />
+        <el-page-header v-if="selectedReview == 'Free' || selectedReview == 'AI'" class="tip" content="Hãy xác nhận lựa chọn của bạn và gửi yêu cầu chấm bài" @back="goBack" /> -->
 
         <div v-if="selectedReview == '' || selectedReview == 'Pro'" id="pro-review-card" class="box-card review-card-mobile" @click="onReviewSelect('Pro')">
           <div>
@@ -174,14 +172,15 @@
 
         <div v-if="selectedReview == '' || selectedReview == 'AI'" id="ai-review-card" class="box-card review-card-mobile" @click="onReviewSelect('AI')">
           <div>
-            <div class="pricing-title-wrapper">
-              <div class="pricing-option-icon"><i class="fas fa-robot review-icon" /></div>
-              <div class="pricing-option-title">Phản Hồi Nhanh Từ ChatGPT-4</div>
+            <div class="pricing-title-wrapper" style="margin-bottom: 10px;">
+              <div class="pricing-option-icon"><i class="el-icon-chat-line-square review-icon" /></div>
+              <div class="pricing-option-title" style="margin-top: 5px;">Phản Hồi Chi Tiết Từ AI</div>
             </div>
             <div>
-              <div class="pricing-option-description">
+              <div class="pricing-option-description" style="margin-bottom: 15px;">
                 <!-- Nhận phản hồi ngay lập tức và chính xác về bài viết của mình từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4. <a href="#">Xem phản hồi mẫu</a> -->
-                Nhận phản hồi nhanh chóng, chi tiết, và chính xác cho bài viết của bạn từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4.
+                <!-- Nhận phản hồi nhanh chóng, chi tiết, và chính xác cho bài viết của bạn từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4. -->
+                Nhận phản hồi chi tiết, chuyên sâu, và chính xác cho bài viết của bạn từ hệ thống chấm bài tự động.
               </div>
             </div>
             <div class="pricing-option-price" style="width: 90px;">Miễn Phí</div>
@@ -216,11 +215,6 @@
       <div v-show="selectedReview == 'Pro' || (selectedReview == 'AI' && !requestedLanguage)" style="padding-top: 30px;">
         <div>
           <div>
-            <el-divider content-position="center">
-              <div class="review-title" style="width: 180px;">
-                Yêu cầu cho phản hồi
-              </div>
-            </el-divider>
             <div>
               <div style="text-align: center;">
                 <el-radio-group v-if="!requestedLanguage" v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;" size="small">
@@ -267,7 +261,7 @@
       </div>
 
       <div v-if="selectedReview == 'Free' || selectedReview == 'AI'">
-        <div style="padding-top: 20px; text-align: center;">
+        <div style="padding-top: 10px; text-align: center;">
           <el-button v-if="selectedReview == 'Free'" type="primary" :loading="loading" @click="requestReview()">Xác nhận</el-button>
           <el-button v-else :loading="loading" @click="requestReview()">Xác nhận</el-button>
         </div>
@@ -302,7 +296,7 @@ export default {
       paymentIntent: null,
       epaySelected: false,
       paid: false,
-      selectedReview: '',
+      selectedReview: 'AI',
       loadingAutomatedReview: false,
       feedbackLanguage: 'Phản hồi bằng tiếng Việt',
       specialRequest: null,
@@ -428,7 +422,6 @@ export default {
       }).then(rs => {
         this.loading = false
         this.dlVisible = false
-        this.selectedReview = ''
         this.$emit('reviewRequested')
         const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
         window.location.href = url
@@ -552,7 +545,7 @@ export default {
   margin-top: 30px;
 }
 .review-icon {
-  font-size: 30px;
+  font-size: 35px;
   color: #4a6f8a;
 }
 .review-title {

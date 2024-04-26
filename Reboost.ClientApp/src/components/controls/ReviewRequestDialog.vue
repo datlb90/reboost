@@ -244,6 +244,7 @@
 </template>
 
 <script>
+import reviewService from '../../services/review.service'
 import authService from '@/services/auth.service'
 import questionService from '../../services/question.service'
 import * as stringUtil from '@/utils/string'
@@ -400,13 +401,20 @@ export default {
               console.log('create submission')
               questionService.createPersonalSubmission(formData).then(submission => {
                 if (submission) {
-                  this.resetData()
-                  this.isLoading = false
-                  this.dialogVisible = false
-                  this.$emit('openCheckoutDialog', {
-                    questionId: submission.questionId,
-                    submissionId: submission.id,
-                    feedbackLanguage: this.selectedLanguage
+                  // send automated review request
+                  reviewService.createAutomatedReview({
+                    UserId: this.currentUser.id,
+                    SubmissionId: submission.id,
+                    FeedbackType: 'AI',
+                    FeedbackLanguage: this.selectedLanguage
+                  }).then(rs => {
+                    this.loading = false
+                    this.resetData()
+                    const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
+                    window.location.href = url
+                  }).catch(rs => {
+                    this.loading = false
+                    this.dialogVisible = false
                   })
                 }
               })

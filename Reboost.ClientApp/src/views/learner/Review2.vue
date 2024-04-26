@@ -372,7 +372,6 @@ import TextToolGroup from '../../components/controls/TextToolGroup'
 import PDFJSAnnotate from '@/pdfjs/PDFJSAnnotate'
 const { UI } = PDFJSAnnotate
 PDFJSAnnotate.setStoreAdapter(new PDFJSAnnotate.LocalStoreAdapter())
-
 import {
   getMetadata,
   // getOffset,
@@ -499,28 +498,8 @@ export default {
       documentText: null,
       textNodes: [],
       docData: null,
-      // errors: null
-      errors: [
-        {
-          error: 'It is often argued',
-          type: 'Từ vựng',
-          comment: 'use "There is ongoing debate" - This phrase is more concise and formal, and it accurately reflects the ongoing discussion on the topic.',
-          category: 'Lỗi lựa chọn từ'
-        },
-        {
-          error: 'fundamental',
-          type: 'Ngữ pháp',
-          comment: '"Crucial" is a stronger word that emphasizes the importance of the family environment in shaping a child\'s values and norms.',
-          category: 'Lỗi ngữ pháp'
-
-        },
-        {
-          error: 'structured environments',
-          type: 'Từ vựng',
-          comment: '"Organized settings" là một thuật ngữ tổng quát hơn, bao gồm nhiều loại môi trường giáo dục.',
-          category: 'Lỗi chấm câu'
-        }
-      ]
+      errors: null,
+      intextCommentCompleted: false
     }
   },
   computed: {
@@ -566,12 +545,19 @@ export default {
     window.addEventListener('resize', () => {
       this.screenWidth = window.innerWidth
     })
+
     window.component = this
     window['PDFJSAnnotate'] = PDFJSAnnotate
     window['APP'] = this
     localStorage.setItem(`${this.documentId}/tooltype`, 'cursor')
     localStorage.setItem(`${this.documentId}/color`, '#ff0000')
     PDFJSAnnotate.getStoreAdapter().clearAnnotations(this.documentId)
+
+    // Load review data and review request
+    this.review = await reviewService.getById(this.$route.params.reviewId)
+    if (this.review.review.reviewerId === 'AI') {
+      this.isAiReview = true
+    }
 
     // Load question and get task info
     const question = await this.$store.dispatch('question/loadQuestion', this.questionId)
@@ -583,62 +569,61 @@ export default {
     this.documentText = doc.data.text
     this.docData = this.base64ToArrayBuffer(doc.data.data)
 
-    // Load review data and review request
-    this.review = await reviewService.getById(this.$route.params.reviewId)
-    if (this.review.review.reviewerId === 'AI') {
-      this.isAiReview = true
-    }
-
-    // Get errors here if there is no final score
-    // This has to be called before loading completed to show the loading sign
-    if (!this.review.review.finalScore) {
+    // Get annotations in db first
+    await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
+    // console.log('Loaded annotations:', this.loadedAnnotation)
+    if (this.loadedAnnotation && this.loadedAnnotation.annotations && this.loadedAnnotation.annotations.length > 0) {
+      // load annotations if already saved in db
+      PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
+    } else {
+      // Get new list of errors and create the annotations
       const model = {
         task: question.section,
         topic: question.questionsPart.find(q => q.name == 'Question').content,
         essay: this.documentText,
         feedbackLanguage: this.review.reviewRequest.feedbackLanguage
       }
-
-      // const results = await Promise.all([reviewService.getVocabularyErrorsInText(model), reviewService.getGrammarErrorsInText(model)])
-      // // .then(function (results) {
-
-      // // })
-
-      // const vocabErrors = results[0].errors
-      // console.log('Vocab errors:', vocabErrors)
-      // const grammarErrors = results[1].errors
-      // console.log('Grammar errors:', grammarErrors)
-
-      // const errors = [...vocabErrors]
-      // grammarErrors.forEach(grammarError => {
-      //   if (!errors.some(e => e.error == grammarError.error)) {
-      //     errors.push(grammarError)
-      //   }
-      // })
-
-      // this.errors = errors
-      // console.log('All errors:', this.errors)
-
       const response = await reviewService.getErrorsInText(model)
       this.errors = response.errors
-    } else {
-      // If there is a final score, load the  annotations
-      await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
-      PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
+      console.log(this.errors)
     }
+
+    // Get errors here if there is no final score
+    // This has to be called before loading completed to show the loading sign
+    // if (!this.review.review.finalScore) {
+    //   const model = {
+    //     task: question.section,
+    //     topic: question.questionsPart.find(q => q.name == 'Question').content,
+    //     essay: this.documentText,
+    //     feedbackLanguage: this.review.reviewRequest.feedbackLanguage
+    //   }
+
+    //   const response = await reviewService.getErrorsInText(model)
+    //   this.errors = response.errors
+    // } else {
+    //   // If there is a final score, load the  annotations
+    //   await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
+    //   PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
+    // }
 
     // render the document
     this.completeLoading = true
     await this.render()
 
-    // Highlight errors here if there is no final score
-    if (!this.review.review.finalScore) {
-      if (this.errors && this.errors.length > 0) {
-        this.highlightErrors()
-      }
+    if (this.errors && this.errors.length > 0) {
+      this.highlightErrors()
     } else {
       this.handleCommentPositionsRestore()
+      this.intextCommentCompleted = true
     }
+
+    // // Highlight errors here if there is no final score
+    // if (!this.review.review.finalScore) {
+
+    // } else {
+    //   this.handleCommentPositionsRestore()
+    //   this.intextCommentCompleted = true
+    // }
 
     this.$refs.toolBar?.handleScale('fitPage')
     this.$refs.toolBar?.insertExpandMenu()
@@ -648,12 +633,30 @@ export default {
   },
   created() {
   },
+  beforeDestroy() {
+    window.addEventListener('beforeunload', this.confirmExit)
+  },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
     document.removeEventListener('keyup', this.keyupHandler)
     this.unRegisterEvents()
     document.body.style.overflow = null
   },
+  beforeRouteLeave (to, from, next) {
+    // If the grading has not finished yet
+    if (!this.intextCommentCompleted) {
+        this.$confirm('Bài viết chưa được chấm xong nên toàn bộ phản hồi có thể sẽ bị mất. Bạn chắc chứ?', {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        }).then(() => {
+          next()
+        }).catch(() => {
+        })
+      } else {
+        next()
+      }
+   },
   methods: {
     getTextNodes() {
       var textLayer = document.getElementsByClassName('textLayer')[0]
@@ -856,6 +859,7 @@ export default {
                 count++
                 if (count == this.errors.length) {
                   this.handleCommentPositionsRestore()
+                  this.intextCommentCompleted = true
                 }
 
                 // .then(async rs => {
@@ -1172,7 +1176,7 @@ export default {
         item.addEventListener('click', commentCardClick)
       })
 
-      window.addEventListener('beforeunload', restoreCommentPositions)
+      // window.removeEventListener('beforeunload', restoreCommentPositions)
       window.addEventListener('resize', this.calculateContainerHeight.bind(this))
       document.addEventListener('keyup', this.keyupHandler)
       document.getElementById('viewerContainer').addEventListener('scroll', handlePageScroll)
@@ -1227,9 +1231,9 @@ export default {
           that.handleCommentCardClick(this)
         }
       }
-      async function restoreCommentPositions() {
-        await that.handleCommentPositionsRestore()
-      }
+      // async function restoreCommentPositions() {
+      //   await that.handleCommentPositionsRestore()
+      // }
     },
     unRegisterEvents() {
       const that = this
@@ -1239,7 +1243,7 @@ export default {
         item.addEventListener('click', commentCardClick)
       })
 
-      window.removeEventListener('beforeunload', restoreCommentPositions)
+      // window.removeEventListener('beforeunload', restoreCommentPositions)
       window.removeEventListener('resize', this.calculateContainerHeight.bind(this))
       document.removeEventListener('keyup', this.keyupHandler)
 
@@ -1297,9 +1301,9 @@ export default {
           that.handleCommentCardClick(this)
         }
       }
-      async function restoreCommentPositions() {
-        await that.handleCommentPositionsRestore()
-      }
+      // async function restoreCommentPositions() {
+      //   await that.handleCommentPositionsRestore()
+      // }
     },
     async TextStuff() {
       const self = this

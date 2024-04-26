@@ -724,13 +724,6 @@ export default {
       this.$nextTick(function() {
         this.showArrow()
       })
-      // Update fb comment's width for safari
-      setTimeout(function () {
-        const iframes = document.getElementsByClassName('fb_iframe_widget_lift')
-        if (iframes && iframes.length > 0) {
-          iframes[0].style.width = '100%'
-        }
-      }, 2000)
   })
   },
   created() {

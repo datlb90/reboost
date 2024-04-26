@@ -241,28 +241,7 @@ export default ({
       ],
       reviewSaved: false,
       rateValue: 0,
-      rateComment: '',
-      errors: [
-        {
-          error: 'demographics of Iceland',
-          type: 'Từ vựng',
-          comment: 'Từ vụng không phù hợp trong ngữ cảnh này',
-          category: 'Lỗi lựa chọn từ'
-        },
-        {
-          error: 'the other profiles',
-          type: 'Ngữ pháp',
-          comment: 'Từ vụng không phù hợp trong ngữ cảnh này',
-          category: 'Lỗi ngữ pháp'
-
-        },
-        {
-          error: 'still maintaining the status quo. Furthermore, showing a decade of consistency, the data for the oldest group slightly rose until the end. Regarding the other age brackets,',
-          type: 'Từ vựng',
-          comment: 'Từ vụng không phù hợp trong ngữ cảnh này',
-          category: 'Lỗi chấm câu'
-        }
-      ]
+      rateComment: ''
     }
   },
   computed: {

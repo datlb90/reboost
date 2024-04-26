@@ -265,7 +265,7 @@
                 v-else-if="scope.row.score === 'Đang chấm'"
                 class="item"
                 effect="dark"
-                content="Bài viết của bạn đang được chấm"
+                content="Bài viết của bạn đang được chấm. Vui lòng chờ trong giây lát."
                 placement="top"
               >
                 <el-link :underline="false" type="warning">
@@ -545,7 +545,7 @@
                 v-else-if="scope.row.score === 'Đang chấm'"
                 class="item"
                 effect="dark"
-                content="Bài viết của bạn đang được chấm"
+                content="Bài viết của bạn đang được chấm. Vui lòng chờ trong giây lát."
                 placement="top"
               >
                 <el-link :underline="false" type="warning">
