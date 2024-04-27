@@ -542,6 +542,7 @@ export default {
     if (this.$route.query.plain) {
       this.showQuestion = false
     }
+
     window.addEventListener('resize', () => {
       this.screenWidth = window.innerWidth
     })
@@ -588,24 +589,6 @@ export default {
       console.log(this.errors)
     }
 
-    // Get errors here if there is no final score
-    // This has to be called before loading completed to show the loading sign
-    // if (!this.review.review.finalScore) {
-    //   const model = {
-    //     task: question.section,
-    //     topic: question.questionsPart.find(q => q.name == 'Question').content,
-    //     essay: this.documentText,
-    //     feedbackLanguage: this.review.reviewRequest.feedbackLanguage
-    //   }
-
-    //   const response = await reviewService.getErrorsInText(model)
-    //   this.errors = response.errors
-    // } else {
-    //   // If there is a final score, load the  annotations
-    //   await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
-    //   PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
-    // }
-
     // render the document
     this.completeLoading = true
     await this.render()
@@ -617,14 +600,6 @@ export default {
       this.intextCommentCompleted = true
     }
 
-    // // Highlight errors here if there is no final score
-    // if (!this.review.review.finalScore) {
-
-    // } else {
-    //   this.handleCommentPositionsRestore()
-    //   this.intextCommentCompleted = true
-    // }
-
     this.$refs.toolBar?.handleScale('fitPage')
     this.$refs.toolBar?.insertExpandMenu()
   },
@@ -632,9 +607,10 @@ export default {
     document.body.style = 'overflow: hidden'
   },
   created() {
+    window.addEventListener('beforeunload', this.beforeWindowUnload)
   },
   beforeDestroy() {
-    window.addEventListener('beforeunload', this.confirmExit)
+    window.removeEventListener('beforeunload', this.beforeWindowUnload)
   },
   destroyed() {
     clearInterval(this.setIntervalForScroll)
@@ -645,19 +621,27 @@ export default {
   beforeRouteLeave (to, from, next) {
     // If the grading has not finished yet
     if (!this.intextCommentCompleted) {
-        this.$confirm('Bài viết chưa được chấm xong nên toàn bộ phản hồi có thể sẽ bị mất. Bạn chắc chứ?', {
-          confirmButtonText: 'OK',
-          cancelButtonText: 'Cancel',
-          type: 'warning'
-        }).then(() => {
-          next()
-        }).catch(() => {
-        })
-      } else {
+      this.$confirm('Bài viết chưa được chấm xong nên toàn bộ phản hồi có thể sẽ bị mất. Bạn chắc chứ?', {
+        confirmButtonText: 'OK',
+        cancelButtonText: 'Cancel',
+        type: 'warning'
+      }).then(() => {
         next()
-      }
-   },
+      }).catch(() => {
+      })
+    } else {
+      next()
+    }
+  },
   methods: {
+    beforeWindowUnload(e) {
+      if (!this.intextCommentCompleted) {
+        // Cancel the event
+        e.preventDefault()
+        // Chrome requires returnValue to be set
+        e.returnValue = ''
+      }
+    },
     getTextNodes() {
       var textLayer = document.getElementsByClassName('textLayer')[0]
       var walker = document.createTreeWalker(
@@ -808,13 +792,6 @@ export default {
           annotation.pageHeight = parseInt(this.svg.getAttribute('height') / this.RENDER_OPTIONS.scale)
 
           // Add the annotation
-          // PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
-          // .then(annotation => {
-          //   appendChild(this.svg, annotation)
-          //   // add the comment asoociated with the newly created annotation
-          //   this.addCommentForErrors(annotation, error.error, error.type, error.category, error.comment)
-          // })
-
           PDFJSAnnotate.getStoreAdapter().addAnnotation(documentId, pageNumber, annotation)
           .then(annotation => {
             appendChild(this.svg, annotation)
@@ -861,13 +838,6 @@ export default {
                   this.handleCommentPositionsRestore()
                   this.intextCommentCompleted = true
                 }
-
-                // .then(async rs => {
-                //   if (rs.data) {
-                //     // this.updateCommentId(rs)
-
-                //   }
-                // })
               })
             })
           })
@@ -895,25 +865,18 @@ export default {
             element.classList.remove('grammar-highlight-selected')
           }
 
-          // const selectedRect = document.getElementsByClassName('rectangle-selected')
-          // if (selectedRect.length > 0) {
-          //    // remove the selected class from the existing one
-          //   selectedRect[0].classList.remove('rectangle-selected')
-          // }
-
-           // add selected class to all groups associated with this annotation
-           const annotationId = target.getAttribute('data-pdf-annotate-id')
+          // add selected class to all groups associated with this annotation
+          const annotationId = target.getAttribute('data-pdf-annotate-id')
           // Instead of geting the order from the highlights, get the index directly from the comment using the annotation id
-          this.order = this.comments.findIndex(c => c.annotation.uuid == annotationId)
-          const errorType = this.comments[this.order].type
-
-          const groups = document.querySelectorAll("g[data-pdf-annotate-id='" + annotationId + "']")
-          groups.forEach(element => {
-            if (errorType.toLowerCase() === 'vocabulary') { element.classList.add('vocabulary-highlight-selected') } else { element.classList.add('grammar-highlight-selected') }
-          })
-
+          const order = this.comments.findIndex(c => c.annotation.uuid == annotationId)
+          if (this.comments[order]) {
+            const errorType = this.comments[order].type
+            const groups = document.querySelectorAll("g[data-pdf-annotate-id='" + annotationId + "']")
+            groups.forEach(element => {
+              if (errorType.toLowerCase() === 'vocabulary') { element.classList.add('vocabulary-highlight-selected') } else { element.classList.add('grammar-highlight-selected') }
+            })
+          }
           const commentCards = document.querySelectorAll('.comment-card')
-
           // Get the top position of the annotation
           var gTop = parseInt(parseInt(target.getAttribute('top')) * this.RENDER_OPTIONS.scale) - 34
 
@@ -925,47 +888,47 @@ export default {
           if (svgPageNum > 1) { gTop += ((svgPageNum - 1) * svgHeight) }
 
           // If the comment associated with this annotation exist.
-          if (this.order > -1 && this.comments[this.order] && commentCards[this.order]) {
+          if (order > -1 && this.comments[order] && commentCards[order]) {
             // Get the comment's top position
-            const cTop = this.comments[this.order].topPosition
+            const cTop = this.comments[order].topPosition
 
             // remove current selected comment card class if any
             const selected = document.getElementsByClassName('comment-card-selected')
             if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
             // Set this card as selected
             // console.log('this.order', this.order)
-            commentCards[this.order].classList.add('comment-card-selected')
+            commentCards[order].classList.add('comment-card-selected')
             // cmtSelected.classList.add('comment-card-selected')
             // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
             if (cTop != gTop) {
             // Move the comment up to gTop
-              this.comments[this.order].topPosition = gTop
+              this.comments[order].topPosition = gTop
               // cmtSelected.setAttribute('top-position', gTop)
               // cmtSelected.style.top = gTop + 'px'
 
               const selected = document.getElementsByClassName('comment-card-selected')
               if (selected.length > 0) { selected[0].classList.remove('comment-card-selected') }
-              commentCards[this.order].classList.add('comment-card-selected')
+              commentCards[order].classList.add('comment-card-selected')
 
               // cmtSelected.classList.add('comment-card-selected')
-              const endPos = gTop + commentCards[this.order].offsetHeight
+              const endPos = gTop + commentCards[order].offsetHeight
 
               // this.updateCommentCardPosition(this.annotationClicked.getAttribute('data-pdf-annotate-id'))
               // const endPos = gTop + cmtSelected.offsetHeight
               if (cTop > gTop) {
               // Move up other uppen comments
-                if (this.order > 0) { this.moveUpFromTopPos(commentCards, this.order - 1, gTop) }
+                if (order > 0) { this.moveUpFromTopPos(commentCards, order - 1, gTop) }
                 // Move up other lower comments
-                if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
+                if (order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, order + 1, endPos) }
               } else if (cTop <= gTop) {
               // Move down other uppen comments
-                if (this.order > 0) { this.moveDownToTopPos(commentCards, this.order - 1, gTop) }
+                if (order > 0) { this.moveDownToTopPos(commentCards, order - 1, gTop) }
                 // Move down other lower comments
-                if (this.order < commentCards.length - 1) { this.moveDownFromEndPos(commentCards, this.order + 1, endPos) }
+                if (order < commentCards.length - 1) { this.moveDownFromEndPos(commentCards, order + 1, endPos) }
               }
             } else {
-              const endPos = gTop + commentCards[this.order].offsetHeight
-              if (this.order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, this.order + 1, endPos) }
+              const endPos = gTop + commentCards[order].offsetHeight
+              if (order < commentCards.length - 1) { this.moveUpToEndPos(commentCards, order + 1, endPos) }
             }
           }
         }

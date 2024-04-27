@@ -169,7 +169,6 @@ export default {
       this.$refs.googleLoginForm.submit()
     },
     async signIn() {
-      document.removeEventListener('keydown', this.pressEnterToLogin)
       document.activeElement.blur()
       this.$store.dispatch('auth/logout')
       this.loading = true
@@ -178,6 +177,7 @@ export default {
         Password: this.form.password
       })
       if (user) {
+        document.removeEventListener('keydown', this.pressEnterToLogin)
         if (this.$router.currentRoute.query?.returnUrl) {
           this.$router.push({ path: this.$router.currentRoute.query?.returnUrl })
         } else {

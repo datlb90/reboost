@@ -183,12 +183,13 @@ namespace Reboost.DataAccess.Repositories
                             Test = test.Name,
                             Time = task.Time,
                             Type = quest.Type,
-                            Sample = quest.HasSample,
+                            Sample = true,
                             AverageScore = quest.AverageScore,
                             Submission = quest.SubmissionCount,
                             Like = quest.LikeCount,
                             Status = "Chưa làm",
-                            Difficulty = quest.Difficulty
+                            Difficulty = quest.Difficulty,
+                            TestDate = quest.TestDate
                         };
 
             var completed =  (from s in ReboostDbContext.Submissions
@@ -225,7 +226,8 @@ namespace Reboost.DataAccess.Repositories
                              Submission = all.Submission,
                              Like = all.Like,
                              Status = allComp.Status != null ? allComp.Status : allSave.Status != null ? allSave.Status : all.Status,
-                             Difficulty = all.Difficulty
+                             Difficulty = all.Difficulty,
+                             TestDate = all.TestDate
                          };
 
             return await result.ToListAsync();

@@ -18,6 +18,7 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IReviewRepository
     {
+        Task<ReviewRequests> DeleteReviewRequest(ReviewRequests request);
         Task<ReviewRatings> CreateAIReviewRatingAsync(ReviewRatings data);
         Task<ReviewRequests> CreateReviewRequest(ReviewRequests request);
         Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId);
@@ -84,6 +85,13 @@ namespace Reboost.DataAccess.Repositories
             await db.ReviewRatings.AddAsync(data);
             await db.SaveChangesAsync();
             return data;
+        }
+
+        public async Task<ReviewRequests> DeleteReviewRequest(ReviewRequests request)
+        {
+            db.ReviewRequests.Remove(request);
+            await db.SaveChangesAsync();
+            return await Task.FromResult(request);
         }
 
         public async Task<ReviewRequests> CreateReviewRequest(ReviewRequests request)

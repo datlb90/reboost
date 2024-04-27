@@ -201,7 +201,7 @@ export default {
     pressEnterToLogin(e) {
       if (e.code === 'Enter') {
         console.log(e.code)
-        this.signIn()
+        this.signUp()
       }
     },
     submitFacebookLoginForm() {
@@ -211,7 +211,6 @@ export default {
       this.$refs.googleLoginForm.submit()
     },
     async signUp() {
-      document.removeEventListener('keydown', this.pressEnterToLogin)
       document.activeElement.blur()
       this.$refs['formSignUp'].validate(async valid => {
         if (valid) {
@@ -224,6 +223,7 @@ export default {
             Role: 'learner'
           })
           if (this.user) {
+            document.removeEventListener('keydown', this.pressEnterToLogin)
             // Add IELTS test score for all user
             var scores = []
             const formData = {

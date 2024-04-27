@@ -209,16 +209,14 @@
             prop="title"
             sortable
             fixed="left"
-            min-width="200"
           >
             <template slot-scope="scope">
-              <span class="title-row cursor" style="word-break: break-word" @click="titleClicked(scope.row)">{{ scope.row.id }}. {{ scope.row.title }}</span>
+              <span class="title-row cursor" style="word-break: break-word" @click="titleClicked(scope.row)">{{ scope.row.title }}</span>
             </template>
           </el-table-column>
           <el-table-column
             label="Loại đề"
             prop="section"
-            width="200"
             sortable
           >
             <template slot-scope="scope">
@@ -228,7 +226,6 @@
           <el-table-column
             label="Dạng đề"
             prop="type"
-            width="190"
             sortable
           >
             <template slot-scope="scope">
@@ -782,7 +779,7 @@ export default {
       if (this.textSearch) {
         result = result.filter(q => q.title.toLowerCase().includes(this.textSearch.toLowerCase()))
       }
-      result = result.sort((a, b) => a.id - b.id)
+      result = result.sort((a, b) => new Date(b.testDate) - new Date(a.testDate))
       return result
     },
     loadSummary() {

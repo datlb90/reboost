@@ -290,7 +290,15 @@ namespace Reboost.Service.Services
         public async Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage = "vn")
         {
             Submissions submission = await _unitOfWork.Submission.GetByIdAsync(submissionId);
-            // Create a ReviewRequest first
+
+            // Delete any review request with this submission
+            ReviewRequests existingRequest = await _unitOfWork.Review.GetReviewRequestBySubmissionId(submissionId, userId);
+            if(existingRequest != null)
+            {
+                await _unitOfWork.Review.DeleteReviewRequest(existingRequest);
+            }
+
+            // Create a new ReviewRequest for this submission
             ReviewRequests request = new ReviewRequests
             {
                 UserId = userId,
