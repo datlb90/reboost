@@ -59,7 +59,7 @@
               </a>
             </el-form-item>
 
-            <!-- <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px;">
+            <div class="separator" style="font-size: 14px; text-align: center; padding-bottom: 20px;">
               {{ messageTranslates('login', 'orSignIn') }}
             </div>
 
@@ -74,9 +74,9 @@
                   Google
                 </el-button>
               </form>
-            </el-form-item> -->
+            </el-form-item>
 
-            <hr>
+            <!-- <hr> -->
 
             <div style="font-size: 14px; text-align: center; padding-bottom: 5px; margin-top: 30px;">
               Khi đăng nhập, bạn đồng ý với

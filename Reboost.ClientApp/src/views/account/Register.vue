@@ -59,8 +59,25 @@
               </el-form-item>
 
               <hr>
+              <div style="font-size: 14px; text-align: center; padding-bottom: 10px;">
+                {{ messageTranslates('register', 'orSignInWith') }}
+              </div>
+              <el-form-item>
+                <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
+                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                    Facebook
+                  </el-button>
+                </form>
+                <form ref="googleLoginForm" method="post" :action="googleFormAction">
+                  <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
+                    Google
+                  </el-button>
+                </form>
+              </el-form-item>
 
-              <div style="font-size: 14px; text-align: center; padding-bottom: 5px; margin-top: 30px;">
+              <!-- <hr> -->
+
+              <!-- <div style="font-size: 14px; text-align: center; padding-bottom: 5px; margin-top: 30px;">
                 Khi tạo tài khoản, bạn đồng ý với
                 <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
                   {{ messageTranslates('login', 'terms') }}
@@ -69,7 +86,7 @@
                   chính sách bảo mật
                 </a>
                 của chúng tôi.
-              </div>
+              </div> -->
 
               <!-- <hr>
               <div style="font-size: 14px; text-align: center; padding-bottom: 10px;">

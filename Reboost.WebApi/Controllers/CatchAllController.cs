@@ -10,7 +10,7 @@ namespace Reboost.WebApi.Controllers
     {
         public IActionResult Index()
         {
-            return File("~/index.html", "text/html");
+            return File("~/index.001.html", "text/html");
         }
     }
 }
