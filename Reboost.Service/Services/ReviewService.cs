@@ -22,6 +22,7 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<string> getExperimentAIFeedback(ExperimentFeedbackModel model);
         Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model);
         Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model);
         Task<ErrorsInText> getErrorsInText(CriteriaFeedbackModel model);
@@ -104,6 +105,11 @@ namespace Reboost.Service.Services
             userService = _userService;
             chatGPTService = _chatGPTService;
             configuration = _configuration;
+        }
+
+        public async Task<string> getExperimentAIFeedback(ExperimentFeedbackModel model)
+        {
+            return await chatGPTService.getExperimentAIFeedback(model);
         }
 
         public async Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model)
