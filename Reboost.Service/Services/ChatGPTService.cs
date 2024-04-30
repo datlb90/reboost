@@ -26,6 +26,7 @@ namespace Reboost.Service.Services
 {
     public interface IChatGPTService
     {
+        Task<ErrorsInText> getErrorsInTextV2(CriteriaFeedbackModel model);
         Task<string> getExperimentAIFeedback(ExperimentFeedbackModel model);
         Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model);
         Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model);
@@ -62,6 +63,71 @@ namespace Reboost.Service.Services
             configuration = _configuration;
         }
 
+        public async Task<ErrorsInText> getErrorsInTextV2(CriteriaFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string response = "Given the following writing essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake. \r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error. \r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
+                if (model.feedbackLanguage != "vn")
+                    request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake. \r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error. \r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
+                ErrorsInText result = new ErrorsInText();
+                List<ErrorInText> errors = new List<ErrorInText>();
+
+                // Get vocabulary error first
+                var errorResponse = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = Model.ChatGPTTurbo,
+                    ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
+                    Temperature = 0.1,
+                    Messages = new ChatMessage[] {
+                        new ChatMessage(ChatMessageRole.Assistant, response),
+                        new ChatMessage(ChatMessageRole.User, request)
+                    }
+                });
+
+                ErrorsInText errorResult = JsonConvert.DeserializeObject<ErrorsInText>(errorResponse.Choices[0].Message.TextContent);
+
+                if (errorResult != null)
+                {
+                    foreach (ErrorInText error in errorResult.errors)
+                    {
+                        if (!errors.Any(e => e.error == error.error))
+                        {
+                            if (!error.comment.Contains(error.fix))
+                            {
+                                if (error.comment.EndsWith('.'))
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += " Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += " Thay thế bằng: '" + error.fix + "'";
+                                }
+                                else
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += ". Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += ". Thay thế bằng: '" + error.fix + "'";
+                                }
+                            }
+                            errors.Add(error);
+                        }
+                    }
+                }
+
+                result.errors = errors;
+                return result;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
+
         public async Task<string> getExperimentAIFeedback(ExperimentFeedbackModel model)
         {
             try
@@ -94,7 +160,6 @@ namespace Reboost.Service.Services
                             topic += model.chartDescription;
                         }
                         response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
-
                     }
                     else // Academic Writing Task 2
                     {

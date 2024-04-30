@@ -22,6 +22,7 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<ErrorsInText> getErrorsInTextV2(CriteriaFeedbackModel model);
         Task<string> getExperimentAIFeedback(ExperimentFeedbackModel model);
         Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model);
         Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model);
@@ -105,6 +106,117 @@ namespace Reboost.Service.Services
             userService = _userService;
             chatGPTService = _chatGPTService;
             configuration = _configuration;
+        }
+
+        //public async Task<ErrorsInText> getErrorsInTextV2(CriteriaFeedbackModel model)
+        //{
+        //    // 1. Check if the learner has premium status
+        //    // If true: make 2 chatgpt calls using Task.WhenAll
+        //    // Else: make only 1 chatgpt calls
+        //    if (true)
+        //    {
+        //        ErrorsInText result = new ErrorsInText();
+        //        result.errors = new List<ErrorInText>();
+        //        // Make 2 chatgpt calls using Task.WhenAll
+        //        string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+        //        var taskList = new Task<ErrorsInText>[paragraphs.Length];
+        //        for (int i = 0; i < paragraphs.Length; i++)
+        //        {
+        //            CriteriaFeedbackModel requestModel = new CriteriaFeedbackModel
+        //            {
+        //                essay = paragraphs[i],
+        //                task = model.task,
+        //                topic = model.topic,
+        //                chartDescription = model.chartDescription,
+        //                criteriaName = model.criteriaName,
+        //                feedbackLanguage = model.feedbackLanguage
+        //            };
+
+        //            taskList[i] = chatGPTService.getErrorsInTextV2(requestModel);
+        //        }
+
+        //        var completedTasks = await Task.WhenAll(taskList);
+
+        //        foreach (var completedTask in completedTasks)
+        //        {
+        //            if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
+        //            {
+        //                result.errors = result.errors.Concat(completedTask.errors).ToList();
+        //            }
+        //        }
+
+        //        return result;
+
+        //    }
+
+        //    return await chatGPTService.getErrorsInText(model);
+        //}
+
+
+        public async Task<ErrorsInText> getErrorsInTextV2(CriteriaFeedbackModel model)
+        {
+            // 1. Check if the learner has premium status
+            // If true: make 2 chatgpt calls using Task.WhenAll
+            // Else: make only 1 chatgpt calls
+            if (true)
+            {
+                // Make 2 chatgpt calls using Task.WhenAll
+                string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                if (paragraphs.Length >= 2)
+                {
+                    int median = paragraphs.Length / 2;
+
+                    string[] firstList = paragraphs.Take(median).ToArray();
+                    string firstPart = String.Join(Environment.NewLine, firstList);
+
+
+                    int remain = paragraphs.Length - median;
+                    string[] secondList = paragraphs.Skip(median).Take(remain).ToArray();
+                    string secondPart = String.Join(Environment.NewLine, secondList);
+
+
+                    CriteriaFeedbackModel model1 = new CriteriaFeedbackModel
+                    {
+                        essay = firstPart,
+                        task = model.task,
+                        topic = model.topic,
+                        chartDescription = model.chartDescription,
+                        criteriaName = model.criteriaName,
+                        feedbackLanguage = model.feedbackLanguage
+                    };
+
+                    CriteriaFeedbackModel model2 = new CriteriaFeedbackModel
+                    {
+                        essay = secondPart,
+                        task = model.task,
+                        topic = model.topic,
+                        chartDescription = model.chartDescription,
+                        criteriaName = model.criteriaName,
+                        feedbackLanguage = model.feedbackLanguage
+                    };
+
+
+                    var taskList = new[]
+                    {
+                        chatGPTService.getErrorsInTextV2(model1),
+                        chatGPTService.getErrorsInTextV2(model2)
+                    };
+
+                    var completedTasks = await Task.WhenAll(taskList);
+                    ErrorsInText result = new ErrorsInText();
+                    result.errors = new List<ErrorInText>();
+
+                    foreach (var completedTask in completedTasks)
+                    {
+                        result.errors = result.errors.Concat(completedTask.errors).ToList();
+                    }
+
+                    return result;
+                }
+
+            }
+
+            return await chatGPTService.getErrorsInText(model);
         }
 
         public async Task<string> getExperimentAIFeedback(ExperimentFeedbackModel model)
