@@ -556,6 +556,7 @@ export default {
 
     // Load review data and review request
     this.review = await reviewService.getById(this.$route.params.reviewId)
+    console.log(this.review)
     if (this.review.review.reviewerId === 'AI') {
       this.isAiReview = true
     }
