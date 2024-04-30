@@ -264,7 +264,7 @@ namespace Reboost.Service.Services
                 OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
                 string response = "Given the following writing essay:\r\n\r\n" + model.essay + "\r\n\r\n";
 
-                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake. \r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error. \r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The replacement for the word or phrase.\r\n";
+                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake. \r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error. \r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
                 if (model.feedbackLanguage != "vn")
                     request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake. \r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error. \r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
                 ErrorsInText result = new ErrorsInText();
