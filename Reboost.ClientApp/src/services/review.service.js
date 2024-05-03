@@ -1,6 +1,12 @@
 import http from '@/utils/axios'
 
 const reviewService = {
+  getReviewFeedback(model) {
+    return http.post('/review/feedback', model).then(rs => rs.data)
+  },
+  loadReviewFeedback(reviewId) {
+    return http.get(`/review/feedback/${reviewId}`).then(rs => rs.data)
+  },
   getVocabularyErrorsInText(model) {
     return http.post('/review/ai/vocabulary/errors/intext', model).then(rs => rs.data)
   },
@@ -63,9 +69,6 @@ const reviewService = {
   },
   saveReviewFeedback(reviewId, data) {
     return http.post(`/review/feedback/${reviewId}`, data).then(rs => rs.data)
-  },
-  loadReviewFeedback(reviewId) {
-    return http.get(`/review/feedback/${reviewId}`).then(rs => rs.data)
   },
   deleteInTextComment(id) {
     return http.post(`/review/comment/delete`, { id }).then(rs => rs.data)

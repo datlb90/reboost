@@ -17,11 +17,14 @@ using System.IO;
 using PayPal.Api;
 using Newtonsoft.Json.Linq;
 using OpenAI_API.Moderation;
+using iTextSharp.text;
 
 namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model);
+        Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model);
         Task<ErrorsInText> getErrorsInTextV2(CriteriaFeedbackModel model);
         Task<string> getExperimentAIFeedback(ExperimentFeedbackModel model);
         Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model);
@@ -89,23 +92,149 @@ namespace Reboost.Service.Services
 
     public class ReviewService : BaseService, IReviewService
     {
-        IMailService mailService;
-        //IPaymentService paymentService;
-        IUserService userService;
         IConfiguration configuration;
+        IMailService mailService;
+        IUserService userService;
         IChatGPTService chatGPTService;
+
         public ReviewService(IUnitOfWork unitOfWork,
+            IConfiguration _configuration,
             IMailService _mailService,
-            //IPaymentService _paymentService,
             IUserService _userService,
             IChatGPTService _chatGPTService,
-            IConfiguration _configuration) : base(unitOfWork)
+            IRubricService _rubricService) : base(unitOfWork)
         {
+            configuration = _configuration;
             mailService = _mailService;
-            //paymentService = _paymentService;
             userService = _userService;
             chatGPTService = _chatGPTService;
-            configuration = _configuration;
+        }
+
+        public async Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model)
+        {
+            return await chatGPTService.getAIFeedbackForCriteriaV5(model);
+        }
+
+        public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model)
+        {
+            if (model.hasGrade)
+            {
+                // If the review already has grade, return the feedback from db
+                return await _unitOfWork.Review.GetCriteriaFeedback(model.reviewId);
+            }
+            else
+            {
+                // Get user subscription and generate feedback based on subscribed service.
+                // If there is no grade, get the feedback from chatGPT, save the feedback in database, then return the feedback
+                List<CriteriaFeedback> result = new List<CriteriaFeedback>(); // diplay feedback result
+                List<ReviewData> reviewDataList = new List<ReviewData>(); // save feedback to database
+                try
+                {
+                    // 1. Get the rubric for the question
+                    var rubricCriteria = await _unitOfWork.Rubrics.GetFeedbackRubric(model.questionId);
+                    var taskList = new Task<EssayFeedback>[rubricCriteria.Count + 1];
+
+                    string chartDescription = "";
+                    if (!String.IsNullOrEmpty(model.chartFileName))
+                    {
+                        // This is going to take 6-10s.
+                        // Get chart description for Task Achievement only?
+                        chartDescription = await getChartDescription(model.chartFileName);
+                    }
+                   
+                    CriteriaFeedbackModel scoreModel = new CriteriaFeedbackModel
+                    {
+                        essay = model.essay,
+                        task = model.task,
+                        topic = model.topic,
+                        chartDescription = chartDescription
+                    };
+
+                    // 1. Get essay score 
+                    taskList[0] = chatGPTService.getEssayScoreGPTTurbo(scoreModel);
+                    // 2. Get feedback from chatGPT
+                    for (int i = 0; i < rubricCriteria.Count; i++)
+                    {
+                        // Get chart description for Task Achievement?
+                        EssayFeedbackModel requestModel = new EssayFeedbackModel
+                        {
+                            essay = model.essay,
+                            task = model.task,
+                            topic = model.topic,
+                            chartDescription = chartDescription,
+                            criteriaName = rubricCriteria[i].name,
+                            feedbackLanguage = model.feedbackLanguage,
+                            criteriaId = rubricCriteria[i].criteriaId,
+                            order = rubricCriteria[i].order
+                        };
+
+                        taskList[i + 1] = chatGPTService.getCriteriaFeedbackGPTTurbo(requestModel);
+                    }
+
+                    var completedTasks = await Task.WhenAll(taskList);
+
+                    var scoreResults = completedTasks[0];
+                    foreach (var completedTask in completedTasks.Skip(1))
+                    {
+                        decimal mark = 0;
+                        if (completedTask.criteriaName == "Task Achievement")
+                            mark = scoreResults.taskAchievementScore;
+                        else if (completedTask.criteriaName == "Task Response")
+                            mark = scoreResults.taskResponseScore;
+                        else if (completedTask.criteriaName == "Coherence & Cohesion")
+                            mark = scoreResults.coherenceScore;
+                        else if (completedTask.criteriaName == "Lexical Resource")
+                            mark = scoreResults.lexicalResourceScore;
+                        else if (completedTask.criteriaName == "Grammatical Range & Accuracy")
+                            mark = scoreResults.grammarScore;
+
+                        CriteriaFeedback criteriaFeedback = new CriteriaFeedback
+                        {
+                            criteriaId = completedTask.criteriaId,
+                            name = completedTask.criteriaName,
+                            comment = completedTask.comment,
+                            mark = mark
+                        };
+
+                        result.Add(criteriaFeedback);
+
+                        if(completedTask.criteriaName != "Critical Errors")
+                        {
+                            // Not adding the feedback for critical errors
+                            // Replace this with in-text feedback
+                            ReviewData reviewData = new ReviewData
+                            {
+                                ReviewId = model.reviewId,
+                                CriteriaId = completedTask.criteriaId,
+                                CriteriaName = completedTask.criteriaName,
+                                Comment = completedTask.comment,
+                                Score = mark
+                            };
+                            reviewDataList.Add(reviewData);
+                        }
+                        
+                    }
+
+                    await SaveFeedback(model.reviewId, reviewDataList);
+                    return result;
+                }
+                catch(Exception e)
+                {
+                    return null;
+                }
+            }
+        }
+
+        public async Task<Reviews> SaveFeedback(int reviewId, List<ReviewData> data)
+        {
+            var rs = await _unitOfWork.Review.SaveFeedback(reviewId, data);
+
+            if (rs == null)
+            {
+                throw new AppException(ErrorCode.InvalidArgument, "Review or Rater not existed");
+            }
+
+            return rs;
         }
 
         public async Task<ErrorsInText> getErrorsInTextV2(CriteriaFeedbackModel model)
@@ -143,6 +272,8 @@ namespace Reboost.Service.Services
                     result.errors = result.errors.Concat(completedTask.errors).ToList();
                 }
             }
+
+            // Todo: Use result for saving critical errors into database
 
             return result;
         }
@@ -505,17 +636,6 @@ namespace Reboost.Service.Services
             var rs = await _unitOfWork.Review.SaveRubric(reviewId, data);
 
             if (rs == null)
-            {
-                throw new AppException(ErrorCode.InvalidArgument, "Review or Rater not existed");
-            }
-
-            return rs;
-        }
-        public async Task<Reviews> SaveFeedback(int reviewId, List<ReviewData> data)
-        { 
-            var rs = await _unitOfWork.Review.SaveFeedback(reviewId, data);
-
-            if(rs == null) 
             {
                 throw new AppException(ErrorCode.InvalidArgument, "Review or Rater not existed");
             }

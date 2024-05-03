@@ -3,15 +3,116 @@
     <div id="content-wrapper" style="background: rgb(248, 249, 250); height: inherit; width: 100%;position: absolute; overflow: unset;">
       <div id="left-panel" :class="{'hideQuestion': !showQuestion}" style="height: calc(100vh - 50px);">
         <el-tabs v-model="selectedTab" type="border-card">
+          <el-tab-pane name="rubric" label="Phản hồi cho bài viết">
+            <div style="height: 100%;display: flex; flex-direction: column">
+              <div id="parent-scroll" style="flex-grow: 1;position: relative;">
+                <div id="child-scroll">
+                  <div id="rubric">
+                    <div v-if="loadCriteriaFeedbackCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
+                      <el-card
+                        v-for="criteria in rubricCriteria"
+                        :key="criteria.criteriaId"
+                        style="margin-bottom: 5px; margin-left: 3px; border: 1px solid rgb(190, 190, 190);"
+                        shadow="hover"
+                      >
+                        <div slot="header" class="clearfix">
+                          <div>
+                            <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                              <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
+                              <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
+                              <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
+                              <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
+                              <span v-else> Tiêu Chí {{ criteria.name }}</span>
+                            </div>
+                            <div style="float: right;">
+                              <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
+                                <div v-if="isAiReview">
+                                  <div v-if="!criteria.loading && criteria.mark" class="band-score">
+                                    Band:
+                                    {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <div>
+                            <div>
+                              <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
+                            </div>
+                          </div>
+                        </div>
+                      </el-card>
+                      <el-card
+                        v-if="isAiReview && rubricCriteria && rubricCriteria.length > 0"
+                        style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
+                        shadow="hover"
+                      >
+                        <div slot="header" class="clearfix">
+                          <div style="color: white; float: left; font-size: 16px; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                            <span>Đánh Giá Phản Hồi</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div>
+                            <div style="font-size: 15px; color: white;">Đánh giá mức độ hữu ích của phản hồi</div>
+                          </div>
+
+                          <div>
+                            <el-rate v-model="rateValue" style="margin-top: 8px; margin-bottom: 4px; color: rgb(177 177 177);" :allow-half="true" />
+                          </div>
+
+                          <div>
+                            <el-input
+                              id="rubric-rating"
+                              v-model="rateComment"
+                              type="textarea"
+                              :rows="5"
+                              style="margin-top: 10px; margin-bottom: 5px;"
+                              :maxlength="8000"
+                              placeholder="Cảm nghĩ của bạn về điểm số và phản hồi cho bài viết"
+                            />
+                          </div>
+                          <div style="margin-top: 5px;">
+                            <el-button :disabled="rateValue == 0 && rateComment == ''" size="mini" @click="rateAIReview()">
+                              Gửi đánh giá
+                            </el-button>
+                          </div>
+                        </div>
+                      </el-card>
+                    </div>
+                    <div v-else>
+                      <div v-if="loadingReview" style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                        <div class="el-loading-spinner" style="position: relative; top: 220px;">
+                          <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                          <p class="el-loading-text" style="word-break: break-word;">Đang tải chủ đề viết và các tiêu chí chấm bài</p>
+                        </div>
+                      </div>
+                      <div v-else-if="hasGrade" style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                        <div class="el-loading-spinner" style="position: relative; top: 220px;">
+                          <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                          <p class="el-loading-text" style="word-break: break-word;">Đang tải phản hồi cho bài viết</p>
+                        </div>
+                      </div>
+                      <div v-else style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                        <div class="el-loading-spinner" style="position: relative; top: 220px;">
+                          <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                          <p class="el-loading-text" style="word-break: break-word;">Đang chấm 4 tiêu chí, đánh giá lập luận, và cung cấp gợi ý cải thiện</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </el-tab-pane>
           <el-tab-pane name="question" label="Chủ đề">
             <tabQuestion
               v-if="review"
               ref="tabQuestion"
               :questionid="questionId"
-              :reviewid="reviewId"
-              :review-request="review.reviewRequest"
-              @openDisputeNote="onOpenDisputeNote"
-              @closeDisputeNote="disputeNoteDialogVisible=false"
             />
             <div
               v-if="!review"
@@ -19,19 +120,6 @@
               style="height: 520px;"
               element-loading-text="Đang tải chủ đề và tiêu chí đánh giá"
               element-loading-background="white"
-            />
-          </el-tab-pane>
-          <el-tab-pane name="rubric" label="Phản hồi cho bài viết">
-            <tabRubric
-              v-if="review && documentText"
-              ref="tabRubric"
-              :current-user="currentUser"
-              :feedback-language="review.reviewRequest.feedbackLanguage"
-              :document-text="documentText"
-              :questionid="questionId"
-              :is-ai-review="isAiReview"
-              :review-id="reviewId"
-              @setStatusText="setStatusText"
             />
           </el-tab-pane>
         </el-tabs>
@@ -61,9 +149,6 @@
           @rateBtnClick="rateReview"
           @openDialogRevise="reviseDialogVisible = true"
           @closeDialogRevise="reviseDialogVisible = false"
-          @dispute="openDisputeDialog"
-          @disputed="isDisputed=true"
-          @closeDisputeDialog="disputeDialogVisible = false"
         />
 
         <div id="viewerContainer" style="height: calc(100vh - 50px); ">
@@ -86,7 +171,6 @@
       </div>
 
     </div>
-    <!-- <rubric :question-id="questionId" :review-id="reviewId" /> -->
     <div id="comment-wrapper">
       <el-card
         v-for="comment in comments"
@@ -113,12 +197,6 @@
               {{ comment.category }}
             </div>
           </div>
-          <!-- <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
-            <i class="far fa-trash-alt" />
-          </el-button>
-          <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
-            <i class="far fa-edit" />
-          </el-button> -->
         </div>
         <div>
           <div
@@ -197,10 +275,6 @@
               v-if="review"
               ref="tabQuestion"
               :questionid="questionId"
-              :reviewid="reviewId"
-              :review-request="review.reviewRequest"
-              @openDisputeNote="onOpenDisputeNote"
-              @closeDisputeNote="disputeNoteDialogVisible=false"
             />
             <div
               v-if="!review"
@@ -211,7 +285,18 @@
             />
           </el-tab-pane>
           <el-tab-pane name="rubric" label="Phản hồi cho bài viết">
-            <tabRubric v-if="review && documentText" ref="tabRubric" :current-user="currentUser" :feedback-language="review.reviewRequest.feedbackLanguage" :document-text="documentText" :questionid="questionId" :is-ai-review="isAiReview" :review-id="reviewId" @setStatusText="setStatusText" />
+            <tabRubric
+              v-if="review && documentText"
+              ref="tabRubric"
+              :current-user="currentUser"
+              :feedback-language="review.reviewRequest.feedbackLanguage"
+              :document-text="documentText"
+              :questionid="questionId"
+              :is-ai-review="isAiReview"
+              :has-grade="hasGrade"
+              :review-id="reviewId"
+              @setStatusText="setStatusText"
+            />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -239,9 +324,6 @@
           @rateBtnClick="rateReview"
           @openDialogRevise="reviseDialogVisible = true"
           @closeDialogRevise="reviseDialogVisible = false"
-          @dispute="openDisputeDialog"
-          @disputed="isDisputed=true"
-          @closeDisputeDialog="disputeDialogVisible = false"
         />
 
         <div id="viewerContainer">
@@ -290,12 +372,6 @@
                 {{ comment.category }}
               </div>
             </div>
-          <!-- <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 10px;padding:10px 0!important;" button-id="delete" class="action-card-btn"	title="Delete Comment" @click="isUndo = false; deleteButtonClicked(comment)">
-            <i class="far fa-trash-alt" />
-          </el-button>
-          <el-button v-if="currentUser.role !== 'Admin' && comment.isSaved == true && !isView && !isRate" style="right: 30px;padding:10px 0!important;" button-id="edit" class="action-card-btn"	title="Edit Comment"	@click="displayEditComment(comment, idx)">
-            <i class="far fa-edit" />
-          </el-button> -->
           </div>
           <div>
             <div
@@ -362,7 +438,6 @@
 </template>
 
 <script>
-// import raterService from '../../services/rater.service'
 import PDFJS from 'pdf-dist/webpack.js'
 import ToolBar from '../../components/controls/Viewer_ToolBar'
 import TabQuestion from './Review_TabQuestion'
@@ -383,14 +458,12 @@ import { addEventListener, removeEventListener } from '@/pdfjs/UI/event'
 import appendChild from '@/pdfjs/render/appendChild'
 import docService from '@/services/document.service.js'
 import reviewService from '@/services/review.service.js'
-// import { enableEdit, disableEdit } from '@/pdfjs/UI/edit'
+
 import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
 import { UserRole } from '../../app.constant'
 import moment from 'moment-timezone'
-// import Rubric from '@/components/controls/Rubric'
-// import { highlightText } from '../../pdfjs/UI/highlight-text.js'
 
 export default {
   name: 'Document',
@@ -399,7 +472,6 @@ export default {
     'tabQuestion': TabQuestion,
     'tabRubric': TabRubric,
     'textToolGroup': TextToolGroup
-    // 'rubric': Rubric
   },
   data() {
     return {
@@ -407,14 +479,6 @@ export default {
       form: {
         noteRevision: null
       },
-      disputeForm: {
-        name: null,
-        questionId: null,
-        reviewUrl: null,
-        reviewId: null,
-        reasons: null
-      },
-      rubricCriteria: [],
       criteriaFeedback: {},
       showDirection: true,
       viewer: null,
@@ -480,11 +544,6 @@ export default {
       isReviewAuth: false,
       isRated: false,
       isSubmit: false,
-      disputeDialogVisible: false,
-      disputeNote: {
-        note: null
-      },
-      disputeNoteDialogVisible: false,
       isDisputed: false,
       showRubric: true,
       isAddingNewComment: false,
@@ -499,7 +558,11 @@ export default {
       textNodes: [],
       docData: null,
       errors: null,
-      intextCommentCompleted: false
+      intextCommentCompleted: false,
+      hasGrade: false,
+      rubricCriteria: [],
+      loadCriteriaFeedbackCompleted: false,
+      loadingReview: false
     }
   },
   computed: {
@@ -508,7 +571,6 @@ export default {
       if (!data || (!data.annotations && !data.comments && !data.reviewer)) {
         return null
       }
-
       return {
         annotations: data.annotations.map(a => ({ ...JSON.parse(a.data), id: a.id, top: a.top, pageNum: a.pageNum, color: a.color })),
         comments: data.comments.map(c => ({ ...JSON.parse(c.data), documentId: this.documentId, id: c.id })),
@@ -539,6 +601,7 @@ export default {
     }
   },
   async mounted() {
+    this.loadingReview = true
     if (this.$route.query.plain) {
       this.showQuestion = false
     }
@@ -556,10 +619,15 @@ export default {
 
     // Load review data and review request
     this.review = await reviewService.getById(this.$route.params.reviewId)
-    console.log(this.review)
-    if (this.review.review.reviewerId === 'AI') {
-      this.isAiReview = true
+
+    if (this.review) {
+      if (this.review.review.reviewerId === 'AI') {
+        this.isAiReview = true
+      }
+      if (this.review.review.finalScore) { this.hasGrade = true }
     }
+
+    this.loadingReview = false
 
     // Load question and get task info
     const question = await this.$store.dispatch('question/loadQuestion', this.questionId)
@@ -570,6 +638,9 @@ export default {
     const doc = await docService.getDocument(this.documentId)
     this.documentText = doc.data.text
     this.docData = this.base64ToArrayBuffer(doc.data.data)
+
+    // await this.loadRubric()
+    this.getReviewFeedback()
 
     // Get annotations in db first
     await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
@@ -635,6 +706,29 @@ export default {
     }
   },
   methods: {
+    async getReviewFeedback() {
+      const question = this.$store.getters['question/getSelected']
+      const topic = question.questionsPart.find(q => q.name == 'Question').content
+      const chart = question.questionsPart.find(q => q.name == 'Chart')
+      const essay = this.documentText
+      // create a review model
+      const model = {
+        questionId: this.questionId,
+        reviewId: this.reviewId,
+        topic: topic,
+        essay: essay,
+        task: question.section,
+        hasGrade: this.hasGrade,
+        chartFileName: chart ? chart.content : null,
+        feedbackLanguage: this.review.reviewRequest.feedbackLanguage
+      }
+      // get review feedback
+      reviewService.getReviewFeedback(model).then(rs => {
+        this.rubricCriteria = rs
+        console.log(this.rubricCriteria)
+        this.loadCriteriaFeedbackCompleted = true
+      })
+    },
     beforeWindowUnload(e) {
       if (!this.intextCommentCompleted) {
         // Cancel the event
@@ -2672,31 +2766,6 @@ export default {
         return this.loadedAnnotation.reviewer.firstName + ' ' + this.loadedAnnotation.reviewer.lastName
       }
       return this.currentUser.firstName + ' ' + this.currentUser.lastName
-    },
-    openDisputeDialog() {
-      this.disputeDialogVisible = true
-      this.disputeForm.questionId = this.questionId
-      this.disputeForm.name = `Question:${this.questionId}, Document: ${this.documentId}, Review:${this.reviewId}`
-      this.disputeForm.reviewUrl = `/review/${this.questionId}/${this.documentId}/${this.reviewId}`
-      this.disputeForm.reviewId = this.reviewId
-    },
-    submitDispute() {
-      this.$refs['formDispute'].validate((valid) => {
-        if (valid) {
-          this.$refs.toolBar?.submitDispute(this.disputeForm)
-        }
-      })
-    },
-    submitDisputeNote() {
-      this.$refs['formDisputeNote'].validate((valid) => {
-        if (valid) {
-          this.$refs.tabQuestion?.updateDispute(this.disputeNote)
-        }
-      })
-    },
-    onOpenDisputeNote() {
-      this.disputeNoteDialogVisible = true
-      this.$refs['formDisputeNote'].resetFields()
     }
     // End migration
   }
@@ -2708,6 +2777,16 @@ export default {
 @import '../../pdfjs/shared/toolbar.css';
 @import '../../pdfjs/shared/pdf_viewer.css';
 @import '../../styles/review.css';
+
+.band-score{
+  width: 85px;
+  border: #478a9e solid 1px;
+  padding: 2px 10px;
+  border-radius: 5px;
+  background: #d6e3e6;
+  font-size: 15px;
+}
+
 .show__more-container{
   font-size: 0.8em;
   color: blue;

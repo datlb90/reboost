@@ -18,6 +18,7 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IReviewRepository
     {
+        Task<List<CriteriaFeedback>> GetCriteriaFeedback(int reviewId);
         Task<ReviewRequests> DeleteReviewRequest(ReviewRequests request);
         Task<ReviewRatings> CreateAIReviewRatingAsync(ReviewRatings data);
         Task<ReviewRequests> CreateReviewRequest(ReviewRequests request);
@@ -80,6 +81,29 @@ namespace Reboost.DataAccess.Repositories
         {
             db = context;
         }
+
+        public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(int reviewId)
+        {
+            return await (from reviewData in db.ReviewData
+                          join criteria in db.RubricCriteria
+                               on reviewData.CriteriaId equals criteria.Id into rc
+                          from reviewCriteria in rc.DefaultIfEmpty()
+                          where reviewData.ReviewId == reviewId
+                          orderby reviewCriteria.OrderId
+                          select new CriteriaFeedback
+                          {
+                              criteriaId = reviewCriteria.Id,
+                              name = reviewCriteria.Name,
+                              mark = (decimal)reviewData.Score,
+                              comment = reviewData.Comment
+                          }).ToListAsync();
+        }
+
+        public async Task<List<ReviewData>> LoadFeedBack(int reviewId)
+        {
+            return await db.ReviewData.Where(rds => rds.ReviewId == reviewId).ToListAsync();
+        }
+
         public async Task<ReviewRatings> CreateAIReviewRatingAsync(ReviewRatings data)
         {
             await db.ReviewRatings.AddAsync(data);
@@ -222,35 +246,6 @@ namespace Reboost.DataAccess.Repositories
 
             await db.ReviewData.AddRangeAsync(data);
 
-            //// Check if review is a training, then change rater status to 'Training Completed' if his/her have finished all training that applied to
-            //Raters rater = await db.Raters.Where(r => r.UserId == review.ReviewerId).FirstOrDefaultAsync();
-
-            //if(rater != null &&rater.Status != RaterStatus.APPROVED)
-            //{
-            //    RaterTraining training = await db.RaterTraining.Where(t => t.ReviewId == reviewId).FirstOrDefaultAsync();
-
-            //    RaterRepository _raterRepository = new RaterRepository(db);
-
-            //    List<string> trainingCount = await _raterRepository.GetApplyTo(rater.Id);
-
-            //    if (training.Status == RaterTrainingStatus.REVISION_REQUESTED)
-            //    {
-            //        training.Status = RaterTrainingStatus.REVISION_COMPLETED;
-            //    }
-            //    else
-            //    {
-            //        training.Status = RaterTrainingStatus.COMPLETED;
-            //    }
-
-            //    int completedTrainingCount = await db.RaterTraining.Where(t => t.RaterId == rater.Id && (t.Status.Contains(RaterTrainingStatus.COMPLETED) || t.Status==RaterTrainingStatus.APPROVED)).CountAsync();
-
-            //    if (trainingCount.Count() == (completedTrainingCount+1))
-            //    {
-            //        rater.Status = RaterStatus.TRAINING_COMPLETED;
-            //    }
-
-            //}
-
             // Get the review request
             ReviewRequests request = await db.ReviewRequests.Where(rq => rq.Id == review.RequestId).FirstOrDefaultAsync();
 
@@ -282,10 +277,6 @@ namespace Reboost.DataAccess.Repositories
             review.LastActivityDate = DateTime.UtcNow;
             await db.SaveChangesAsync();
             return review;
-        }
-        public async Task<List<ReviewData>> LoadFeedBack(int reviewId)
-        {
-            return await db.ReviewData.Where(rds => rds.ReviewId == reviewId).ToListAsync();
         }
         public async Task<Annotations> AddAnnotationAsync(Annotations annotation)
         {

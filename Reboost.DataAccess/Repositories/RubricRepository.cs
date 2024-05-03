@@ -10,11 +10,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Models;
+using Reboost.Shared;
 
 namespace Reboost.DataAccess.Repositories
 {
     public interface IRubricRepository : IRepository<Rubrics>
     {
+        Task<List<FeedbackRubric>> GetFeedbackRubric(int questionId);
         Task<Rubrics> GetByIdAsync(int id);
         Task<Rubrics> UpdateWithCriteraAsync(Rubrics rubrics);
         Task<List<RubricsModel>> GetByQuestionId(int id);
@@ -24,6 +26,25 @@ namespace Reboost.DataAccess.Repositories
         private ReboostDbContext ReboostDbContext => context as ReboostDbContext;
         public RubricRepository(ReboostDbContext context) : base(context)
         { }
+
+        public async Task<List<FeedbackRubric>> GetFeedbackRubric(int questionId)
+        {
+           return await (from question in ReboostDbContext.Questions
+                        join rubric in ReboostDbContext.Rubrics
+                            on question.TaskId equals rubric.TaskId into qr
+                            from questionRubric in qr.DefaultIfEmpty()
+                        join criteria in ReboostDbContext.RubricCriteria
+                            on questionRubric.Id equals criteria.RubricId into rc
+                            from rubricCriteria in rc.DefaultIfEmpty()
+                        where question.Id == questionId && rubricCriteria.Name != "Overall Score & Feedback"
+                        select new FeedbackRubric
+                        {
+                            criteriaId = rubricCriteria.Id,
+                            name = rubricCriteria.Name,
+                            order = rubricCriteria.OrderId
+                        }).ToListAsync();
+        }
+
         public async Task<Rubrics> GetByIdAsync(int id)
         {
             return await ReboostDbContext.Rubrics

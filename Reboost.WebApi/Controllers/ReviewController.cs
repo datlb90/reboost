@@ -38,6 +38,27 @@ namespace Reboost.WebApi.Controllers
             configuration = _configuration;
             db = ctx;
         }
+
+
+        [HttpPost("ai/feedback/criteria/v5")]
+        public async Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model)
+        {
+            return await _service.getAIFeedbackForCriteriaV5(model);
+        }
+
+        [HttpPost("feedback")]
+        public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model)
+        {
+            return await _service.GetCriteriaFeedback(model);
+        }
+
+        [Authorize]
+        [HttpGet("feedback/{reviewId}")]
+        public async Task<IActionResult> GetFeedBack([FromRoute] int reviewId)
+        {
+            var rs = await _service.LoadFeedback(reviewId);
+            return Ok(rs);
+        }
         [Authorize]
         [HttpPost("ai/feedback/errors/intext/v2")]
         public async Task<ErrorsInText> getErrorsInTextV2(CriteriaFeedbackModel model)
@@ -293,13 +314,6 @@ namespace Reboost.WebApi.Controllers
                 }
             }
 
-            return Ok(rs);
-        }
-        [Authorize]
-        [HttpGet("feedback/{reviewId}")]
-        public async Task<IActionResult> GetFeedBack([FromRoute] int reviewId)
-        {
-            var rs = await _service.LoadFeedback(reviewId);
             return Ok(rs);
         }
         [Authorize]
