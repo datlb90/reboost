@@ -1,6 +1,9 @@
 import http from '@/utils/axios'
 
 const reviewService = {
+  getIntextComments(model) {
+    return http.post('/review/ai/feedback/intext/comment', model).then(rs => rs.data)
+  },
   getReviewFeedback(model) {
     return http.post('/review/feedback', model).then(rs => rs.data)
   },

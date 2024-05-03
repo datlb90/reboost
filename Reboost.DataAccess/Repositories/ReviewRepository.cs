@@ -275,6 +275,7 @@ namespace Reboost.DataAccess.Repositories
             }
             review.Status = ReviewStatus.COMPLETED;
             review.LastActivityDate = DateTime.UtcNow;
+
             await db.SaveChangesAsync();
             return review;
         }

@@ -16,7 +16,7 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IRubricRepository : IRepository<Rubrics>
     {
-        Task<List<FeedbackRubric>> GetFeedbackRubric(int questionId);
+        Task<List<FeedbackRubric>> GetFeedbackRubric(int questionId, string task);
         Task<Rubrics> GetByIdAsync(int id);
         Task<Rubrics> UpdateWithCriteraAsync(Rubrics rubrics);
         Task<List<RubricsModel>> GetByQuestionId(int id);
@@ -27,7 +27,7 @@ namespace Reboost.DataAccess.Repositories
         public RubricRepository(ReboostDbContext context) : base(context)
         { }
 
-        public async Task<List<FeedbackRubric>> GetFeedbackRubric(int questionId)
+        public async Task<List<FeedbackRubric>> GetFeedbackRubric(int questionId, string task)
         {
            return await (from question in ReboostDbContext.Questions
                         join rubric in ReboostDbContext.Rubrics
@@ -36,7 +36,8 @@ namespace Reboost.DataAccess.Repositories
                         join criteria in ReboostDbContext.RubricCriteria
                             on questionRubric.Id equals criteria.RubricId into rc
                             from rubricCriteria in rc.DefaultIfEmpty()
-                        where question.Id == questionId && rubricCriteria.Name != "Overall Score & Feedback"
+                        where question.Id == questionId && rubricCriteria.Name != "Overall Score & Feedback" &&
+                        (task == "Academic Writing Task 1" ? rubricCriteria.Name != "Arguments Assessment" : true)
                         select new FeedbackRubric
                         {
                             criteriaId = rubricCriteria.Id,

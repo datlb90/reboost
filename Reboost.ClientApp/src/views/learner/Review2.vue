@@ -557,10 +557,10 @@ export default {
       documentText: null,
       textNodes: [],
       docData: null,
-      errors: null,
       intextCommentCompleted: false,
       hasGrade: false,
-      rubricCriteria: [],
+      errors: null,
+      rubricCriteria: null,
       loadCriteriaFeedbackCompleted: false,
       loadingReview: false
     }
@@ -656,9 +656,10 @@ export default {
         essay: this.documentText,
         feedbackLanguage: this.review.reviewRequest.feedbackLanguage
       }
-      const response = await reviewService.getErrorsInText(model)
+      const response = await reviewService.getIntextComments(model)
       this.errors = response.errors
       console.log(this.errors)
+      this.saveIntextCommentFeedback()
     }
 
     // render the document
@@ -691,8 +692,10 @@ export default {
     document.body.style.overflow = null
   },
   beforeRouteLeave (to, from, next) {
+    console.log('In-text loaded:', this.intextCommentCompleted)
+    console.log('criteria loaded:', this.loadCriteriaFeedbackCompleted)
     // If the grading has not finished yet
-    if (!this.intextCommentCompleted) {
+    if (!this.intextCommentCompleted || !this.loadCriteriaFeedbackCompleted) {
       this.$confirm('Bài viết chưa được chấm xong nên toàn bộ phản hồi có thể sẽ bị mất. Bạn chắc chứ?', {
         confirmButtonText: 'OK',
         cancelButtonText: 'Cancel',
@@ -706,6 +709,32 @@ export default {
     }
   },
   methods: {
+    saveIntextCommentFeedback() {
+      if (this.errors && this.errors.length > 0 && this.rubricCriteria) {
+        let errorFeedback = ''
+        let explain = 'Explain'
+        if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
+        for (let i = 0; i < this.errors.length; i++) {
+          const order = i + 1
+          const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
+          errorFeedback += error
+        }
+
+        const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
+        criticalError.comment = errorFeedback
+
+        // Save this criteria feedback to db
+        var reviewData = []
+        reviewData.push({
+          Comment: errorFeedback,
+          CriteriaId: criticalError.criteriaId,
+          Score: 0,
+          ReviewId: this.reviewId,
+          UserFeedback: null
+        })
+        reviewService.saveRubric(this.reviewId, reviewData)
+      }
+    },
     async getReviewFeedback() {
       const question = this.$store.getters['question/getSelected']
       const topic = question.questionsPart.find(q => q.name == 'Question').content
@@ -727,10 +756,11 @@ export default {
         this.rubricCriteria = rs
         console.log(this.rubricCriteria)
         this.loadCriteriaFeedbackCompleted = true
+        this.saveIntextCommentFeedback()
       })
     },
     beforeWindowUnload(e) {
-      if (!this.intextCommentCompleted) {
+      if (!this.intextCommentCompleted || !this.loadCriteriaFeedbackCompleted) {
         // Cancel the event
         e.preventDefault()
         // Chrome requires returnValue to be set
@@ -930,8 +960,9 @@ export default {
                 // Highlight the first comment
                 count++
                 if (count == this.errors.length) {
-                  this.handleCommentPositionsRestore()
+                  console.log(count)
                   this.intextCommentCompleted = true
+                  this.handleCommentPositionsRestore()
                 }
               })
             })

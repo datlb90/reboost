@@ -26,15 +26,25 @@ namespace Reboost.Service.Services
 {
     public interface IChatGPTService
     {
-        Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model);
-        Task<EssayFeedback> getEssayScoreGPTTurbo(CriteriaFeedbackModel model);
+        // Get in-text comment
+        Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model);
+        Task<ErrorsInText> getIntextCommentsGPTTurbo(CriteriaFeedbackModel model);
+
+        // Get criteria feedback
+        Task<EssayFeedback> getCriteriaFeedbackGPT4(EssayFeedbackModel model);
         Task<EssayFeedback> getCriteriaFeedbackGPTTurbo(EssayFeedbackModel model);
+
+        // Get essay score
+        Task<EssayFeedback> getEssayScoreGPTTurbo(CriteriaFeedbackModel model);
+        Task<EssayFeedback> getEssayScoreGPT4(CriteriaFeedbackModel model);
 
         Task<ErrorsInText> getErrorsInTextV2(CriteriaFeedbackModel model);
         Task<string> getExperimentAIFeedback(ExperimentFeedbackModel model);
         Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model);
         Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model);
         Task<ErrorsInText> getErrorsInText(CriteriaFeedbackModel model);
+
+        Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model);
         // Version 1.4
         Task<string> getAIFeedbackForCriteriaV4(CriteriaFeedbackModel model);
         // Version 1.2
@@ -67,7 +77,139 @@ namespace Reboost.Service.Services
             configuration = _configuration;
         }
 
-        public async Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model)
+        public async Task<ErrorsInText> getIntextCommentsGPTTurbo(CriteriaFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string response = "Given the following essay paragraph:\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
+                // "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay paragraph with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
+
+                if (model.feedbackLanguage != "vn")
+                    request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay paragraph with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
+
+                ErrorsInText result = new ErrorsInText();
+                List<ErrorInText> errors = new List<ErrorInText>();
+
+                // Get vocabulary error first
+                var errorResponse = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = Model.ChatGPTTurbo, // Model.ChatGPTTurbo_16k,
+                    ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
+                    Temperature = 0.1,
+                    Messages = new ChatMessage[] {
+                        new ChatMessage(ChatMessageRole.Assistant, response),
+                        new ChatMessage(ChatMessageRole.User, request)
+                    }
+                });
+
+                ErrorsInText errorResult = JsonConvert.DeserializeObject<ErrorsInText>(errorResponse.Choices[0].Message.TextContent);
+
+                if (errorResult != null)
+                {
+                    foreach (ErrorInText error in errorResult.errors)
+                    {
+                        if (!errors.Any(e => e.error == error.error) && model.essay.Contains(error.error))
+                        {
+                            if (!error.comment.Contains(error.fix))
+                            {
+                                if (error.comment.EndsWith('.'))
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += " Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += " Thay thế bằng: '" + error.fix + "'";
+                                }
+                                else
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += ". Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += ". Thay thế bằng: '" + error.fix + "'";
+                                }
+                            }
+                            errors.Add(error);
+                        }
+                    }
+                }
+
+                result.errors = errors;
+                return result;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
+        public async Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string response = "Given the following essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
+
+                if (model.feedbackLanguage != "vn")
+                    request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
+                ErrorsInText result = new ErrorsInText();
+                List<ErrorInText> errors = new List<ErrorInText>();
+
+                // Get vocabulary error first
+                var errorResponse = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = Model.GPT4_Turbo,
+                    ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
+                    Temperature = 0.1,
+                    Messages = new ChatMessage[] {
+                        new ChatMessage(ChatMessageRole.Assistant, response),
+                        new ChatMessage(ChatMessageRole.User, request)
+                    }
+                });
+
+                ErrorsInText errorResult = JsonConvert.DeserializeObject<ErrorsInText>(errorResponse.Choices[0].Message.TextContent);
+
+                if (errorResult != null)
+                {
+                    foreach (ErrorInText error in errorResult.errors)
+                    {
+                        if (!errors.Any(e => e.error == error.error))
+                        {
+                            if (!error.comment.Contains(error.fix))
+                            {
+                                if (error.comment.EndsWith('.'))
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += " Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += " Thay thế bằng: '" + error.fix + "'";
+                                }
+                                else
+                                {
+                                    if (model.feedbackLanguage != "vn")
+                                        error.comment += ". Replace with: '" + error.fix + "'";
+                                    else
+                                        error.comment += ". Thay thế bằng: '" + error.fix + "'";
+                                }
+                            }
+                            errors.Add(error);
+                        }
+                    }
+                }
+
+                result.errors = errors;
+                return result;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
+        public async Task<EssayFeedback> getCriteriaFeedbackGPT4(EssayFeedbackModel model)
         {
             try
             {
@@ -79,7 +221,7 @@ namespace Reboost.Service.Services
                     if (model.task == "Academic Writing Task 1")
                     {
                         response = "Given the following IELTS Academic Writing Task 1 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
-                        if (!String.IsNullOrEmpty(model.chartDescription))
+                        if (!String.IsNullOrEmpty(model.chartDescription) && model.criteriaName == "Task Achievement")
                         {
                             topic = "Given the following chart information for the IELTS Academic Writing Task 1: \r\n\r\n" + model.chartDescription + "\r\n\r\n";
                         }
@@ -94,7 +236,7 @@ namespace Reboost.Service.Services
                     if (model.task == "Academic Writing Task 1")
                     {
                         topic = "Given the following IELTS Academic Writing Task 1 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
-                        if (!String.IsNullOrEmpty(model.chartDescription))
+                        if (!String.IsNullOrEmpty(model.chartDescription) && model.criteriaName == "Task Achievement")
                         {
                             topic += model.chartDescription;
                         }
@@ -104,7 +246,7 @@ namespace Reboost.Service.Services
                     else // Academic Writing Task 2
                     {
                         topic = "Given the following IELTS Academic Writing Task 2 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
-                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+                        response = "Given the following writing essay for the topic:\r\n\r\n" + model.essay + "\r\n\r\n";
                     }
                 }
 
@@ -118,8 +260,143 @@ namespace Reboost.Service.Services
                         request = "Cung cấp các cụm từ cực kỳ nâng cao cho chủ đề này. Mỗi cụm từ bao gồm các thông tin sau:\r\n- Cụm từ đó viết bằng tiếng anh: nghĩa bằng tiếng Việt\r\n- Definition: định nghĩa bằng tiếng Anh\r\n- Example: example related to the topic\r\n";
                         break;
                     case "Critical Errors":
-                        // Get feedback from in-text comment
-                        return null;
+                        return new EssayFeedback
+                        {
+                            criteriaId = model.criteriaId,
+                            criteriaName = model.criteriaName,
+                            order = model.order,
+                            comment = "Đang lựa chọn phương án cải thiện..."
+                        };
+                    case "Arguments Assessment":
+                        request = "Cho mỗi đoạn văn của thân bài:\r\n- Ý chính: the main idea of the paragraph in English\r\n- Lập luận: Đánh giá tính thuyết phục của lập luận hỗ trợ ý chính\r\n- Gợi ý: Cung cấp gợi ý củng cố lập luận\r\n";
+
+                        if (model.feedbackLanguage != "vn")
+                            request = "For each paragraph in the body of the essay, provide the following information:\r\n- Main idea: the main idea of the paragraph\r\n- Arguments: Assess the strengths and weaknesses of the arguments supporting the main idea\r\n- Suggestion: provide suggestions for reinforcing the arguments\r\n";
+                        break;
+                    case "Task Achievement":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Task Achievement. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Task Achievement.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Task Achievement.\r\n\r\n- Nếu có thông tin hay yếu tố nào của đề bài bị thiếu hoặc bỏ sót, chỉ ra những thông tin này này và đề xuất cách để bao gồm chúng ở trong bài luận.\r\n- Nếu bài luận không nhắc tới các xu hướng hoặc các phần quan trọng nhất trong thông tin được cung cấp, chỉ ra những thiếu sót này và đề xuất cách tích hợp vào bài luận.\r\n- Nếu bài luận thiếu sự so sánh giữa các điểm dữ liệu, đề xuất các so sánh cụ thể có thể làm giàu thêm phân tích của bài luận.\r\n- Nếu bài luận không lựa chọn dữ liệu từ thông tin được cung cấp một cách phù hợp, cung cấp gợi ý về các dữ liệu phù hợp nhất.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay based on the Task Achievement criterion. The feedback includes the following two parts:\r\n\r\n1. Strengths: Identify two points where the essay performed well regarding the Task Achievement criterion.\r\n\r\n2. Areas for improvement: Identify the aspects that the essay needs to improve for the Task Achievement criterion.\r\n\r\n- If any information or elements from the prompt are missing or overlooked, highlight them and suggest ways to include them in the essay.\r\n- If the essay fails to mention significant trends or features from the provided information, highlight these omissions and suggest ways to integrate them into the essay.\r\n- If the essay lacks comparisons between data points, propose specific comparisons that could enrich the analysis of the essay.\r\n- If the essay does not appropriately select data from the provided information, provide suggestions on the most relevant data to include.\r\n";
+                        break;
+                    case "Task Response":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Task Response. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Task Response.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Task Response.\r\n- Nếu bài luận không trả lời đầy đủ mọi khía cạnh của đề bài, chỉ ra những khía cạnh bị thiếu sót và gợi ý cách bổ sung chúng vào bài luận.\r\n- Nếu quan điểm của tác giả không được trình bày một cách rõ ràng và nhất quán, giải thích và đề xuất gợi ý cải thiện.\r\n- Nếu các ý tưởng không được mở rộng để hỗ trợ các luận điểm chính, chỉ ra các ý tưởng thiếu chiều sâu này và đề xuất cách thức để mở rộng và phát triển chúng.\r\n- Nếu các ý tưởng không được hỗ trợ bởi lý lẽ logic, bằng chứng, hoặc ví dụ cụ thể, chỉ ra các dẫn chứng có trong bài viết và gợi ý cách hỗ trợ những ý tưởng đó.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay based on the Task Response criterion. The feedback includes the following two parts:\r\n\r\n1. Strengths: Identify two points where the essay performed well regarding the Task Response criterion.\r\n\r\n2. Areas for improvement: Identify the aspects that the essay needs to improve for the Task Response criterion.\r\n- If the essay does not fully address all aspects of the prompt, point out these missing aspects and suggest ways to incorporate them into the essay.\r\n- If the author's viewpoint is not clearly and consistently presented throughout the essay, provide detailed explanation and recommend strategies for improvement.\r\n- If the ideas are not expanded to support the main arguments, point out these shallow ideas and propose ways to expand and develop them.\r\n- If the ideas are not supported by logical reasoning, evidence, or specific examples, point out the evidence in the text and suggest how to support these ideas.\r\n";
+                        break;
+                    case "Coherence & Cohesion":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Coherence and Cohesion. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Coherence and Cohesion.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Coherence and Cohesion.\r\n- Nếu cấu trúc của bài luận không rõ ràng và hợp lý, gây cản trở dòng chảy logic, đưa ra ví dụ cụ thể trong bài viết và gợi ý cách sắp xếp lại cấu trúc bài luận.\r\n- Nếu các đoạn văn thiếu sự tập trung, thiếu câu chủ đề, hoặc bao gồm nhiều ý tưởng, đưa ra ví dụ cụ thể trong bài viết và khuyến nghị phương án sửa đổi.\r\n- Nếu các thiết bị liên kết (như liên từ, đại từ, và cụm từ nối) được sử dụng một cách không thích hợp, đưa ra ví dụ cụ thể trong bài viết và cung cấp các phương án thay thế thích hợp hơn.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay based on the Coherence and Cohesion criterion. The feedback includes the following two parts:\r\n\r\n1. Strengths: Identify two strengths that the essay demonstrated regarding the Coherence and Cohesion criterion.\r\n\r\n2. Areas for improvement: Point out the aspects that the essay needs to improve for the Coherence and Cohesion criterion.\r\n\r\n- If the structure of the essay is not clear and logical, hindering the logical flow, provide specific evidence from the text and suggest ways to improve the essay’s structure to ensure a logical organization.\r\n- If paragraphs lack focus, lack a topic sentence, or include multiple ideas, provide specific examples from the text and recommend revision strategies.\r\n- If linking devices (such as conjunctions, pronouns, and linking phrases) are used inappropriately, provide specific examples from the text and offer more appropriate alternative options.\r\n";
+                        break;
+                    case "Lexical Resource":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Lexical Resource. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Lexical Resource.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Lexical Resource.\r\n- Nếu có bất kỳ từ hay cụm từ nào trong bài luận được sử dụng quá mức hoặc lặp lại không cần thiết, chỉ ra những từ hay cụm từ đó và cung cấp cách thay thế.\r\n- Nếu có bất kỳ sự không chính xác nào trong việc lựa chọn từ hoặc sử dụng từ, chỉ ra các dẫn chứng cụ thể trong bài viết, giải thích tại sao chúng không chính xác hoặc không phù hợp, và cung cấp các lựa chọn thay thế chính xác hơn.\r\n- Nếu ngôn ngữ được sử dụng không phù hợp hoặc thiếu sự trang trọng với một bài luận học thuật, chỉ ra các dẫn chứng cụ thể trong bài viết và đề xuất các lựa chọn thay thế.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay based on the Lexical Resource criterion. The feedback includes the following two parts:\r\n\r\n1. Strengths: Identify two points where the essay performed well regarding the Lexical Resource criterion.\r\n\r\n2. Areas for improvement: Identify the aspects that the essay needs to improve for the Lexical Resource criterion.\r\n- If any words or phrases are overused or unnecessarily repeated in the essay, point out these words or phrases and provide alternatives.\r\n- If there are any inaccuracies in word choice or usage, point out specific evidence in the text, explain why they are incorrect or inappropriate, and provide more accurate alternatives.\r\n- If the language used is not appropriate or lacks the formality required for an academic essay, highlight specific evidence in the text and suggest alternative choices.\r\n";
+                        break;
+                    case "Grammatical Range & Accuracy":
+                        request = "Cung cấp phản hồi bằng tiếng Việt cho bài luận cho tiêu chí Grammatical Range & Accuracy. Phản hồi gồm 2 phần sau:\r\n\r\n1. Điểm mạnh: chỉ ra 2 điểm mà bài luận đã làm tốt cho tiêu chí Grammatical Range & Accuracy.\r\n\r\n2. Điểm cần cải thiện: chỉ ra những điểm mà bài luận cần cải thiện cho tiêu chí Grammatical Range & Accuracy.\r\n- Nếu bài luận phụ thuộc quá mức vào chỉ một hay hai loại cấu trúc ngữ pháp, đưa ra ví dụ cụ thể và gợi ý những cấu trúc mới.\r\n- Nếu có phẩn nào của bài luận mà các loại câu phức tạp bao gồm câu ghép và câu phức có thể sử dụng thay thế để tăng cường sự rõ ràng và hấp dẫn, gợi ý những thay đổi cụ thể đó.\r\n- Nếu có bất kỳ lỗi ngữ pháp nào trong bài luận, chỉ ra ví dụ cụ thể, giải thích, và cung cấp cách sửa.\r\n";
+                        if (model.feedbackLanguage != "vn")
+                            request = "Provide feedback for the essay based on the Grammatical Range & Accuracy. The feedback includes the following two parts:\r\n\r\n1. Strengths: Identify two strengths that the essay demonstrated regarding the Grammatical Range & Accuracy criterion.\r\n\r\n2. Areas for improvement: Point out the aspects that the essay needs to improve for the Grammatical Range & Accuracy criterion.\r\n\r\n- If the essay relies too much on just one or two types of grammatical structures, provide specific examples and suggest new structures to use.\r\n- If there are parts of the essay where complex sentence types, including compound and complex sentences, could be used to enhance clarity and engagement, suggest those specific changes.\r\n- If there are any grammatical errors in the essay, point out specific examples, explain, and provide corrections.\r\n";
+                        break;
+                    default:
+                        break;
+                }
+
+                string gptModel = Model.GPT4_Turbo;
+                if (model.criteriaName == "Improved Version")
+                    gptModel = Model.ChatGPTTurbo;
+                if (model.criteriaName == "Vocabulary")
+                    gptModel = Model.ChatGPTTurbo_16k;
+
+                var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = gptModel,
+                    Temperature = 0.1,
+                    Messages = new ChatMessage[] {
+                        new ChatMessage(ChatMessageRole.Assistant, topic),
+                        new ChatMessage(ChatMessageRole.Assistant, response),
+                        new ChatMessage(ChatMessageRole.User, request)
+                    }
+                });
+
+                return new EssayFeedback
+                {
+                    criteriaId = model.criteriaId,
+                    criteriaName = model.criteriaName,
+                    order = model.order,
+                    comment = taskResponseResult.Choices[0].Message.TextContent,
+                };
+            }
+            catch (Exception e)
+            {
+                return new EssayFeedback
+                {
+                    criteriaId = model.criteriaId,
+                    criteriaName = model.criteriaName,
+                    order = model.order,
+                    comment = "Không thể cung cấp phản hồi cho tiêu chí " + model.criteriaName
+                };
+            }
+        }
+
+        public async Task<EssayFeedback> getCriteriaFeedbackGPTTurbo(EssayFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string topic = "";
+                string response = "";
+                if (model.topic == "The writing topic is not provided")
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        response = "Given the following IELTS Academic Writing Task 1 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+                        if (!String.IsNullOrEmpty(model.chartDescription) && model.criteriaName == "Task Achievement")
+                        {
+                            topic = "Given the following chart information for the IELTS Academic Writing Task 1: \r\n\r\n" + model.chartDescription + "\r\n\r\n";
+                        }
+                    }
+                    else // Academic Writing Task 2
+                    {
+                        response = "Given the following IELTS Academic Writing Task 2 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+                    }
+                }
+                else
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        topic = "Given the following IELTS Academic Writing Task 1 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                        if (!String.IsNullOrEmpty(model.chartDescription) && model.criteriaName == "Task Achievement")
+                        {
+                            topic += model.chartDescription;
+                        }
+                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                    }
+                    else // Academic Writing Task 2
+                    {
+                        topic = "Given the following IELTS Academic Writing Task 2 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                        response = "Given the following writing essay for the topic:\r\n\r\n" + model.essay + "\r\n\r\n";
+                    }
+                }
+
+                string request = "";
+                switch (model.criteriaName)
+                {
+                    case "Improved Version":
+                        request = "Provide an improved version of the essay while keeping all ideas, author point of view, arguments, examples, and analysis.";
+                        break;
+                    case "Vocabulary":
+                        request = "Cung cấp các cụm từ cực kỳ nâng cao cho chủ đề này. Mỗi cụm từ bao gồm các thông tin sau:\r\n- Cụm từ đó viết bằng tiếng anh: nghĩa bằng tiếng Việt\r\n- Definition: định nghĩa bằng tiếng Anh\r\n- Example: example related to the topic\r\n";
+                        break;
+                    case "Critical Errors":
+                        return new EssayFeedback
+                        {
+                            criteriaId = model.criteriaId,
+                            criteriaName = model.criteriaName,
+                            order = model.order,
+                            comment = "Đang lựa chọn phương án cải thiện..."
+                        };
                     case "Arguments Assessment":
                         request = "Cho mỗi đoạn văn của thân bài:\r\n- Ý chính: the main idea of the paragraph in English\r\n- Lập luận: Đánh giá tính thuyết phục của lập luận hỗ trợ ý chính\r\n- Gợi ý: Cung cấp gợi ý củng cố lập luận\r\n";
 
@@ -157,7 +434,8 @@ namespace Reboost.Service.Services
 
                 var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
-                    Model = (model.feedbackLanguage != "vn" || model.criteriaName == "Improved Version") ? Model.ChatGPTTurbo : Model.ChatGPTTurbo_16k,
+                    Model = (model.feedbackLanguage != "vn" || model.criteriaName == "Improved Version" || model.criteriaName == "Vocabulary")
+                           ? Model.ChatGPTTurbo : Model.ChatGPTTurbo_16k,
                     Temperature = 0.1,
                     Messages = new ChatMessage[] {
                             new ChatMessage(ChatMessageRole.Assistant, topic),
@@ -166,12 +444,107 @@ namespace Reboost.Service.Services
                         }
                 });
 
-                return taskResponseResult.Choices[0].Message.TextContent;
-
+                return new EssayFeedback
+                {
+                    criteriaId = model.criteriaId,
+                    criteriaName = model.criteriaName,
+                    order = model.order,
+                    comment = taskResponseResult.Choices[0].Message.TextContent,
+                };
             }
             catch (Exception e)
             {
-                return "Hệ thống không thể cung cấp phản hồi.";
+                return new EssayFeedback
+                {
+                    criteriaId = model.criteriaId,
+                    criteriaName = model.criteriaName,
+                    order = model.order,
+                    comment = "Không thể cung cấp phản hồi cho tiêu chí " + model.criteriaName
+                };
+            }
+        }
+
+        public async Task<EssayFeedback> getEssayScoreGPT4(CriteriaFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string rubric = "";
+                string topic = "";
+                string response = "";
+                if (model.topic == "The writing topic is not provided")
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        rubric = "Given the following band descriptors for the IELTS Academic Writing Task 1 delimited by <rubric> and </rubric> tags:\n\n<rubric>\n1. Task Achievement\n1.1. Criteria Description\nThe Task Achievement criterion in IELTS Academic Writing Task 1 evaluates how well you summarize key trends, compare data, cover all task requirements, and report features accurately from visuals like graphs or charts, focusing on your ability to identify and convey the most important information.\n\n1.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. The content is wholly unrelated to the task. Any copied rubric must be discounted.\n\n- Band 2: The content barely relates to the task.\n\n- Band 3: The response does not address the requirements of the task (possibly because of misunderstanding of the data/diagram/situation). Key features/bullet points which are presented may be largely irrelevant. Limited information is presented, and this may be used repetitively.\n\n- Band 4: The response is an attempt to address the task. Few key features have been selected. be confused. The tone may be inappropriate. The format may be inappropriate. Key features/bullet points which are presented may be irrelevant, repetitive, inaccurate, or inappropriate.\n\n- Band 5: The response generally addresses the requirements of the task. The format may be inappropriate in places. Key features which are selected are not adequately covered. The recounting of detail is mainly mechanical. There may be no data to support the description. There may be a tendency to focus on details (without referring to the bigger picture). The inclusion of irrelevant, inappropriate or inaccurate material in key areas detracts from the task achievement. There is limited detail when extending and illustrating the main points.\n\n- Band 6: The response focuses on the requirements of the task and an appropriate format is used. Key features which are selected are covered and adequately highlighted. A relevant overview is attempted. Information is appropriately selected and supported using figures/data. Some irrelevant, inappropriate or inaccurate information may occur in areas of detail or when illustrating or extending the main points. Some details may be missing (or excessive) and further extension or illustration may be needed.\n\n- Band 7: The response covers the requirements of the task. The content is relevant and accurate. There may be a few omissions or lapses. The format is appropriate. Key features which are selected are covered and clearly highlighted but could be more fully or more appropriately illustrated or extended. It presents a clear overview, the data are appropriately categorized, and main trends or differences are identified.\n\n- Band 8: The response covers all the requirements of the task appropriately, relevantly and sufficiently. Key features are skillfully selected, and clearly presented, highlighted and illustrated. There may be occasional omissions or lapses in content.\n\n- Band 9: All the requirements of the task are fully and appropriately satisfied. There may be extremely rare lapses in content.\n\n2. Coherence & Cohesion\n2.1. Criteria Description\nThe Coherence & Cohesion criterion assesses your ability to organize and link information clearly and logically in IELTS Academic Writing Task 1. It focuses on effective paragraphing, logical sequencing of ideas, and the use of cohesive devices (like linking words and pronouns) to help the reader understand the relationships between ideas.\n\n2.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. The writing fails to communicate any message and appears to be by a virtual non writer.\n\n- Band 2: There is little relevant message, or the entire response may be off topic. There is little evidence of control of organizational features.\n\n- Band 3: There is no apparent logical organization. Ideas are discernible but difficult to relate to each other. Minimal use of sequencers or cohesive devices. Those used do not necessarily indicate a logical relationship between ideas. There is difficulty in identifying referencing.\n\n- Band 4: Information and ideas are evident but not arranged coherently, and there is no clear progression within the response. Relationships between ideas can be unclear and/or inadequately marked. There is some use of basic cohesive devices, which may be inaccurate or repetitive. There is inaccurate use or a lack of substitution or referencing.\n\n- Band 5: Organization is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response. The relationship of ideas can be followed but the sentences are not fluently linked to each other. There may be limited/overuse of cohesive devices with some inaccuracy. The writing may be repetitive due to inadequate and/or inaccurate use of reference and substitution.\n\n- Band 6: Information and ideas are generally arranged coherently and there is a clear overall progression. Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission. The use of reference and substitution may lack flexibility or clarity and result in some repetition or error.\n\n- Band 7: Information and ideas are logically organized and there is a clear progression throughout the response. A few lapses may occur. A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use.\n\n- Band 8: The message can be followed with ease. Information and ideas are logically sequenced, and cohesion is well managed. Occasional lapses in coherence or cohesion may occur. Paragraphing is used sufficiently and appropriately.\n\n- Band 9: The message can be followed effortlessly. Cohesion is used in such a way that it very rarely attracts attention. Any lapses in coherence or cohesion are minimal. Paragraphing is skillfully managed.\n\n3. Lexical Resource\n3.1. Criteria Description\nThe Lexical Resource criterion evaluates your range of vocabulary, accuracy in word choice, and ability to use words appropriately to express precise meanings in IELTS Academic Writing Task 1. It focuses on your ability to use a variety of vocabulary to describe data, trends, and processes clearly and accurately.\n\n3.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. No resource is apparent, except for a few isolated words.\n\n- Band 2: The resource is extremely limited with few recognizable strings, apart from memorized phrases. There is no apparent control of word formation and/or spelling.\n\n- Band 3: The resource is inadequate (which may be due to the response being significantly under length). Possible over dependence on input material or memorized language. Control of word choice and/or spelling is very limited, and errors predominate. These errors may severely impede meaning.\n\n- Band 4: The resource is limited and inadequate for or unrelated to the task. Vocabulary is basic and may be used repetitively. There may be inappropriate use of lexical chunks (e. memorized phrases, formulaic language and/or language from the input material). Inappropriate word choice and/or errors in word formation and/or in spelling may impede meaning.\n\n- Band 5: The resource is limited but minimally adequate for the task. Simple vocabulary may be used accurately but the range does not permit much variation in expression. There may be frequent lapses in the appropriacy of word choice, and a lack of flexibility is apparent in frequent simplifications and/or repetitions. Errors in spelling and/or word formation may be noticeable and may cause some difficulty for the reader.\n\n- Band 6: The resource is generally adequate and appropriate for the task. The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice. If the writer is a risk taker, there will be a wider range of vocabulary used but higher degrees of inaccuracy or inappropriacy. There are some errors in spelling and/or word formation, but these do not impede communication.\n\n- Band 7: The resource is sufficient to allow some flexibility and precision. There is some ability to use less common and/or idiomatic items. An awareness of style and collocation is evident, though inappropriacy occur. There are only a few errors in spelling and/or word formation, and they do not detract from overall clarity.\n\n- Band 8: A wide resource is fluently and flexibly used to convey precise meanings within the scope of the task. There is skillful use of uncommon and/or idiomatic items when appropriate, despite occasional inaccuracies in word choice and collocation. Occasional errors in spelling and/or word formation may occur but have minimal impact on communication.\n\n- Band 9: Full flexibility and precise use are evident within the scope of the task. A wide range of vocabulary is used accurately and appropriately with very natural and sophisticated control of lexical features. Minor errors in spelling and word formation are extremely rare and have minimal impact on communication.\n\n4. Grammatical Range & Accuracy\n4.1. Criteria Description\nThe Grammatical Range & Accuracy criterion assesses your use of sentence structures and grammatical accuracy in IELTS Academic Writing Task 1. It focuses on your ability to construct a range of sentence types correctly and use grammar precisely to convey information and ideas effectively.\n\n4.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. No rateable language is evident.\n\n- Band 2: There is little or no evidence of sentence forms (except in memorized phrases).\n\n- Band 3: Sentence forms are attempted, but errors in grammar and punctuation predominate (except in memorized phrases or those taken from the input material). This prevents most meaning from coming through.  Length may be insufficient to provide evidence of control of sentence forms.\n\n- Band 4: A very limited range of structures is used. Subordinate clauses are rare and simple sentences predominate. Some structures are produced accurately but grammatical errors are frequent and may impede meaning. Punctuation is often faulty or inadequate.\n\n- Band 5: The range of structures is limited and rather repetitive. Although complex sentences are attempted, they tend to be faulty, and the greatest accuracy is achieved on simple sentences. Grammatical errors may be frequent and cause some difficulty for the reader. Punctuation may be faulty.\n\n- Band 6: A mix of simple and complex sentence forms is used but flexibility is limited. Examples of more complex structures are not marked by the same level of accuracy as in simple structures. Errors in grammar and punctuation occur, but rarely impede communication\n\n- Band 7: A variety of complex structures is used with some flexibility and accuracy. Grammar and punctuation are generally well controlled, and error free sentences are frequent. A few errors in grammar may persist, but these do not impede communication.\n\n- Band 8: A wide range of structures within the scope of the task is flexibly and accurately used. The majority of sentences are error free, and punctuation is well managed. Occasional, nonsystematic errors and inappropriacy occur, but have minimal impact on communication.\n\n- Band 9: A wide range of structures within the scope of the task is used with full flexibility and control. Punctuation and grammar are used appropriately throughout. Minor errors are extremely rare and have minimal impact on communication.\n</rubric>\n";
+                        response = "Given the following IELTS Academic Writing Task 1 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+                        if (!String.IsNullOrEmpty(model.chartDescription))
+                        {
+                            topic = "Given the following chart information for the IELTS Academic Writing Task 1: \r\n\r\n" + model.chartDescription + "\r\n\r\n";
+                        }
+                    }
+                    else // Academic Writing Task 2
+                    {
+                        rubric = "Given the following band descriptors for the IELTS Academic Writing Task 2 delimited by <rubric> and </rubric> tags:\n\n<rubric>\n1. Task Response\n1.1. Criteria Description\nThe Task Response criterion in IELTS Academic Writing Task 2 assesses how well you develop and support your ideas in response to the question. It focuses on your ability to present a clear, relevant position, fully extend and support your main ideas, and answer all parts of the task prompt comprehensively.\n\n1.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. The content is wholly unrelated to the prompt. Any copied rubric must be discounted.\n\n- Band 2: The content is barely related to the prompt. No position can be identified. There may be glimpses of one or two ideas without development.\n\n- Band 3: No part of the prompt is adequately addressed, or the prompt has been misunderstood. No relevant position can be identified, and/or there is little direct response to the question/s. There are few ideas, and these may be irrelevant or insufficiently developed.\n\n- Band 4: The prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt. The format may be inappropriate. A position is discernible, but the reader has to read carefully to find it. Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and/or support. Large parts of the response may be repetitive.\n\n- Band 5: The main parts of the prompt are incompletely addressed. The format may be inappropriate in places. The writer expresses a position, but the development is not always clear. Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail. There may be some repetition.\n\n- Band 6: The main parts of the prompt are addressed (though some may be more fully covered than others). An appropriate format is used. A position is presented that is directly relevant to the prompt, although the conclusions drawn may be unclear, unjustified or repetitive. Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate.\n\n- Band 7: The main parts of the prompt are appropriately addressed. A clear and developed position is presented. Main ideas are extended and supported but there may be a tendency to over generalize or there may be a lack of focus and precision in supporting ideas/material.\n\n- Band 8: The prompt is appropriately and sufficiently addressed. A clear and well-developed position is presented in response to the question/s. Ideas are relevant, well extended and supported. There may be occasional omissions or lapses in content.\n\n- Band 9: The prompt is appropriately addressed and explored in depth. A clear and fully developed position is presented which directly answers the question/s. Ideas are relevant, fully extended and well supported. Any lapses in content or support are extremely rare.\n\n2. Coherence & Cohesion\n2.1. Criteria Description\nThe Coherence & Cohesion criterion in IELTS Academic Writing Task 2 evaluates your ability to organize ideas logically and connect them smoothly. It focuses on clear overall structure, logical sequencing of paragraphs and ideas, and the effective use of cohesive devices (such as linking words and pronouns) to guide the reader through your argument or narrative seamlessly.\n\n2.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. The writing fails to communicate any message and appears to be by a virtual non writer.\n\n- Band 2: There is little relevant message, or the entire response may be off topic. There is little evidence of control of organizational features.\n\n- Band 3: There is no apparent logical organization. Ideas are discernible but difficult to relate to each other. There is minimal use of sequencers or cohesive devices. Those used do not necessarily indicate a logical relationship between ideas. There is difficulty in identifying referencing. Any attempts at paragraphing are unhelpful.\n\n- Band 4: Information and ideas are evident but not arranged coherently and there is no clear progression within the response. Relationships between ideas can be unclear and/or inadequately marked. There is some use of basic cohesive devices, which may be inaccurate or repetitive. There is inaccurate use or a lack of substitution or referencing. There may be no paragraphing and/or no clear main topic within paragraphs.\n\n- Band 5: Organization is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response. The relationship of ideas can be followed but the sentences are not fluently linked to each other. There may be limited/overuse of cohesive devices with some inaccuracy. The writing may be repetitive due to inadequate and/or inaccurate use of reference and substitution. Paragraphing may be inadequate or missing.\n\n- Band 6: Information and ideas are generally arranged coherently and there is a clear overall progression. Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission. The use of reference and substitution may lack flexibility or clarity and result in some repetition or error. Paragraphing may not always be logical and/or the central topic may not always be clear.\n\n- Band 7: Information and ideas are logically organized, and there is a clear progression throughout the response. (A few lapses may occur, but these are minor). A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use. Paragraphing is generally used effectively to support overall coherence, and the sequencing of ideas within a paragraph is generally logical.\n\n- Band 8: The message can be followed with ease. Information and ideas are logically sequenced, and cohesion is well managed. Occasional lapses in coherence and cohesion may occur. Paragraphing is used sufficiently and appropriately.\n\n- Band 9: The message can be followed effortlessly. Cohesion is used in such a way that it very rarely attracts attention. Any lapses in coherence or cohesion are minimal. Paragraphing is skillfully managed.\n\n3. Lexical Resource\n3.1. Criteria Description\nThe Lexical Resource criterion in IELTS Academic Writing Task 2 measures your range of vocabulary, the precision of your word choices, and your ability to use words appropriately for various contexts. It assesses your skill in using vocabulary flexibly and accurately to express ideas and opinions, including the effective use of synonyms and collocations, without errors that hinder communication.\n\n3.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: - Responses of 20 words or fewer are rated at Band 1. No resource is apparent, except for a few isolated words.\n\n- Band 2: The resource is extremely limited with few recognizable strings, apart from memorized phrases. There is no apparent control of word formation and/or spelling.\n\n- Band 3: The resource is inadequate (which may be due to the response being significantly under length). Possible over-dependence on input material or memorized language. Control of word choice and/or spelling is very limited, and errors predominate. These errors may severely impede meaning.\n\n- Band 4: The resource is limited and inadequate for or unrelated to the task. Vocabulary is basic and may be used repetitively. There may be inappropriate use of lexical chunks (e.g. memorized phrases, formulaic language and/or language from the input material). Inappropriate word choice and/or errors in word formation and/or in spelling may impede meaning.\n\n- Band 5: The resource is limited but minimally adequate for the task. Simple vocabulary may be used accurately but the range does not permit much variation in expression. There may be frequent lapses in the appropriacy of word choice and a lack of flexibility is apparent in frequent simplifications and/or repetitions. Errors in spelling and/or word formation may be noticeable and may cause some difficulty for the reader.\n\n- Band 6: The resource is generally adequate and appropriate for the task. The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice. If the writer is a risk-taker, there will be a wider range of vocabulary used but higher degrees of inaccuracy or inappropriacy. There are some errors in spelling and/or word formation, but these do not impede communication.\n\n- Band 7: The resource is sufficient to allow some flexibility and precision. There is some ability to use less common and/or idiomatic items. An awareness of style and collocation is evident, though inappropriacy occur. There are only a few errors in spelling and/or word formation and they do not detract from overall clarity.\n\n- Band 8: A wide resource is fluently and flexibly used to convey precise meanings. There is skillful use of uncommon and/or idiomatic items when appropriate, despite occasional inaccuracies in word choice and collocation. Occasional errors in spelling and/or word formation may occur but have minimal impact on communication.\n\n- Band 9: Full flexibility and precise use are widely evident. A wide range of vocabulary is used accurately and appropriately with very natural and sophisticated control of lexical features. Minor errors in spelling and word formation are extremely rare and have minimal impact on communication.\n\n4. Grammatical Range & Accuracy\n4.1. Criteria Description\nThe Grammatical Range & Accuracy criterion in IELTS Academic Writing Task 2 evaluates your ability to use a wide range of grammar structures accurately. It focuses on your capacity to construct complex sentences effectively, use punctuation correctly, and apply grammatical forms with flexibility to clearly express detailed reasoning and arguments without making errors that obscure meaning.\n\n4.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. No rateable language is evident.\n\n- Band 2: There is little or no evidence of sentence forms (except in memorised phrases).\n\n- Band 3: Sentence forms are attempted, but errors in grammar and punctuation predominate (except in memorized phrases or those taken from the input material). This prevents most meaning from coming through. Length may be insufficient to provide evidence of control of sentence forms.\n\n- Band 4: A very limited range of structures is used. Subordinate clauses are rare and simple sentences predominate. Some structures are produced accurately but grammatical errors are frequent and may impede meaning. Punctuation is often faulty or inadequate.\n\n- Band 5: The range of structures is limited and rather repetitive. Although complex sentences are attempted, they tend to be faulty, and the greatest accuracy is achieved on simple sentences. Grammatical errors may be frequent and cause some difficulty for the reader. Punctuation may be faulty.\n\n- Band 6: A mix of simple and complex sentence forms is used but flexibility is limited. Examples of more complex structures are not marked by the same level of accuracy as in simple structures. Errors in grammar and punctuation occur, but rarely impede communication.\n\n- Band 7: A variety of complex structures is used with some flexibility and accuracy. Grammar and punctuation are generally well controlled, and error-free sentences are frequent. A few errors in grammar may persist, but these do not impede communication.\n\n- Band 8: A wide range of structures is flexibly and accurately used. The majority of sentences are error-free, and punctuation is well managed. Occasional, non-systematic errors and inappropriacy occur, but have minimal impact on communication.\n\n- Band 9: A wide range of structures is used with full flexibility and control. Punctuation and grammar are used appropriately throughout. Minor errors are extremely rare and have minimal impact on communication.\n\n</rubric>\n";
+                        response = "Given the following IELTS Academic Writing Task 2 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+                    }
+                }
+                else
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        rubric = "Given the following band descriptors for the IELTS Academic Writing Task 1 delimited by <rubric> and </rubric> tags:\n\n<rubric>\n1. Task Achievement\n1.1. Criteria Description\nThe Task Achievement criterion in IELTS Academic Writing Task 1 evaluates how well you summarize key trends, compare data, cover all task requirements, and report features accurately from visuals like graphs or charts, focusing on your ability to identify and convey the most important information.\n\n1.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. The content is wholly unrelated to the task. Any copied rubric must be discounted.\n\n- Band 2: The content barely relates to the task.\n\n- Band 3: The response does not address the requirements of the task (possibly because of misunderstanding of the data/diagram/situation). Key features/bullet points which are presented may be largely irrelevant. Limited information is presented, and this may be used repetitively.\n\n- Band 4: The response is an attempt to address the task. Few key features have been selected. be confused. The tone may be inappropriate. The format may be inappropriate. Key features/bullet points which are presented may be irrelevant, repetitive, inaccurate, or inappropriate.\n\n- Band 5: The response generally addresses the requirements of the task. The format may be inappropriate in places. Key features which are selected are not adequately covered. The recounting of detail is mainly mechanical. There may be no data to support the description. There may be a tendency to focus on details (without referring to the bigger picture). The inclusion of irrelevant, inappropriate or inaccurate material in key areas detracts from the task achievement. There is limited detail when extending and illustrating the main points.\n\n- Band 6: The response focuses on the requirements of the task and an appropriate format is used. Key features which are selected are covered and adequately highlighted. A relevant overview is attempted. Information is appropriately selected and supported using figures/data. Some irrelevant, inappropriate or inaccurate information may occur in areas of detail or when illustrating or extending the main points. Some details may be missing (or excessive) and further extension or illustration may be needed.\n\n- Band 7: The response covers the requirements of the task. The content is relevant and accurate. There may be a few omissions or lapses. The format is appropriate. Key features which are selected are covered and clearly highlighted but could be more fully or more appropriately illustrated or extended. It presents a clear overview, the data are appropriately categorized, and main trends or differences are identified.\n\n- Band 8: The response covers all the requirements of the task appropriately, relevantly and sufficiently. Key features are skillfully selected, and clearly presented, highlighted and illustrated. There may be occasional omissions or lapses in content.\n\n- Band 9: All the requirements of the task are fully and appropriately satisfied. There may be extremely rare lapses in content.\n\n2. Coherence & Cohesion\n2.1. Criteria Description\nThe Coherence & Cohesion criterion assesses your ability to organize and link information clearly and logically in IELTS Academic Writing Task 1. It focuses on effective paragraphing, logical sequencing of ideas, and the use of cohesive devices (like linking words and pronouns) to help the reader understand the relationships between ideas.\n\n2.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. The writing fails to communicate any message and appears to be by a virtual non writer.\n\n- Band 2: There is little relevant message, or the entire response may be off topic. There is little evidence of control of organizational features.\n\n- Band 3: There is no apparent logical organization. Ideas are discernible but difficult to relate to each other. Minimal use of sequencers or cohesive devices. Those used do not necessarily indicate a logical relationship between ideas. There is difficulty in identifying referencing.\n\n- Band 4: Information and ideas are evident but not arranged coherently, and there is no clear progression within the response. Relationships between ideas can be unclear and/or inadequately marked. There is some use of basic cohesive devices, which may be inaccurate or repetitive. There is inaccurate use or a lack of substitution or referencing.\n\n- Band 5: Organization is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response. The relationship of ideas can be followed but the sentences are not fluently linked to each other. There may be limited/overuse of cohesive devices with some inaccuracy. The writing may be repetitive due to inadequate and/or inaccurate use of reference and substitution.\n\n- Band 6: Information and ideas are generally arranged coherently and there is a clear overall progression. Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission. The use of reference and substitution may lack flexibility or clarity and result in some repetition or error.\n\n- Band 7: Information and ideas are logically organized and there is a clear progression throughout the response. A few lapses may occur. A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use.\n\n- Band 8: The message can be followed with ease. Information and ideas are logically sequenced, and cohesion is well managed. Occasional lapses in coherence or cohesion may occur. Paragraphing is used sufficiently and appropriately.\n\n- Band 9: The message can be followed effortlessly. Cohesion is used in such a way that it very rarely attracts attention. Any lapses in coherence or cohesion are minimal. Paragraphing is skillfully managed.\n\n3. Lexical Resource\n3.1. Criteria Description\nThe Lexical Resource criterion evaluates your range of vocabulary, accuracy in word choice, and ability to use words appropriately to express precise meanings in IELTS Academic Writing Task 1. It focuses on your ability to use a variety of vocabulary to describe data, trends, and processes clearly and accurately.\n\n3.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. No resource is apparent, except for a few isolated words.\n\n- Band 2: The resource is extremely limited with few recognizable strings, apart from memorized phrases. There is no apparent control of word formation and/or spelling.\n\n- Band 3: The resource is inadequate (which may be due to the response being significantly under length). Possible over dependence on input material or memorized language. Control of word choice and/or spelling is very limited, and errors predominate. These errors may severely impede meaning.\n\n- Band 4: The resource is limited and inadequate for or unrelated to the task. Vocabulary is basic and may be used repetitively. There may be inappropriate use of lexical chunks (e. memorized phrases, formulaic language and/or language from the input material). Inappropriate word choice and/or errors in word formation and/or in spelling may impede meaning.\n\n- Band 5: The resource is limited but minimally adequate for the task. Simple vocabulary may be used accurately but the range does not permit much variation in expression. There may be frequent lapses in the appropriacy of word choice, and a lack of flexibility is apparent in frequent simplifications and/or repetitions. Errors in spelling and/or word formation may be noticeable and may cause some difficulty for the reader.\n\n- Band 6: The resource is generally adequate and appropriate for the task. The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice. If the writer is a risk taker, there will be a wider range of vocabulary used but higher degrees of inaccuracy or inappropriacy. There are some errors in spelling and/or word formation, but these do not impede communication.\n\n- Band 7: The resource is sufficient to allow some flexibility and precision. There is some ability to use less common and/or idiomatic items. An awareness of style and collocation is evident, though inappropriacy occur. There are only a few errors in spelling and/or word formation, and they do not detract from overall clarity.\n\n- Band 8: A wide resource is fluently and flexibly used to convey precise meanings within the scope of the task. There is skillful use of uncommon and/or idiomatic items when appropriate, despite occasional inaccuracies in word choice and collocation. Occasional errors in spelling and/or word formation may occur but have minimal impact on communication.\n\n- Band 9: Full flexibility and precise use are evident within the scope of the task. A wide range of vocabulary is used accurately and appropriately with very natural and sophisticated control of lexical features. Minor errors in spelling and word formation are extremely rare and have minimal impact on communication.\n\n4. Grammatical Range & Accuracy\n4.1. Criteria Description\nThe Grammatical Range & Accuracy criterion assesses your use of sentence structures and grammatical accuracy in IELTS Academic Writing Task 1. It focuses on your ability to construct a range of sentence types correctly and use grammar precisely to convey information and ideas effectively.\n\n4.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. No rateable language is evident.\n\n- Band 2: There is little or no evidence of sentence forms (except in memorized phrases).\n\n- Band 3: Sentence forms are attempted, but errors in grammar and punctuation predominate (except in memorized phrases or those taken from the input material). This prevents most meaning from coming through.  Length may be insufficient to provide evidence of control of sentence forms.\n\n- Band 4: A very limited range of structures is used. Subordinate clauses are rare and simple sentences predominate. Some structures are produced accurately but grammatical errors are frequent and may impede meaning. Punctuation is often faulty or inadequate.\n\n- Band 5: The range of structures is limited and rather repetitive. Although complex sentences are attempted, they tend to be faulty, and the greatest accuracy is achieved on simple sentences. Grammatical errors may be frequent and cause some difficulty for the reader. Punctuation may be faulty.\n\n- Band 6: A mix of simple and complex sentence forms is used but flexibility is limited. Examples of more complex structures are not marked by the same level of accuracy as in simple structures. Errors in grammar and punctuation occur, but rarely impede communication\n\n- Band 7: A variety of complex structures is used with some flexibility and accuracy. Grammar and punctuation are generally well controlled, and error free sentences are frequent. A few errors in grammar may persist, but these do not impede communication.\n\n- Band 8: A wide range of structures within the scope of the task is flexibly and accurately used. The majority of sentences are error free, and punctuation is well managed. Occasional, nonsystematic errors and inappropriacy occur, but have minimal impact on communication.\n\n- Band 9: A wide range of structures within the scope of the task is used with full flexibility and control. Punctuation and grammar are used appropriately throughout. Minor errors are extremely rare and have minimal impact on communication.\n</rubric>\n";
+                        topic = "Given the following IELTS Academic Writing Task 1 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                        if (!String.IsNullOrEmpty(model.chartDescription))
+                        {
+                            topic += model.chartDescription;
+                        }
+                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                    }
+                    else // Academic Writing Task 2
+                    {
+                        rubric = "Given the following band descriptors for the IELTS Academic Writing Task 2 delimited by <rubric> and </rubric> tags:\n\n<rubric>\n1. Task Response\n1.1. Criteria Description\nThe Task Response criterion in IELTS Academic Writing Task 2 assesses how well you develop and support your ideas in response to the question. It focuses on your ability to present a clear, relevant position, fully extend and support your main ideas, and answer all parts of the task prompt comprehensively.\n\n1.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. The content is wholly unrelated to the prompt. Any copied rubric must be discounted.\n\n- Band 2: The content is barely related to the prompt. No position can be identified. There may be glimpses of one or two ideas without development.\n\n- Band 3: No part of the prompt is adequately addressed, or the prompt has been misunderstood. No relevant position can be identified, and/or there is little direct response to the question/s. There are few ideas, and these may be irrelevant or insufficiently developed.\n\n- Band 4: The prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt. The format may be inappropriate. A position is discernible, but the reader has to read carefully to find it. Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and/or support. Large parts of the response may be repetitive.\n\n- Band 5: The main parts of the prompt are incompletely addressed. The format may be inappropriate in places. The writer expresses a position, but the development is not always clear. Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail. There may be some repetition.\n\n- Band 6: The main parts of the prompt are addressed (though some may be more fully covered than others). An appropriate format is used. A position is presented that is directly relevant to the prompt, although the conclusions drawn may be unclear, unjustified or repetitive. Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate.\n\n- Band 7: The main parts of the prompt are appropriately addressed. A clear and developed position is presented. Main ideas are extended and supported but there may be a tendency to over generalize or there may be a lack of focus and precision in supporting ideas/material.\n\n- Band 8: The prompt is appropriately and sufficiently addressed. A clear and well-developed position is presented in response to the question/s. Ideas are relevant, well extended and supported. There may be occasional omissions or lapses in content.\n\n- Band 9: The prompt is appropriately addressed and explored in depth. A clear and fully developed position is presented which directly answers the question/s. Ideas are relevant, fully extended and well supported. Any lapses in content or support are extremely rare.\n\n2. Coherence & Cohesion\n2.1. Criteria Description\nThe Coherence & Cohesion criterion in IELTS Academic Writing Task 2 evaluates your ability to organize ideas logically and connect them smoothly. It focuses on clear overall structure, logical sequencing of paragraphs and ideas, and the effective use of cohesive devices (such as linking words and pronouns) to guide the reader through your argument or narrative seamlessly.\n\n2.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. The writing fails to communicate any message and appears to be by a virtual non writer.\n\n- Band 2: There is little relevant message, or the entire response may be off topic. There is little evidence of control of organizational features.\n\n- Band 3: There is no apparent logical organization. Ideas are discernible but difficult to relate to each other. There is minimal use of sequencers or cohesive devices. Those used do not necessarily indicate a logical relationship between ideas. There is difficulty in identifying referencing. Any attempts at paragraphing are unhelpful.\n\n- Band 4: Information and ideas are evident but not arranged coherently and there is no clear progression within the response. Relationships between ideas can be unclear and/or inadequately marked. There is some use of basic cohesive devices, which may be inaccurate or repetitive. There is inaccurate use or a lack of substitution or referencing. There may be no paragraphing and/or no clear main topic within paragraphs.\n\n- Band 5: Organization is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response. The relationship of ideas can be followed but the sentences are not fluently linked to each other. There may be limited/overuse of cohesive devices with some inaccuracy. The writing may be repetitive due to inadequate and/or inaccurate use of reference and substitution. Paragraphing may be inadequate or missing.\n\n- Band 6: Information and ideas are generally arranged coherently and there is a clear overall progression. Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission. The use of reference and substitution may lack flexibility or clarity and result in some repetition or error. Paragraphing may not always be logical and/or the central topic may not always be clear.\n\n- Band 7: Information and ideas are logically organized, and there is a clear progression throughout the response. (A few lapses may occur, but these are minor). A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use. Paragraphing is generally used effectively to support overall coherence, and the sequencing of ideas within a paragraph is generally logical.\n\n- Band 8: The message can be followed with ease. Information and ideas are logically sequenced, and cohesion is well managed. Occasional lapses in coherence and cohesion may occur. Paragraphing is used sufficiently and appropriately.\n\n- Band 9: The message can be followed effortlessly. Cohesion is used in such a way that it very rarely attracts attention. Any lapses in coherence or cohesion are minimal. Paragraphing is skillfully managed.\n\n3. Lexical Resource\n3.1. Criteria Description\nThe Lexical Resource criterion in IELTS Academic Writing Task 2 measures your range of vocabulary, the precision of your word choices, and your ability to use words appropriately for various contexts. It assesses your skill in using vocabulary flexibly and accurately to express ideas and opinions, including the effective use of synonyms and collocations, without errors that hinder communication.\n\n3.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: - Responses of 20 words or fewer are rated at Band 1. No resource is apparent, except for a few isolated words.\n\n- Band 2: The resource is extremely limited with few recognizable strings, apart from memorized phrases. There is no apparent control of word formation and/or spelling.\n\n- Band 3: The resource is inadequate (which may be due to the response being significantly under length). Possible over-dependence on input material or memorized language. Control of word choice and/or spelling is very limited, and errors predominate. These errors may severely impede meaning.\n\n- Band 4: The resource is limited and inadequate for or unrelated to the task. Vocabulary is basic and may be used repetitively. There may be inappropriate use of lexical chunks (e.g. memorized phrases, formulaic language and/or language from the input material). Inappropriate word choice and/or errors in word formation and/or in spelling may impede meaning.\n\n- Band 5: The resource is limited but minimally adequate for the task. Simple vocabulary may be used accurately but the range does not permit much variation in expression. There may be frequent lapses in the appropriacy of word choice and a lack of flexibility is apparent in frequent simplifications and/or repetitions. Errors in spelling and/or word formation may be noticeable and may cause some difficulty for the reader.\n\n- Band 6: The resource is generally adequate and appropriate for the task. The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice. If the writer is a risk-taker, there will be a wider range of vocabulary used but higher degrees of inaccuracy or inappropriacy. There are some errors in spelling and/or word formation, but these do not impede communication.\n\n- Band 7: The resource is sufficient to allow some flexibility and precision. There is some ability to use less common and/or idiomatic items. An awareness of style and collocation is evident, though inappropriacy occur. There are only a few errors in spelling and/or word formation and they do not detract from overall clarity.\n\n- Band 8: A wide resource is fluently and flexibly used to convey precise meanings. There is skillful use of uncommon and/or idiomatic items when appropriate, despite occasional inaccuracies in word choice and collocation. Occasional errors in spelling and/or word formation may occur but have minimal impact on communication.\n\n- Band 9: Full flexibility and precise use are widely evident. A wide range of vocabulary is used accurately and appropriately with very natural and sophisticated control of lexical features. Minor errors in spelling and word formation are extremely rare and have minimal impact on communication.\n\n4. Grammatical Range & Accuracy\n4.1. Criteria Description\nThe Grammatical Range & Accuracy criterion in IELTS Academic Writing Task 2 evaluates your ability to use a wide range of grammar structures accurately. It focuses on your capacity to construct complex sentences effectively, use punctuation correctly, and apply grammatical forms with flexibility to clearly express detailed reasoning and arguments without making errors that obscure meaning.\n\n4.2. Band Descriptors\n- Band 0: Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorized.\n\n- Band 1: Responses of 20 words or fewer are rated at Band 1. No rateable language is evident.\n\n- Band 2: There is little or no evidence of sentence forms (except in memorised phrases).\n\n- Band 3: Sentence forms are attempted, but errors in grammar and punctuation predominate (except in memorized phrases or those taken from the input material). This prevents most meaning from coming through. Length may be insufficient to provide evidence of control of sentence forms.\n\n- Band 4: A very limited range of structures is used. Subordinate clauses are rare and simple sentences predominate. Some structures are produced accurately but grammatical errors are frequent and may impede meaning. Punctuation is often faulty or inadequate.\n\n- Band 5: The range of structures is limited and rather repetitive. Although complex sentences are attempted, they tend to be faulty, and the greatest accuracy is achieved on simple sentences. Grammatical errors may be frequent and cause some difficulty for the reader. Punctuation may be faulty.\n\n- Band 6: A mix of simple and complex sentence forms is used but flexibility is limited. Examples of more complex structures are not marked by the same level of accuracy as in simple structures. Errors in grammar and punctuation occur, but rarely impede communication.\n\n- Band 7: A variety of complex structures is used with some flexibility and accuracy. Grammar and punctuation are generally well controlled, and error-free sentences are frequent. A few errors in grammar may persist, but these do not impede communication.\n\n- Band 8: A wide range of structures is flexibly and accurately used. The majority of sentences are error-free, and punctuation is well managed. Occasional, non-systematic errors and inappropriacy occur, but have minimal impact on communication.\n\n- Band 9: A wide range of structures is used with full flexibility and control. Punctuation and grammar are used appropriately throughout. Minor errors are extremely rare and have minimal impact on communication.\n\n</rubric>\n";
+                        topic = "Given the following IELTS Academic Writing Task 2 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+                    }
+                }
+
+                string request = "Provide the score for the essay using JSON format. The JSON object has the following 4 properties:\r\n- taskResponseScore: the score of the essay for the Task Response criteria based on the provided band descriptors.\r\n- coherenceScore: the score of the essay for the Coherence & Cohesion criteria based on the provided band descriptors.\r\n- lexicalResourceScore: the essay for the Lexical Resource criteria based on the provided band descriptors.\r\n- grammarScore: the score of the essay for the Grammatical Range & Accuracy criteria based on the provided band descriptors.";
+                if (model.task == "Academic Writing Task 1")
+                {
+                    request = "Provide the score for the essay using JSON format. The JSON object has the following 4 properties:\r\n- taskAchievementScore: the score of the essay for the Task Achievement criteria based on the provided band descriptors.\r\n- coherenceScore: the score of the essay for the Coherence & Cohesion criteria based on the provided band descriptors.\r\n- lexicalResourceScore: the score of the essay for the Lexical Resource criteria based on the provided band descriptors.\r\n- grammarScore: the score of the essay for the Grammatical Range & Accuracy criteria based on the provided band descriptors.";
+                }
+                var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = Model.GPT4_Turbo,
+                    ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
+                    Temperature = 0.1,
+                    Messages = new ChatMessage[] {
+                        new ChatMessage(ChatMessageRole.System, "You are a helpful assistant designed to output JSON."),
+                            new ChatMessage(ChatMessageRole.Assistant, rubric),
+                            new ChatMessage(ChatMessageRole.Assistant, topic),
+                            new ChatMessage(ChatMessageRole.Assistant, response),
+                            new ChatMessage(ChatMessageRole.User, request)
+                        }
+                });
+
+                var result = JsonConvert.DeserializeObject<EssayFeedback>(taskResponseResult.Choices[0].Message.TextContent);
+
+                if (result != null)
+                {
+                    result.overallScore = 0; //(decimal)(Math.Round(result.overallScore * 2, MidpointRounding.AwayFromZero) / 2);
+                    result.taskResponseScore = (decimal)Math.Floor(result.taskResponseScore);
+                    result.coherenceScore = (decimal)Math.Floor(result.coherenceScore);
+                    result.lexicalResourceScore = (decimal)Math.Floor(result.lexicalResourceScore);
+                    result.grammarScore = (decimal)Math.Floor(result.grammarScore);
+                }
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                return null;
             }
         }
 
@@ -260,7 +633,7 @@ namespace Reboost.Service.Services
             }
         }
 
-        public async Task<EssayFeedback> getCriteriaFeedbackGPTTurbo(EssayFeedbackModel model)
+        public async Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model)
         {
             try
             {
@@ -272,7 +645,7 @@ namespace Reboost.Service.Services
                     if (model.task == "Academic Writing Task 1")
                     {
                         response = "Given the following IELTS Academic Writing Task 1 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
-                        if (!String.IsNullOrEmpty(model.chartDescription) && model.criteriaName == "Task Achievement")
+                        if (!String.IsNullOrEmpty(model.chartDescription))
                         {
                             topic = "Given the following chart information for the IELTS Academic Writing Task 1: \r\n\r\n" + model.chartDescription + "\r\n\r\n";
                         }
@@ -287,7 +660,7 @@ namespace Reboost.Service.Services
                     if (model.task == "Academic Writing Task 1")
                     {
                         topic = "Given the following IELTS Academic Writing Task 1 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
-                        if (!String.IsNullOrEmpty(model.chartDescription) && model.criteriaName == "Task Achievement")
+                        if (!String.IsNullOrEmpty(model.chartDescription))
                         {
                             topic += model.chartDescription;
                         }
@@ -297,7 +670,7 @@ namespace Reboost.Service.Services
                     else // Academic Writing Task 2
                     {
                         topic = "Given the following IELTS Academic Writing Task 2 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
-                        response = "Given the following writing essay for the topic:\r\n\r\n" + model.essay + "\r\n\r\n";
+                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
                     }
                 }
 
@@ -308,16 +681,11 @@ namespace Reboost.Service.Services
                         request = "Provide an improved version of the essay while keeping all ideas, author point of view, arguments, examples, and analysis.";
                         break;
                     case "Vocabulary":
-                        request = "Cung cấp các cụm từ cực kỳ nâng cao cho chủ đề này. Mỗi cụm từ bao gồm các thông tin sau:\r\n- Cụm từ đó viết bằng tiếng anh: nghĩa bằng tiếng Việt\r\n- Definition: định nghĩa bằng tiếng Anh\r\n- Example: example related to the topic\r\n";
+                        request = "Cung cấp các từ vựng nâng cao cho chủ đề này. Mỗi từ bao gồm các thông tin sau:\r\n- Từ đó viết bằng tiếng anh: nghĩa bằng tiếng Việt\r\n- Definition: định nghĩa bằng tiếng Anh\r\n- Example: example related to the topic\r\n";
                         break;
                     case "Critical Errors":
-                        return new EssayFeedback
-                        {
-                            criteriaId = model.criteriaId,
-                            criteriaName = model.criteriaName,
-                            order = model.order,
-                            comment = ""
-                        };
+                        // Get feedback from in-text comment
+                        return null;
                     case "Arguments Assessment":
                         request = "Cho mỗi đoạn văn của thân bài:\r\n- Ý chính: the main idea of the paragraph in English\r\n- Lập luận: Đánh giá tính thuyết phục của lập luận hỗ trợ ý chính\r\n- Gợi ý: Cung cấp gợi ý củng cố lập luận\r\n";
 
@@ -353,10 +721,14 @@ namespace Reboost.Service.Services
                         break;
                 }
 
+                string gptModel = Model.GPT4_Turbo;
+                if (model.criteriaName == "Improved Version")
+                    gptModel = Model.ChatGPTTurbo;
+                if (model.criteriaName == "Vocabulary")
+                    gptModel = Model.ChatGPTTurbo_16k;
                 var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
-                    Model = (model.feedbackLanguage != "vn" || model.criteriaName == "Improved Version" || model.criteriaName == "Vocabulary")
-                           ? Model.ChatGPTTurbo : Model.ChatGPTTurbo_16k,
+                    Model = gptModel,
                     Temperature = 0.1,
                     Messages = new ChatMessage[] {
                             new ChatMessage(ChatMessageRole.Assistant, topic),
@@ -365,23 +737,12 @@ namespace Reboost.Service.Services
                         }
                 });
 
-                return new EssayFeedback
-                {
-                    criteriaId = model.criteriaId,
-                    criteriaName = model.criteriaName,
-                    order = model.order,
-                    comment = taskResponseResult.Choices[0].Message.TextContent,
-                };
+                return taskResponseResult.Choices[0].Message.TextContent;
+
             }
             catch (Exception e)
             {
-                return new EssayFeedback
-                {
-                    criteriaId = model.criteriaId,
-                    criteriaName = model.criteriaName,
-                    order = model.order,
-                    comment = "Không thể cung cấp phản hồi cho tiêu chí " + model.criteriaName
-                };
+                return "Hệ thống không thể cung cấp phản hồi.";
             }
         }
 
@@ -391,11 +752,12 @@ namespace Reboost.Service.Services
             try
             {
                 OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
-                string response = "Given the following writing essay:\r\n\r\n" + model.essay + "\r\n\r\n";
-
-                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake. \r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error. \r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
+                string response = "Given the following essay paragraph:\r\n\r\n" + model.essay + "\r\n\r\n";
+                 
+                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay paragraph with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
                 if (model.feedbackLanguage != "vn")
-                    request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake. \r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error. \r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
+                    request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay paragraph with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
+
                 ErrorsInText result = new ErrorsInText();
                 List<ErrorInText> errors = new List<ErrorInText>();
 
@@ -403,6 +765,7 @@ namespace Reboost.Service.Services
                 var errorResponse = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
                     Model = Model.ChatGPTTurbo,
+                    //Model = Model.ChatGPTTurbo_16k,
                     ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
                     Temperature = 0.1,
                     Messages = new ChatMessage[] {

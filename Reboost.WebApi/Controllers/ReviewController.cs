@@ -38,7 +38,19 @@ namespace Reboost.WebApi.Controllers
             configuration = _configuration;
             db = ctx;
         }
+        [Authorize]
+        [HttpPost("ai/feedback/intext/comment")]
+        public async Task<ErrorsInText> getIntextComments(CriteriaFeedbackModel model)
+        {
+            return await _service.getIntextComments(model);
+        }
 
+        [Authorize]
+        [HttpPost("feedback")]
+        public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model)
+        {
+            return await _service.GetCriteriaFeedback(model);
+        }
 
         [HttpPost("ai/feedback/criteria/v5")]
         public async Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model)
@@ -46,11 +58,7 @@ namespace Reboost.WebApi.Controllers
             return await _service.getAIFeedbackForCriteriaV5(model);
         }
 
-        [HttpPost("feedback")]
-        public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model)
-        {
-            return await _service.GetCriteriaFeedback(model);
-        }
+
 
         [Authorize]
         [HttpGet("feedback/{reviewId}")]
@@ -128,19 +136,6 @@ namespace Reboost.WebApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("get/chart/description/{fileName}")]
-        public async Task<IActionResult> getChartDescription(string fileName)
-        {
-            var currentUserClaim = HttpContext.User;
-            var email = currentUserClaim.FindFirst("Email");
-            var role = currentUserClaim.FindFirst("Role");
-            var currentUser = await _userService.GetByEmailAsync(email.Value);
-
-            var rs = await _service.getChartDescription(fileName);
-            return Ok(rs);
-        }
-
-        [Authorize]
         [HttpPost("ai/feedback/criteria")]
         public async Task<IActionResult> getAIFeedbackForCriteria(CriteriaFeedbackModel model)
         {
@@ -150,6 +145,19 @@ namespace Reboost.WebApi.Controllers
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
             var rs = await _service.getAIFeedbackForCriteria(model);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpGet("get/chart/description/{fileName}")]
+        public async Task<IActionResult> getChartDescription(string fileName)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.getChartDescription(fileName);
             return Ok(rs);
         }
 
