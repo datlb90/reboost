@@ -269,27 +269,17 @@ button[disabled='disabled'] .toolbar-icon {
   width: 35%;
   position: sticky;
   top: 0px;
-  min-width: 320px;
   height: 100%;
 }
 
 #right-panel {
   /* float: left; 
   position: absolute;  */
-  margin-left: max(425px, 35.5%);
-  /* width: 68.5%; */
+  /* margin-left: max(425px, 35.5%); */
+  float: left;
+  width: 65%;
   height: 100%;
   background: rgb(248, 249, 250);
-}
-
-@media only screen and (max-width: 1400px) {
-  #left-panel {
-    float: left;
-    width: 45%;
-    position: sticky;
-    top: 0px;
-    height: 100%;
-  }
 }
 
 .el-dialog .el-dialog__header {

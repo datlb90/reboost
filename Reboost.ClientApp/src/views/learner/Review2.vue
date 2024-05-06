@@ -83,19 +83,19 @@
                       </el-card>
                     </div>
                     <div v-else>
-                      <div v-if="loadingReview" style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                      <div v-if="loadingReview" style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                         <div class="el-loading-spinner" style="position: relative; top: 220px;">
                           <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
                           <p class="el-loading-text" style="word-break: break-word;">Đang tải chủ đề viết và các tiêu chí chấm bài</p>
                         </div>
                       </div>
-                      <div v-else-if="hasGrade" style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                      <div v-else-if="hasGrade" style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                         <div class="el-loading-spinner" style="position: relative; top: 220px;">
                           <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
                           <p class="el-loading-text" style="word-break: break-word;">Đang tải phản hồi cho bài viết</p>
                         </div>
                       </div>
-                      <div v-else style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                      <div v-else style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                         <div class="el-loading-spinner" style="position: relative; top: 220px;">
                           <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
                           <p class="el-loading-text" style="word-break: break-word;">Đang chấm 4 tiêu chí, đánh giá lập luận, và cung cấp gợi ý cải thiện</p>
@@ -348,19 +348,19 @@
                     </el-card>
                   </div>
                   <div v-else>
-                    <div v-if="loadingReview" style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                    <div v-if="loadingReview" style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                       <div class="el-loading-spinner" style="position: relative; top: 220px;">
                         <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
                         <p class="el-loading-text" style="word-break: break-word;">Đang tải chủ đề viết và các tiêu chí chấm bài</p>
                       </div>
                     </div>
-                    <div v-else-if="hasGrade" style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                    <div v-else-if="hasGrade" style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                       <div class="el-loading-spinner" style="position: relative; top: 220px;">
                         <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
                         <p class="el-loading-text" style="word-break: break-word;">Đang tải phản hồi cho bài viết</p>
                       </div>
                     </div>
-                    <div v-else style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                    <div v-else style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                       <div class="el-loading-spinner" style="position: relative; top: 220px;">
                         <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
                         <p class="el-loading-text" style="word-break: break-word;">Đang chấm 4 tiêu chí, đánh giá lập luận, và cung cấp gợi ý cải thiện</p>
@@ -685,6 +685,7 @@ export default {
     }
   },
   async mounted() {
+    this.zoomOutMobile()
     this.loadingReview = true
     if (this.$route.query.plain) {
       this.showQuestion = false
@@ -793,6 +794,14 @@ export default {
     }
   },
   methods: {
+    zoomOutMobile() {
+      const viewport = document.querySelector('meta[name="viewport"]')
+
+      if (viewport) {
+        viewport.content = 'initial-scale=1'
+        viewport.content = 'width=device-width'
+      }
+    },
     saveIntextCommentFeedback() {
       if (this.errors && this.errors.length > 0 && this.rubricCriteria) {
         let errorFeedback = ''
@@ -2262,11 +2271,11 @@ export default {
         const viewerContainer = document.getElementById('viewerContainer')
         viewerContainer.style.height = rightPanel.offsetHeight - document.getElementById('tool-bar').offsetHeight - 5 + 'px'
 
-        if (this.showQuestion) {
-          rightPanel.style.width = window.innerWidth - document.getElementById('left-panel').offsetWidth - 17 + 'px'
-        } else {
-          rightPanel.style.width = window.innerWidth - 10 + 'px'
-        }
+        // if (this.showQuestion) {
+        //   rightPanel.style.width = window.innerWidth - document.getElementById('left-panel').offsetWidth - 17 + 'px'
+        // } else {
+        //   rightPanel.style.width = window.innerWidth - 10 + 'px'
+        // }
       } else {
         // const documentWrapper = document.getElementById('document-wrapper')
         // console.log(documentWrapper.offsetHeight)

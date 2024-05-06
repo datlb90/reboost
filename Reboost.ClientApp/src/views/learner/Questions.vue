@@ -688,6 +688,7 @@ export default {
     }
   },
   mounted() {
+    this.zoomOutMobile()
     document.title = 'Chủ đề viết'
     if (localStorage.getItem('noQuestionsIntro')) {
       this.showQuestionsIntro = false
@@ -727,6 +728,14 @@ export default {
 
   },
   methods: {
+    zoomOutMobile() {
+      const viewport = document.querySelector('meta[name="viewport"]')
+
+      if (viewport) {
+        viewport.content = 'initial-scale=1'
+        viewport.content = 'width=device-width'
+      }
+    },
     rowClicked(row, column, event) {
       this.$router.push({
         name: 'PracticeWriting',
