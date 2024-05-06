@@ -140,7 +140,6 @@
           :is-loading="isLoading"
           @expandColorPickerToggle="expandColorPicker=$event"
           @hideQuestion="hideQuestion($event)"
-          @submit="submitReview"
           @redoAnnotation="redo($event)"
           @undoAnnotation="undoAnnotation"
           @scaleChange="handleScale($event)"
@@ -270,6 +269,108 @@
       <!-- Question, rubric, and rate tab -->
       <div id="tabs-wrapper">
         <el-tabs v-model="selectedTab" type="border-card" style="margin-bottom: 10px;">
+          <el-tab-pane name="rubric" label="Phản hồi cho bài viết">
+            <div id="parent-scroll" style="flex-grow: 1;position: relative;">
+              <div id="child-scroll">
+                <div id="rubric">
+                  <div v-if="loadCriteriaFeedbackCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
+                    <el-card
+                      v-for="criteria in rubricCriteria"
+                      :key="criteria.criteriaId"
+                      style="margin-bottom: 5px; margin-left: 3px; border: 1px solid rgb(190, 190, 190);"
+                      shadow="hover"
+                    >
+                      <div slot="header" class="clearfix">
+                        <div>
+                          <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                            <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
+                            <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
+                            <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
+                            <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
+                            <span v-else> Tiêu Chí {{ criteria.name }}</span>
+                          </div>
+                          <div style="float: right;">
+                            <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
+                              <div v-if="isAiReview">
+                                <div v-if="!criteria.loading && criteria.mark" class="band-score">
+                                  Band:
+                                  {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <div>
+                          <div>
+                            <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
+                          </div>
+                        </div>
+                      </div>
+                    </el-card>
+                    <el-card
+                      v-if="isAiReview && rubricCriteria && rubricCriteria.length > 0"
+                      style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
+                      shadow="hover"
+                    >
+                      <div slot="header" class="clearfix">
+                        <div style="color: white; float: left; font-size: 16px; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                          <span>Đánh Giá Phản Hồi</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div>
+                          <div style="font-size: 15px; color: white;">Đánh giá mức độ hữu ích của phản hồi</div>
+                        </div>
+
+                        <div>
+                          <el-rate v-model="rateValue" style="margin-top: 8px; margin-bottom: 4px; color: rgb(177 177 177);" :allow-half="true" />
+                        </div>
+
+                        <div>
+                          <el-input
+                            id="rubric-rating"
+                            v-model="rateComment"
+                            type="textarea"
+                            :rows="5"
+                            style="margin-top: 10px; margin-bottom: 5px;"
+                            :maxlength="8000"
+                            placeholder="Cảm nghĩ của bạn về điểm số và phản hồi cho bài viết"
+                          />
+                        </div>
+                        <div style="margin-top: 5px;">
+                          <el-button :disabled="rateValue == 0 && rateComment == ''" size="mini" @click="rateAIReview()">
+                            Gửi đánh giá
+                          </el-button>
+                        </div>
+                      </div>
+                    </el-card>
+                  </div>
+                  <div v-else>
+                    <div v-if="loadingReview" style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                      <div class="el-loading-spinner" style="position: relative; top: 220px;">
+                        <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                        <p class="el-loading-text" style="word-break: break-word;">Đang tải chủ đề viết và các tiêu chí chấm bài</p>
+                      </div>
+                    </div>
+                    <div v-else-if="hasGrade" style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                      <div class="el-loading-spinner" style="position: relative; top: 220px;">
+                        <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                        <p class="el-loading-text" style="word-break: break-word;">Đang tải phản hồi cho bài viết</p>
+                      </div>
+                    </div>
+                    <div v-else style="background: rgb(248 249 250); height: 90vh; margin-top: 5px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                      <div class="el-loading-spinner" style="position: relative; top: 220px;">
+                        <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                        <p class="el-loading-text" style="word-break: break-word;">Đang chấm 4 tiêu chí, đánh giá lập luận, và cung cấp gợi ý cải thiện</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </el-tab-pane>
           <el-tab-pane name="question" label="Chủ đề">
             <tabQuestion
               v-if="review"
@@ -284,20 +385,7 @@
               element-loading-background="white"
             />
           </el-tab-pane>
-          <el-tab-pane name="rubric" label="Phản hồi cho bài viết">
-            <tabRubric
-              v-if="review && documentText"
-              ref="tabRubric"
-              :current-user="currentUser"
-              :feedback-language="review.reviewRequest.feedbackLanguage"
-              :document-text="documentText"
-              :questionid="questionId"
-              :is-ai-review="isAiReview"
-              :has-grade="hasGrade"
-              :review-id="reviewId"
-              @setStatusText="setStatusText"
-            />
-          </el-tab-pane>
+
         </el-tabs>
       </div>
       <div id="document-wrapper">
@@ -315,7 +403,6 @@
           :is-loading="isLoading"
           @expandColorPickerToggle="expandColorPicker=$event"
           @hideQuestion="hideQuestion($event)"
-          @submit="submitReview"
           @redoAnnotation="redo($event)"
           @undoAnnotation="undoAnnotation"
           @scaleChange="handleScale($event)"
@@ -441,7 +528,6 @@
 import PDFJS from 'pdf-dist/webpack.js'
 import ToolBar from '../../components/controls/Viewer_ToolBar'
 import TabQuestion from './Review_TabQuestion'
-import TabRubric from './Review_TabRubric'
 import TextToolGroup from '../../components/controls/TextToolGroup'
 // PDFJSAnnotate
 import PDFJSAnnotate from '@/pdfjs/PDFJSAnnotate'
@@ -462,7 +548,6 @@ import reviewService from '@/services/review.service.js'
 import { enableTextSelection } from '@/pdfjs/UI/select-text.js'
 import initColorPicker from '../../pdfjs/shared/initColorPicker'
 import { deleteAnnotations, editTextBox } from '@/pdfjs/UI/edit.js'
-import { UserRole } from '../../app.constant'
 import moment from 'moment-timezone'
 
 export default {
@@ -470,7 +555,6 @@ export default {
   components: {
     'toolbar': ToolBar,
     'tabQuestion': TabQuestion,
-    'tabRubric': TabRubric,
     'textToolGroup': TextToolGroup
   },
   data() {
@@ -2153,104 +2237,6 @@ export default {
       }
       return false
     },
-    async submitReview() {
-      this.rubricCriteria = this.$refs.tabRubric?.getRubricData()
-      if (!this.rubricCriteria) {
-        this.$notify.error({
-          title: 'Thiếu đánh giá tiêu chí chuẩn',
-          message: 'Bạn hãy cho điểm và cung cấp bình luận cho toàn bộ tiêu chí chuẩn trước khi gửi phản hồi.',
-          type: 'error',
-          duration: 5000
-        })
-        this.selectedTab = 'rubric'
-        this.$refs.toolBar?.completeLoading()
-      } else {
-        // Handle case where rater is adding new comment
-        if (this.isAddingNewComment) {
-          if (this.newComment.replace(/\s/g, '').length != 0) {
-            await this.addCommentText(true)
-          } else {
-            this.cancelCommentText()
-          }
-          this.isAddingNewComment = false
-        }
-        // Handle unsaved comments
-        const unsavedComments = this.comments.filter(c => c.isSaved == false)
-        for (let i = 0; i < unsavedComments.length; i++) {
-          const comment = unsavedComments[i]
-          var anno = {
-            DocumentId: this.documentId,
-            ReviewId: this.reviewId,
-            Type: comment.annotation.type == 'area' ? 'comment-area' : comment.annotation.type,
-            PageNum: typeof (comment.annotation.pageNum) != 'undefined' ? comment.annotation.pageNum : comment.annotation.page,
-            Top: typeof (comment.annotation.top) != 'undefined' ? comment.annotation.top : parseInt(comment.annotation.y),
-            Color: comment.annotation.color,
-            Uuid: comment.annotation.uuid,
-            Data: JSON.stringify(comment.annotation),
-            Id: this.annotation.id
-          }
-          var newCmt = {
-            Text: comment.text != null ? comment.text : '',
-            Content: comment.content,
-            TopPosition: comment.topPosition,
-            Uuid: comment.uuid,
-            Data: JSON.stringify(comment)
-          }
-          const rs = await reviewService.addInTextComment(this.documentId, this.reviewId, newCmt, anno)
-          if (rs.data) {
-            await this.updateCommentId(rs)
-            comment.isSaved = true
-          }
-        }
-        // At this point, all unsaved comments have been saved
-        const annotationsCount = await this.countAnnotations()
-        if (annotationsCount < 3) {
-          this.$notify.error({
-            title: 'Thiếu đánh giá trong bài viết',
-            message: 'Bạn hãy cung cấp ít nhất 3 phản hồi trong bài viết sử dụng các công cụ đánh giá có sẵn',
-            type: 'error',
-            duration: 5000
-          })
-          this.$refs.toolBar?.completeLoading()
-        } else {
-          //
-          var reviewData = []
-          this.rubricCriteria.forEach(r => {
-            if (r.mark) {
-              reviewData.push({
-                CriteriaName: r.name,
-                Comment: r.comment,
-                CriteriaId: r.id,
-                Score: r.mark,
-                ReviewId: this.reviewId,
-                UserFeedback: r.userFeedback
-              })
-            }
-          })
-          // Gửi phản hồi
-          await reviewService.saveReviewFeedback(this.reviewId, reviewData)
-          reviewService.loadReviewFeedback(this.reviewId).then(rs => {
-            localStorage.removeItem('reviewComment')
-          })
-          this.disableToolbarSubmit()
-          this.$refs.toolBar?.completeLoading()
-          this.$notify.success({
-            title: 'Cảm ơn bạn đã gửi đánh giá!',
-            message: 'Đánh giá của bạn đã được gửi cho học viên. Bạn có thể yêu cầu nhận phản hồi miễn phí từ học viên khác ngay bây giờ.',
-            type: 'success',
-            duration: 5000
-          })
-
-          // Chuyển người dùng về trang đánh giá của bạn
-          if (this.currentUser?.role == UserRole.LEARNER || this.currentUser?.role == UserRole.RATER) {
-            this.$router.push('/reviews')
-          } else {
-            this.$store.dispatch('review/loadReviewsById')
-            this.$router.push('/rater/application')
-          }
-        }
-      }
-    },
     async countAnnotations() {
       var count = 0
       for (let i = 1; i <= this.NUM_PAGES; i += 1) {
@@ -2705,7 +2691,6 @@ export default {
     },
     disableToolbarSubmit() {
       this.$refs.toolBar?.disableSubmit()
-      this.$refs.tabRubric?.disableRubric()
       document.getElementById('viewerContainer').style.userSelect = 'none'
       this.$refs.toolBar?.disableAnnotationCreate()
       // disableEdit()

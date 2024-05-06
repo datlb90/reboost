@@ -58,8 +58,7 @@ namespace Reboost.WebApi.Controllers
             return await _service.getAIFeedbackForCriteriaV5(model);
         }
 
-
-
+        [Authorize]
         [Authorize]
         [HttpGet("feedback/{reviewId}")]
         public async Task<IActionResult> GetFeedBack([FromRoute] int reviewId)
