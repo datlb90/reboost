@@ -565,17 +565,15 @@ namespace Reboost.DataAccess.Repositories
         }
         public async Task<int> CheckReviewValidationAsync(string role, User user, int reviewId)
         {
-            var exist = await (from r in db.Reviews
-                               where ((r.RevieweeId == user.Id || r.ReviewerId == user.Id) && r.Id == reviewId)
-                               select r).FirstOrDefaultAsync();
+            var review = await db.Reviews.Where(r => r.Id == reviewId && r.RevieweeId == user.Id).FirstOrDefaultAsync();
 
             if(role == "Admin")
             {
                 return 2;
             }
-            if (exist?.Id!=null)
+            if (review != null)
             {
-                if (exist.Status == ReviewRequestStatus.COMPLETED || exist.Status == ReviewRequestStatus.RATED)
+                if (review.Status == ReviewRequestStatus.COMPLETED || review.Status == ReviewRequestStatus.RATED)
                 {
                     return 2;
                 }

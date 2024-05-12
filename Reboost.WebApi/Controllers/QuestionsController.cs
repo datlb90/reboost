@@ -73,9 +73,9 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("peronsal/submission")]
         public async Task<IActionResult> CreatePersonalSubmission([FromForm] RequestReviewForWriting model)
         {
-            var currentUserClaim = HttpContext.User;
-            var email = currentUserClaim.FindFirst("Email");
-            var currentUser = await _userService.GetByEmailAsync(email.Value);
+            //var currentUserClaim = HttpContext.User;
+            //var email = currentUserClaim.FindFirst("Email");
+            //var currentUser = await _userService.GetByEmailAsync(email.Value);
 
             var submission = await _service.CreatePersonalSubmission(model);
 

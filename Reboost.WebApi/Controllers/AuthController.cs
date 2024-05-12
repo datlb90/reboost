@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Reboost.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +13,7 @@ using System.Web;
 using System.Security.Claims;
 using Reboost.Service.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -24,12 +24,14 @@ namespace Reboost.WebApi.Controllers
         private IAuthService _authService;
         private IMailService _mailService;
         private IConfiguration _configuration;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService, IMailService mailService, IConfiguration configuration)
+        public AuthController(IAuthService authService, IMailService mailService, IConfiguration configuration, ILogger<AuthController> logger)
         {
             _authService = authService;
             _mailService = mailService;
             _configuration = configuration;
+            _logger = logger;
         }
 
         // /api/auth/register
@@ -44,7 +46,7 @@ namespace Reboost.WebApi.Controllers
                 else
                     return BadRequest(result);
             }
-            return BadRequest("Đã có lỗi sảy ra trong quá trình đăng ký. Bạn vui lòng thử lại và liên hệ với chúng tôi nếu vẫn không thể đăng ký được."); // Status code: 400
+            return BadRequest("Đã có lỗi xảy ra trong quá trình đăng ký. Bạn vui lòng thử lại và liên hệ với chúng tôi nếu vẫn không thể đăng ký được."); // Status code: 400
         }
 
         // /api/auth/login
@@ -57,14 +59,13 @@ namespace Reboost.WebApi.Controllers
 
                 if (result.IsSuccess)
                 {
-                    //await _mailService.SendEmailAsync(model.Email, "New login", "<h1>Hey!, new login to your account noticed</h1><p>New login to your account at " + DateTime.Now + "</p>");
                     return Ok(result);
                 }
 
                 return BadRequest(result);
             }
 
-            return BadRequest("Some properties are not valid");
+            return BadRequest("Đã có lỗi xảy ra trong quá trình đăng nhập.");
         }
 
         // /api/auth/external
@@ -75,11 +76,11 @@ namespace Reboost.WebApi.Controllers
             {
                 RedirectUri = Url.Action(nameof(Callback)),
                 Items =
-                    {
-                        { "returnUrl", returnUrl },
-                        { "role", role },
-                        { "scheme", provider },
-                    }
+                {
+                    { "returnUrl", returnUrl },
+                    { "role", role },
+                    { "scheme", provider },
+                }
             };
 
             return Challenge(props, provider);
@@ -88,49 +89,58 @@ namespace Reboost.WebApi.Controllers
         [HttpGet("external/callback")]
         public async Task<IActionResult> Callback()
         {
-            // read external identity from the temporary cookie
-            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
-            if (result?.Succeeded != true)
+            try
             {
-                HttpContext.Response.Cookies.Append("auth_error", "Authentication Failed");
-                Response.Redirect("/auth/error");
-            }
-
-            //return Redirect("/redirect?returnUrl=" + result.Properties.Items["returnUrl"]);
-            var response = await _authService.LoginExternalAsync(result);
-            if (response.IsSuccess)
-            {
-                // Send user info to frontend using Cookies
-                HttpContext.Response.Cookies.Append("userId", response.user.Id, new CookieOptions { IsEssential = true });
-                HttpContext.Response.Cookies.Append("username", response.user.Username, new CookieOptions { IsEssential = true });
-                HttpContext.Response.Cookies.Append("email", response.user.Email, new CookieOptions { IsEssential = true });
-                HttpContext.Response.Cookies.Append("firstName", response.user.FirstName, new CookieOptions { IsEssential = true });
-                HttpContext.Response.Cookies.Append("lastName", response.user.LastName, new CookieOptions { IsEssential = true });
-                HttpContext.Response.Cookies.Append("role", response.user.Role, new CookieOptions { IsEssential = true });
-                HttpContext.Response.Cookies.Append("token", response.Message, new CookieOptions { IsEssential = true });
-                HttpContext.Response.Cookies.Append("expireDate", response.user.ExpireDate.ToString(), new CookieOptions { IsEssential = true });
-                var returnUrl = HttpUtility.UrlDecode(result.Properties.Items["returnUrl"]) ?? "";
-                HttpContext.Response.Cookies.Append("returnUrl", returnUrl, new CookieOptions { IsEssential = true });
-                if (string.IsNullOrEmpty(returnUrl))
+                // read external identity from the temporary cookie
+                var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+                if (result?.Succeeded != true)
                 {
-                    return Redirect("/after-login");
+                    _logger.LogInformation("External login callback error: authentication failed.");
+                    HttpContext.Response.Cookies.Append("auth_error", "Authentication Failed");
+                    Response.Redirect("/auth/error");
                 }
-                else if (Url.IsLocalUrl(returnUrl))
+
+                var response = await _authService.LoginExternalAsync(result);
+                if (response.IsSuccess)
                 {
-                    //return Redirect("http://localhost:3011/");
-                    return Redirect(returnUrl);
+                    // Send user info to frontend using Cookies
+                    HttpContext.Response.Cookies.Append("userId", response.user.Id, new CookieOptions { IsEssential = true });
+                    HttpContext.Response.Cookies.Append("username", response.user.Username, new CookieOptions { IsEssential = true });
+                    HttpContext.Response.Cookies.Append("email", response.user.Email, new CookieOptions { IsEssential = true });
+                    HttpContext.Response.Cookies.Append("firstName", response.user.FirstName, new CookieOptions { IsEssential = true });
+                    HttpContext.Response.Cookies.Append("lastName", response.user.LastName, new CookieOptions { IsEssential = true });
+                    HttpContext.Response.Cookies.Append("role", response.user.Role, new CookieOptions { IsEssential = true });
+                    HttpContext.Response.Cookies.Append("token", response.Message, new CookieOptions { IsEssential = true });
+                    HttpContext.Response.Cookies.Append("expireDate", response.user.ExpireDate.ToString(), new CookieOptions { IsEssential = true });
+                    var returnUrl = HttpUtility.UrlDecode(result.Properties.Items["returnUrl"]) ?? "";
+                    HttpContext.Response.Cookies.Append("returnUrl", returnUrl, new CookieOptions { IsEssential = true });
+                    if (string.IsNullOrEmpty(returnUrl))
+                    {
+                        return Redirect("/after-login");
+                    }
+                    else if (Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("External login callback error: invalid return URL.");
+                        // user might have clicked on a malicious link - should be logged
+                        HttpContext.Response.Cookies.Append("auth_error", "Invalid return URL");
+                        return Redirect("/login");
+                    }
                 }
                 else
                 {
-                    // user might have clicked on a malicious link - should be logged
-                    HttpContext.Response.Cookies.Append("auth_error", "Invalid return URL");
-                    return Redirect("/auth/error");
+                    _logger.LogInformation("External login callback error: unable to login.");
+                    HttpContext.Response.Cookies.Append("auth_error", "Unable to login");
+                    return Redirect("/login");
                 }
             }
-            else
+            catch(Exception exception)
             {
-                HttpContext.Response.Cookies.Append("auth_error", "Unable to login");
-                return Redirect("/auth/error");
+                _logger.LogInformation("External login callback error: " + exception.InnerException.Message);
+                return Redirect("/login");
             }
         }
 
@@ -193,7 +203,5 @@ namespace Reboost.WebApi.Controllers
 
             return BadRequest("Dữ liệu cung cấp không hợp lệ");
         }
-
-
     }
 }

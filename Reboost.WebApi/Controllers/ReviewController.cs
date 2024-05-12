@@ -15,6 +15,9 @@ using Hangfire;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
+using Microsoft.Extensions.Logging;
+using Limilabs.Client.SMTP;
+using System.Net;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -26,15 +29,18 @@ namespace Reboost.WebApi.Controllers
         private IUserService _userService;
         private IRaterService _raterService;
         private IMailService _mailService;
+        private readonly ILogger<ReviewController> _logger;
         private ReboostDbContext db;
         IConfiguration configuration;
 
-        public ReviewController(IReviewService service, IUserService userService, IRaterService raterService, IMailService mailService,
-            IConfiguration _configuration, ReboostDbContext ctx ) : base(service)
+        public ReviewController(IReviewService service, IUserService userService, IRaterService raterService,
+            IMailService mailService, ILogger<ReviewController> logger,
+        IConfiguration _configuration, ReboostDbContext ctx ) : base(service)
         {
             _userService = userService;
             _raterService = raterService;
             _mailService = mailService;
+            _logger = logger;
             configuration = _configuration;
             db = ctx;
         }
@@ -197,18 +203,35 @@ namespace Reboost.WebApi.Controllers
         public async Task<IActionResult> RevieweeReviewAuthentication([FromRoute] int reviewId)
         {
             var currentUserClaim = HttpContext.User;
-            var email = currentUserClaim.FindFirst("Email");
-            var role = currentUserClaim.FindFirst("Role");
-            var currentUser = await _userService.GetByEmailAsync(email.Value);
 
-            var check = await _service.CheckReviewValidationAsync(role.Value,currentUser, reviewId);
-            if (check != 0)
+            if(currentUserClaim == null)
             {
-                return Ok(check);
+                _logger.LogInformation("Review authentication error: unable to find current user");
+                return Unauthorized(new { message = "Login session has expired." });
             }
             else
             {
-                return BadRequest(new { message = "Review not found!" });
+                var email = currentUserClaim.FindFirst("Email");
+                var role = currentUserClaim.FindFirst("Role");
+                var currentUser = await _userService.GetByEmailAsync(email.Value);
+                if(currentUser != null)
+                {
+                    var check = await _service.CheckReviewValidationAsync(role.Value, currentUser, reviewId);
+                    if (check != 0)
+                    {
+                        return Ok(check);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Review authentication: " + email.Value + " cannot access review #" + reviewId);
+                        return BadRequest(new { message = "Review not found!" });
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation("Review authentication error: unable to find user - ", email.Value);
+                    return Unauthorized(new { message = "Unable to find user." });
+                }
             }
         }
         [Authorize]
@@ -250,9 +273,9 @@ namespace Reboost.WebApi.Controllers
         [HttpPost("rubric/{id}")]
         public async Task<IActionResult> SaveRubric([FromRoute] int id, [FromBody] List<ReviewData> data)
         {
-            var currentUserClaim = HttpContext.User;
-            var email = currentUserClaim.FindFirst("Email");
-            var currentUser = await _userService.GetByEmailAsync(email.Value);
+            //var currentUserClaim = HttpContext.User;
+            //var email = currentUserClaim.FindFirst("Email");
+            //var currentUser = await _userService.GetByEmailAsync(email.Value);
             var rs = await _service.SaveRubric(id, data);
             return Ok(rs);
         }

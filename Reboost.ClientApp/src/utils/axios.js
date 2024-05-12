@@ -8,6 +8,7 @@ import _ from 'lodash'
 import axios from 'axios'
 import * as urlUtils from '@/utils/url'
 import store from '../store'
+import router from '../router'
 
 import { Notification } from 'element-ui'
 
@@ -49,22 +50,32 @@ instance.interceptors.response.use(
 
     // Handling error
     if (error.response) {
-      let message = ''
-      if (error.response.data.message) { message += error.response.data.message + ' ' }
-      if (error.response.data.title) { message += error.response.data.title + ' ' }
-      if (error.response.data.modelState) { message += error.response.data.modelState.invalid_grant + ' ' }
-      if (error.response.data.innerException) { message += error.response.data.innerException.exceptionMessage }
-      if (error.response.config.url === '/auth/register') {
-        error.response.data.errors.forEach(e => {
-          message = e
+      if (error.response.status === 401) {
+        Notification.error({
+          title: 'Phiên đăng nhập đã hết hạn',
+          message: 'Bạn vui lòng đăng nhập lại để đảm bảo tài khoản được bảo vệ tối ưu nhất.'
+        })
+
+        store.dispatch('auth/logout')
+        router.push('/login')
+      } else {
+        let message = ''
+        if (error.response.data.message) { message += error.response.data.message + ' ' }
+        if (error.response.data.title) { message += error.response.data.title + ' ' }
+        if (error.response.data.modelState) { message += error.response.data.modelState.invalid_grant + ' ' }
+        if (error.response.data.innerException) { message += error.response.data.innerException.exceptionMessage }
+        if (error.response.config.url === '/auth/register') {
+          error.response.data.errors.forEach(e => {
+            message = e
+          })
+        }
+
+        Notification.error({
+          title: 'Đã xảy ra lỗi',
+          message: message,
+          dangerouslyUseHTMLString: error.response.config.url === '/auth/register'
         })
       }
-
-      Notification.error({
-        title: 'Đã xảy ra lỗi',
-        message: message,
-        dangerouslyUseHTMLString: error.response.config.url === '/auth/register'
-      })
     }
   }
 )
