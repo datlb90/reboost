@@ -45,19 +45,21 @@ namespace Reboost.WebApi.Controllers
             db = ctx;
         }
 
+        [Authorize]
         [HttpPost("ai/vocabulary/errors/intext")]
         public async Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model)
         {
             return await _service.getVocabularyErrorsInText(model);
         }
 
+        [Authorize]
         [HttpPost("ai/grammar/errors/intext")]
         public async Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model)
         {
             return await _service.getGrammarErrorsInText(model);
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("ai/feedback/intext/comment")]
         public async Task<ErrorsInText> getIntextComments(CriteriaFeedbackModel model)
         {
