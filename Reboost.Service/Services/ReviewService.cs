@@ -23,6 +23,9 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model);
+        Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model);
+
         Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model);
         Task<ErrorsInText> getIntextComments(CriteriaFeedbackModel model);
 
@@ -31,8 +34,7 @@ namespace Reboost.Service.Services
         Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model);
         Task<ErrorsInText> getErrorsInTextV2(CriteriaFeedbackModel model);
         Task<string> getExperimentAIFeedback(ExperimentFeedbackModel model);
-        Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model);
-        Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model);
+       
         Task<ErrorsInText> getErrorsInText(CriteriaFeedbackModel model);
         Task<string> getAIFeedbackForCriteriaV4(CriteriaFeedbackModel model);
         Task<ReviewRatings> CreateAIReviewRatingAsync(ReviewRatings data);
@@ -224,7 +226,7 @@ namespace Reboost.Service.Services
         public async Task<ErrorsInText> getIntextComments(CriteriaFeedbackModel model)
         {
             return await getIntextCommentsGPTTurbo(model);
-            // return await getIntextCommentsGPT4(model);
+            //return await getIntextCommentsGPT4(model);
         }
 
         public async Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model)
@@ -237,6 +239,7 @@ namespace Reboost.Service.Services
             // Make a ChatGpt call for each paragraph
             ErrorsInText result = new ErrorsInText();
             result.errors = new List<ErrorInText>();
+            model.essay = model.essay.Replace("\r", String.Empty);
             string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             var taskList = new Task<ErrorsInText>[paragraphs.Length];
             for (int i = 0; i < paragraphs.Length; i++)
@@ -274,73 +277,116 @@ namespace Reboost.Service.Services
 
         public async Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model)
         {
-            // Divide the essay into 2 parts. Make 2 chatgpt calls using Task.WhenAll
+            // Make a ChatGpt call for each paragraph
+            ErrorsInText result = new ErrorsInText();
+            result.errors = new List<ErrorInText>();
+            model.essay = model.essay.Replace("\r", String.Empty);
             string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-            if (paragraphs.Length >= 2)
+            var taskList = new Task<ErrorsInText>[paragraphs.Length];
+            for (int i = 0; i < paragraphs.Length; i++)
             {
-                int median = paragraphs.Length / 2;
-
-                string[] firstList = paragraphs.Take(median).ToArray();
-                string firstPart = String.Join(Environment.NewLine, firstList);
-
-
-                int remain = paragraphs.Length - median;
-                string[] secondList = paragraphs.Skip(median).Take(remain).ToArray();
-                string secondPart = String.Join(Environment.NewLine, secondList);
-
-
-                CriteriaFeedbackModel model1 = new CriteriaFeedbackModel
+                CriteriaFeedbackModel requestModel = new CriteriaFeedbackModel
                 {
-                    essay = firstPart,
+                    essay = paragraphs[i],
                     task = model.task,
                     topic = model.topic,
-                    chartDescription = model.chartDescription,
-                    criteriaName = model.criteriaName,
                     feedbackLanguage = model.feedbackLanguage
                 };
 
-                CriteriaFeedbackModel model2 = new CriteriaFeedbackModel
-                {
-                    essay = secondPart,
-                    task = model.task,
-                    topic = model.topic,
-                    chartDescription = model.chartDescription,
-                    criteriaName = model.criteriaName,
-                    feedbackLanguage = model.feedbackLanguage
-                };
-
-
-                var taskList = new[]
-                {
-                    chatGPTService.getIntextCommentsGPT4(model1),
-                    chatGPTService.getIntextCommentsGPT4(model2)
-                };
-
-                var completedTasks = await Task.WhenAll(taskList);
-                ErrorsInText result = new ErrorsInText();
-                result.errors = new List<ErrorInText>();
-
-                foreach (var completedTask in completedTasks)
-                {
-                    if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
-                    {
-                        foreach (ErrorInText error in completedTask.errors)
-                        {
-                            if (!result.errors.Any(e => e.error == error.error))
-                            {
-                                result.errors.Add(error);
-                            }
-                        }
-                        //result.errors = result.errors.Concat(completedTask.errors).ToList();
-                    }
-
-                }
-
-                return result;
+                taskList[i] = chatGPTService.getIntextCommentsGPT4(requestModel);
             }
 
-            return await chatGPTService.getIntextCommentsGPTTurbo(model);
+            var completedTasks = await Task.WhenAll(taskList);
+
+            foreach (var completedTask in completedTasks)
+            {
+                if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
+                {
+                    foreach (ErrorInText error in completedTask.errors)
+                    {
+                        if (!result.errors.Any(e => e.error == error.error))
+                        {
+                            result.errors.Add(error);
+                        }
+                    }
+                    //result.errors = result.errors.Concat(completedTask.errors).ToList();
+                }
+            }
+
+            return result;
         }
+
+
+        //public async Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model)
+        //{
+        //    // Divide the essay into 2 parts. Make 2 chatgpt calls using Task.WhenAll
+        //    model.essay = model.essay.Replace("\r", String.Empty);
+        //    string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+        //    if (paragraphs.Length >= 2)
+        //    {
+        //        int median = paragraphs.Length / 2;
+
+        //        string[] firstList = paragraphs.Take(median).ToArray();
+        //        string firstPart = String.Join(Environment.NewLine, firstList);
+
+
+        //        int remain = paragraphs.Length - median;
+        //        string[] secondList = paragraphs.Skip(median).Take(remain).ToArray();
+        //        string secondPart = String.Join(Environment.NewLine, secondList);
+
+
+        //        CriteriaFeedbackModel model1 = new CriteriaFeedbackModel
+        //        {
+        //            essay = firstPart,
+        //            task = model.task,
+        //            topic = model.topic,
+        //            chartDescription = model.chartDescription,
+        //            criteriaName = model.criteriaName,
+        //            feedbackLanguage = model.feedbackLanguage
+        //        };
+
+        //        CriteriaFeedbackModel model2 = new CriteriaFeedbackModel
+        //        {
+        //            essay = secondPart,
+        //            task = model.task,
+        //            topic = model.topic,
+        //            chartDescription = model.chartDescription,
+        //            criteriaName = model.criteriaName,
+        //            feedbackLanguage = model.feedbackLanguage
+        //        };
+
+
+        //        var taskList = new[]
+        //        {
+        //            chatGPTService.getIntextCommentsGPT4(model1),
+        //            chatGPTService.getIntextCommentsGPT4(model2)
+        //        };
+
+        //        var completedTasks = await Task.WhenAll(taskList);
+        //        ErrorsInText result = new ErrorsInText();
+        //        result.errors = new List<ErrorInText>();
+
+        //        foreach (var completedTask in completedTasks)
+        //        {
+        //            if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
+        //            {
+        //                foreach (ErrorInText error in completedTask.errors)
+        //                {
+        //                    if (!result.errors.Any(e => e.error == error.error))
+        //                    {
+        //                        result.errors.Add(error);
+        //                    }
+        //                }
+        //                //result.errors = result.errors.Concat(completedTask.errors).ToList();
+        //            }
+
+        //        }
+
+        //        return result;
+        //    }
+
+        //    return await chatGPTService.getIntextCommentsGPTTurbo(model);
+        //}
 
 
         public async Task<Reviews> SaveFeedback(int reviewId, List<ReviewData> data)

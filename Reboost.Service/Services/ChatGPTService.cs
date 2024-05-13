@@ -84,11 +84,10 @@ namespace Reboost.Service.Services
                 OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
                 string response = "Given the following essay paragraph:\r\n\r\n" + model.essay + "\r\n\r\n";
 
-                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
-                // "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay paragraph with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
+                string request = "Provide a JSON object called errors that contains a list of issues in the essay. Each issue object has the following properties:\r\n- error: word or phrase or sentence with issue in the essay.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the issue.\r\n- fix: The fix in English.\r\n- comment: Giải thích vì sao bản sửa lại tốt hơn bằng tiếng Việt.\r\n";
 
                 if (model.feedbackLanguage != "vn")
-                    request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay paragraph with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
+                    request = "Provide a JSON object called errors that contains a list of issues in the essay. Each issue object has the following properties:\r\n- error: word or phrase or sentence with issue in the essay.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the issue.\r\n- fix: The fix in English.\r\n- comment: Explain why the fix is better.\r\n";
 
                 ErrorsInText result = new ErrorsInText();
                 List<ErrorInText> errors = new List<ErrorInText>();
@@ -151,10 +150,17 @@ namespace Reboost.Service.Services
                 OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
                 string response = "Given the following essay:\r\n\r\n" + model.essay + "\r\n\r\n";
 
-                string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
+                //string request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The English replacement for the word or phrase.\r\n";
+
+                //if (model.feedbackLanguage != "vn")
+                //    request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
+
+                string request = "Provide a JSON object called errors that contains a list of issues in the essay. Each issue object has the following properties:\r\n- error: word or phrase or sentence with issue in the essay.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the issue.\r\n- fix: The fix in English.\r\n- comment: Giải thích vì sao bản sửa lại tốt hơn bằng tiếng Việt.\r\n";
 
                 if (model.feedbackLanguage != "vn")
-                    request = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with vocabulary or grammar mistake.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the error.\r\n- comment: Explain the issue.\r\n- fix: The replacement for the word or phrase.\r\n";
+                    request = "Provide a JSON object called errors that contains a list of issues in the essay. Each issue object has the following properties:\r\n- error: word or phrase or sentence with issue in the essay.\r\n- type: The type of the error. This can be “grammar” or “vocabulary”.\r\n- category: The category of the issue.\r\n- fix: The fix in English.\r\n- comment: Explain why the fix is better.\r\n";
+
+
                 ErrorsInText result = new ErrorsInText();
                 List<ErrorInText> errors = new List<ErrorInText>();
 
@@ -1014,21 +1020,20 @@ namespace Reboost.Service.Services
                 OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
                 string response = "Given the following writing essay:\r\n\r\n" + model.essay + "\r\n\r\n";
 
-                string grammarRequest = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with grammar mistake.\r\n- category: The category of the error. This can be: “verb tense mistake”, “subject-verb agreement”, “sentence structure”, “article errors”, “preposition mistake”, or “punctuation misuse”. \r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The replacement for the word or phrase.\r\n";
-
+                string grammarRequest = "Provide a JSON object called errors that contains a list of issues in the essay. Each issue object has the following properties:\r\n- error: word or phrase or sentence with issue in the essay.\r\n- type: The type of the issue which can be “grammar” or “vocabulary”.\r\n- category: The category of the issue.\r\n- comment: Explain the issue in Vietnamese.\r\n- fix: The fix in English          \r\n";
                 if (model.feedbackLanguage != "vn")
                     grammarRequest = "Provide a JSON object called errors that contains a list of objects with the following properties:\r\n- error: word or phrase in the essay with grammar mistake.\r\n- category: The category of the error. This can be: “verb tense mistake”, “subject-verb agreement”, “sentence structure”, “article errors”, “preposition mistake”, or “punctuation misuse”. \r\n- comment: Explain the issue. \r\n- fix: The replacement for the word or phrase.\r\n";
 
                 var grammarResponse = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
                     // Use GPT-4 for essay with grammar score > 7
-                    Model = Model.GPT4_Turbo, // model.grammarScore <= 7 ? Model.ChatGPTTurbo : Model.GPT4_Turbo,
+                    Model = Model.ChatGPTTurbo, // model.grammarScore <= 7 ? Model.ChatGPTTurbo : Model.GPT4_Turbo,
                     ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
                     Temperature = 0.1,
                     Messages = new ChatMessage[] {
-                             new ChatMessage(ChatMessageRole.Assistant, response),
-                            new ChatMessage(ChatMessageRole.User, grammarRequest)
-                        }
+                        new ChatMessage(ChatMessageRole.Assistant, response),
+                        new ChatMessage(ChatMessageRole.User, grammarRequest)
+                     }
                 });
 
                 ErrorsInText grammarResult = JsonConvert.DeserializeObject<ErrorsInText>(grammarResponse.Choices[0].Message.TextContent);

@@ -44,7 +44,20 @@ namespace Reboost.WebApi.Controllers
             configuration = _configuration;
             db = ctx;
         }
-        [Authorize]
+
+        [HttpPost("ai/vocabulary/errors/intext")]
+        public async Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model)
+        {
+            return await _service.getVocabularyErrorsInText(model);
+        }
+
+        [HttpPost("ai/grammar/errors/intext")]
+        public async Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model)
+        {
+            return await _service.getGrammarErrorsInText(model);
+        }
+
+        //[Authorize]
         [HttpPost("ai/feedback/intext/comment")]
         public async Task<ErrorsInText> getIntextComments(CriteriaFeedbackModel model)
         {
@@ -65,7 +78,6 @@ namespace Reboost.WebApi.Controllers
         }
 
         [Authorize]
-        [Authorize]
         [HttpGet("feedback/{reviewId}")]
         public async Task<IActionResult> GetFeedBack([FromRoute] int reviewId)
         {
@@ -83,20 +95,6 @@ namespace Reboost.WebApi.Controllers
         public async Task<string> getExperimentAIFeedback(ExperimentFeedbackModel model)
         {
             return await _service.getExperimentAIFeedback(model);
-        }
-
-        [Authorize]
-        [HttpPost("ai/vocabulary/errors/intext")]
-        public async Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model)
-        {
-            return await _service.getVocabularyErrorsInText(model);
-        }
-
-        [Authorize]
-        [HttpPost("ai/grammar/errors/intext")]
-        public async Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model)
-        {
-            return await _service.getGrammarErrorsInText(model);
         }
 
         [Authorize]
