@@ -95,7 +95,7 @@ namespace Reboost.Service.Services
                 // Get vocabulary error first
                 var errorResponse = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
-                    Model = Model.ChatGPTTurbo, // Model.ChatGPTTurbo_16k,
+                    Model = "gpt-4o-2024-05-13", //Model.ChatGPTTurbo, // Model.ChatGPTTurbo_16k,
                     ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
                     Temperature = 0.1,
                     Messages = new ChatMessage[] {
@@ -441,7 +441,7 @@ namespace Reboost.Service.Services
                 var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
                     Model = (model.feedbackLanguage != "vn" || model.criteriaName == "Improved Version" || model.criteriaName == "Vocabulary")
-                           ? Model.ChatGPTTurbo : Model.ChatGPTTurbo_16k,
+                        ? Model.ChatGPTTurbo : Model.ChatGPTTurbo_16k,
                     Temperature = 0.1,
                     Messages = new ChatMessage[] {
                             new ChatMessage(ChatMessageRole.Assistant, topic),
@@ -608,7 +608,7 @@ namespace Reboost.Service.Services
                 }
                 var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
-                    Model = Model.ChatGPTTurbo,
+                    Model = "gpt-4o-2024-05-13", //Model.ChatGPTTurbo,
                     ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
                     Temperature = 0.1,
                     Messages = new ChatMessage[] {
@@ -628,7 +628,7 @@ namespace Reboost.Service.Services
                     result.taskResponseScore = (decimal)Math.Floor(result.taskResponseScore);
                     result.coherenceScore = (decimal)Math.Floor(result.coherenceScore);
                     result.lexicalResourceScore = (decimal)Math.Floor(result.lexicalResourceScore);
-                    result.grammarScore = (decimal)Math.Floor(result.grammarScore + 1);
+                    result.grammarScore = (decimal)Math.Floor(result.grammarScore);
                 }
 
                 return result;
@@ -1705,7 +1705,7 @@ namespace Reboost.Service.Services
 
                 var chartResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
-                    Model = Model.GPT4_Vision,
+                    Model = "gpt-4o-2024-05-13", //Model.GPT4_Vision,
                     Temperature = 0.1,
                     //MaxTokens = 1000,
                     Messages = new ChatMessage[] {
@@ -1751,7 +1751,7 @@ namespace Reboost.Service.Services
 
                 var chartResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
-                    Model = Model.GPT4_Vision,
+                    Model = "gpt-4o-2024-05-13", //Model.GPT4_Vision,
                     Temperature = 0.1,
                     //MaxTokens = 1000,
                     Messages = new ChatMessage[] {
