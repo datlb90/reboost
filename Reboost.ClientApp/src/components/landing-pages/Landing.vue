@@ -1,40 +1,45 @@
 <template>
   <div>
     <Banner />
-    <BoxesArea />
-    <HowItWorks2 />
+    <InitialTest />
+    <Pricing />
+    <!-- <HowItWorks2 />
     <Funfacts />
     <FeaturesArea />
     <Features />
     <UnlimitedTopics />
     <Matching />
-    <ProRater />
+    <ProRater /> -->
   </div>
 </template>
 
 <script>
 import Banner from './landing/Banner'
-import BoxesArea from './landing/BoxesArea'
-import FeaturesArea from './landing/FeaturesArea'
-import Features from './landing/Features'
-import UnlimitedTopics from './landing/UnlimitedTopics'
-import Matching from './landing/Matching'
-import HowItWorks2 from './landing/HowItWorks2'
-import Funfacts from './landing/Funfacts'
-import ProRater from './landing/ProRater'
+// import BoxesArea from './landing/BoxesArea'
+// import FeaturesArea from './landing/FeaturesArea'
+// import Features from './landing/Features'
+// import UnlimitedTopics from './landing/UnlimitedTopics'
+// import Matching from './landing/Matching'
+// import HowItWorks2 from './landing/HowItWorks2'
+// import Funfacts from './landing/Funfacts'
+// import ProRater from './landing/ProRater'
+import InitialTest from './landing/InitialTest'
+import Pricing from './landing/Pricing'
 import $ from 'jquery'
 export default {
   name: 'Developer',
   components: {
     Banner,
-    BoxesArea,
-    FeaturesArea,
-    Features,
-    UnlimitedTopics,
-    Matching,
-    HowItWorks2,
-    Funfacts,
-    ProRater
+    // BoxesArea,
+    // FeaturesArea,
+    // Features,
+    // UnlimitedTopics,
+    // Matching,
+    // HowItWorks2,
+    // Funfacts,
+    // ProRater,
+    InitialTest,
+    Pricing
   },
   mounted() {
     $('.nav-item').find('a').click(function(e) {

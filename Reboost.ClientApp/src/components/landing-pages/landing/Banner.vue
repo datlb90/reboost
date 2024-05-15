@@ -7,19 +7,24 @@
           <div>
             <div>
               <div>
-                <h1 style="font-size: 42px; color: #4a6f8a; font-weight: 500;">Luyện IELTS Writing và nhận phản hồi miễn phí</h1>
+                <h1 style="font-size: 42px; color: #4a6f8a; font-weight: 500;">Cách nâng band IELTS Writing hiệu quả nhất!</h1>
               </div>
-              <p style="width: 62%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
-                <!-- Reboost giúp bạn cải thiện kỹ năng viết hiệu quả bằng cách cung cấp
-                đa dạng các chủ đề viết đã được phân loại, tài nguyên hữu dụng cho từng chủ đề, cùng phản hồi miễn phí, chuyên sâu, và chất lượng. -->
-                Nâng band IELTS Writing hiệu quả ứng dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+              <p style="width: 62%; margin: auto; margin-top: 30px; font-size: 18px; color: #4a6f8a; ">
+                <!-- Nâng band IELTS Writing hiệu quả với phương pháp học mới, đa dạng tài nguyên hữu dụng cùng phản hồi chuyên sâu, và chất lượng.\ -->
+                Reboost cung cấp phản hồi chuyên sâu cùng đa dạng tài nguyên hữu dụng giúp bạn nâng band IELST Writing nhanh chóng và hiệu quả nhất.
               </p>
               <el-button
                 class="btn btn-dark"
                 style="font-size: 18px; padding: 12px 50px; margin-top: 50px; background-color: #4b6f8a;"
                 @click="openRequestReviewDialog()"
-              > Chấm Bài Miễn Phí Với ChatGPT-4
+              > Chấm IELTS Writing Miễn Phí
+              <!-- Chấm Bài Miễn Phí Với ChatGPT-4 -->
               </el-button>
+              <div style="margin-top: 20px;">
+                <a style="text-decoration: underline; cursor: pointer;  font-weight: 500;" href="sample/feedback/basic" target="_blank">
+                  Tham khảo bài chấm mẫu
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -31,7 +36,7 @@
       <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
 
-      <InitialTest />
+      <BoxesArea />
     </div>
 
     <div v-else-if="screenWidth > 670" id="banner" class="ml-main-section" style=" padding-top: 180px; padding-bottom: 60px;">
@@ -64,8 +69,6 @@
       <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
 
-      <InitialTest />
-
     </div>
 
     <div v-else id="banner" class="ml-main-section" style="padding-top: 160px; padding-bottom: 60px">
@@ -97,8 +100,6 @@
       <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
-
-      <InitialTest />
     </div>
 
     <review-request-dialog
@@ -113,13 +114,14 @@
 import { mapActions } from 'vuex'
 import { PageName } from '@/app.constant'
 import ReviewRequestDialog from '../../../components/controls/ReviewRequestDialog.vue'
-import InitialTest from '../landing/InitialTest'
 
+import BoxesArea from '../landing/BoxesArea'
 export default {
   name: 'Banner',
   components: {
     'review-request-dialog': ReviewRequestDialog,
-    InitialTest
+
+    BoxesArea
   },
   data() {
     return {

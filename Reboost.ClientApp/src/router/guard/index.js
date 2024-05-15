@@ -92,18 +92,18 @@ export default async (router) => {
       return
     }
 
-    if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing') {
+    if (to.path == '/sample/feedback/basic' || to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing') {
       next()
       return
     }
 
-    if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing') {
+    if (to.path == '/sample/feedback/basic' || to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing') {
       next()
       return
     }
 
     if (!currentUser || !currentUser.id) {
-      if (to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing') {
+      if (to.path == '/sample/feedback/basic' || to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing') {
         next()
         return
       }

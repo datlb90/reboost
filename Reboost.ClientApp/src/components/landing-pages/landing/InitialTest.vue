@@ -3,19 +3,21 @@
   <section class="boxes-area" style="margin-top: 30px;">
     <div class="container">
 
-      <div v-if="screenWidth > 992" id="initialTest" style="height: 800px;  padding-top: 25px;">
-        <div class="section-title" style="margin-bottom: 30px;">
+      <div v-if="screenWidth > 992" id="initialTest" style="padding-top: 25px;">
+        <div class="section-title">
+          <h2>Luyện tập cùng Reboost</h2>
           <div class="bar" />
+          <p style="max-width: 70%;">Reboost cung cấp miễn phí bộ chủ đề viết được cập nhật thường xuyên và đa dạng tài nguyên hữu dụng cho từng chủ đề bao gồm gợi ý từ vựng nâng band, hướng dẫn phân tích đề, và các bài viết mẫu.</p>
+          <p style="max-width: 70%;">Hãy làm thử một đề phù hợp với bạn và nhận phản hồi ngay.</p>
         </div>
-        <div style="text-align: center;">
-          <h4>Làm một đề thi thử và nhận phản hồi ngay</h4>
+
+        <!-- <div style="text-align: center; margin-bottom: 20px; ">
           <el-radio-group id="radio-select-test" v-model="initTest" style="margin-top: 20px; margin-bottom: 25px; " text-color="#4b6f8a" @change="switchTest">
             <el-radio label="Đề Task 2" border />
             <el-radio label="Đề Task 1" border />
           </el-radio-group>
-
-        </div>
-        <splitpanes class="default-theme" vertical style="height: 100%; width: 100%; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);">
+        </div> -->
+        <splitpanes class="default-theme" vertical style="height: 800px; width: 100%; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);">
           <pane>
             <el-tabs v-model="activeTab" type="border-card" style="height: 100%;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
               <el-tab-pane name="description">
