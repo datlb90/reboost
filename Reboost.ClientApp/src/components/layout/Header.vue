@@ -44,16 +44,6 @@
                     <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
                       {{ currentUser.email }}
                     </div>
-                    <!--
-                    <div v-if="role == userRole.LEARNER" style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                      Band Score: chưa xác định
-                    </div>
-                    <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                      Kỹ năng đánh giá: {{ toFix(raterRating) }} <i class="fas fa-star" style="color: gold;" />
-                    </div> -->
-                    <!-- <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="openAddQuestionDialog()">
-                      Đóng góp một chủ đề
-                    </div> -->
                     <div style="padding:12px 0px;text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="logout()">
                       Đăng xuất
                     </div>
@@ -120,17 +110,6 @@
                     {{ currentUser.email }}
                   </div>
                 </div>
-                <!-- <el-dropdown-item v-if="role == userRole.LEARNER" divided>
-                  Band score:  chưa xác định
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  Kỹ năng đánh giá: {{ toFix(raterRating) }}
-                  <i class="fas fa-star" style="color: gold;" />
-                </el-dropdown-item>
-                -->
-                <!-- <el-dropdown-item command="addQuestion" divided>
-                  Đóng góp một chủ đề
-                </el-dropdown-item> -->
                 <el-dropdown-item command="logout" divided>
                   Đăng xuất
                 </el-dropdown-item>
@@ -142,7 +121,6 @@
       </div>
     </div>
 
-    <add-edit-question ref="questionDialog" />
     <contact-dialog ref="contactDialog" />
     <review-request-dialog ref="reviewRequestDialog" @openCheckoutDialog="openCheckoutDialog" />
     <checkout-dialog
@@ -162,7 +140,6 @@
 import raterService from '../../services/rater.service'
 import reviewService from '../../services/review.service'
 import { RATER_STATUS } from '../../app.constant'
-import AddEditQuestion from '../../components/controls/AddEditQuestion.vue'
 import ContactDialog from '../../components/controls/ContactDialog.vue'
 import ReviewRequestDialog from '../../components/controls/ReviewRequestDialog.vue'
 import CheckoutDialog from '../../components/controls/CheckOut.vue'
@@ -170,7 +147,6 @@ import { PageName, UserRole } from '@/app.constant'
 export default {
   name: 'HeaderTwo',
   components: {
-    'add-edit-question': AddEditQuestion,
     'contact-dialog': ContactDialog,
     'review-request-dialog': ReviewRequestDialog,
     'checkout-dialog': CheckoutDialog

@@ -353,8 +353,7 @@ const router = new VueRouter({
       name: 'Pricing',
       component: Pricing,
       meta: {
-        plainLayout: false,
-        landingPage: true,
+        isPricing: true,
         loginRequired: false
       }
     },

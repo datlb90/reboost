@@ -1,23 +1,34 @@
 <template>
   <div id="app">
-    <div v-if="!$route.meta.plainLayout && $route.meta.landingPage">
-      <LandingHeader />
-      <!-- <PreLoader v-if="isLoading" /> -->
-      <router-view />
-      <Footer />
+    <div v-if="$route.meta.isPricing">
+      <div v-if="user.id">
+        <Header />
+        <router-view />
+      </div>
+      <div v-else>
+        <LandingHeader />
+        <router-view />
+        <Footer />
+      </div>
     </div>
-    <div v-if="!$route.meta.plainLayout && $route.meta.raterLanding">
-      <RaterHeader />
-      <!-- <PreLoader v-if="isLoading" /> -->
-      <router-view />
-      <Footer />
-    </div>
-    <div v-if="!$route.meta.plainLayout && !$route.meta.landingPage && !$route.meta.raterLanding">
-      <Header />
-      <router-view />
-    </div>
-    <div v-if="$route.meta.plainLayout">
-      <router-view />
+    <div v-else>
+      <div v-if="!$route.meta.plainLayout && $route.meta.landingPage">
+        <LandingHeader />
+        <router-view />
+        <Footer />
+      </div>
+      <div v-if="!$route.meta.plainLayout && $route.meta.raterLanding">
+        <RaterHeader />
+        <router-view />
+        <Footer />
+      </div>
+      <div v-if="!$route.meta.plainLayout && !$route.meta.landingPage && !$route.meta.raterLanding">
+        <Header />
+        <router-view />
+      </div>
+      <div v-if="$route.meta.plainLayout">
+        <router-view />
+      </div>
     </div>
 
   </div>
@@ -39,6 +50,7 @@ export default {
 
   data() {
     return {
+      user: this.$store.state.auth.user,
       // isLoading: true,
       currentUrl: ''
     }
@@ -51,8 +63,8 @@ export default {
       // setTimeout(() => { this.isLoading = false }, 1500)
     }
   },
-
   mounted() {
+    console.log(this.user)
     this.currentUrl = window.location.pathname
     var lang = localStorage.getItem('language')
     if (lang) {

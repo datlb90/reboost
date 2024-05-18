@@ -104,8 +104,8 @@ namespace Reboost.Service.Services
                   },
                 DefaultPaymentMethod = methodId
             };
-            var service = new SubscriptionService();
-            return await service.CreateAsync(options);
+            //var service = new SubscriptionService();
+            return null; //await service.CreateAsync(options);
         }
         public async Task<PaymentMethod> AttachMethodAsync(string userId, string methodId)
         {
@@ -211,11 +211,11 @@ namespace Reboost.Service.Services
             {
                 Customer = customerId
             };
-            var service = new SubscriptionService();
-            StripeList<Subscription> subscriptions = await service.ListAsync(
-              options
-            );
-            return subscriptions;
+            //var service = new SubscriptionService();
+            //StripeList<Subscription> subscriptions = await service.ListAsync(
+            //  options
+            //);
+            return null; // subscriptions;
         }
         public async Task<bool> UserCompletedOnboarding(string userId) {
             var account = await GetAccount(userId);

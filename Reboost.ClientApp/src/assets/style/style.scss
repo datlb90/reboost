@@ -238,7 +238,7 @@ h6 {
     &.disabled,
     &:disabled {
         color: $white-color;
-        background-color: $light-green-color;
+        background-color: #8dacac; // $light-green-color;
         box-shadow: 0 13px 27px 0 rgba(68, 206, 111, .25);
         opacity: 1;
 

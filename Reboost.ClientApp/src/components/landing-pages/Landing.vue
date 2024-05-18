@@ -61,7 +61,6 @@ export default {
     })
 
     window.scrollTo(0, 1000)
-    console.log('test')
   },
   updated: function () {
     this.$nextTick(function () {
