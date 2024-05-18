@@ -7,18 +7,16 @@
           <div>
             <div>
               <div>
-                <h1 style="font-size: 42px; color: #4a6f8a; font-weight: 500;">Cách nâng band IELTS Writing hiệu quả nhất!</h1>
+                <h1 style="font-size: 42px; color: #4a6f8a; font-weight: 500;">Nâng band IELTS Writing nhanh và hiệu quả nhất</h1>
               </div>
               <p style="width: 62%; margin: auto; margin-top: 30px; font-size: 18px; color: #4a6f8a; ">
-                <!-- Nâng band IELTS Writing hiệu quả với phương pháp học mới, đa dạng tài nguyên hữu dụng cùng phản hồi chuyên sâu, và chất lượng.\ -->
-                Reboost cung cấp phản hồi chuyên sâu cùng đa dạng tài nguyên hữu dụng giúp bạn nâng band IELST Writing nhanh chóng và hiệu quả nhất.
+                Reboost cung cấp phản hồi chuyên sâu cùng tài liệu học tập hữu dụng giúp bạn sớm cải thiện kỹ năng và đạt band Writing mong muốn.
               </p>
               <el-button
                 class="btn btn-dark"
                 style="font-size: 18px; padding: 12px 50px; margin-top: 50px; background-color: #4b6f8a;"
                 @click="openRequestReviewDialog()"
               > Chấm IELTS Writing Miễn Phí
-              <!-- Chấm Bài Miễn Phí Với ChatGPT-4 -->
               </el-button>
               <div style="margin-top: 20px;">
                 <a style="text-decoration: underline; cursor: pointer;  font-weight: 500;" href="sample/feedback/basic" target="_blank">
@@ -46,17 +44,24 @@
           <div>
             <div>
               <div>
-                <h1 style="font-size: 32px; color: #4a6f8a; font-weight: 500;">Luyện IELTS Writing và nhận phản hồi miễn phí</h1>
+                <h1 style="font-size: 32px; color: #4a6f8a; font-weight: 500;">Nâng band IELTS Writing nhanh và hiệu quả nhất</h1>
               </div>
-              <p style="width: 75%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
-                Nâng band IELTS Writing hiệu quả ứng dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+              <p style="width: 85%; margin: auto; margin-top: 30px; font-size: 17px; color: #4a6f8a; ">
+                Reboost cung cấp phản hồi chuyên sâu cùng tài liệu học tập hữu dụng giúp bạn sớm cải thiện kỹ năng và đạt band Writing mong muốn.
               </p>
               <el-button
                 class="btn btn-dark"
                 style="font-size: 18px; padding: 12px 50px; margin-top: 50px; background-color: #4b6f8a;"
                 @click="openRequestReviewDialog()"
-              > Chấm Bài Miễn Phí Với ChatGPT-4
+              >  Chấm IELTS Writing Miễn Phí
               </el-button>
+
+              <div style="margin-top: 20px;">
+                <a style="text-decoration: underline; cursor: pointer;  font-weight: 500;" href="sample/feedback/basic" target="_blank">
+                  Tham khảo bài chấm mẫu
+                </a>
+              </div>
+
             </div>
           </div>
 
@@ -69,26 +74,35 @@
       <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
 
+      <BoxesArea />
+
     </div>
 
-    <div v-else id="banner" class="ml-main-section" style="padding-top: 160px; padding-bottom: 60px">
+    <div v-else id="banner" class="ml-main-section" style="padding-top: 190px; padding-bottom: 60px">
       <div class="container">
         <div class="row">
           <div class="col-lg-6 col-md-12">
             <div class="ml-banner-content">
               <div>
-                <h1 style="font-size: 35px; color: #4a6f8a; font-weight: 500;">Luyện IELTS Writing và nhận phản hồi miễn phí</h1>
+                <h1 style="font-size: 36px; color: #4a6f8a; font-weight: 500;">Nâng band IELTS Writing nhanh và hiệu quả nhất</h1>
               </div>
               <p style="margin-top: 30px; font-size: 16px; color: #4a6f8a;">
-                Nâng band IELTS Writing hiệu quả ứng dụng phương pháp học mới, với đa dạng tài nguyên hữu dụng cùng phản hồi miễn phí, chuyên sâu, và chất lượng.
+                Reboost cung cấp phản hồi chuyên sâu cùng tài liệu học tập hữu dụng giúp bạn sớm cải thiện kỹ năng viết IELTS.
               </p>
 
               <el-button
                 class="btn btn-dark"
                 style="font-size: 18px; padding: 12px 30px; margin-top: 30px; background-color: #4b6f8a;"
                 @click="openRequestReviewDialog()"
-              > Chấm Bài Miễn Phí Với ChatGPT-4
+              >  Chấm IELTS Writing Miễn Phí
               </el-button>
+
+              <div style="margin-top: 20px;">
+                <a style="text-decoration: underline; cursor: pointer;  font-weight: 500;" href="sample/feedback/basic" target="_blank">
+                  Tham khảo bài chấm mẫu
+                </a>
+              </div>
+
             </div>
           </div>
 
@@ -100,6 +114,8 @@
       <div class="shape6 rotateme"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
       <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
+
+      <BoxesArea />
     </div>
 
     <review-request-dialog

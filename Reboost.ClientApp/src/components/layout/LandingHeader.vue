@@ -10,32 +10,25 @@
             </router-link>
           </div>
 
-          <div id="top-menu" style="display: flex; width: 560px; float: left; margin-left: 60px;">
-            <div class="nav-item">
-              <a href="benefit" class="nav-link">Lợi ích</a>
+          <div id="top-menu" style="display: flex; width: 500px; float: left; margin-left: 160px;">
+            <div>
+              <a style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-top: 8px; margin-right: 30px;" href="/sample/feedback/basic" target="_blank">
+                Bài chấm mẫu
+              </a>
             </div>
             <div class="nav-item">
-              <a href="howItWorks" class="nav-link">Phương pháp mới</a>
-            </div>
-            <div class="nav-item">
-              <a href="features" class="nav-link">Chức năng</a>
+              <a style="font-size: 16px;  font-weight: 500; margin-right: 30px;" href="experience" class="nav-link">Trải nghiệm </a>
             </div>
             <div>
-              <a href="/rater" class="nav-link"><span style="font-weight: 500; font-size: 15px;">Cho giáo viên</span></a>
+              <a style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-top: 8px; margin-right: 30px;" href="/pricing">
+                Bảng giá
+              </a>
             </div>
             <div class="nav-item">
-              <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">Liên hệ</a>
+              <a class="nav-link" style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-right: 30px;" @click.prevent="openContactDialog()">
+                Liên hệ
+              </a>
             </div>
-            <!-- <div>
-              <el-dropdown class="lang-dropdown" style="margin-left: 15px; margin-top: 8px;" placement="bottom" @command="onChangeLanguage">
-                <flag v-if="lang == 'English'" iso="vn" style="border-radius: 3px; height: 15px; width: 15px;" />
-                <flag v-else iso="gb" style="border-radius: 3px;  height: 15px; width: 15px;" />
-                <el-dropdown-menu slot="dropdown" class="lang-dropdown-menu">
-                  <el-dropdown-item v-if="lang == 'English'" command="vietnamese"><flag iso="vn" style="border-radius: 2px; margin-right: 6px;" />Tiếng Việt</el-dropdown-item>
-                  <el-dropdown-item v-else command="english"><flag iso="gb" style="border-radius: 2px; margin-right: 6px;" />English</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </div> -->
           </div>
 
           <div class="menu-btns" style="float: right;">
@@ -68,22 +61,24 @@
               <img src="../../assets/logo/logo.png" alt="logo" style="width: 140px;">
             </router-link>
           </div>
-          <div id="top-menu" style="display: flex; width: 550px; float: left; margin-left: 10px;">
-
-            <div class="nav-item">
-              <a href="benefit" class="nav-link">Lợi ích</a>
+          <div id="top-menu" style="display: flex; width: 500px; float: left; margin-left: 60px;">
+            <div>
+              <a style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-top: 8px; margin-right: 30px;" href="/sample/feedback/basic" target="_blank">
+                Bài chấm mẫu
+              </a>
             </div>
             <div class="nav-item">
-              <a href="howItWorks" class="nav-link">Phương pháp mới</a>
-            </div>
-            <div class="nav-item">
-              <a href="features" class="nav-link">Chức năng</a>
+              <a style="font-size: 16px;  font-weight: 500; margin-right: 30px;" href="experience" class="nav-link">Trải nghiệm </a>
             </div>
             <div>
-              <a href="/rater" class="nav-link"><span style="font-weight: 500; font-size: 15px;">Cho giáo viên</span></a>
+              <a style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-top: 8px; margin-right: 30px;" href="/pricing">
+                Bảng giá
+              </a>
             </div>
             <div class="nav-item">
-              <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">Liên hệ</a>
+              <a class="nav-link" style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-right: 30px;" @click.prevent="openContactDialog()">
+                Liên hệ
+              </a>
             </div>
           </div>
 
@@ -126,29 +121,27 @@
 
             <el-dropdown-menu id="top-menu" slot="dropdown">
               <el-dropdown-item command="a">
-                <div class="nav-item">
-                  <a href="benefit" class="nav-link">Lợi ích</a>
+                <div>
+                  <a style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-left: 15px; margin-right: 15px;" href="/sample/feedback/basic" target="_blank">
+                    Bài chấm mẫu
+                  </a>
                 </div>
               </el-dropdown-item>
-
               <el-dropdown-item command="a">
                 <div class="nav-item">
-                  <a href="howItWorks" class="nav-link">Phương pháp mới</a>
+                  <a style="font-size: 16px;  font-weight: 500;" href="experience" class="nav-link">Trải nghiệm </a>
                 </div>
               </el-dropdown-item>
               <el-dropdown-item command="b">
-                <div class="nav-item">
-                  <a href="features" class="nav-link">Chức năng</a>
-                </div>
-              </el-dropdown-item>
-              <el-dropdown-item command="c">
-                <div>
-                  <a href="/rater" class="nav-link"><span style="font-weight: 500; font-size: 15px;">Trở thành giáo viên</span></a>
-                </div>
+                <a style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-left: 15px; margin-right: 15px;" href="/pricing">
+                  Bảng giá
+                </a>
               </el-dropdown-item>
               <el-dropdown-item command="d">
                 <div class="nav-item">
-                  <a class="nav-link" style="cursor: pointer;" @click.prevent="openContactDialog()">Liên hệ</a>
+                  <a class="nav-link" style="font-size: 16px;  font-weight: 500;" @click.prevent="openContactDialog()">
+                    Liên hệ
+                  </a>
                 </div>
               </el-dropdown-item>
             </el-dropdown-menu>

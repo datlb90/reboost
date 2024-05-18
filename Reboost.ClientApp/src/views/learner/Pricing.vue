@@ -1,8 +1,8 @@
 <template>
-  <section id="pricing" class="features-area-two ptb-80">
+  <section id="pricing" class="features-area-two ptb-80" style="margin-top: 60px; min-height: 100vh;">
     <div class="container">
       <div class="section-title" style="margin-bottom: 40px;">
-        <h2>Bảng Giá</h2>
+        <h1 style="font-size: 30px;">Bảng Giá</h1>
         <div class="bar" />
         <div style="text-align: center;">
           <div class="menu-btns" style="margin-top: 30px;">
@@ -107,75 +107,71 @@
       </div>
     </div>
 
-    <div class="shape8 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
-    <div class="shape2 rotateme"><img src="../../../assets/img/shape2.svg" alt="shape"></div>
-    <div class="shape7"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
-    <div class="shape4"><img src="../../../assets/img/shape4.svg" alt="shape"></div>
   </section>
 </template>
 
-<script>
-export default {
-  name: 'Pricing',
-  data() {
-    return {
-      screenWidth: window.innerWidth,
-      selectedMonth: '6 tháng'
+  <script>
+  export default {
+    name: 'Pricing',
+    data() {
+      return {
+        screenWidth: window.innerWidth,
+        selectedMonth: '6 tháng'
+      }
+    },
+    watch: {
+      screenWidth(newWidth) {
+        this.screenWidth = newWidth
+      }
+    },
+    mounted() {
+      window.addEventListener('resize', () => {
+        this.screenWidth = window.innerWidth
+      })
     }
-  },
-  watch: {
-    screenWidth(newWidth) {
-      this.screenWidth = newWidth
-    }
-  },
-  mounted() {
-    window.addEventListener('resize', () => {
-      this.screenWidth = window.innerWidth
-    })
   }
-}
-</script>
+  </script>
 
-<style scoped>
-.nav-item:active{
-  color: #44ce6f;
-}
+  <style scoped>
+  .nav-item:active{
+    color: #44ce6f;
+  }
 
-.lang-dropdown-menu{
-  z-index: 10000 !important;
-}
+  .lang-dropdown-menu{
+    z-index: 10000 !important;
+  }
 
-.nav-item a {
-  font-weight: 500;
-  font-size: 15px;
+  .nav-item a {
+    font-weight: 500;
+    font-size: 15px;
 
-}
+  }
 
-.menu-btns .btn.btn-light {
-    background: transparent;
+  .menu-btns .btn.btn-light {
+      background: transparent;
+      border: 2px dashed #cdf1d8;
+  }
+
+  .menu-btns .btn.btn-light.active {
+    background: #27bebe;
+    color: white;
     border: 2px dashed #cdf1d8;
-}
+  }
 
-.menu-btns .btn.btn-light.active {
-  background: #27bebe;
-  color: white;
-  border: 2px dashed #cdf1d8;
-}
+  .menu-btns .btn.btn-light::before {
+    background: #27bebe;
+  }
 
-.menu-btns .btn.btn-light::before {
-  background: #27bebe;
-}
+  .menu-btns .btn.btn-light::after {
+    background: #27bebe;
+  }
 
-.menu-btns .btn.btn-light::after {
-  background: #27bebe;
-}
+  .menu-btns .btn.btn-light:hover{
+    color: white;
+  }
 
-.menu-btns .btn.btn-light:hover{
-  color: white;
-}
-
-.menu-btns .btn.btn-light:hover,
-.menu-btns .btn.btn-light:focus {
-  border-color: #27bebe;
-}
-</style>
+  .menu-btns .btn.btn-light:hover,
+  .menu-btns .btn.btn-light:focus {
+    border-color: #27bebe;
+  }
+  </style>

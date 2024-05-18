@@ -6,10 +6,8 @@
     style="border-top: 1px solid #d8ebfd; text-align: center; padding-top: 14px;
     padding-bottom: 1px; background: #4b6f8a;"
   >
-    <p style="color: white;">Công Ty TNHH Reboost. Địa Chỉ: NO05-LK128, Khu đất dịch vụ Cửa Phủ, Phường La Khê, Quận Hà Đông, Thành Phố Hà Nội, Việt Nam.</p>
-    <p style="color: white;">Chịu Trách Nhiệm Quản Lý Nội Dung: Nguyễn Thị Huyền Trang. Email: <a style="color: white;" href="mailto:support@reboost.vn">support@reboost.vn</a>. Điện Thoại Liên Lạc: 0393535216</p>
-    <p style="color: white;">Mã số doanh nghiệp: 0110542943 do Sở Kế hoạch & Đầu tư TP Hà Nội cấp lần đầu ngày 15/11/2023.</p>
-    <p style="color: white;">© 2023 - Bản quyền thuộc về Công ty TNHH Reboost | <a style="color: white;" href="/terms">Điều Khoản</a> | <a style="color: white;" href="/privacy">Chính Sách Bảo Mật</a></p>
+    <p style="color: white;">Công Ty TNHH Reboost | Mã số doanh nghiệp: 0110542943 | Email: <a style="color: white;" href="mailto:support@reboost.vn">support@reboost.vn</a> | Điện Thoại Liên Lạc: 0393535216</p>
+    <p style="color: white;">© 2024 - Bản quyền thuộc về Công ty TNHH Reboost | <a style="color: white;" href="/terms">Điều Khoản Dịch Vụ</a> | <a style="color: white;" href="/privacy">Chính Sách Bảo Mật</a></p>
     <div class="shape1"><img src="../../assets/img/shape1.png" alt="shape"></div>
     <div class="shape8 rotateme"><img src="../../assets/img/shape2.svg" alt="shape"></div>
     <back-to-top bottom="50px" right="50px">

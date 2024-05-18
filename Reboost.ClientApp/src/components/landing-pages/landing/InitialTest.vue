@@ -1,14 +1,14 @@
 <template>
   <!-- Start Boxes Area -->
-  <section class="boxes-area" style="margin-top: 30px;">
+  <section id="experience" class="boxes-area" style="padding-top: 50px; margin-top: 10px;">
     <div class="container">
 
-      <div v-if="screenWidth > 992" id="initialTest" style="padding-top: 25px;">
+      <div v-if="screenWidth > 992" style="padding-top: 25px;">
         <div class="section-title">
           <h2>Luyện tập cùng Reboost</h2>
           <div class="bar" />
-          <p style="max-width: 70%;">Reboost cung cấp miễn phí bộ chủ đề viết được cập nhật thường xuyên và đa dạng tài nguyên hữu dụng cho từng chủ đề bao gồm gợi ý từ vựng nâng band, hướng dẫn phân tích đề, và các bài viết mẫu.</p>
-          <p style="max-width: 70%;">Hãy làm thử một đề phù hợp với bạn và nhận phản hồi ngay.</p>
+          <p style="max-width: 85%;">Chúng tôi cung cấp miễn phí bộ chủ đề được cập nhật thường xuyên kèm theo gợi ý từ vựng nâng band,
+            hướng dẫn phân tích, và bài viết mẫu cho từng chủ đề. Hãy cùng luyện tập và tiến bộ mỗi ngày với Reboost.</p>
         </div>
 
         <!-- <div style="text-align: center; margin-bottom: 20px; ">
@@ -301,7 +301,7 @@
                         type="primary"
                         style="float: right; margin-left: 5px;"
                         @click="submit()"
-                      >Nộp bài</el-button>
+                      >Nhận phản hồi</el-button>
                     </div>
                   </div>
                   <div style="flex-grow: 1;">
@@ -346,16 +346,13 @@
         </el-dialog>
       </div>
 
-      <div v-else id="initialTest">
-        <div class="section-title" style="margin-bottom: 30px;  padding-top: 10px;">
+      <div v-else>
+
+        <div class="section-title">
+          <h3>Luyện tập cùng Reboost</h3>
           <div class="bar" />
-        </div>
-        <div style="text-align: center;">
-          <h5>Làm đề thi thử và nhận phản hồi ngay</h5>
-          <el-radio-group id="radio-select-test" v-model="initTest" style="margin-top: 10px; margin-bottom: 15px; " text-color="#4b6f8a" @change="switchTest">
-            <el-radio label="Đề Task 2" border />
-            <el-radio label="Đề Task 1" border />
-          </el-radio-group>
+          <p style="max-width: 85%;">Chúng tôi cung cấp miễn phí bộ chủ đề được cập nhật thường xuyên kèm theo gợi ý từ vựng nâng band,
+            hướng dẫn phân tích, và bài viết mẫu cho từng chủ đề. Hãy cùng luyện tập và tiến bộ mỗi ngày với Reboost.</p>
         </div>
         <div style="width: 100%;">
           <div id="tabs-wrapper">
@@ -643,7 +640,7 @@
                         type="primary"
                         style="float: right; margin-left: 5px;"
                         @click="submit()"
-                      >Nộp bài</el-button>
+                      >Nhận phản hồi</el-button>
                     </div>
                   </div>
                   <div style="flex-grow: 1;">

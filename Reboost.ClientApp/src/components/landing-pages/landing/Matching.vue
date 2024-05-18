@@ -1,35 +1,19 @@
 <template>
   <!-- Start Features Area -->
-  <section v-if="screenWidth > 780" class="features-area-two ptb-80">
+  <section class="features-area-two ptb-80">
     <div class="container">
-      <div class="row h-100 justify-content-center align-items-center">
-        <div class="col-lg-7 col-md-12">
-          <img src="../../../assets/img/features/AI Rater 3.jpeg" class="wow fadeInDown" data-wow-delay="0.6s" alt="big-monitor">
-        </div>
-        <div class="col-lg-4 col-md-12 services-content">
-          <div class="section-title">
-            <h5 style="font-size: 30px;">{{ messageTranslates('matching', 'title') }}</h5>
-            <div class="bar" />
-            <p>{{ messageTranslates('matching', 'description') }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <section v-else class="features-area-two ptb-80">
-    <div class="container" style="text-align: center;">
-      <div class="row h-100 justify-content-center align-items-center" style="text-align: center;">
-        <div class="container">
-          <div class="section-title">
-            <h5 style="font-size: 30px;">{{ messageTranslates('matching', 'title') }}</h5>
-            <div class="bar" />
-            <p style="text-align: justify;">{{ messageTranslates('matching', 'description') }}</p>
-          </div>
-        </div>
 
-        <div class="col-lg-8 col-md-12">
-          <img src="../../../assets/img/features/AI Rater 3.jpeg" class="wow fadeInDown" data-wow-delay="0.6s" alt="book-self">
-        </div>
+      <div class="section-title">
+        <h2 style="font-size: 30px;">Phản hồi chất lượng từ AI</h2>
+        <div class="bar" />
+        <p style="max-width: 68%;">Được vận hành bởi model mới nhất của ChatGPT và cấu hình bởi các chuyên gia giàu kinh nghiệm, hệ thống chấm bài tự động của Reboost cung cấp phản hồi cụ thể về điểm mạnh và điểm yếu trong bài viết, giúp bạn cải thiện kỹ năng và tư duy phản biện.</p>
+        <img src="../../../assets/img/features/AI Rater 3.jpeg" class="wow fadeInDown" data-wow-delay="0.6s" alt="big-monitor">
+
+      </div>
+
+      <div>
+        <div />
+        <div class="services-content" />
       </div>
     </div>
   </section>

@@ -52,6 +52,8 @@ namespace Reboost.DataAccess
         public virtual DbSet<ArticleRelations> ArticleRelations { get; set; }
         public virtual DbSet<Orders> Orders { get; set; }
         public virtual DbSet<UserLogins> UserLogins { get; set; }
+        public virtual DbSet<Plans> Plans { get; set; }
+        public virtual DbSet<Subscriptions> Subscriptions { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
             : base(options)
@@ -61,27 +63,6 @@ namespace Reboost.DataAccess
         {
             base.OnModelCreating(builder);
             new UserConfiguration(builder.Entity<User>());
-
-            //Annotation <-> InTextComment
-            //builder.Entity<Annotations>().HasMany(a => a.InTextComments).WithOne(c => c.Annotation).OnDelete(DeleteBehavior.ClientCascade);
-
-            //builder.Entity<Raters>()
-            //        .HasMany(c => c.Photos)
-            //        .WithOne(e => e.Rater)
-            //        .HasForeignKey(e => e.UserId);
-            //builder.Entity<Raters>()
-            //        .HasMany(c => c.Scores)
-            //        .WithOne(e => e.Rater)
-            //        .HasForeignKey(e => e.UserId);
-
-            //builder.Entity<Tests>()
-            //    .HasMany(t => t.RaterCredentials)
-            //    .WithOne(c => c.Test)
-            //    .HasForeignKey(e => e.TestId);
-
-            //builder.Entity<Tests>().HasMany(t => t.TestSections).WithOne(s => s.Tests).HasForeignKey(s => s.TestId);
-            //builder.Entity<TestSections>().HasMany(t => t.UserScores).WithOne(s => s.TestSections).HasForeignKey(s => s.SectionId);
-            //builder.Entity<ApplicationUser>().HasMany(t => t.UserScores).WithOne(s => s.User).HasForeignKey(s => s.UserId);
         }
 
         /// <summary>

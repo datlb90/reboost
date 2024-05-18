@@ -2,44 +2,23 @@
   <div>
     <Banner />
     <InitialTest />
-    <Pricing />
-    <!-- <HowItWorks2 />
-    <Funfacts />
-    <FeaturesArea />
-    <Features />
-    <UnlimitedTopics />
-    <Matching />
-    <ProRater /> -->
+    <Feedback />
   </div>
 </template>
 
 <script>
 import Banner from './landing/Banner'
-// import BoxesArea from './landing/BoxesArea'
-// import FeaturesArea from './landing/FeaturesArea'
-// import Features from './landing/Features'
-// import UnlimitedTopics from './landing/UnlimitedTopics'
-// import Matching from './landing/Matching'
-// import HowItWorks2 from './landing/HowItWorks2'
-// import Funfacts from './landing/Funfacts'
-// import ProRater from './landing/ProRater'
 import InitialTest from './landing/InitialTest'
-import Pricing from './landing/Pricing'
+// import Pricing from './landing/Pricing'
+import Feedback from './landing/Feedback'
 import $ from 'jquery'
 export default {
   name: 'Developer',
   components: {
     Banner,
-    // BoxesArea,
-    // FeaturesArea,
-    // Features,
-    // UnlimitedTopics,
-    // Matching,
-    // HowItWorks2,
-    // Funfacts,
-    // ProRater,
     InitialTest,
-    Pricing
+    // Pricing,
+    Feedback
   },
   mounted() {
     $('.nav-item').find('a').click(function(e) {
@@ -91,34 +70,35 @@ export default {
         var href = ''
         var anchor = ''
         if (section == 'experience') {
-          href = 'initialTest'
+          href = 'experience'
           anchor = $('#' + href).offset()
           if (anchor) {
             window.scrollTo(0, anchor.top - 20)
           }
-          document.title = 'Reboost - Thi thử IELTS Writing'
-        } else if (section == 'new-method') {
-          href = 'howItWorks'
-          anchor = $('#' + href).offset()
-          if (anchor) {
-            window.scrollTo(anchor.left, anchor.top - 20)
-          }
-          document.title = 'Reboost - Phương pháp học mới'
-        } else if (section == 'benefit') {
-          href = 'benefit'
-          anchor = $('#' + href).offset()
-          if (anchor) {
-            window.scrollTo(0, anchor.top - 20)
-          }
-          document.title = 'Reboost - Lợi ích của thành viên'
-        } else if (section == 'features') {
-          href = 'features'
-          anchor = $('#' + href).offset()
-          if (anchor) {
-            window.scrollTo(0, anchor.top - 20)
-          }
-          document.title = 'Reboost - Chức năng độc đáo'
+          document.title = 'Reboost - Trải nghiệm'
         }
+        // else if (section == 'new-method') {
+        //   href = 'howItWorks'
+        //   anchor = $('#' + href).offset()
+        //   if (anchor) {
+        //     window.scrollTo(anchor.left, anchor.top - 20)
+        //   }
+        //   document.title = 'Reboost - Phương pháp học mới'
+        // } else if (section == 'benefit') {
+        //   href = 'benefit'
+        //   anchor = $('#' + href).offset()
+        //   if (anchor) {
+        //     window.scrollTo(0, anchor.top - 20)
+        //   }
+        //   document.title = 'Reboost - Lợi ích của thành viên'
+        // } else if (section == 'features') {
+        //   href = 'features'
+        //   anchor = $('#' + href).offset()
+        //   if (anchor) {
+        //     window.scrollTo(0, anchor.top - 20)
+        //   }
+        //   document.title = 'Reboost - Chức năng độc đáo'
+        // }
       }
     })
   },
