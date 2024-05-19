@@ -43,7 +43,7 @@
             </div>
 
             <div class="pricing-footer">
-              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }" @click="selectPlan(0)">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }">
                 {{ getOptionText(0) }}
               </a>
             </div>
@@ -100,7 +100,7 @@
                 <li class="active">24x7 Great Support</li>
                 <li class="active">Data Security and Backups</li>
                 <li class="active">Monthly Reports and Analytics</li>
-                <li v-if="!planDisabled(4)" class="active">Nhận lại <span><sup>đ</sup>{{ proratedAmount / 1000 }}.000<span /></span> từ gói hiện tại</li>
+                <!-- <li v-if="proratedAmount != 0 && !planDisabled(4)" class="active">Nhận lại <span><sup>đ</sup>{{ proratedAmount / 1000 }}.000<span /></span> từ gói hiện tại</li> -->
               </ul>
             </div>
 
@@ -137,7 +137,7 @@
             </div>
 
             <div class="pricing-footer">
-              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }" @click="selectPlan(0)">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }">
                 {{ getOptionText(0) }}
               </a>
             </div>
@@ -194,7 +194,7 @@
                 <li class="active">24x7 Great Support</li>
                 <li class="active">Data Security and Backups</li>
                 <li class="active">Monthly Reports and Analytics</li>
-                <li v-if="!planDisabled(5)" class="active">Nhận lại <span><sup>đ</sup>{{ proratedAmount / 1000 }}.000<span /></span> từ gói hiện tại</li>
+                <!-- <li v-if="proratedAmount != 0 && !planDisabled(4)" class="active">Nhận lại <span><sup>đ</sup>{{ proratedAmount / 1000 }}.000<span /></span> từ gói hiện tại</li> -->
               </ul>
             </div>
 
@@ -231,7 +231,7 @@
             </div>
 
             <div class="pricing-footer">
-              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }" @click="selectPlan(0)">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }">
                 {{ getOptionText(0) }}
               </a>
             </div>
@@ -288,7 +288,7 @@
                 <li class="active">24x7 Great Support</li>
                 <li class="active">Data Security and Backups</li>
                 <li class="active">Monthly Reports and Analytics</li>
-                <li v-if="!planDisabled(6)" class="active">Nhận lại <span><sup>đ</sup>{{ proratedAmount / 1000 }}.000<span /></span> từ gói hiện tại</li>
+                <!-- <li v-if="proratedAmount != 0 && !planDisabled(4)" class="active">Nhận lại <span><sup>đ</sup>{{ proratedAmount / 1000 }}.000<span /></span> từ gói hiện tại</li> -->
               </ul>
             </div>
 
@@ -327,13 +327,13 @@
                   <div>{{ scope.row.duration + ' tháng' }}</div>
                 </template>
               </el-table-column>
-              <el-table-column prop="price" label="Phí 1 tháng" width="120">
+              <el-table-column prop="price" label="Giá cho 1 tháng" width="120">
                 <template v-if="scope.row" slot-scope="scope">
                   <div>{{ scope.row.price.toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
                 </template>
               </el-table-column>
 
-              <el-table-column label="Tổng cộng" width="110">
+              <el-table-column label="Tổng cộng" width="120">
                 <template v-if="scope.row" slot-scope="scope">
                   <div style="float: left;">{{ (scope.row.duration * scope.row.price).toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
                 </template>
@@ -341,14 +341,14 @@
 
             </el-table>
 
-            <div v-if="proratedAmount != 0" style="height: 30px; margin-top: 20px;">
-              <div style="float: right; width: 100px; ">{{ proratedAmount.toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
-              <div style="float: right; width: calc(100% - 100px); text-align: right; padding-right: 10px;">Số tiền nhận lại từ gói hiện tại:</div>
+            <div v-if="proratedAmount != 0 && type != 'renew'" style="height: 25px; margin-top: 20px;">
+              <div style="float: right; width: 110px; ">{{ proratedAmount.toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
+              <div style="float: right; width: calc(100% - 110px); text-align: right; padding-right: 10px;">Số tiền nhận lại từ gói hiện tại:</div>
             </div>
 
-            <div style="height: 30px; margin-top: 5px;">
-              <div style="float: right; width: 100px; "><b>{{ (activeDuration * activePrice - proratedAmount).toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</b></div>
-              <div style="float: right; width: calc(100% - 100px); text-align: right; padding-right: 10px;"><b>Tổng giá trị đơn hàng:</b></div>
+            <div v-if="orderSummary && orderSummary.length > 0" style="height: 25px; margin-top: 15px;">
+              <div style="float: right; width: 110px; "><b>{{ (orderSummary[0].total).toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</b></div>
+              <div style="float: right; width: calc(100% - 110px); text-align: right; padding-right: 10px;"><b>Tổng giá trị đơn hàng:</b></div>
             </div>
 
             <hr>
@@ -369,9 +369,8 @@
             </div>
 
             <div style="margin-top: 30px; text-align: center;">
-              <!-- <div>Địa chỉ email nhận biên lai</div> -->
-              <el-tag v-if="activeDuration > 1" style="margin-top: 5px; font-size: 13px; width: 100%;">Email nhận biên lai: {{ user.email }}</el-tag>
-              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng có thể được hoàn trả trong vòng 30 ngày với bất kỳ lý do gì.</el-tag>
+              <el-tag style="margin-top: 5px; font-size: 13px; width: 100%;">Email nhận biên lai: {{ user.email }}</el-tag>
+              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng được hoàn trả trong vòng 30 ngày với bất kỳ lý do gì.</el-tag>
               <el-tag type="info" style="margin-top: 10px; font-size: 13px; width: 100%;">Bằng cách mua gói phản hồi, bạn đồng ý với điều khoản và dịch vụ của Reboost.</el-tag>
             </div>
           </div>
@@ -392,17 +391,15 @@
         type: 'new', // new, renew, upgrade
         activePlan: 1, // 6 tháng chi tiết
         activeDuration: 6,
-        activePrice: 99000,
         user: this.$store.state.auth.user,
-        // userSubscription: null
+        // userSubscription: null,
         userSubscription: {
-          planId: 2, // 6 plans in total: 1, 2, 3, 4, 5, 6
-          duration: 3, // 3 durations: 6, 3, 1
+          planId: 4, // 6 plans in total: 1, 2, 3, 4, 5, 6
+          duration: 6, // 3 durations: 6, 3, 1
           proratedAmount: 200000 // unused amount (should be substracted by upgrade)
         },
         proratedAmount: 0,
         checkoutDialogVisiable: false,
-        planName: 'Phản Hồi Chi Tiết',
         orderSummary: []
       }
     },
@@ -425,16 +422,64 @@
       }
     },
     methods: {
+      getTotal() {
+        let total = this.orderSummary[0].duration * this.orderSummary[0].price
+        if (this.proratedAmount != 0 && this.type != 'renew') { total = total - this.proratedAmount }
+        return total
+      },
+      dialogClosed() {
+        this.orderSummary = []
+      },
       selectPlan(planId) {
         if (!this.user.id) {
           // save plan id
           // send to register
           // send to payment page if plan id != 0
         } else {
+          let planName = 'Phản Hồi Chi Tiết'
+          let duration = 6
+          let price = 99000
+          if (planId == 1) {
+            planName = 'Phản Hồi Chi Tiết'
+            duration = 6
+            price = 99000
+          } else if (planId == 2) {
+            planName = 'Phản Hồi Chi Tiết'
+            duration = 3
+            price = 139000
+          } else if (planId == 3) {
+            planName = 'Phản Hồi Chi Tiết'
+            duration = 1
+            price = 179000
+          } else if (planId == 4) {
+            planName = 'Phản Hồi Chuyên Sâu'
+            duration = 6
+            price = 199000
+          } else if (planId == 5) {
+            planName = 'Phản Hồi Chuyên Sâu'
+            duration = 3
+            price = 249000
+          } else if (planId == 6) {
+            planName = 'Phản Hồi Chuyên Sâu'
+            duration = 1
+            price = 299000
+          }
+
+          const option = this.getOptionText(planId)
+          console.log(option)
+          if (option != 'Lựa Chọn') {
+            planName = option + ' ' + planName
+            if (option == 'Gia Hạn') { this.type = 'renew' } else { this.type = 'upgrade' }
+          }
+
+          let total = duration * price
+          if (this.proratedAmount != 0 && this.type != 'renew') { total = total - this.proratedAmount }
+
           const order = {
-            planName: 'Phản Hồi Chi Tiết',
-            duration: this.activeDuration,
-            price: this.activePrice
+            planName: planName,
+            duration: duration,
+            price: price,
+            total: total
           }
           this.orderSummary.push(order)
 
@@ -454,8 +499,8 @@
         return 'Lựa Chọn'
       },
       planDisabled(planId) {
+        if (planId == 0) { return true }
         if (this.user && this.userSubscription) {
-          if (planId == 0) { return true }
           if (this.userSubscription.duration > this.activeDuration) {
             if (this.activePlan <= 3 && planId >= 4) { return true }
           }
