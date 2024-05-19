@@ -302,17 +302,97 @@
       </div>
     </div>
 
+    <el-dialog
+      id="checkout-dialog"
+      :visible.sync="checkoutDialogVisiable"
+      width="620px"
+      height="820px"
+      @closed="dialogClosed"
+    >
+      <div slot="title">
+        <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Thanh Toán</div>
+      </div>
+      <div class="dialog-body">
+        <div style="padding: 20px; padding-top: 0px;">
+          <div>
+            <!-- <div style="font-size: 16px;"><b>Chi Tiết Đơn Hàng:</b></div> -->
+            <el-table :data="orderSummary">
+              <el-table-column prop="planName" label="Gói Phản Hồi">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div>{{ scope.row.planName }}</div>
+                </template>
+              </el-table-column>
+              <el-table-column prop="duration" label="Thời hạn" width="80">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div>{{ scope.row.duration + ' tháng' }}</div>
+                </template>
+              </el-table-column>
+              <el-table-column prop="price" label="Phí 1 tháng" width="120">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div>{{ scope.row.price.toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="Tổng cộng" width="110">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div style="float: left;">{{ (scope.row.duration * scope.row.price).toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
+                </template>
+              </el-table-column>
+
+            </el-table>
+
+            <div v-if="proratedAmount != 0" style="height: 30px; margin-top: 20px;">
+              <div style="float: right; width: 100px; ">{{ proratedAmount.toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
+              <div style="float: right; width: calc(100% - 100px); text-align: right; padding-right: 10px;">Số tiền nhận lại từ gói hiện tại:</div>
+            </div>
+
+            <div style="height: 30px; margin-top: 5px;">
+              <div style="float: right; width: 100px; "><b>{{ (activeDuration * activePrice - proratedAmount).toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</b></div>
+              <div style="float: right; width: calc(100% - 100px); text-align: right; padding-right: 10px;"><b>Tổng giá trị đơn hàng:</b></div>
+            </div>
+
+            <hr>
+            <div style="text-align: center; margin-top: 10px; font-size: 16px;">
+              <div><b>Phương Thức Thanh Toán</b></div>
+              <div style="text-align: center; padding-top: 20px;">
+                <el-button plain style="margin-right: 10px;" @click="submitZaloPayRequest()">
+                  <div style="font-size: 16px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
+                  <img style="height: 20px;" src="../../assets/logo/zalopay.png" alt="logo" class="main-header-logo">
+                </el-button>
+
+                <el-button plain style="margin-left: 10px;" @click="submitVNPayRequest()">
+                  <div style="font-size: 16px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
+                  <img style="height: 21px;" src="../../assets/logo/vnpay.png" alt="logo" class="main-header-logo">
+                </el-button>
+              </div>
+
+            </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+              <!-- <div>Địa chỉ email nhận biên lai</div> -->
+              <el-tag v-if="activeDuration > 1" style="margin-top: 5px; font-size: 13px; width: 100%;">Email nhận biên lai: {{ user.email }}</el-tag>
+              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng có thể được hoàn trả trong vòng 30 ngày với bất kỳ lý do gì.</el-tag>
+              <el-tag type="info" style="margin-top: 10px; font-size: 13px; width: 100%;">Bằng cách mua gói phản hồi, bạn đồng ý với điều khoản và dịch vụ của Reboost.</el-tag>
+            </div>
+          </div>
+        </div>
+        <div slot="footer" class="dialog-footer" />
+      </div>
+    </el-dialog>
+
   </section>
 </template>
 
-  <script>
+<script>
   export default {
     name: 'Pricing',
     data() {
       return {
         screenWidth: window.innerWidth,
+        type: 'new', // new, renew, upgrade
         activePlan: 1, // 6 tháng chi tiết
         activeDuration: 6,
+        activePrice: 99000,
         user: this.$store.state.auth.user,
         // userSubscription: null
         userSubscription: {
@@ -320,7 +400,10 @@
           duration: 3, // 3 durations: 6, 3, 1
           proratedAmount: 200000 // unused amount (should be substracted by upgrade)
         },
-        proratedAmount: 0
+        proratedAmount: 0,
+        checkoutDialogVisiable: false,
+        planName: 'Phản Hồi Chi Tiết',
+        orderSummary: []
       }
     },
     watch: {
@@ -343,15 +426,23 @@
     },
     methods: {
       selectPlan(planId) {
-        if (!this.user) {
+        if (!this.user.id) {
           // save plan id
           // send to register
           // send to payment page if plan id != 0
         } else {
+          const order = {
+            planName: 'Phản Hồi Chi Tiết',
+            duration: this.activeDuration,
+            price: this.activePrice
+          }
+          this.orderSummary.push(order)
+
+          // show plan checkout dialog
+          this.checkoutDialogVisiable = true
           // check if this is add new, renew, or upgrade subscription
           // send user to the payment page accodingly
           // subscribe user to plan
-
         }
       },
       getOptionText(planId) {
