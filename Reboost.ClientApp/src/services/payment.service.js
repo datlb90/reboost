@@ -2,6 +2,9 @@ import http from '@/utils/axios'
 import Axios from 'axios'
 
 const paymentService = {
+  getUserSubscription(userId) {
+    return http.get(`/payment/user/subscription/${userId}`).then(rs => rs.data)
+  },
   verifyZaloPayStatus(model) {
     return http.post('/payment/zalopay/verify', model).then(rs => rs.data)
   },
@@ -24,7 +27,6 @@ const paymentService = {
     return http.post('/payment/vnpay/request', model).then(rs => rs.data)
   },
   getIntent(data) {
-    console.log('amount: ', data)
     return http.post('/payment/intent', { amount: data }).then(rs => rs.data)
   },
   getAllMethodByCustomerId(userId) {

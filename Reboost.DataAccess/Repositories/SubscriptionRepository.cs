@@ -7,11 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Reboost.DataAccess.Entities;
+using Reboost.Shared;
 
 namespace Reboost.DataAccess.Repositories
 {
     public interface ISubscriptionRepository : IRepository<Subscriptions>
     {
+        Task<UserSubscription> GetUserSubscriptionModel(string userId);
+        Task<Plans> GetPlan(int planId);
         Task<int> GetUserProratedAmount(string userId);
         Task<Subscriptions> GetUserSubscription(string userId);
         Task<Subscriptions> GetUserActiveSubscription(string userId);
@@ -31,6 +34,32 @@ namespace Reboost.DataAccess.Repositories
             _context = context;
         }
 
+        public async Task<UserSubscription> GetUserSubscriptionModel(string userId)
+        {
+            var subscription = await GetUserSubscription(userId);
+
+            if(subscription != null)
+            {
+                Plans plan = await ReboostDbContext.Plans.FindAsync(subscription.PlanId);
+                UserSubscription userSubscription = new UserSubscription
+                {
+                    userId = userId,
+                    planId = plan.Id,
+                    duration = plan.Duration,
+                    proratedAmount = await GetUserProratedAmount(userId)
+                };
+
+                return userSubscription;
+            }
+
+            return null;
+        }
+
+        public async Task<Plans> GetPlan(int planId)
+        {
+            return await ReboostDbContext.Plans.FirstOrDefaultAsync(p => p.Id == planId);
+        }
+
         public async Task<int> GetUserProratedAmount(string userId)
         {
             // Check if the user already has an active subscription
@@ -42,16 +71,10 @@ namespace Reboost.DataAccess.Repositories
                 // Get the current plan
                 Plans plan = await ReboostDbContext.Plans.FindAsync(activeSubscription.PlanId);
 
-                // Calculate pro-rated amount
-                // Calculate amount that user will need to pay to upgrade.
-                // User can only upgrade using the same duration package.
-
                 var daysRemaining = (activeSubscription.EndDate - DateTime.Now).TotalDays;
                 var totalDays = (activeSubscription.EndDate - activeSubscription.StartDate).TotalDays;
-                int days = (int)Math.Round(daysRemaining / totalDays);
-                int proRatedAmount = days * plan.Price;
-
-                return proRatedAmount;
+                var proRatedAmount = (daysRemaining / totalDays) * plan.Price;
+                return (int)Math.Round(proRatedAmount);
 
             }
 
@@ -90,53 +113,47 @@ namespace Reboost.DataAccess.Repositories
         public async Task<bool> UpgradeUserSubscription(string userId, int planId)
         {
             // Check if the user already has an active subscription
-            var activeSubscription = await ReboostDbContext.Subscriptions.Where(s => s.UserId == userId &&
-                                            s.Status == "Active" && s.EndDate > DateTime.Now).FirstOrDefaultAsync();
+            var activeSubscription = await ReboostDbContext.Subscriptions.Where(s => s.UserId == userId && s.Status == "Active").FirstOrDefaultAsync();
 
             if (activeSubscription != null)
             {
-                // Update the current subscription
-                Plans newPlan = await ReboostDbContext.Plans.FindAsync(planId);
-
-                // Calculate pro-rated amount
-                // Calculate amount that user will need to pay to upgrade.
-                // User can only upgrade using the same duration package.
-
-                //var daysRemaining = (activeSubscription.EndDate - DateTime.Now).TotalDays;
-                //var totalDays = (activeSubscription.EndDate - activeSubscription.StartDate).TotalDays;
-                //var proRatedAmount = (daysRemaining / totalDays) * activeSubscription.Plan.Price;
-
-                // Adjust the start date and end date for the new plan
-                var newStartDate = DateTime.Now;
-                var newEndDate = newStartDate.AddMonths(newPlan.Duration);
-
-                // Create a new subscription for the new plan
-                var newSubscription = new Subscriptions
-                {
-                    UserId = userId,
-                    PlanId = newPlan.Id,
-                    StartDate = newStartDate,
-                    EndDate = newEndDate,
-                    Status = "Active",
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
-                };
-
+                // In-activate the current plan
+                activeSubscription.Status = "Upgraded";
+                activeSubscription.UpdatedAt = DateTime.Now;
 
                 ReboostDbContext.Subscriptions.Update(activeSubscription);
                 await context.SaveChangesAsync();
-
-                return true;
             }
 
-             return false; // No active subscription
+            // Get the new plan
+            Plans newPlan = await ReboostDbContext.Plans.FindAsync(planId);
+
+            var newStartDate = DateTime.Now;
+            var newEndDate = newStartDate.AddMonths(newPlan.Duration);
+
+            // Create a new subscription for the new plan
+            var newSubscription = new Subscriptions
+            {
+                UserId = userId,
+                PlanId = newPlan.Id,
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddMonths(newPlan.Duration),
+                Status = "Active",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+
+            // Add the new subscription
+            ReboostDbContext.Subscriptions.Add(newSubscription);
+            await context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<bool> RenewUserSubscription(string userId, int planId)
         {
             // Check if the user already has an active subscription
-            var activeSubscription = await ReboostDbContext.Subscriptions.Where(s => s.UserId == userId &&
-                                            s.Status == "Active" && s.EndDate > DateTime.Now).FirstOrDefaultAsync();
+            var activeSubscription = await ReboostDbContext.Subscriptions.Where(s => s.UserId == userId && s.Status == "Active").FirstOrDefaultAsync();
 
             if (activeSubscription != null)
             {
@@ -151,8 +168,25 @@ namespace Reboost.DataAccess.Repositories
 
                 return true; 
             }
+            else
+            {
+                // If there is no active plan, create a new subscription
+                var newSubscription = new Subscriptions
+                {
+                    UserId = userId,
+                    PlanId = planId,
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Now.AddMonths(ReboostDbContext.Plans.Find(planId).Duration),
+                    Status = "Active",
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
 
-            return false; // No active subscription
+                ReboostDbContext.Subscriptions.Add(newSubscription);
+                await context.SaveChangesAsync();
+
+                return true;
+            }
         }
 
         public async Task<bool> SubscribeUserToPlan(string userId, int planId)
@@ -162,7 +196,12 @@ namespace Reboost.DataAccess.Repositories
 
             if (activeSubscription != null)
             {
-                return false; // User already has an active subscription
+                // This should not get called
+                // Expire the current plan
+                activeSubscription.Status = "Expired";
+                activeSubscription.UpdatedAt = DateTime.Now;
+                ReboostDbContext.Subscriptions.Update(activeSubscription);
+                await context.SaveChangesAsync();
             }
 
             // Create a new subscription

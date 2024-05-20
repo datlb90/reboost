@@ -6,10 +6,8 @@ namespace Reboost.Service.ZaloPay
     public class VerifyPaymentModel
     {
         public int orderId { get; set; }
-        public string reviewType { get; set; }
         public OrderStatus status { get; set; }
         public Orders order { get; set; }
-        public ReviewFeedbackModel review { get; set; }
     }
 
     public class ReviewFeedbackModel

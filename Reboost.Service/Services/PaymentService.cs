@@ -47,7 +47,7 @@ namespace Reboost.Service.Services
         Task<List<string>> GetLearnerSubscriptions(string userId);
         string GetBasicTokenAsync();
     }
-    public class PaymentService :BaseService, IPaymentService
+    public class PaymentService : BaseService, IPaymentService
     {
         private IStripeService mStripeService;
         private IRaterService mRaterService;
@@ -56,8 +56,11 @@ namespace Reboost.Service.Services
         private IConfiguration _configuration;
         private IMailService _mailService;
         private IUserService _userService;
-        public PaymentService(IUnitOfWork unitOfWork, IStripeService stripeService, IRaterService raterService, IUserService userService,
-            IMailService mailService, IOrderService orderService, IReviewService reviewService, IConfiguration configuration) : base(unitOfWork)
+        private ISubscriptionService _subscriptionService;
+        public PaymentService(IUnitOfWork unitOfWork, IStripeService stripeService, IRaterService raterService,
+            IUserService userService, IMailService mailService, IOrderService orderService,
+            IReviewService reviewService, ISubscriptionService subscriptionService, IConfiguration configuration)
+            : base(unitOfWork)
         {
             mStripeService = stripeService;
             mRaterService = raterService;
@@ -66,59 +69,95 @@ namespace Reboost.Service.Services
             _reviewService = reviewService;
             _userService = userService;
             _mailService = mailService;
+            _subscriptionService = subscriptionService;
+        }
+
+        public async Task<Orders> CreateNewOrder(string userId, int planId, string subscriptionType, string ipAddress)
+        {
+            
+            Plans plan = await _subscriptionService.GetPlan(planId);
+            int amount = plan.Price * plan.Duration;
+            if(subscriptionType == "upgrade")
+            {
+                Subscriptions userSubscription = await _subscriptionService.GetUserActiveSubscription(userId);
+                // Verify if this is actually an upgrade
+                if (userSubscription != null && userSubscription.PlanId <= 3 && planId >= 4)
+                {
+                    // Recalculate the total based on prorated amount
+                    int proratedAmount = await _subscriptionService.GetUserProratedAmount(userId);
+                    amount = amount - proratedAmount;
+                }
+                
+            }
+            // use the amount for the plan if the type is 'new' or 'renew'
+            Orders order = new Orders
+            {
+                UserId = userId,
+                PlanId = planId,
+                SubscriptionType = subscriptionType,
+                Amount = amount,
+                Status = PaymentStatus.PENDING,
+                CreatedDate = DateTime.Now.AddHours(12),
+                LastActivityDate = DateTime.Now,
+                IpAddress = ipAddress
+            };
+
+            return await _orderService.Create(order);
         }
 
         public async Task<string> GetVNPayUrl(VNPayRequestModel model)
         {
-            model.amount = 100000;
-            // Create Reboost's order
-            Orders order = new Orders
+            // Create a new order
+            Orders newOrder = await CreateNewOrder(model.userId, model.planId, model.subscriptionType, model.ipAddress);
+            if (newOrder != null)
             {
-                UserId = model.userId,
-                SubmissionId = model.submissionId,
-                ReviewType = model.reviewType,
-                Amount = model.amount,
-                Status = PaymentStatus.PENDING,
-                CreatedDate = DateTime.Now.AddHours(12),
-                LastActivityDate = DateTime.UtcNow,
-                IpAddress = model.ipAddress,
-                FeedbackLanguage = model.feedbackLanguage == "Phản hồi bằng tiếng Anh" ? "en" : "vn",
-                SpecialRequest = model.specialRequest
-            };
+                string orderInfo = "";
+                string planName = "phản hồi chi tiết";
+                if (newOrder.PlanId >= 4)
+                    planName = "phản hồi chuyên sâu";
 
-            Orders newOrder = await _orderService.Create(order);
-            //Get configuration info
-            var vnpData = _configuration.GetSection("PaymentGateway:VNPay");
-            string vnp_Returnurl = vnpData["vnp_Returnurl"]; //URL nhan ket qua tra ve 
-            string vnp_Url = vnpData["vnp_Url"]; //URL thanh toan cua VNPAY 
-            string vnp_TmnCode = vnpData["vnp_TmnCode"]; //Ma định danh merchant kết nối (Terminal Id)
-            string vnp_HashSecret = vnpData["vnp_HashSecret"]; //Secret Key
+                if (model.subscriptionType == "new")
+                    orderInfo = "Thanh toán gói " + planName + " " + model.duration + " tháng. Mã đơn hàng " + newOrder.Id;
+                else if(model.subscriptionType == "renew")
+                    orderInfo = "Thanh toán gia hạn gói " + planName + " " + model.duration + " tháng. Mã đơn hàng " + newOrder.Id;
+                else
+                    orderInfo = "Thanh toán nâng cấp gói " + planName + " " + model.duration + " tháng. Mã đơn hàng " + newOrder.Id;
 
-            //Build URL for VNPAY
-            VnPayLibrary vnpay = new VnPayLibrary();
-            vnpay.AddRequestData("vnp_Version", VnPayLibrary.VERSION);
-            vnpay.AddRequestData("vnp_Command", "pay");
-            vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
-            //Số tiền thanh toán. Số tiền không mang các ký tự phân tách thập phân, phần nghìn, ký tự tiền tệ.
-            //Để gửi số tiền thanh toán là 100,000 VND (một trăm nghìn VNĐ) thì merchant cần nhân thêm 100 lần (khử phần thập phân), sau đó gửi sang VNPAY là: 10000000
-            vnpay.AddRequestData("vnp_Amount", (model.amount * 100).ToString());
-            vnpay.AddRequestData("vnp_CreateDate", newOrder.CreatedDate.ToString("yyyyMMddHHmmss"));
-            vnpay.AddRequestData("vnp_CurrCode", "VND");
-            vnpay.AddRequestData("vnp_IpAddr", model.ipAddress);
-            vnpay.AddRequestData("vnp_Locale", "vn");
-            vnpay.AddRequestData("vnp_OrderInfo", "Thanh toan dich vu cham bai viet ma don hang" + newOrder.Id);
-            //default value: other
-            vnpay.AddRequestData("vnp_OrderType", "other");
-            vnpay.AddRequestData("vnp_ReturnUrl", vnp_Returnurl);
-            // Mã tham chiếu của giao dịch tại hệ thống của merchant. Mã này là duy nhất dùng để phân biệt các đơn hàng gửi sang VNPAY. Không được trùng lặp trong ngày
-            vnpay.AddRequestData("vnp_TxnRef", newOrder.Id.ToString());
+                //Get configuration info
+                var vnpData = _configuration.GetSection("PaymentGateway:VNPay");
+                string vnp_Returnurl = vnpData["vnp_Returnurl"]; //URL nhan ket qua tra ve 
+                string vnp_Url = vnpData["vnp_Url"]; //URL thanh toan cua VNPAY 
+                string vnp_TmnCode = vnpData["vnp_TmnCode"]; //Ma định danh merchant kết nối (Terminal Id)
+                string vnp_HashSecret = vnpData["vnp_HashSecret"]; //Secret Key
 
-            // Create schedule to check callback after 15 minute
-            BackgroundJob.Schedule(
-                () => CheckVnPayStatusAfter15Minutes(order.Id, model.ipAddress), TimeSpan.FromMinutes(15)
-            );
+                //Build URL for VNPAY
+                VnPayLibrary vnpay = new VnPayLibrary();
+                vnpay.AddRequestData("vnp_Version", VnPayLibrary.VERSION);
+                vnpay.AddRequestData("vnp_Command", "pay");
+                vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
+                //Số tiền thanh toán. Số tiền không mang các ký tự phân tách thập phân, phần nghìn, ký tự tiền tệ.
+                //Để gửi số tiền thanh toán là 100,000 VND (một trăm nghìn VNĐ) thì merchant cần nhân thêm 100 lần (khử phần thập phân), sau đó gửi sang VNPAY là: 10000000
+                vnpay.AddRequestData("vnp_Amount", (model.amount * 100).ToString());
+                vnpay.AddRequestData("vnp_CreateDate", newOrder.CreatedDate.ToString("yyyyMMddHHmmss"));
+                vnpay.AddRequestData("vnp_CurrCode", "VND");
+                vnpay.AddRequestData("vnp_IpAddr", model.ipAddress);
+                vnpay.AddRequestData("vnp_Locale", "vn");
+                vnpay.AddRequestData("vnp_OrderInfo", orderInfo);
+                //default value: other
+                vnpay.AddRequestData("vnp_OrderType", "other");
+                vnpay.AddRequestData("vnp_ReturnUrl", vnp_Returnurl);
+                // Mã tham chiếu của giao dịch tại hệ thống của merchant. Mã này là duy nhất dùng để phân biệt các đơn hàng gửi sang VNPAY. Không được trùng lặp trong ngày
+                vnpay.AddRequestData("vnp_TxnRef", newOrder.Id.ToString());
 
-            return vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
+                // Create schedule to check callback after 15 minute
+                BackgroundJob.Schedule(
+                    () => CheckVnPayStatusAfter15Minutes(newOrder.Id, model.ipAddress), TimeSpan.FromMinutes(15)
+                );
+
+                return vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
+            }
+
+            return null;
         }
 
         public async Task CheckVnPayStatusAfter15Minutes(int orderId, string ipAddress)
@@ -176,9 +215,14 @@ namespace Reboost.Service.Services
                     VnPayTransactionStatusModel rs = JsonConvert.DeserializeObject<VnPayTransactionStatusModel>(streamReader.ReadToEnd());
                     if (rs.vnp_TransactionStatus == "00")
                     {
-                        // Process review request
-                        await ProcessReviewRequest(order);
-                        // Payment success, update order
+                        // Update user subscription
+                        if (order.SubscriptionType == "new")
+                            await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
+                        else if (order.SubscriptionType == "renew")
+                            await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
+                        else
+                            await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
+                        // Payment success, update order status
                         order.Status = PaymentStatus.PROCESSED;
                         order.TransactionCode = rs.vnp_TransactionNo;
                         order.LastActivityDate = DateTime.UtcNow;
@@ -336,14 +380,12 @@ namespace Reboost.Service.Services
                         Orders order = await _orderService.GetById(orderId);
                         if(order != null && order.Amount == vnp_Amount)
                         {
-                            result.reviewType = order.ReviewType;
                             if (vnp_ResponseCode == "00" && vnp_TransactionStatus == "00")
                             {
                                 // Thanh toán thành công
                                 result.status = OrderStatus.COMPLETED;
                             }
                         }
-                        
                     }
                 }
             }
@@ -352,56 +394,55 @@ namespace Reboost.Service.Services
 
         public async Task<string> GetZaloPayUrl(ZaloPayRequestModel model)
         {
-            model.amount = 100000;
-            // Create Reboost's order
-            Orders order = new Orders
+            Orders newOrder = await CreateNewOrder(model.userId, model.planId, model.subscriptionType, model.ipAddress);
+            if (newOrder != null)
             {
-                UserId = model.userId,
-                SubmissionId = model.submissionId,
-                ReviewType = model.reviewType,
-                Amount = model.amount,
-                Status = PaymentStatus.PENDING,
-                CreatedDate = DateTime.Now.AddHours(12),
-                LastActivityDate = DateTime.UtcNow,
-                IpAddress = model.ipAddress,
-                FeedbackLanguage = model.feedbackLanguage == "Phản hồi bằng tiếng Anh" ? "en" : "vn",
-                SpecialRequest = model.specialRequest
-            };
+                string orderInfo = "";
+                string planName = "phản hồi chi tiết";
+                if (newOrder.PlanId >= 4)
+                    planName = "phản hồi chuyên sâu";
 
-            Orders newOrder = await _orderService.Create(order);
+                if (model.subscriptionType == "new")
+                    orderInfo = "Thanh toán gói " + planName + " " + model.duration + " tháng. Mã đơn hàng " + newOrder.Id;
+                else if (model.subscriptionType == "renew")
+                    orderInfo = "Thanh toán gia hạn gói " + planName + " " + model.duration + " tháng. Mã đơn hàng " + newOrder.Id;
+                else
+                    orderInfo = "Thanh toán nâng cấp gói " + planName + " " + model.duration + " tháng. Mã đơn hàng " + newOrder.Id;
 
-            var embed_data = new { preferred_payment_method = new string[] { } };
-            var items = new[] { new { } };
-            var app_trans_id = newOrder.Id;
-            var param = new Dictionary<string, string>();
+                var embed_data = new { preferred_payment_method = new string[] { } };
+                var items = new[] { new { } };
+                var app_trans_id = newOrder.Id;
+                var param = new Dictionary<string, string>();
 
-            param.Add("app_id", _configuration.GetSection("PaymentGateway:ZaloPay")["app_id"]);
-            param.Add("app_user", model.userId);
-            param.Add("app_time", Util.GetTimeStamp().ToString());
-            param.Add("amount", model.amount.ToString());
-            param.Add("app_trans_id", newOrder.CreatedDate.ToString("yyMMdd") + "_" + app_trans_id); // mã giao dich có định dạng yyMMdd_xxxx
-            param.Add("embed_data", JsonConvert.SerializeObject(embed_data));
-            param.Add("item", JsonConvert.SerializeObject(items));
-            param.Add("description", "Reboost - Thanh toán dịch vụ chấm bài viết, mã đơn hàng #" + app_trans_id);
-            param.Add("bank_code", "");
-            param.Add("callback_url", _configuration["AppUrl"] + "/api/payment/zalopay/callback");
-            param.Add("redirect_url", _configuration["ClientUrl"] + "/payment/redirect"); // Replace with the actual redirect_url
+                param.Add("app_id", _configuration.GetSection("PaymentGateway:ZaloPay")["app_id"]);
+                param.Add("app_user", model.userId);
+                param.Add("app_time", Util.GetTimeStamp().ToString());
+                param.Add("amount", model.amount.ToString());
+                param.Add("app_trans_id", newOrder.CreatedDate.ToString("yyMMdd") + "_" + app_trans_id); // mã giao dich có định dạng yyMMdd_xxxx
+                param.Add("embed_data", JsonConvert.SerializeObject(embed_data));
+                param.Add("item", JsonConvert.SerializeObject(items));
+                param.Add("description", orderInfo);
+                param.Add("bank_code", "");
+                param.Add("callback_url", _configuration["AppUrl"] + "/api/payment/zalopay/callback");
+                param.Add("redirect_url", _configuration["ClientUrl"] + "/payment/redirect"); // Replace with the actual redirect_url
 
-            var data = _configuration.GetSection("PaymentGateway:ZaloPay")["app_id"] + "|" + param["app_trans_id"] + "|" + param["app_user"] + "|" + param["amount"] + "|"
-                + param["app_time"] + "|" + param["embed_data"] + "|" + param["item"];
-            param.Add("mac", HmacHelper.Compute(ZaloPayHMAC.HMACSHA256, _configuration.GetSection("PaymentGateway:ZaloPay")["key1"], data));
+                var data = _configuration.GetSection("PaymentGateway:ZaloPay")["app_id"] + "|" + param["app_trans_id"] + "|" + param["app_user"] + "|" + param["amount"] + "|"
+                    + param["app_time"] + "|" + param["embed_data"] + "|" + param["item"];
+                param.Add("mac", HmacHelper.Compute(ZaloPayHMAC.HMACSHA256, _configuration.GetSection("PaymentGateway:ZaloPay")["key1"], data));
 
-            var result = await HttpHelper.PostFormAsync(_configuration.GetSection("PaymentGateway:ZaloPay")["create_order_url"], param);
+                var result = await HttpHelper.PostFormAsync(_configuration.GetSection("PaymentGateway:ZaloPay")["create_order_url"], param);
 
-            // Send the order_url to the front end for redirection
-            int return_code = Int32.Parse(result["return_code"].ToString());
-            if (return_code == 1)
-            {
-                // Create schedule to check callback after 15 minute?
-                BackgroundJob.Schedule(
-                    () => CheckZaloPayStatusAfter15Minutes(order.Id, newOrder.CreatedDate.ToString("yyMMdd") + "_" + app_trans_id), TimeSpan.FromMinutes(15)
-                );
-                return result["order_url"].ToString();
+                // Send the order_url to the front end for redirection
+                int return_code = Int32.Parse(result["return_code"].ToString());
+                if (return_code == 1)
+                {
+                    // Create schedule to check callback after 15 minute?
+                    BackgroundJob.Schedule(
+                        () => CheckZaloPayStatusAfter15Minutes(newOrder.Id, newOrder.CreatedDate.ToString("yyMMdd") + "_" + app_trans_id), TimeSpan.FromMinutes(15)
+                    );
+                    return result["order_url"].ToString();
+                }
+                return null;
             }
             return null;
         }
@@ -428,8 +469,14 @@ namespace Reboost.Service.Services
                 int orderStatus = Int32.Parse(orderStatusResult["return_code"].ToString());
                 if (orderStatus == 1)
                 {
-                    // Process review request
-                    await ProcessReviewRequest(order);
+                    // Update user subscription
+                    if (order.SubscriptionType == "new")
+                        await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
+                    else if (order.SubscriptionType == "renew")
+                        await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
+                    else
+                        await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
+
                     // Payment success, update order
                     order.Status = PaymentStatus.PROCESSED;
                     order.TransactionCode = orderStatusResult["zp_trans_id"].ToString();
@@ -474,7 +521,6 @@ namespace Reboost.Service.Services
                 // Sanity check to make sure this is the right order
                 if (order != null && order.UserId == model.userId && order.Amount == Int32.Parse(model.amount))
                 {
-                    result.reviewType = order.ReviewType;
                     if(order.Status == PaymentStatus.COMPLETED)
                     {
                         // Đã nhận được call back
@@ -625,12 +671,20 @@ namespace Reboost.Service.Services
                             VnPayTransactionStatusModel rs = JsonConvert.DeserializeObject<VnPayTransactionStatusModel>(streamReader.ReadToEnd());
                             if (rs.vnp_TransactionStatus == "00")
                             {
-                                // Process the order
-                                result = await ProcessReviewRequest(order);
+                                // Update user subscription
+                                if (order.SubscriptionType == "new")
+                                    await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
+                                else if (order.SubscriptionType == "renew")
+                                    await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
+                                else
+                                    await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
                                 // Update status to processed
                                 order.Status = PaymentStatus.PROCESSED;
                                 order.LastActivityDate = DateTime.UtcNow;
                                 await _orderService.Update(order);
+
+                                result.status = OrderStatus.PROCESSED;
+                                result.order = order;
                             }
                         }
                     }
@@ -651,19 +705,34 @@ namespace Reboost.Service.Services
                         int orderStatus = Int32.Parse(orderStatusResult["return_code"].ToString());
                         if (orderStatus == 1)
                         {
-                            // Process the order
-                            result = await ProcessReviewRequest(order);
+                            // Update user subscription
+                            if (order.SubscriptionType == "new")
+                                await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
+                            else if (order.SubscriptionType == "renew")
+                                await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
+                            else
+                                await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
+
                             // Update status to processed
                             order.Status = PaymentStatus.PROCESSED;
                             order.LastActivityDate = DateTime.UtcNow;
                             await _orderService.Update(order);
+
+                            result.status = OrderStatus.PROCESSED;
+                            result.order = order;
                         }
                     }
                 }
                 else if (order.Status == PaymentStatus.COMPLETED)
                 {
-                    // Process the order
-                    result = await ProcessReviewRequest(order);
+                    // Update user subscription
+                    if (order.SubscriptionType == "new")
+                        await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
+                    else if (order.SubscriptionType == "renew")
+                        await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
+                    else
+                        await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
+
                     // Update status to processed
                     order.Status = PaymentStatus.PROCESSED;
                     order.LastActivityDate = DateTime.UtcNow;
@@ -673,26 +742,6 @@ namespace Reboost.Service.Services
                 {
                     result.order = order;
                     result.status = OrderStatus.PROCESSED;
-
-                    if (order.ReviewType == "Pro")
-                    {
-                        Submissions submission = await _reviewService.GetSubmissionById(order.SubmissionId);
-                        result.review = new ReviewFeedbackModel
-                        {
-                            submissionId = order.SubmissionId,
-                            questionId = submission.QuestionId
-                        };
-                    }
-                    else // AI Review
-                    {
-                        GetReviewsModel review = await _reviewService.GetAIReviewBySubmissionId(order.SubmissionId);
-                        result.review = new ReviewFeedbackModel
-                        {
-                            docId = review.DocId,
-                            questionId = review.QuestionId,
-                            reviewId = review.ReviewId
-                        };
-                    }
                 }
                 else
                 {
@@ -703,61 +752,6 @@ namespace Reboost.Service.Services
             }
             return result;
         }
-
-        public async Task<VerifyPaymentModel> ProcessReviewRequest(Orders order)
-        {
-            VerifyPaymentModel result = new VerifyPaymentModel();
-            // Gửi biên lai thanh toán cho khách hàng
-            User user = await _userService.GetByIdAsync(order.UserId);
-            string committement = "Giáo viên của Reboost sẽ chấm bài luận của bạn và cung cấp phản hồi trong vòng 24h. Chúng tôi sẽ thông báo cho bạn qua email khi giáo viên chấm xong.";
-            if (order.ReviewType != "Pro")
-            {
-                committement = "Bài luận của bạn sẽ được chấm bởi hệ thống chấm bài tự động của Reboost. Chúng tôi sẽ cung cấp phản hồi cho bạn trong giây lát.";
-            }
-            string message = $"<p>Xin chào {user.FirstName},</p>" +
-                            $"<p>Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của Reboost!</p>" +
-                            $"<p>Bạn đã thanh toán thành công số tiền " + order.Amount + "VNĐ cho dịch vụ chấm bài của chúng tôi vào ngày " + order.LastActivityDate.ToString("dd/MM/yy H:mm:ss") + ". Mã đơn hàng của bạn là: #" + order.Id + "</p>" +
-                            $"<p>" + committement + "</p>" +
-                            $"<p>Nếu bạn có gì thắc mắc xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p>" +
-                            $"<p>Xin chân thành cảm ơn!</p>" +
-                            $"<p>Reboost Support</p>";
-
-            await _mailService.SendEmailAsync(user.Email, "Xác Nhận Đơn Hàng Cho Dịch Vụ Chấm Bài Tại Reboost", message);
-            // Create the review request or ai review
-            if (order.ReviewType == "Pro")
-            {
-                // Create pro review request now
-                ReviewRequests reviewRequest = new ReviewRequests
-                {
-                    UserId = order.UserId,
-                    SubmissionId = order.SubmissionId,
-                    FeedbackType = "Pro",
-                    FeedbackLanguage = order.FeedbackLanguage,
-                    SpecialRequest = order.SpecialRequest
-                };
-
-                CreatedProRequestModel request = await _reviewService.CreateProRequestAsync(reviewRequest);
-                result.review = new ReviewFeedbackModel
-                {
-                    submissionId = order.SubmissionId,
-                    questionId = request.Request.Submission.QuestionId
-                };
-            }
-            else // AI Review
-            {
-                GetReviewsModel review = await _reviewService.CreateAutomatedReview(order.UserId, order.SubmissionId, order.FeedbackLanguage);
-                result.review = new ReviewFeedbackModel
-                {
-                    docId = review.DocId,
-                    questionId = review.QuestionId,
-                    reviewId = review.ReviewId
-                };
-            }
-            result.status = OrderStatus.COMPLETED;
-            result.order = order;
-            return result;
-        }
-
         public async Task<IEnumerable<Payments>> GetAllAsync()
         {
             return await _unitOfWork.Payment.GetAllAsync();
@@ -780,16 +774,6 @@ namespace Reboost.Service.Services
         {
             return await _unitOfWork.Payment.GetOutPaymentByUserId(userId);
         }
-
-        //public async Task<List<PaymentHistory>> GetAllPaymentHistory()
-        //{
-        //    return await _unitOfWork.Payment.GetAllPaymentHistory();
-        //}
-        //public async Task<PaymentHistory> CreateNewPaymentAsync(PaymentHistory ph)
-        //{
-        //    return await _unitOfWork.Payment.CreateNewPaymentHistory(ph);
-        //}
-
         public async Task<List<RaterBalances>> GetAllRaterBalanceAsync(string userId)
         {
             return await _unitOfWork.Payment.GetAllRaterBalanceAsync(userId);

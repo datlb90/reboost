@@ -25,16 +25,42 @@ namespace Reboost.WebApi.Controllers
         private IUserService _userService;
         private IStripeService _stripeService;
         private IOrderService _orderService;
+        private ISubscriptionService _subscriptionService;
         private readonly ILogger<PaymentController> _logger;
 
-        public PaymentController(IPaymentService service, IMapper mapper, IUserService userService,
+        public PaymentController(IPaymentService service, IMapper mapper, IUserService userService, ISubscriptionService subscriptionService,
             IStripeService stripeService, IOrderService orderService, ILogger<PaymentController> logger) : base(service)
         {
             _mapper = mapper;
             _userService = userService;
             _stripeService = stripeService;
             _orderService = orderService;
+            _subscriptionService = subscriptionService;
             _logger = logger;
+        }
+
+        //[HttpGet("user/subscribe/{userId}/{planId}")]
+        //public async Task<bool> SubscribeUserToPlan(string userId, int planId)
+        //{
+        //    return await _subscriptionService.SubscribeUserToPlan(userId, planId);
+        //}
+
+        //[HttpGet("user/subscription/renew/{userId}/{planId}")]
+        //public async Task<bool> RenewUserSubscription(string userId, int planId)
+        //{
+        //    return await _subscriptionService.RenewUserSubscription(userId, planId);
+        //}
+
+        //[HttpGet("user/subscription/upgrade/{userId}/{planId}")]
+        //public async Task<bool> UpgradeUserSubscription(string userId, int planId)
+        //{
+        //    return await _subscriptionService.UpgradeUserSubscription(userId, planId);
+        //}
+
+        [HttpGet("user/subscription/{userId}")]
+        public async Task<UserSubscription> GetUserSubscriptionModel(string userId)
+        {
+            return await _subscriptionService.GetUserSubscriptionModel(userId);
         }
 
         [HttpPost("vnpay/request")]
@@ -141,7 +167,6 @@ namespace Reboost.WebApi.Controllers
         {
             return await _service.VerifyZaloPayStatus(model);
         }
-
 
         [HttpGet("process/order/{paymentMethod}/{orderId}")]
         public async Task<VerifyPaymentModel> ProcessOrder(string paymentMethod, int orderId)
