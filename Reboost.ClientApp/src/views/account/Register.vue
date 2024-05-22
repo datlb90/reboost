@@ -52,7 +52,7 @@
               </el-form-item>
               <el-form-item style="text-align: center;">
                 <p href="/forgot/password" style="color: black; text-decoration: none;">
-                  Đã có tài khoản? <a href="/login" style="color: rgb(101 139 179); text-decoration: none;">
+                  Đã có tài khoản? <a href="#" style="color: rgb(101 139 179); text-decoration: none;" @click="gotoLogin()">
                     {{ messageTranslates('register', 'signInNow') }}
                   </a>
                 </p>
@@ -207,8 +207,14 @@ export default {
       this.googleFormAction = 'api/auth/external/google/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
       this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=' + this.$router.currentRoute.query?.returnUrl
     } else {
-      this.googleFormAction = 'api/auth/external/google/learner?returnUrl=/'
-      this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=/'
+      const planId = this.getUrlParameter('planId')
+      if (planId && planId != '0') {
+        this.googleFormAction = 'api/auth/external/google/learner?returnUrl=/pricing?planId=' + planId
+        this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=/pricing?planId=' + planId
+      } else {
+        this.googleFormAction = 'api/auth/external/google/learner?returnUrl=/'
+        this.facebookFormAction = 'api/auth/external/facebook/learner?returnUrl=/'
+      }
     }
 
     document.addEventListener('keydown', this.pressEnterToLogin)
@@ -226,6 +232,14 @@ export default {
         if (sParameterName[0] === sParam) {
           return sParameterName[1] === undefined ? true : sParameterName[1]
         }
+      }
+    },
+    gotoLogin() {
+      const planId = this.getUrlParameter('planId')
+      if (planId && planId != '0') {
+        window.location.href = '/login?planId=' + planId
+      } else {
+        window.location.href = '/login'
       }
     },
     pressEnterToLogin(e) {
