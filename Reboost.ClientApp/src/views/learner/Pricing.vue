@@ -1,8 +1,9 @@
 <template>
-  <section id="pricing" class="features-area-two ptb-80" style="margin-top: 50px; min-height: 100vh;">
+  <section id="pricing" class="features-area-two ptb-80" :style="user.id ? 'margin-top: 0px; min-height: 100vh;' : 'margin-top: 50px; min-height: 100vh;'">
     <div class="container">
       <div class="section-title" style="margin-bottom: 40px;">
-        <h1 style="font-size: 30px;">Bảng Giá</h1>
+        <h1 v-if="user.id" style="font-size: 30px;">Bảng Giá</h1>
+        <h1 v-else style="font-size: 30px;">Bảng Giá</h1>
         <div class="bar" />
         <div style="text-align: center;">
           <div class="menu-btns" style="margin-top: 30px; margin-left: 5px;">

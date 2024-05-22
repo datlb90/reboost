@@ -964,6 +964,8 @@ export default {
   },
   data() {
     return {
+      freeToken: this.$store.state.auth.user.freeToken,
+      userSubscription: this.$store.state.auth.user.subscription,
       submissionsTabs: 'Comments',
       userSubmissions: [],
       selectedSubmission: undefined,
@@ -1504,7 +1506,11 @@ export default {
       this.countWords()
     },
     requestReview() {
-      this.$refs.checkoutDialog?.openDialog()
+      if (this.freeToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
+        this.$refs.checkoutDialog?.openDialog()
+      } else {
+        window.location.href = '/pricing'
+      }
     },
     copyTextToClipboard(text) {
       console.log(text)

@@ -18,9 +18,9 @@ namespace Reboost.DataAccess.Repositories
         Task<int> GetUserProratedAmount(string userId);
         Task<Subscriptions> GetUserSubscription(string userId);
         Task<Subscriptions> GetUserActiveSubscription(string userId);
-        Task<bool> SubscribeUserToPlan(string userId, int planId);
-        Task<bool> RenewUserSubscription(string userId, int planId);
-        Task<bool> UpgradeUserSubscription(string userId, int planId);
+        Task<Subscriptions> SubscribeUserToPlan(string userId, int planId);
+        Task<Subscriptions> RenewUserSubscription(string userId, int planId);
+        Task<Subscriptions> UpgradeUserSubscription(string userId, int planId);
     }
 
     public class SubscriptionRepository : BaseRepository<Subscriptions>, ISubscriptionRepository
@@ -46,6 +46,8 @@ namespace Reboost.DataAccess.Repositories
                     userId = userId,
                     planId = plan.Id,
                     duration = plan.Duration,
+                    startDate = subscription.StartDate,
+                    endDate = subscription.EndDate,
                     proratedAmount = await GetUserProratedAmount(userId)
                 };
 
@@ -73,9 +75,10 @@ namespace Reboost.DataAccess.Repositories
 
                 var daysRemaining = (activeSubscription.EndDate - DateTime.Now).TotalDays;
                 var totalDays = (activeSubscription.EndDate - activeSubscription.StartDate).TotalDays;
-                var proRatedAmount = (daysRemaining / totalDays) * plan.Price;
-                return (int)Math.Round(proRatedAmount);
-
+                var proRatedAmount = (daysRemaining / totalDays) * plan.Price * plan.Duration;
+                int proRatedInt = (int)Math.Round(proRatedAmount);
+                int result = ((proRatedInt + 500) / 1000) * 1000;
+                return result;
             }
 
             return 0; // No active subscription
@@ -110,7 +113,7 @@ namespace Reboost.DataAccess.Repositories
             return await ReboostDbContext.Subscriptions.Where(s => s.UserId == userId && s.Status == "Active").FirstOrDefaultAsync();
         }
 
-        public async Task<bool> UpgradeUserSubscription(string userId, int planId)
+        public async Task<Subscriptions> UpgradeUserSubscription(string userId, int planId)
         {
             // Check if the user already has an active subscription
             var activeSubscription = await ReboostDbContext.Subscriptions.Where(s => s.UserId == userId && s.Status == "Active").FirstOrDefaultAsync();
@@ -128,9 +131,6 @@ namespace Reboost.DataAccess.Repositories
             // Get the new plan
             Plans newPlan = await ReboostDbContext.Plans.FindAsync(planId);
 
-            var newStartDate = DateTime.Now;
-            var newEndDate = newStartDate.AddMonths(newPlan.Duration);
-
             // Create a new subscription for the new plan
             var newSubscription = new Subscriptions
             {
@@ -147,10 +147,10 @@ namespace Reboost.DataAccess.Repositories
             ReboostDbContext.Subscriptions.Add(newSubscription);
             await context.SaveChangesAsync();
 
-            return true;
+            return newSubscription;
         }
 
-        public async Task<bool> RenewUserSubscription(string userId, int planId)
+        public async Task<Subscriptions> RenewUserSubscription(string userId, int planId)
         {
             // Check if the user already has an active subscription
             var activeSubscription = await ReboostDbContext.Subscriptions.Where(s => s.UserId == userId && s.Status == "Active").FirstOrDefaultAsync();
@@ -159,14 +159,13 @@ namespace Reboost.DataAccess.Repositories
             {
                 // Update the current subscription
                 Plans newPlan = await ReboostDbContext.Plans.FindAsync(planId);
-                activeSubscription.PlanId = planId;
                 activeSubscription.EndDate = activeSubscription.EndDate.AddMonths(newPlan.Duration);
                 activeSubscription.UpdatedAt = DateTime.Now;
 
                 ReboostDbContext.Subscriptions.Update(activeSubscription);
                 await context.SaveChangesAsync();
 
-                return true; 
+                return activeSubscription; 
             }
             else
             {
@@ -185,11 +184,11 @@ namespace Reboost.DataAccess.Repositories
                 ReboostDbContext.Subscriptions.Add(newSubscription);
                 await context.SaveChangesAsync();
 
-                return true;
+                return newSubscription;
             }
         }
 
-        public async Task<bool> SubscribeUserToPlan(string userId, int planId)
+        public async Task<Subscriptions> SubscribeUserToPlan(string userId, int planId)
         {
             // Check if the user already has an active subscription
             var activeSubscription = await ReboostDbContext.Subscriptions.Where(s => s.UserId == userId && s.Status == "Active").FirstOrDefaultAsync();
@@ -219,7 +218,7 @@ namespace Reboost.DataAccess.Repositories
             ReboostDbContext.Subscriptions.Add(newSubscription);
             await context.SaveChangesAsync();
 
-            return true;
+            return newSubscription;
         }
     }
 }

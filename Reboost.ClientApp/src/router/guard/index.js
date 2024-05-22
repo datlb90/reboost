@@ -27,7 +27,9 @@ export default async (router) => {
         lastName: decodeURIComponent(getCookie('lastName')),
         role: decodeURIComponent(getCookie('role')),
         token: decodeURIComponent(getCookie('token')),
-        expireDate: decodeURIComponent(getCookie('expireDate'))
+        expireDate: decodeURIComponent(getCookie('expireDate')),
+        freeToken: parseInt(decodeURIComponent(getCookie('freeToken'))),
+        subscription: JSON.parse(decodeURIComponent(getCookie('subscription')))
       }
 
       const returnUrl = decodeURIComponent(getCookie('returnUrl'))

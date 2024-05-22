@@ -21,7 +21,8 @@ const getters = {
   payments: state => state.payments,
   review: state => state.review,
   articles: state => state.articles,
-  personalQuestion: state => state.personalQuestion
+  personalQuestion: state => state.personalQuestion,
+  userSubscription: state => state.user.subscription
 }
 
 export default getters

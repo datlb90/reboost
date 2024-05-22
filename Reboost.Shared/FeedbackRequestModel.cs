@@ -3,6 +3,7 @@ namespace Reboost.Shared
 {
     public class FeedbackRequestModel
     {
+        public string userId { get; set; }
         public int questionId { get; set; }
         public int reviewId { get; set; }
         public string topic { get; set; }

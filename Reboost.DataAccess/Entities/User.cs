@@ -17,6 +17,7 @@ namespace Reboost.DataAccess.Entities
         public string Email { get; set; }
         public string Username { get; set; }
         public string PhoneNumber { get; set; }
+        public int FreeToken { get; set; }
         public string? StripeCustomerID { get; set; }
         public virtual ICollection<UserScores> UserScores { get; set; }
     }

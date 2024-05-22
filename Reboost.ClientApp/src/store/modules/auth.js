@@ -12,7 +12,9 @@ const getDefaultState = () => {
       token: null,
       expireDate: null,
       firstName: null,
-      lastName: null
+      lastName: null,
+      freeToken: null,
+      subscription: null
     },
     selectedTest: []
   }
@@ -21,6 +23,16 @@ const getDefaultState = () => {
 const state = getDefaultState()
 
 const actions = {
+  setSubscription({ state, commit }, subscription) {
+    if (subscription) {
+      commit('SET_SUBSCRIPTION', subscription)
+    }
+  },
+  updateToken({ state, commit }, token) {
+    if (token >= 0) {
+      commit('SET_FREE_TOKEN', token)
+    }
+  },
   async login({ state, commit }, data) {
     const result = await authService.login(data)
     if (result) {
@@ -42,10 +54,6 @@ const actions = {
     dispatch('review/clearState', null, { root: true })
     dispatch('rater/clearState', null, { root: true })
     commit('RESET_AUTH_STATE')
-    // let checkIntro = false
-    // if (localStorage.getItem('noQuestionsIntro')) {
-    //   checkIntro = true
-    // }
 
     const questionsIntro = localStorage.getItem('noQuestionsIntro')
     const submissionsIntro = localStorage.getItem('noSubmissionsIntro')
@@ -110,6 +118,12 @@ const actions = {
 }
 
 const mutations = {
+  SET_FREE_TOKEN(state, token) {
+    state.user.freeToken = token
+  },
+  SET_SUBSCRIPTION(state, subscription) {
+    state.user.subscription = subscription
+  },
   SET_USER: (state, user) => {
     state.user = user
   },

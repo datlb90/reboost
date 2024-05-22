@@ -18,7 +18,7 @@
           <div v-if="order">
             <p>Cảm ơn bạn đã
               <span v-if="order.subscriptionType == 'new'">mua</span>
-              <span v-else-if="order.subscriptionType == 'renew'">gia hạn thành công</span>
+              <span v-else-if="order.subscriptionType == 'renew'">gia hạn</span>
               <span v-else>nâng cấp lên</span>
               gói
               <span v-if="order.planId <=3 ">phản hồi chi tiết</span>
@@ -132,6 +132,31 @@ export default {
             this.order = rs.order
             // Order processed successfully
             this.orderStatus = 1
+            // Update user subscription
+            if (rs.subscription) {
+              let duration = 6
+              if (rs.subscription.planId == 1) {
+                duration = 0
+              } else if (rs.subscription.planId == 2) {
+                duration = 3
+              } else if (rs.subscription.planId == 3) {
+                duration = 1
+              } else if (rs.subscription.planId == 4) {
+                duration = 6
+              } else if (rs.subscription.planId == 5) {
+                duration = 3
+              } else {
+                duration = 1
+              }
+              const userSubscription = {
+                userId: rs.subscription.userId,
+                planId: rs.subscription.planId,
+                duration: duration,
+                startDate: rs.subscription.startDate,
+                endDate: rs.subscription.endDate
+              }
+              this.$store.dispatch('auth/setSubscription', userSubscription)
+            }
           } else {
             if (rs) this.order = rs.order
             // Order was not processed successfully
@@ -158,39 +183,42 @@ export default {
         }
 
         const paymentResult = await paymentService.verifyVnPayStatus(model)
-        console.log(paymentResult)
-        // const paymentResult = {
-        //   order: null,
-        //   orderId: 2,
-        //   status: 1
-        // }
-
         if (paymentResult && paymentResult.status == 1) {
           this.paymentStatus = 1 // Payment success
           // Process the order now
           this.orderProcessing = true
           const rs = await paymentService.processOrder('vnpay', orderId)
-          console.log(rs)
-          // const rs = {
-          //   order: {
-          //     'userId': 'e2c74323-6e06-4f69-add1-5bdb5d1affc9',
-          //     'planId': 4,
-          //     'subscriptionType': 'upgrade',
-          //     'amount': 1194000,
-          //     'status': 2,
-          //     'transactionCode': null,
-          //     'ipAddress': '::1',
-          //     'createdDate': '2024-05-22T02:56:04.46',
-          //     'lastActivityDate': '2024-05-21T14:56:04.463',
-          //     'id': 2
-          //   },
-          //   orderId: 2,
-          //   status: 2
-          // }
           if (rs && rs.status == 2) {
             this.order = rs.order
             // Order processed successfully
             this.orderStatus = 1
+            // Update user subscription
+            if (rs.subscription) {
+              console.log(rs.subscription)
+              let duration = 6
+              if (rs.subscription.planId == 1) {
+                duration = 6
+              } else if (rs.subscription.planId == 2) {
+                duration = 3
+              } else if (rs.subscription.planId == 3) {
+                duration = 1
+              } else if (rs.subscription.planId == 4) {
+                duration = 6
+              } else if (rs.subscription.planId == 5) {
+                duration = 3
+              } else {
+                duration = 1
+              }
+              const userSubscription = {
+                userId: rs.subscription.userId,
+                planId: rs.subscription.planId,
+                duration: duration,
+                startDate: rs.subscription.startDate,
+                endDate: rs.subscription.endDate
+              }
+              console.log(userSubscription)
+              this.$store.dispatch('auth/setSubscription', userSubscription)
+            }
           } else {
             if (rs) this.order = rs.order
             // Order was not processed successfully

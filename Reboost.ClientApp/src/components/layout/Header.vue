@@ -23,6 +23,9 @@
                 <router-link to="/submissions" class="nav-link">Bài viết của tôi</router-link>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
+                <a href="#" class="nav-link" @click.prevent="gotoPricing()">Gói Phản Hồi</a>
+              </li>
+              <li class="nav-item" style="padding-bottom: 12px;">
                 <a href="/" class="nav-link" @click.prevent="openContactDialog()">Liên hệ</a>
               </li>
               <li class="nav-item other-items" style="padding-bottom: 12px;">
@@ -32,7 +35,7 @@
                     class="btn btn-gradient"
                     style="margin-right: 20px; margin-bottom: 20px; padding: 6px 20px; font-size: 12px;"
                     @click.prevent="openRequestReviewDialog()"
-                  >Yêu cầu chấm bài miễn phí
+                  >Nhận phản hồi cho bài viết
                   </el-button>
                   <hr style="padding-top: 0px;">
                   <div style=" display: inline-grid; padding-top: 10px; width: 420px;">
@@ -44,23 +47,26 @@
                     <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
                       {{ currentUser.email }}
                     </div>
+
+                    <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                      <div v-if="userSubscription" @click="gotoPricing()">
+                        <div>Gói
+                          <span v-if="userSubscription.planId <=3"> phản hồi chi tiết </span>
+                          <span v-else> phản hồi chuyên sâu </span>
+                          <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></div>
+                        <div>Ngày hết hạn: {{ new Date(userSubscription.endDate).toLocaleDateString('vi-VN') }}</div>
+                      </div>
+                      <div v-else @click="gotoPricing()">
+                        <div>Gói luyện tập cơ bản <i class="fas fa-star" style="color: #a5a5a5; vertical-align: -1px;" /></div>
+                        <div>Bài chấm miễn phí: {{ freeToken }}</div>
+                      </div>
+                    </div>
+
                     <div style="padding:12px 0px;text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;" @click.prevent="logout()">
                       Đăng xuất
                     </div>
                   </div>
                 </a>
-              </li>
-            </ul>
-            <ul v-if="role == userRole.RATER" class="navbar-nav nav ml-auto" style="margin-left: 50px !important;">
-              <li v-if="isApprovedRater" class="nav-item" style="padding-bottom: 12px;">
-                <a :href="$router.resolve({name: reviewsPage}).href">Đánh giá của tôi</a>
-              </li>
-              <li class="nav-item" style="padding-bottom: 12px;">
-                <router-link to="/rater/apply" class="nav-link">Hồ sơ đăng ký</router-link>
-              </li>
-
-              <li class="nav-item">
-                <a href="/" class="nav-link" @click.prevent="openContactDialog()">Liên hệ</a>
               </li>
             </ul>
             <ul v-if="role == userRole.ADMIN" class="navbar-nav nav ml-auto" style="margin-left: 150px !important;">
@@ -92,11 +98,11 @@
               class="btn btn-gradient"
               style="margin-right: 20px; padding: 6px 20px; font-size: 12px;"
               @click="openRequestReviewDialog"
-            >Yêu cầu chấm bài miễn phí
+            >Nhận phản hồi cho bài viết
             </el-button>
 
-            <el-dropdown style="margin-top: 5px; margin-right: 2px;" trigger="click" @command="handleCommand">
-              <span class="el-dropdown-link" @click="getRaterRating">
+            <el-dropdown style="margin-top: 5px; margin-right: 2px;" trigger="click">
+              <span class="el-dropdown-link" @click="getSubscription()">
                 <el-link :underline="false" type="info">
                   <i class="far fa-user-circle" style="font-size: 24px;" />
                 </el-link>
@@ -110,8 +116,25 @@
                     {{ currentUser.email }}
                   </div>
                 </div>
-                <el-dropdown-item command="logout" divided>
-                  Đăng xuất
+                <el-dropdown-item divided>
+                  <div>
+                    <div v-if="userSubscription" @click="gotoPricing()">
+                      <div>Gói
+                        <span v-if="userSubscription.planId <= 3"> phản hồi chi tiết </span>
+                        <span v-else> phản hồi chuyên sâu </span>
+                        <i class="fas fa-star" style="color: gold; vertical-align: -1px;" />
+                      </div>
+                      <div v-if="new Date(userSubscription.endDate) > new Date()">Ngày hết hạn: {{ new Date(userSubscription.endDate).toLocaleDateString('vi-VN') }}</div>
+                      <div v-else>Đã hết hạn</div>
+                    </div>
+                    <div v-else @click="gotoPricing()">
+                      <div>Gói luyện tập cơ bản <i class="fas fa-star" style="color: #a5a5a5; vertical-align: -1px;" /></div>
+                      <div>Bài chấm miễn phí: {{ freeToken }}</div>
+                    </div>
+                  </div>
+                </el-dropdown-item>
+                <el-dropdown-item divided>
+                  <div @click="logout()"> Đăng xuất</div>
                 </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -154,6 +177,8 @@ export default {
   data() {
     return {
       role: this.$store.state.auth.user.role,
+      freeToken: this.$store.state.auth.user.freeToken,
+      userSubscription: this.$store.state.auth.user.subscription,
       isSticky: false,
       appInProgress: true,
       raterRating: 0,
@@ -218,8 +243,16 @@ export default {
     }
   },
   methods: {
+    getSubscription() {
+      this.userSubscription = this.$store.state.auth.user.subscription
+      this.freeToken = this.$store.state.auth.user.freeToken
+    },
+    gotoPricing() {
+      window.location.href = '/pricing'
+    },
     getRaterRating() {
       if (this.currentUser.id) {
+        console.log('get user rating')
         raterService.getRaterRating().then(rs => {
           this.raterRating = rs
         })
@@ -290,7 +323,12 @@ export default {
       this.$refs.checkoutDialog?.openDialog()
     },
     openRequestReviewDialog() {
-      this.$refs.reviewRequestDialog?.openDialog()
+      // Check user token & subscription
+      if (this.freeToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
+        this.$refs.reviewRequestDialog?.openDialog()
+      } else {
+        window.location.href = '/pricing'
+      }
     },
     onChangeLanguage(e) {
       this.lang = e.charAt(0).toUpperCase() + e.slice(1)

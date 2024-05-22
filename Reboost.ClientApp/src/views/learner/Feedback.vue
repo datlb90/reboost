@@ -646,7 +646,9 @@ export default {
       errors: null,
       rubricCriteria: null,
       loadCriteriaFeedbackCompleted: false,
-      loadingReview: false
+      loadingReview: false,
+      freeToken: this.$store.state.auth.user.freeToken,
+      userSubscription: this.$store.state.auth.user.subscription
     }
   },
   computed: {
@@ -736,15 +738,25 @@ export default {
     } else {
       // Get new list of errors and create the annotations
       const model = {
+        userId: this.$store.state.auth.user.id,
         task: question.section,
         topic: question.questionsPart.find(q => q.name == 'Question').content,
         essay: this.documentText,
         feedbackLanguage: this.review.reviewRequest.feedbackLanguage
       }
       const response = await reviewService.getIntextComments(model)
-      this.errors = response.errors
-      console.log(this.errors)
-      this.saveIntextCommentFeedback()
+      if (response) {
+        this.errors = response.errors
+        console.log(this.errors)
+        this.saveIntextCommentFeedback()
+      } else {
+        this.$notify.error({
+          title: 'Không thể sửa lỗi trong bài viết',
+          message: 'Đã có sự cố xảy ra trong quá trình sửa lỗi',
+          type: 'error',
+          duration: 5000
+        })
+      }
     }
 
     // render the document
@@ -835,6 +847,7 @@ export default {
       const essay = this.documentText
       // create a review model
       const model = {
+        userId: this.$store.state.auth.user.id,
         questionId: this.questionId,
         reviewId: this.reviewId,
         topic: topic,
@@ -846,10 +859,24 @@ export default {
       }
       // get review feedback
       reviewService.getReviewFeedback(model).then(rs => {
-        this.rubricCriteria = rs
-        console.log(this.rubricCriteria)
-        this.loadCriteriaFeedbackCompleted = true
-        this.saveIntextCommentFeedback()
+        if (rs) {
+          this.rubricCriteria = rs
+          console.log(this.rubricCriteria)
+          if (!this.hasGrade) {
+            // Update user's free token in store
+            if (!this.userSubscription && this.freeToken > 0) { this.$store.dispatch('auth/updateToken', this.freeToken - 1) }
+          }
+
+          this.loadCriteriaFeedbackCompleted = true
+          this.saveIntextCommentFeedback()
+        } else {
+          this.$notify.error({
+            title: 'Không thể tải phản hồi',
+            message: 'Đã có sự cố xảy ra trong quá trình tải phản hồi',
+            type: 'error',
+            duration: 5000
+          })
+        }
       })
     },
     beforeWindowUnload(e) {

@@ -2,7 +2,7 @@
   <el-dialog
     v-if="screenWidth > 780"
     id="addEditQuestionDialog"
-    title="Gửi Yêu Cầu Chấm Bài Miễn Phí"
+    title="Nhận Phản Hồi Cho Bài Viết"
     :visible.sync="dialogVisible"
     :before-close="handleClose"
     width="780px"

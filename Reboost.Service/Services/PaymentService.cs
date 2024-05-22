@@ -612,16 +612,18 @@ namespace Reboost.Service.Services
         {
             VerifyPaymentModel result = new VerifyPaymentModel();
             result.status = OrderStatus.ERROR;
-            // Wait for 1s to get callback from the payment providers
+            // Wait 1s to get callback from the payment providers
             await Task.Delay(1000);
             Orders order = await _orderService.GetById(orderId);
-            result.order = order;
             if(order != null)
             {
-                // The the status of the order is still pending, Gọi API truy vấn trạng thái thanh toán của đơn hàng để lấy kết quả cuối cùng
+                result.order = order;
+                result.orderId = order.Id;
+                
                 if (order.Status == PaymentStatus.PENDING)
                 {
-                    if(paymentMethod == "vnpay")
+                    // The the status of the order is still pending, Gọi API truy vấn trạng thái thanh toán của đơn hàng để lấy kết quả cuối cùng
+                    if (paymentMethod == "vnpay")
                     {
                         // Truy cập trạng thái đơn hàng và updateu
                         var vnpData = _configuration.GetSection("PaymentGateway:VNPay");
@@ -673,18 +675,17 @@ namespace Reboost.Service.Services
                             {
                                 // Update user subscription
                                 if (order.SubscriptionType == "new")
-                                    await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
+                                    result.subscription =  await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
                                 else if (order.SubscriptionType == "renew")
-                                    await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
+                                    result.subscription = await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
                                 else
-                                    await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
+                                    result.subscription = await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
                                 // Update status to processed
                                 order.Status = PaymentStatus.PROCESSED;
                                 order.LastActivityDate = DateTime.UtcNow;
                                 await _orderService.Update(order);
 
                                 result.status = OrderStatus.PROCESSED;
-                                result.order = order;
                             }
                         }
                     }
@@ -707,11 +708,11 @@ namespace Reboost.Service.Services
                         {
                             // Update user subscription
                             if (order.SubscriptionType == "new")
-                                await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
+                                result.subscription = await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
                             else if (order.SubscriptionType == "renew")
-                                await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
+                                result.subscription = await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
                             else
-                                await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
+                                result.subscription = await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
 
                             // Update status to processed
                             order.Status = PaymentStatus.PROCESSED;
@@ -719,7 +720,6 @@ namespace Reboost.Service.Services
                             await _orderService.Update(order);
 
                             result.status = OrderStatus.PROCESSED;
-                            result.order = order;
                         }
                     }
                 }
@@ -727,26 +727,25 @@ namespace Reboost.Service.Services
                 {
                     // Update user subscription
                     if (order.SubscriptionType == "new")
-                        await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
+                        result.subscription = await _subscriptionService.SubscribeUserToPlan(order.UserId, order.PlanId);
                     else if (order.SubscriptionType == "renew")
-                        await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
+                        result.subscription = await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
                     else
-                        await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
+                        result.subscription = await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
 
                     // Update status to processed
                     order.Status = PaymentStatus.PROCESSED;
                     order.LastActivityDate = DateTime.UtcNow;
                     await _orderService.Update(order);
+                    result.status = OrderStatus.PROCESSED;
                 }
                 else if(order.Status == PaymentStatus.PROCESSED)
                 {
-                    result.order = order;
                     result.status = OrderStatus.PROCESSED;
                 }
                 else
                 {
                     // Payment failed, cannot process order
-                    result.order = order;
                     result.status = OrderStatus.ERROR;
                 }
             }

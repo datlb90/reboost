@@ -15,9 +15,9 @@ namespace Reboost.Service.Services
         Task<int> GetUserProratedAmount(string userId);
         Task<Subscriptions> GetUserSubscription(string userId);
         Task<Subscriptions> GetUserActiveSubscription(string userId);
-        Task<bool> SubscribeUserToPlan(string userId, int planId);
-        Task<bool> RenewUserSubscription(string userId, int planId);
-        Task<bool> UpgradeUserSubscription(string userId, int planId);
+        Task<Subscriptions> SubscribeUserToPlan(string userId, int planId);
+        Task<Subscriptions> RenewUserSubscription(string userId, int planId);
+        Task<Subscriptions> UpgradeUserSubscription(string userId, int planId);
     }
 
     public class SubscriptionService : BaseService, ISubscriptionService
@@ -52,17 +52,17 @@ namespace Reboost.Service.Services
             return await _unitOfWork.Subscriptions.GetUserActiveSubscription(userId);
         }
 
-        public async Task<bool> UpgradeUserSubscription(string userId, int planId)
+        public async Task<Subscriptions> UpgradeUserSubscription(string userId, int planId)
         {
             return await _unitOfWork.Subscriptions.UpgradeUserSubscription(userId, planId);
         }
 
-        public async Task<bool> RenewUserSubscription(string userId, int planId)
+        public async Task<Subscriptions> RenewUserSubscription(string userId, int planId)
         {
             return await _unitOfWork.Subscriptions.RenewUserSubscription(userId, planId);
         }
 
-        public async Task<bool> SubscribeUserToPlan(string userId, int planId)
+        public async Task<Subscriptions> SubscribeUserToPlan(string userId, int planId)
         {
             return await _unitOfWork.Subscriptions.SubscribeUserToPlan(userId, planId);
         }

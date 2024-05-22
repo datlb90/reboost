@@ -102,18 +102,21 @@ namespace Reboost.Service.Services
         IMailService mailService;
         IUserService userService;
         IChatGPTService chatGPTService;
+        ISubscriptionService subscriptionService;
 
         public ReviewService(IUnitOfWork unitOfWork,
             IConfiguration _configuration,
             IMailService _mailService,
             IUserService _userService,
             IChatGPTService _chatGPTService,
+            ISubscriptionService _subscriptionService,
             IRubricService _rubricService) : base(unitOfWork)
         {
             configuration = _configuration;
             mailService = _mailService;
             userService = _userService;
             chatGPTService = _chatGPTService;
+            subscriptionService = _subscriptionService;
         }
 
         public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model)
@@ -125,108 +128,150 @@ namespace Reboost.Service.Services
             }
             else
             {
-                // Get user subscription and generate feedback based on subscribed service.
-                // If there is no grade, get the feedback from chatGPT, save the feedback in database, then return the feedback
-                List<CriteriaFeedback> result = new List<CriteriaFeedback>(); // diplay feedback result
-                List<ReviewData> reviewDataList = new List<ReviewData>(); // save feedback to database
-                try
+                var user = await userService.GetByIdAsync(model.userId);
+                var userSubscription = await subscriptionService.GetUserSubscription(model.userId);
+                if(userSubscription != null || user.FreeToken > 0)
                 {
-                    // 1. Get the rubric for the question
-                    var rubricCriteria = await _unitOfWork.Rubrics.GetFeedbackRubric(model.questionId, model.task);
-                    var taskList = new Task<EssayFeedback>[rubricCriteria.Count + 1];
-
-                    string chartDescription = "";
-                    if (!String.IsNullOrEmpty(model.chartFileName))
+                    // If there is no grade, get the feedback from chatGPT, save the feedback in database, then return the feedback
+                    List<CriteriaFeedback> result = new List<CriteriaFeedback>(); // diplay feedback result
+                    List<ReviewData> reviewDataList = new List<ReviewData>(); // save feedback to database
+                    try
                     {
-                        // This is going to take 6-10s.
-                        // Get chart description for Task Achievement only?
-                        chartDescription = await getChartDescription(model.chartFileName);
-                    }
+                        // 1. Get the rubric for the question
+                        var rubricCriteria = await _unitOfWork.Rubrics.GetFeedbackRubric(model.questionId, model.task);
+                        var taskList = new Task<EssayFeedback>[rubricCriteria.Count + 1];
 
-                    CriteriaFeedbackModel scoreModel = new CriteriaFeedbackModel
-                    {
-                        essay = model.essay,
-                        task = model.task,
-                        topic = model.topic,
-                        chartDescription = chartDescription
-                    };
+                        string chartDescription = "";
+                        if (!String.IsNullOrEmpty(model.chartFileName))
+                        {
+                            // This is going to take 6-10s.
+                            // Get chart description for Task Achievement only?
+                            chartDescription = await getChartDescription(model.chartFileName);
+                        }
 
-                    // 1. Get essay score 
-                    taskList[0] = chatGPTService.getEssayScoreGPTTurbo(scoreModel);
-                    //taskList[0] = chatGPTService.getEssayScoreGPT4(scoreModel);
-                    
-
-                    // 2. Get feedback from chatGPT
-                    for (int i = 0; i < rubricCriteria.Count; i++)
-                    {
-                        // Get chart description for Task Achievement?
-                        EssayFeedbackModel requestModel = new EssayFeedbackModel
+                        CriteriaFeedbackModel scoreModel = new CriteriaFeedbackModel
                         {
                             essay = model.essay,
                             task = model.task,
                             topic = model.topic,
-                            chartDescription = chartDescription,
-                            criteriaName = rubricCriteria[i].name,
-                            feedbackLanguage = model.feedbackLanguage,
-                            criteriaId = rubricCriteria[i].criteriaId,
-                            order = rubricCriteria[i].order
+                            chartDescription = chartDescription
                         };
 
-                        taskList[i + 1] = chatGPTService.getCriteriaFeedbackGPTTurbo(requestModel);
-                        //taskList[i + 1] = chatGPTService.getCriteriaFeedbackGPT4(requestModel);
+                        // 1. Get essay score
+                        if (userSubscription != null && userSubscription.PlanId >= 4)
+                        {
+                            // Phản hồi chuyên sâu 
+                            taskList[0] = chatGPTService.getEssayScoreGPT4(scoreModel);
+                        }
+                        else
+                        {
+                            // Phản hồi chi tiết
+                            taskList[0] = chatGPTService.getEssayScoreGPTTurbo(scoreModel);
+                        }
+
+                        // 2. Get feedback from chatGPT
+                        for (int i = 0; i < rubricCriteria.Count; i++)
+                        {
+                            // Get chart description for Task Achievement?
+                            EssayFeedbackModel requestModel = new EssayFeedbackModel
+                            {
+                                essay = model.essay,
+                                task = model.task,
+                                topic = model.topic,
+                                chartDescription = chartDescription,
+                                criteriaName = rubricCriteria[i].name,
+                                feedbackLanguage = model.feedbackLanguage,
+                                criteriaId = rubricCriteria[i].criteriaId,
+                                order = rubricCriteria[i].order
+                            };
+
+                            if (userSubscription != null && userSubscription.PlanId >= 4)
+                            {
+                                // Phản hồi chuyên sâu 
+                                taskList[i + 1] = chatGPTService.getCriteriaFeedbackGPT4(requestModel);
+                            }
+                            else
+                            {
+                                // Phản hồi chi tiết
+                                taskList[i + 1] = chatGPTService.getCriteriaFeedbackGPTTurbo(requestModel);
+                            }
+                        }
+
+                        var completedTasks = await Task.WhenAll(taskList);
+
+                        var scoreResults = completedTasks[0];
+                        foreach (var completedTask in completedTasks.Skip(1))
+                        {
+                            decimal mark = 0;
+                            if (completedTask.criteriaName == "Task Achievement")
+                                mark = scoreResults.taskAchievementScore;
+                            else if (completedTask.criteriaName == "Task Response")
+                                mark = scoreResults.taskResponseScore;
+                            else if (completedTask.criteriaName == "Coherence & Cohesion")
+                                mark = scoreResults.coherenceScore;
+                            else if (completedTask.criteriaName == "Lexical Resource")
+                                mark = scoreResults.lexicalResourceScore;
+                            else if (completedTask.criteriaName == "Grammatical Range & Accuracy")
+                                mark = scoreResults.grammarScore;
+
+                            CriteriaFeedback criteriaFeedback = new CriteriaFeedback
+                            {
+                                criteriaId = completedTask.criteriaId,
+                                name = completedTask.criteriaName,
+                                comment = completedTask.comment,
+                                mark = mark
+                            };
+
+                            result.Add(criteriaFeedback);
+
+                            ReviewData reviewData = new ReviewData
+                            {
+                                ReviewId = model.reviewId,
+                                CriteriaId = completedTask.criteriaId,
+                                CriteriaName = completedTask.criteriaName,
+                                Comment = completedTask.comment,
+                                Score = mark
+                            };
+                            reviewDataList.Add(reviewData);
+                        }
+
+                        await SaveFeedback(model.reviewId, reviewDataList);
+                        // update free token count
+
+                        if(userSubscription == null && user.FreeToken > 0)
+                        {
+                            user.FreeToken = user.FreeToken - 1;
+                            await _unitOfWork.Users.UpdateAsync(user);
+                        }
+                        return result;
                     }
-
-                    var completedTasks = await Task.WhenAll(taskList);
-
-                    var scoreResults = completedTasks[0];
-                    foreach (var completedTask in completedTasks.Skip(1))
+                    catch (Exception e)
                     {
-                        decimal mark = 0;
-                        if (completedTask.criteriaName == "Task Achievement")
-                            mark = scoreResults.taskAchievementScore;
-                        else if (completedTask.criteriaName == "Task Response")
-                            mark = scoreResults.taskResponseScore;
-                        else if (completedTask.criteriaName == "Coherence & Cohesion")
-                            mark = scoreResults.coherenceScore;
-                        else if (completedTask.criteriaName == "Lexical Resource")
-                            mark = scoreResults.lexicalResourceScore;
-                        else if (completedTask.criteriaName == "Grammatical Range & Accuracy")
-                            mark = scoreResults.grammarScore;
-
-                        CriteriaFeedback criteriaFeedback = new CriteriaFeedback
-                        {
-                            criteriaId = completedTask.criteriaId,
-                            name = completedTask.criteriaName,
-                            comment = completedTask.comment,
-                            mark = mark
-                        };
-
-                        result.Add(criteriaFeedback);
-
-                        ReviewData reviewData = new ReviewData
-                        {
-                            ReviewId = model.reviewId,
-                            CriteriaId = completedTask.criteriaId,
-                            CriteriaName = completedTask.criteriaName,
-                            Comment = completedTask.comment,
-                            Score = mark
-                        };
-                        reviewDataList.Add(reviewData);
+                        return null;
                     }
-
-                    await SaveFeedback(model.reviewId, reviewDataList);
-                    return result;
                 }
-                catch (Exception e)
-                {
-                    return null;
-                }
+                return null;
             }
         }
         public async Task<ErrorsInText> getIntextComments(CriteriaFeedbackModel model)
         {
-            return await getIntextCommentsGPTTurbo(model);
-            //return await getIntextCommentsGPT4(model);
+            var user = await userService.GetByIdAsync(model.userId);
+            var userSubscription = await subscriptionService.GetUserSubscription(model.userId);
+            if (userSubscription != null || user.FreeToken > 0)
+            {
+                if (userSubscription != null && userSubscription.PlanId >= 4)
+                {
+                    // Phản hồi chuyên sâu 
+                    return await getIntextCommentsGPT4(model);
+                }
+                else
+                {
+                    // Phản hồi chi tiết
+                    return await getIntextCommentsGPTTurbo(model);
+                }
+            }
+
+            return null;
         }
 
         public async Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model)

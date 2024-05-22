@@ -14,6 +14,9 @@ using System.Security.Claims;
 using Reboost.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+using Reboost.DataAccess.Entities;
+using SendGrid;
+using System.Net;
 
 namespace Reboost.WebApi.Controllers
 {
@@ -112,6 +115,8 @@ namespace Reboost.WebApi.Controllers
                     HttpContext.Response.Cookies.Append("role", response.user.Role, new CookieOptions { IsEssential = true });
                     HttpContext.Response.Cookies.Append("token", response.Message, new CookieOptions { IsEssential = true });
                     HttpContext.Response.Cookies.Append("expireDate", response.user.ExpireDate.ToString(), new CookieOptions { IsEssential = true });
+                    HttpContext.Response.Cookies.Append("freeToken", response.user.FreeToken.ToString(), new CookieOptions { IsEssential = true });
+                    HttpContext.Response.Cookies.Append("subscription", Newtonsoft.Json.JsonConvert.SerializeObject(response.user.Subscription) , new CookieOptions { IsEssential = true });
                     var returnUrl = HttpUtility.UrlDecode(result.Properties.Items["returnUrl"]) ?? "";
                     HttpContext.Response.Cookies.Append("returnUrl", returnUrl, new CookieOptions { IsEssential = true });
                     if (string.IsNullOrEmpty(returnUrl))

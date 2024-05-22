@@ -44,6 +44,7 @@ namespace Reboost.WebApi.Identity
         private IConfiguration _configuration;
         private IMailService _mailService;
         private IUserService _userService;
+        private ISubscriptionService _subscriptionService;
         private IStripeService _stripeService;
         private readonly ILogger<AuthService> _logger;
 
@@ -53,6 +54,7 @@ namespace Reboost.WebApi.Identity
             IMailService mailService, 
             IUserService userService,
             IStripeService stripeService,
+            ISubscriptionService subscriptionService,
             ILogger<AuthService> logger)
         {
             _userManger = userManager;
@@ -60,6 +62,7 @@ namespace Reboost.WebApi.Identity
             _mailService = mailService;
             _userService = userService;
             _stripeService = stripeService;
+            _subscriptionService = subscriptionService;
             _logger = logger;
         }
 
@@ -98,7 +101,8 @@ namespace Reboost.WebApi.Identity
                         LastName = "",
                         PhoneNumber = model.PhoneNumber,
                         CreatedDate = DateTime.UtcNow,
-                        UpdatedDate = DateTime.UtcNow
+                        UpdatedDate = DateTime.UtcNow,
+                        FreeToken = 5
                     };
 
                     // Create the user account
@@ -153,7 +157,9 @@ namespace Reboost.WebApi.Identity
                                 Token = tokenAsString,
                                 ExpireDate = token.ValidTo,
                                 FirstName = model.FullName,
-                                LastName = ""
+                                LastName = "",
+                                FreeToken = 5,
+                                Subscription = null
                             };
 
                             return new UserManagerResponse
@@ -245,7 +251,8 @@ namespace Reboost.WebApi.Identity
                                 FirstName = firstName == null ? username : firstName,
                                 LastName = lastName == null ? "" : lastName,
                                 CreatedDate = DateTime.UtcNow,
-                                UpdatedDate = DateTime.UtcNow
+                                UpdatedDate = DateTime.UtcNow,
+                                FreeToken = 5
                             };
                             var result = await _userManger.CreateAsync(identityUser);
                             if (result.Succeeded)
@@ -333,7 +340,9 @@ namespace Reboost.WebApi.Identity
                             LastName = user.LastName,
                             Role = role,
                             Token = tokenAsString,
-                            ExpireDate = token.ValidTo
+                            ExpireDate = token.ValidTo,
+                            FreeToken = user.FreeToken,
+                            Subscription = await _subscriptionService.GetUserSubscriptionModel(user.Id)
                         };
 
                         return new UserManagerResponse
@@ -446,7 +455,9 @@ namespace Reboost.WebApi.Identity
                     Email = user.Email,
                     Role = roles.FirstOrDefault(),
                     Token = tokenAsString,
-                    ExpireDate = token.ValidTo
+                    ExpireDate = token.ValidTo,
+                    FreeToken = user.FreeToken,
+                    Subscription = await _subscriptionService.GetUserSubscriptionModel(user.Id)
                 };
 
                 return new UserManagerResponse

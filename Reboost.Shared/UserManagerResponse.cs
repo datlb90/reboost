@@ -26,5 +26,7 @@ namespace Reboost.Shared
         public string StripeCustomerId { get; set; }
         public string StripeAccountId { get; set; }
         public bool IsSubcribed { get; set; }
+        public int FreeToken { get; set; }
+        public UserSubscription Subscription { get; set; }
     }
 }

@@ -8,6 +8,7 @@ namespace Reboost.Service.ZaloPay
         public int orderId { get; set; }
         public OrderStatus status { get; set; }
         public Orders order { get; set; }
+        public Subscriptions subscription { get; set; }
     }
 
     public class ReviewFeedbackModel

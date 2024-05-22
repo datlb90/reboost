@@ -15,6 +15,7 @@ namespace Reboost.Shared
 
     public class CriteriaFeedbackModel
     {
+        public string userId { get; set; }
         public string task { get; set; }
         public string topic { get; set; }
         public string chartName { get; set; }
