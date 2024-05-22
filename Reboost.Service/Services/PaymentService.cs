@@ -74,7 +74,6 @@ namespace Reboost.Service.Services
 
         public async Task<Orders> CreateNewOrder(string userId, int planId, string subscriptionType, string ipAddress)
         {
-            
             Plans plan = await _subscriptionService.GetPlan(planId);
             int amount = plan.Price * plan.Duration;
             if(subscriptionType == "upgrade")
@@ -137,7 +136,7 @@ namespace Reboost.Service.Services
                 vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
                 //Số tiền thanh toán. Số tiền không mang các ký tự phân tách thập phân, phần nghìn, ký tự tiền tệ.
                 //Để gửi số tiền thanh toán là 100,000 VND (một trăm nghìn VNĐ) thì merchant cần nhân thêm 100 lần (khử phần thập phân), sau đó gửi sang VNPAY là: 10000000
-                vnpay.AddRequestData("vnp_Amount", (model.amount * 100).ToString());
+                vnpay.AddRequestData("vnp_Amount", (newOrder.Amount * 100).ToString());
                 vnpay.AddRequestData("vnp_CreateDate", newOrder.CreatedDate.ToString("yyyyMMddHHmmss"));
                 vnpay.AddRequestData("vnp_CurrCode", "VND");
                 vnpay.AddRequestData("vnp_IpAddr", model.ipAddress);
@@ -417,7 +416,7 @@ namespace Reboost.Service.Services
                 param.Add("app_id", _configuration.GetSection("PaymentGateway:ZaloPay")["app_id"]);
                 param.Add("app_user", model.userId);
                 param.Add("app_time", Util.GetTimeStamp().ToString());
-                param.Add("amount", model.amount.ToString());
+                param.Add("amount", newOrder.Amount.ToString());
                 param.Add("app_trans_id", newOrder.CreatedDate.ToString("yyMMdd") + "_" + app_trans_id); // mã giao dich có định dạng yyMMdd_xxxx
                 param.Add("embed_data", JsonConvert.SerializeObject(embed_data));
                 param.Add("item", JsonConvert.SerializeObject(items));
@@ -616,6 +615,7 @@ namespace Reboost.Service.Services
             // Wait for 1s to get callback from the payment providers
             await Task.Delay(1000);
             Orders order = await _orderService.GetById(orderId);
+            result.order = order;
             if(order != null)
             {
                 // The the status of the order is still pending, Gọi API truy vấn trạng thái thanh toán của đơn hàng để lấy kết quả cuối cùng

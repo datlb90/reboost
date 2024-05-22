@@ -43,7 +43,7 @@
             </div>
 
             <div class="pricing-footer">
-              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }" @click="selectPlan(0)">
                 {{ getOptionText(0) }}
               </a>
             </div>
@@ -137,7 +137,7 @@
             </div>
 
             <div class="pricing-footer">
-              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }" @click="selectPlan(0)">
                 {{ getOptionText(0) }}
               </a>
             </div>
@@ -231,7 +231,7 @@
             </div>
 
             <div class="pricing-footer">
-              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }" @click="selectPlan(0)">
                 {{ getOptionText(0) }}
               </a>
             </div>
@@ -465,11 +465,6 @@ export default {
       activeDuration: 6,
       user: this.$store.state.auth.user,
       userSubscription: null,
-      // userSubscription: {
-      //   planId: 1, // 6 plans in total: 1, 2, 3, 4, 5, 6
-      //   duration: 6, // 3 durations: 6, 3, 1
-      //   proratedAmount: 200000 // unused amount (should be substracted by upgrade)
-      // },
       proratedAmount: 0,
       checkoutDialogVisiable: false,
       orderSummary: []
@@ -486,8 +481,28 @@ export default {
     })
     // Get user subscription information that display the option accordingly
     if (this.user.id) {
+      const selectedPlan = this.getUrlParameter('planId')
+      if (selectedPlan == '1') {
+        this.activePlan = 1
+        this.activeDuration = 6
+      } else if (selectedPlan == '2') {
+        this.activePlan = 2
+        this.activeDuration = 3
+      } else if (selectedPlan == '3') {
+        this.activePlan = 3
+        this.activeDuration = 1
+      } else if (selectedPlan == '4') {
+        this.activePlan = 4
+        this.activeDuration = 6
+      } else if (selectedPlan == '5') {
+        this.activePlan = 5
+        this.activeDuration = 3
+      } else if (selectedPlan == '6') {
+        this.activePlan = 6
+        this.activeDuration = 1
+      }
+
       this.userSubscription = await paymentService.getUserSubscription(this.user.id)
-      console.log(this.userSubscription)
       if (this.userSubscription) {
         this.activePlan = this.userSubscription.planId
         this.activeDuration = this.userSubscription.duration
@@ -496,11 +511,42 @@ export default {
     }
   },
   methods: {
-    submitZaloPayRequest() {
+    getUrlParameter(sParam) {
+      const sPageURL = decodeURIComponent(window.location.search.substring(1))
+      const sURLVariables = sPageURL.split('&')
+      let sParameterName
+      let i
+      for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=')
 
+        if (sParameterName[0] === sParam) {
+          return sParameterName[1] === undefined ? true : sParameterName[1]
+        }
+      }
     },
-    submitVNPayRequest() {
-
+    async submitZaloPayRequest() {
+      const model = {
+        userId: this.user.id,
+        planId: this.orderSummary[0].planId,
+        duration: this.orderSummary[0].duration,
+        subscriptionType: this.orderSummary[0].type,
+        amount: this.orderSummary[0].total,
+        proratedAmount: this.proratedAmount
+      }
+      var zaloPayUrl = await paymentService.submitZaloPayRequest(model)
+      window.location.href = zaloPayUrl
+    },
+    async submitVNPayRequest() {
+      const model = {
+        userId: this.user.id,
+        planId: this.orderSummary[0].planId,
+        duration: this.orderSummary[0].duration,
+        subscriptionType: this.orderSummary[0].type,
+        amount: this.orderSummary[0].total,
+        proratedAmount: this.proratedAmount
+      }
+      var vnPayUrl = await paymentService.submitVNPayRequest(model)
+      window.location.href = vnPayUrl
     },
     getTotal() {
       let total = this.orderSummary[0].duration * this.orderSummary[0].price
@@ -511,11 +557,7 @@ export default {
       this.orderSummary = []
     },
     selectPlan(planId) {
-      if (!this.user.id) {
-        // save plan id
-        // send to register
-        // send to payment page if plan id != 0
-      } else {
+      if (this.user.id) {
         let planName = 'Phản Hồi Chi Tiết'
         let duration = 6
         let price = 99000
@@ -546,9 +588,8 @@ export default {
         }
 
         const option = this.getOptionText(planId)
-        console.log(option)
+
         if (option != 'Lựa Chọn') {
-          // planName = option + ' ' + planName
           if (option == 'Gia Hạn') {
             this.type = 'renew'
             if (this.screenWidth > 780) { planName = 'Gia Hạn ' + planName } else { planName = 'Gia Hạn Gói ' + planName }
@@ -562,10 +603,12 @@ export default {
         if (this.proratedAmount != 0 && this.type != 'renew') { total = total - this.proratedAmount }
 
         const order = {
+          planId: planId,
           planName: planName,
           duration: duration,
           price: price,
-          total: total
+          total: total,
+          type: this.type
         }
         this.orderSummary.push(order)
 
@@ -574,6 +617,8 @@ export default {
         // check if this is add new, renew, or upgrade subscription
         // send user to the payment page accodingly
         // subscribe user to plan
+      } else {
+        return this.$router.push({ path: '/register?planId=' + planId })
       }
     },
     getOptionText(planId) {
@@ -585,7 +630,7 @@ export default {
       return 'Lựa Chọn'
     },
     planDisabled(planId) {
-      if (planId == 0) { return true }
+      if (planId == 0 && this.user.id) { return true }
       if (this.user && this.userSubscription) {
         if (this.userSubscription.duration > this.activeDuration) {
           if (this.activePlan <= 3 && planId >= 4) { return true }

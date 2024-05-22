@@ -147,14 +147,6 @@ export default async (router) => {
         } else if (role === UserRole.LEARNER) {
           await store.dispatch('auth/setSelectedTest')
 
-          // .then(rs => {
-          //   const tests = store.getters['auth/getSelectedTest']
-          //   if (tests.length > 0) {
-          //     return next({ name: PageName.QUESTIONS })
-          //   }
-          //   return next({ name: PageName.SELECT_YOUR_TEST })
-          // })
-
           // Check if user is requesting a review
           // Open the request review dialog
           const personalQuestion = store.getters['question/getPersonalQuestion']

@@ -341,7 +341,6 @@ export default {
       window.location.href = zaloPayUrl
     },
     async submitVNPayRequest() {
-      // this.requestAIReview()
       const model = {
         userId: this.currentUser.id,
         submissionId: this.submissionId,

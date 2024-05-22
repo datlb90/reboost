@@ -215,6 +215,19 @@ export default {
   },
   methods: {
     ...mapActions('auth', ['register']),
+    getUrlParameter(sParam) {
+      const sPageURL = decodeURIComponent(window.location.search.substring(1))
+      const sURLVariables = sPageURL.split('&')
+      let sParameterName
+      let i
+      for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=')
+
+        if (sParameterName[0] === sParam) {
+          return sParameterName[1] === undefined ? true : sParameterName[1]
+        }
+      }
+    },
     pressEnterToLogin(e) {
       if (e.code === 'Enter') {
         console.log(e.code)
@@ -258,9 +271,14 @@ export default {
                 updatedDate: moment().format('yyyy-MM-DD')
               })
             }
-
             userService.addScore(this.user.id, scores).then(rs => {
-              this.$router.push({ name: PageName.AFTER_LOGIN })
+              const planId = this.getUrlParameter('planId')
+              console.log(this.$store.getters['auth/getUser'])
+              if (planId && planId != '0') {
+                this.$store.dispatch('auth/setSelectedTest').then(rs => {
+                  window.location.href = '/pricing?planId=' + planId
+                })
+              } else { this.$router.push({ name: PageName.AFTER_LOGIN }) }
             })
           } else {
             this.loading = false
