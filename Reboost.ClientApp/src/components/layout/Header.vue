@@ -118,7 +118,7 @@
                 </div>
                 <el-dropdown-item divided>
                   <div>
-                    <div v-if="userSubscription" @click="gotoPricing()">
+                    <!-- <div v-if="userSubscription" @click="gotoPricing()">
                       <div>Gói
                         <span v-if="userSubscription.planId <= 3"> phản hồi chi tiết </span>
                         <span v-else> phản hồi chuyên sâu </span>
@@ -130,7 +130,22 @@
                     <div v-else @click="gotoPricing()">
                       <div>Gói luyện tập cơ bản <i class="fas fa-star" style="color: #a5a5a5; vertical-align: -1px;" /></div>
                       <div>Bài chấm miễn phí: {{ freeToken }}</div>
+                    </div> -->
+
+                    <div>
+                      <div>
+                        {{ subscriptionName }}
+                        <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
+                      </div>
+                      <div v-if="subscriptionName == 'Gói luyện tập cơ bản'">
+                        Bài chấm miễn phí: {{ freeToken }}
+                      </div>
+                      <div v-else-if="!isExpired">
+                        Ngày hết hạn: {{ expiredDate }}
+                      </div>
+                      <div v-else>Đã hết hạn</div>
                     </div>
+
                   </div>
                 </el-dropdown-item>
                 <el-dropdown-item divided>
@@ -178,7 +193,7 @@ export default {
     return {
       role: this.$store.state.auth.user.role,
       freeToken: this.$store.state.auth.user.freeToken,
-      userSubscription: this.$store.state.auth.user.subscription,
+      userSubscription: null,
       isSticky: false,
       appInProgress: true,
       raterRating: 0,
@@ -193,7 +208,10 @@ export default {
       submissionId: null,
       initialSubmission: null,
       screenWidth: window.innerWidth,
-      feedbackLanguage: 'Phản hồi bằng tiếng Việt'
+      feedbackLanguage: 'Phản hồi bằng tiếng Việt',
+      subscriptionName: null,
+      isExpired: false,
+      expiredDate: null
     }
   },
   computed: {
@@ -243,9 +261,16 @@ export default {
     }
   },
   methods: {
-    getSubscription() {
-      this.userSubscription = this.$store.state.auth.user.subscription
+   async getSubscription() {
       this.freeToken = this.$store.state.auth.user.freeToken
+      const userSubscription = this.$store.state.auth.user.subscription
+      if (userSubscription) {
+        if (userSubscription.planId <= 3) { this.subscriptionName = 'Gói phản hồi chi tiết' } else { this.subscriptionName = 'Gói phản hồi chuyên sâu' }
+        this.isExpired = new Date(userSubscription.endDate) < new Date()
+        this.expiredDate = new Date(userSubscription.endDate).toLocaleDateString('vi-VN')
+      } else {
+        this.subscriptionName = 'Gói luyện tập cơ bản'
+      }
     },
     gotoPricing() {
       window.location.href = '/pricing'
