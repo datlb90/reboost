@@ -26,6 +26,8 @@ namespace Reboost.Service.Services
 {
     public interface IChatGPTService
     {
+        Task<EssayScore> getEssayScore(CriteriaFeedbackModel model);
+
         // Get in-text comment
         Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model);
         Task<ErrorsInText> getIntextCommentsGPTTurbo(CriteriaFeedbackModel model);
@@ -51,7 +53,7 @@ namespace Reboost.Service.Services
         Task<string> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model);
         // Version 1.1
         Task<AutomatedFeedbackModel> getAIFeedbackForCriteria(CriteriaFeedbackModel model);
-        Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model);
+        Task<EssayScoreModel> getEssayScoreModel(CriteriaFeedbackModel model);
         // Version 1.3
         Task<string> getCriteriaFeedback(CriteriaFeedbackModel model);
         Task<string> getFeedbackForErrors(ErrorFeedbackModel model);
@@ -76,6 +78,86 @@ namespace Reboost.Service.Services
            
             configuration = _configuration;
         }
+
+        public async Task<EssayScore> getEssayScore(CriteriaFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string topic = "";
+                string response = "";
+                if (model.topic == "The writing topic is not provided")
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        response = "Given the following IELTS Academic Writing Task 1 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+                        if (!String.IsNullOrEmpty(model.chartDescription))
+                        {
+                            topic = "Given the following chart information for the IELTS Academic Writing Task 1: \r\n\r\n" + model.chartDescription + "\r\n\r\n";
+                        }
+                    }
+                    else // Academic Writing Task 2
+                    {
+                        response = "Given the following IELTS Academic Writing Task 2 essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+                    }
+                }
+                else
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        topic = "Given the following IELTS Academic Writing Task 1 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                        if (!String.IsNullOrEmpty(model.chartDescription))
+                        {
+                            topic += model.chartDescription;
+                        }
+                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                    }
+                    else // Academic Writing Task 2
+                    {
+                        topic = "Given the following IELTS Academic Writing Task 2 topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                        response = "Given the following writing essay for the topic :\r\n\r\n" + model.essay + "\r\n\r\n";
+                    }
+                }
+
+                string request = "Score the IELTS essay and provide the scores using JSON format. The JSON object should include the following properties:\r\n\r\n- addressingAllParts: a number from 1.0 to 9.0 indicating how thoroughly the essay addresses every component of the prompt, including any sub-questions or specific tasks mentioned.\r\n\r\n- clarityOfPosition: a number from 1.0 to 9.0 measuring the clarity and consistency of the author's viewpoint or thesis.\r\n\r\n- developmentOfIdeas: a number from 1.0 to 9.0 measuring how well the ideas are developed through explanations, examples, and details that support the main argument.\r\n\r\n- justificationOfOpinion: a number from 1.0 to 9.0 measuring how effectively the author justifies their opinions with logical reasoning and evidence.\r\n\r\n- coherenceInArgument: a number from 1.0 to 9.0 measuring how logical and easy to follow the argument is, with each idea connecting smoothly to the next.\r\n\r\n- logicalOrganization: a number from 1.0 to 9.0 measuring how clear and logical the structure of the essay is, ensuring it is easy for the reader to follow the argument or narrative.\r\n\r\n- paragraphing: a number from 1.0 to 9.0 measuring the effectiveness of the essay's paragraph structure. Each paragraph should focus on a single main idea, introduced by a topic sentence, with subsequent sentences developing or supporting this idea.\r\n\r\n- cohesiveDevices: a number from 1.0 to 9.0 measuring how appropriately cohesive devices (such as conjunctions, pronouns, and linking phrases) are used to connect ideas within and between sentences and paragraphs.\r\n\r\n- referencing: a number from 1.0 to 9.0 measuring how correctly pronouns and other referencing words are used to avoid ambiguity and repetitiveness, thereby helping to link sentences and ideas clearly.\r\n\r\n- rangeOfVocabulary: a number from 1.0 to 9.0 measuring the ability to use a varied vocabulary appropriate to the task. This includes using synonyms to avoid repetition and incorporating less common and topic-specific words.\r\n\r\n- accuracyOfWordChoice: a number from 1.0 to 9.0 measuring how appropriately words are used in their context. This includes correct use of collocations and idiomatic language.\r\n\r\n- spellingAndFormation: a number from 1.0 to 9.0 measuring the accuracy of spelling and the correct use of words in their appropriate forms, including verbs, nouns, adjectives, and adverbs.\r\n\r\n- registerAndStyle: a number from 1.0 to 9.0 measuring the ability to use language appropriate for an academic essay. This includes using formal expressions and avoiding slang or overly informal language.\r\n\r\n- grammarRange: a number from 1.0 to 9.0 measuring the ability to use a variety of complex and simple grammatical constructions appropriately within the essay.\r\n\r\n- sentenceComplexity: a number from 1.0 to 9.0 measuring the ability to construct sentences that vary in complexity, including the use of compound and complex sentences, to effectively express nuanced ideas.\r\n\r\n- grammarAccuracy: a number from 1.0 to 9.0 measuring the correctness of grammatical structures used, ensuring minimal errors that do not impede communication.\r\n";
+
+                if (model.task == "Academic Writing Task 1")
+                {
+                    request = "Provide the score for the IELTS essay using JSON format. The JSON object has the following 4 properties:\r\n- taskAchievementScore: the score of the essay for the Task Achievement criteria based on the provided band descriptors.\r\n- coherenceScore: the score of the essay for the Coherence & Cohesion criteria based on the provided band descriptors.\r\n- lexicalResourceScore: the score of the essay for the Lexical Resource criteria based on the provided band descriptors.\r\n- grammarScore: the score of the essay for the Grammatical Range & Accuracy criteria based on the provided band descriptors.";
+                }
+                var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = Model.GPT4_Turbo,
+                    ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
+                    Temperature = 0.1,
+                    Messages = new ChatMessage[] {
+                        new ChatMessage(ChatMessageRole.System, "You are a helpful assistant designed to output JSON."),
+                            new ChatMessage(ChatMessageRole.Assistant, topic),
+                            new ChatMessage(ChatMessageRole.Assistant, response),
+                            new ChatMessage(ChatMessageRole.User, request)
+                        }
+                });
+
+                var result = JsonConvert.DeserializeObject<EssayScore>(taskResponseResult.Choices[0].Message.TextContent);
+
+                //if (result != null)
+                //{
+                //    result.overallScore = 0; //(decimal)(Math.Round(result.overallScore * 2, MidpointRounding.AwayFromZero) / 2);
+                //    result.taskResponseScore = (decimal)Math.Floor(result.taskResponseScore);
+                //    result.coherenceScore = (decimal)Math.Floor(result.coherenceScore);
+                //    result.lexicalResourceScore = (decimal)Math.Floor(result.lexicalResourceScore);
+                //    result.grammarScore = (decimal)Math.Floor(result.grammarScore);
+                //}
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
 
         public async Task<ErrorsInText> getIntextCommentsGPTTurbo(CriteriaFeedbackModel model)
         {
@@ -517,9 +599,10 @@ namespace Reboost.Service.Services
                 }
 
                 string request = "Provide the score for the essay using JSON format. The JSON object has the following 4 properties:\r\n- taskResponseScore: the score of the essay for the Task Response criteria based on the provided band descriptors.\r\n- coherenceScore: the score of the essay for the Coherence & Cohesion criteria based on the provided band descriptors.\r\n- lexicalResourceScore: the essay for the Lexical Resource criteria based on the provided band descriptors.\r\n- grammarScore: the score of the essay for the Grammatical Range & Accuracy criteria based on the provided band descriptors.";
+
                 if (model.task == "Academic Writing Task 1")
                 {
-                    request = "Provide the score for the essay using JSON format. The JSON object has the following 4 properties:\r\n- taskAchievementScore: the score of the essay for the Task Achievement criteria based on the provided band descriptors.\r\n- coherenceScore: the score of the essay for the Coherence & Cohesion criteria based on the provided band descriptors.\r\n- lexicalResourceScore: the score of the essay for the Lexical Resource criteria based on the provided band descriptors.\r\n- grammarScore: the score of the essay for the Grammatical Range & Accuracy criteria based on the provided band descriptors.";
+                    request = "Provide the score for the IELTS essay using JSON format. The JSON object has the following 4 properties:\r\n- taskAchievementScore: the score of the essay for the Task Achievement criteria based on the provided band descriptors.\r\n- coherenceScore: the score of the essay for the Coherence & Cohesion criteria based on the provided band descriptors.\r\n- lexicalResourceScore: the score of the essay for the Lexical Resource criteria based on the provided band descriptors.\r\n- grammarScore: the score of the essay for the Grammatical Range & Accuracy criteria based on the provided band descriptors.";
                 }
                 var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
@@ -528,7 +611,7 @@ namespace Reboost.Service.Services
                     Temperature = 0.1,
                     Messages = new ChatMessage[] {
                         new ChatMessage(ChatMessageRole.System, "You are a helpful assistant designed to output JSON."),
-                            new ChatMessage(ChatMessageRole.Assistant, rubric),
+                            //new ChatMessage(ChatMessageRole.Assistant, rubric),
                             new ChatMessage(ChatMessageRole.Assistant, topic),
                             new ChatMessage(ChatMessageRole.Assistant, response),
                             new ChatMessage(ChatMessageRole.User, request)
@@ -1271,7 +1354,7 @@ namespace Reboost.Service.Services
         }
 
 
-        public async Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model)
+        public async Task<EssayScoreModel> getEssayScoreModel(CriteriaFeedbackModel model)
         {
             try
             {

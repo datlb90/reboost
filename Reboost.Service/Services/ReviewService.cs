@@ -23,6 +23,8 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<EssayScore> getEssayScore(CriteriaFeedbackModel model);
+
         Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model);
         Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model);
 
@@ -38,7 +40,7 @@ namespace Reboost.Service.Services
         Task<ErrorsInText> getErrorsInText(CriteriaFeedbackModel model);
         Task<string> getAIFeedbackForCriteriaV4(CriteriaFeedbackModel model);
         Task<ReviewRatings> CreateAIReviewRatingAsync(ReviewRatings data);
-        Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model);
+        
         Task<string> getCriteriaFeedback(CriteriaFeedbackModel model);
         Task<string> getFeedbackForErrors(ErrorFeedbackModel model);
         Task<string> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model);
@@ -119,6 +121,11 @@ namespace Reboost.Service.Services
             subscriptionService = _subscriptionService;
         }
 
+        public async Task<EssayScore> getEssayScore(CriteriaFeedbackModel model)
+        {
+            return await chatGPTService.getEssayScore(model);
+        }
+
         public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model)
         {
             if (model.hasGrade)
@@ -133,7 +140,7 @@ namespace Reboost.Service.Services
                 if(userSubscription != null || user.FreeToken > 0)
                 {
                     // If there is no grade, get the feedback from chatGPT, save the feedback in database, then return the feedback
-                    List<CriteriaFeedback> result = new List<CriteriaFeedback>(); // diplay feedback result
+                    List<CriteriaFeedback> result = new List<CriteriaFeedback>(); // display feedback result
                     List<ReviewData> reviewDataList = new List<ReviewData>(); // save feedback to database
                     try
                     {
@@ -508,10 +515,6 @@ namespace Reboost.Service.Services
         {
             var rs = await _unitOfWork.Review.CreateAIReviewRatingAsync(data);
             return rs;
-        }
-        public async Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model)
-        {
-            return await chatGPTService.getEssayScore(model);
         }
 
         public async Task<string> getCriteriaFeedback(CriteriaFeedbackModel model)

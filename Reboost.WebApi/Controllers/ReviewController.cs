@@ -52,6 +52,13 @@ namespace Reboost.WebApi.Controllers
         //    return await _service.getAIFeedbackForCriteriaV5(model);
         //}
 
+        [HttpPost("essay/score")]
+        public async Task<EssayScore> getEssayScore(CriteriaFeedbackModel model)
+        {
+            return await _service.getEssayScore(model);
+        }
+
+
         [Authorize]
         [HttpPost("ai/vocabulary/errors/intext")]
         public async Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model)
@@ -120,12 +127,6 @@ namespace Reboost.WebApi.Controllers
             return await _service.getAIFeedbackForCriteriaV4(model);
         }
 
-        [Authorize]
-        [HttpPost("ai/score")]
-        public async Task<EssayScoreModel> getEssayScore(CriteriaFeedbackModel model)
-        {
-            return await _service.getEssayScore(model);
-        }
         [Authorize]
         [HttpPost("ai/feedback/criteria/v3")]
         public async Task<string> getCriteriaFeedback(CriteriaFeedbackModel model)

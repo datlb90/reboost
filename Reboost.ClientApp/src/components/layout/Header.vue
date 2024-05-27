@@ -23,7 +23,7 @@
                 <router-link to="/submissions" class="nav-link">Bài viết của tôi</router-link>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
-                <a href="#" class="nav-link" @click.prevent="gotoPricing()">Gói Phản Hồi</a>
+                <a href="#" class="nav-link" @click.prevent="gotoPricing()">Bảng giá</a>
               </li>
               <li class="nav-item" style="padding-bottom: 12px;">
                 <a href="/" class="nav-link" @click.prevent="openContactDialog()">Liên hệ</a>
@@ -49,16 +49,18 @@
                     </div>
 
                     <div style="padding:12px 0px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                      <div v-if="userSubscription" @click="gotoPricing()">
-                        <div>Gói
-                          <span v-if="userSubscription.planId <=3"> phản hồi chi tiết </span>
-                          <span v-else> phản hồi chuyên sâu </span>
-                          <i class="fas fa-star" style="color: gold; vertical-align: -1px;" /></div>
-                        <div>Ngày hết hạn: {{ new Date(userSubscription.endDate).toLocaleDateString('vi-VN') }}</div>
-                      </div>
-                      <div v-else @click="gotoPricing()">
-                        <div>Gói luyện tập cơ bản <i class="fas fa-star" style="color: #a5a5a5; vertical-align: -1px;" /></div>
-                        <div>Bài chấm miễn phí: {{ freeToken }}</div>
+                      <div>
+                        <div>
+                          {{ subscriptionName }}
+                          <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
+                        </div>
+                        <div v-if="subscriptionName == 'Gói luyện tập cơ bản'">
+                          Bài chấm miễn phí: {{ freeToken }}
+                        </div>
+                        <div v-else-if="!isExpired">
+                          Ngày hết hạn: {{ expiredDate }}
+                        </div>
+                        <div v-else>Đã hết hạn</div>
                       </div>
                     </div>
 
@@ -118,34 +120,17 @@
                 </div>
                 <el-dropdown-item divided>
                   <div>
-                    <!-- <div v-if="userSubscription" @click="gotoPricing()">
-                      <div>Gói
-                        <span v-if="userSubscription.planId <= 3"> phản hồi chi tiết </span>
-                        <span v-else> phản hồi chuyên sâu </span>
-                        <i class="fas fa-star" style="color: gold; vertical-align: -1px;" />
-                      </div>
-                      <div v-if="new Date(userSubscription.endDate) > new Date()">Ngày hết hạn: {{ new Date(userSubscription.endDate).toLocaleDateString('vi-VN') }}</div>
-                      <div v-else>Đã hết hạn</div>
-                    </div>
-                    <div v-else @click="gotoPricing()">
-                      <div>Gói luyện tập cơ bản <i class="fas fa-star" style="color: #a5a5a5; vertical-align: -1px;" /></div>
-                      <div>Bài chấm miễn phí: {{ freeToken }}</div>
-                    </div> -->
-
                     <div>
-                      <div>
-                        {{ subscriptionName }}
-                        <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
-                      </div>
-                      <div v-if="subscriptionName == 'Gói luyện tập cơ bản'">
-                        Bài chấm miễn phí: {{ freeToken }}
-                      </div>
-                      <div v-else-if="!isExpired">
-                        Ngày hết hạn: {{ expiredDate }}
-                      </div>
-                      <div v-else>Đã hết hạn</div>
+                      {{ subscriptionName }}
+                      <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
                     </div>
-
+                    <div v-if="subscriptionName == 'Gói luyện tập cơ bản'">
+                      Bài chấm miễn phí: {{ freeToken }}
+                    </div>
+                    <div v-else-if="!isExpired">
+                      Ngày hết hạn: {{ expiredDate }}
+                    </div>
+                    <div v-else>Đã hết hạn</div>
                   </div>
                 </el-dropdown-item>
                 <el-dropdown-item divided>
