@@ -26,7 +26,7 @@ namespace Reboost.Service.Services
 {
     public interface IChatGPTService
     {
-        Task<EssayScore> getEssayScore(CriteriaFeedbackModel model);
+        Task<ReviewScores> getEssayScore(CriteriaFeedbackModel model);
 
         // Get in-text comment
         Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model);
@@ -79,7 +79,7 @@ namespace Reboost.Service.Services
             configuration = _configuration;
         }
 
-        public async Task<EssayScore> getEssayScore(CriteriaFeedbackModel model)
+        public async Task<ReviewScores> getEssayScore(CriteriaFeedbackModel model)
         {
             try
             {
@@ -124,7 +124,7 @@ namespace Reboost.Service.Services
 
                 if (model.task == "Academic Writing Task 1")
                 {
-                    request = "Provide the score for the IELTS essay using JSON format. The JSON object has the following 4 properties:\r\n- taskAchievementScore: the score of the essay for the Task Achievement criteria based on the provided band descriptors.\r\n- coherenceScore: the score of the essay for the Coherence & Cohesion criteria based on the provided band descriptors.\r\n- lexicalResourceScore: the score of the essay for the Lexical Resource criteria based on the provided band descriptors.\r\n- grammarScore: the score of the essay for the Grammatical Range & Accuracy criteria based on the provided band descriptors.";
+                    request = "Score the IELTS essay and provide the scores using JSON format. The JSON object should include the following properties:\r\n\r\n- fulfillRequirements: a number from 1.0 to 9.0 measuring the extent to which the essay demonstrates understanding and responds to all parts of the task prompt, ensuring that the response covers all required information.\r\n\r\n- highlightKeyFeatures: a number from 1.0 to 9.0 measuring the effectiveness of the essay in identifying and describing the most significant data points, trends, or features in the information provided.\r\n\r\n- compareAndContrast: a number from 1.0 to 9.0 measuring how effectively, where relevant, the essay compares and contrasts different pieces of data to draw meaningful insights.\r\n\r\n- dataSelection: a number from 1.0 to 9.0 measuring the ability to select relevant data to include in the summary without overcrowding it with every detail from the graphic.\r\n\r\n- logicalOrganization: a number from 1.0 to 9.0 measuring how clear and logical the structure of the essay is, ensuring it is easy for the reader to follow the argument or narrative.\r\n\r\n- paragraphing: a number from 1.0 to 9.0 measuring the effectiveness of the essay's paragraph structure. Each paragraph should focus on a single main idea, introduced by a topic sentence, with subsequent sentences developing or supporting this idea.\r\n\r\n- cohesiveDevices: a number from 1.0 to 9.0 measuring how appropriately cohesive devices (such as conjunctions, pronouns, and linking phrases) are used to connect ideas within and between sentences and paragraphs.\r\n\r\n- referencing: a number from 1.0 to 9.0 measuring how correctly pronouns and other referencing words are used to avoid ambiguity and repetitiveness, thereby helping to link sentences and ideas clearly.\r\n\r\n- rangeOfVocabulary: a number from 1.0 to 9.0 measuring the ability to use a varied vocabulary appropriate to the task, including specific terminology relevant to the data, chart, or process described.\r\n\r\n- accuracyOfWordChoice: a number from 1.0 to 9.0 measuring how appropriately words are used in their context. This involves using words that accurately convey the intended meaning and are grammatically correct within the sentence structure\r\n\r\n- spellingAndFormation: a number from 1.0 to 9.0 measuring the accuracy of spelling and the correct use of words in their appropriate forms, including verbs, nouns, adjectives, and adverbs.\r\n\r\n- registerAndStyle: a number from 1.0 to 9.0 measuring the ability to use language appropriate for an academic essay. This includes using formal expressions and avoiding slang or overly informal language.\r\n\r\n- grammarRange: a number from 1.0 to 9.0 measuring the ability to use a variety of complex and simple grammatical constructions appropriately within the essay.\r\n\r\n- sentenceComplexity: a number from 1.0 to 9.0 measuring the ability to construct sentences that vary in complexity, including the use of compound and complex sentences, to effectively express nuanced ideas.\r\n\r\n- grammarAccuracy: a number from 1.0 to 9.0 measuring the correctness of grammatical structures used, ensuring minimal errors that do not impede communication.\r\n";
                 }
                 var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
@@ -139,16 +139,163 @@ namespace Reboost.Service.Services
                         }
                 });
 
-                var result = JsonConvert.DeserializeObject<EssayScore>(taskResponseResult.Choices[0].Message.TextContent);
+                var result = JsonConvert.DeserializeObject<ReviewScores>(taskResponseResult.Choices[0].Message.TextContent);
 
-                //if (result != null)
-                //{
-                //    result.overallScore = 0; //(decimal)(Math.Round(result.overallScore * 2, MidpointRounding.AwayFromZero) / 2);
-                //    result.taskResponseScore = (decimal)Math.Floor(result.taskResponseScore);
-                //    result.coherenceScore = (decimal)Math.Floor(result.coherenceScore);
-                //    result.lexicalResourceScore = (decimal)Math.Floor(result.lexicalResourceScore);
-                //    result.grammarScore = (decimal)Math.Floor(result.grammarScore);
-                //}
+                if (result != null)
+                {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        // Calculate Task Achievement score
+                        List<decimal> taskAchievementScores = new List<decimal>();
+                        if (result.FulfillRequirements != null)
+                        {
+                            taskAchievementScores.Add((decimal)result.FulfillRequirements);
+                        }
+                        if (result.FulfillRequirements != null)
+                        {
+                            taskAchievementScores.Add((decimal)result.HighlightKeyFeatures);
+                        }
+                        if (result.FulfillRequirements != null)
+                        {
+                            taskAchievementScores.Add((decimal)result.CompareAndContrast);
+                        }
+                        if (result.FulfillRequirements != null)
+                        {
+                            taskAchievementScores.Add((decimal)result.DataSelection);
+                        }
+                        if (taskAchievementScores.Count > 0)
+                        {
+                            result.TaskAchievementScore = (decimal)(Math.Round(taskAchievementScores.Average() * 2, MidpointRounding.AwayFromZero) / 2);
+                        }
+                    }
+                    else
+                    {
+                        // Calculate Task Response score
+                        List<decimal> taskResponseScores = new List<decimal>();
+                        if (result.AddressingAllParts != null)
+                        {
+                            taskResponseScores.Add((decimal)result.AddressingAllParts);
+                        }
+                        if (result.ClarityOfPosition != null)
+                        {
+                            taskResponseScores.Add((decimal)result.ClarityOfPosition);
+                        }
+                        if (result.DevelopmentOfIdeas != null)
+                        {
+                            taskResponseScores.Add((decimal)result.DevelopmentOfIdeas);
+                        }
+                        if (result.JustificationOfOpinion != null)
+                        {
+                            taskResponseScores.Add((decimal)result.JustificationOfOpinion);
+                        }
+                        if (taskResponseScores.Count > 0)
+                        {
+                            result.TaskResponseScore = (decimal)(Math.Round(taskResponseScores.Average() * 2, MidpointRounding.AwayFromZero) / 2);
+                        }
+                    }
+                    
+                    // Calculate Coherence & Cohesion score
+                    List<decimal> coherenceScores = new List<decimal>();
+                    if (result.LogicalOrganization != null)
+                    {
+                        coherenceScores.Add((decimal)result.LogicalOrganization);
+                    }
+                    if (result.Paragraphing != null)
+                    {
+                        coherenceScores.Add((decimal)result.Paragraphing);
+                    }
+                    if (result.CohesiveDevices != null)
+                    {
+                        coherenceScores.Add((decimal)result.CohesiveDevices);
+                    }
+                    if (result.Referencing != null)
+                    {
+                        coherenceScores.Add((decimal)result.Referencing);
+                    }
+                    if (coherenceScores.Count > 0)
+                    {
+                        result.CoherenceScore = (decimal)(Math.Round(coherenceScores.Average() * 2, MidpointRounding.AwayFromZero) / 2);
+                    }
+
+                    // Calculate Lexical Resource score
+                    List<decimal> lexicalResourceScores = new List<decimal>();
+                    if (result.RangeOfVocabulary != null)
+                    {
+                        lexicalResourceScores.Add((decimal)result.RangeOfVocabulary);
+                    }
+                    if (result.AccuracyOfWordChoice != null)
+                    {
+                        lexicalResourceScores.Add((decimal)result.AccuracyOfWordChoice);
+                    }
+                    if (result.SpellingAndFormation != null)
+                    {
+                        lexicalResourceScores.Add((decimal)result.SpellingAndFormation);
+                    }
+                    if (result.RegisterAndStyle != null)
+                    {
+                        lexicalResourceScores.Add((decimal)result.RegisterAndStyle);
+                    }
+                    if (lexicalResourceScores.Count > 0)
+                    {
+                        result.LexicalResourceScore = (decimal)(Math.Round(lexicalResourceScores.Average() * 2, MidpointRounding.AwayFromZero) / 2);
+                    }
+
+                    // Calculate Grammatical Range and Accuracy score
+                    List<decimal> grammarScores = new List<decimal>();
+                    if (result.GrammarRange != null)
+                    {
+                        grammarScores.Add((decimal)result.GrammarRange);
+                    }
+                    if (result.SentenceComplexity != null)
+                    {
+                        grammarScores.Add((decimal)result.SentenceComplexity);
+                    }
+                    if (result.GrammarAccuracy != null)
+                    {
+                        grammarScores.Add((decimal)result.GrammarAccuracy);
+                    }
+                    if (grammarScores.Count > 0)
+                    {
+                        result.GrammarScore = (decimal)(Math.Round(grammarScores.Average() * 2, MidpointRounding.AwayFromZero) / 2);
+                    }
+
+                    // Calculating Overall Band Score
+                    List<decimal> overallBandScores = new List<decimal>();
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        if (result.TaskAchievementScore != null)
+                        {
+                            overallBandScores.Add((decimal)result.TaskAchievementScore);
+                        }
+                    }
+                    else
+                    {
+                        if (result.TaskResponseScore != null)
+                        {
+                            overallBandScores.Add((decimal)result.TaskResponseScore);
+                        }
+                    }
+
+                    if (result.CoherenceScore != null)
+                    {
+                        overallBandScores.Add((decimal)result.CoherenceScore);
+                    }
+
+                    if (result.LexicalResourceScore != null)
+                    {
+                        overallBandScores.Add((decimal)result.LexicalResourceScore);
+                    }
+
+                    if (result.GrammarScore != null)
+                    {
+                        overallBandScores.Add((decimal)result.GrammarScore);
+                    }
+
+                    if (overallBandScores.Count > 0)
+                    {
+                        result.OverallBandScore = (decimal)(Math.Round(overallBandScores.Average() * 2, MidpointRounding.AwayFromZero) / 2);
+                    }
+                }
 
                 return result;
             }

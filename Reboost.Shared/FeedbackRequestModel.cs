@@ -12,6 +12,7 @@ namespace Reboost.Shared
         public bool hasGrade { get; set; }
         public string chartFileName { get; set; }
         public string feedbackLanguage { get; set; }
+        public string chartDescription { get; set; }
     }
 }
 

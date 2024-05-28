@@ -85,39 +85,45 @@ namespace Reboost.Shared
     public class EssayScore
     {
         // Overall score
-        public decimal overallScore { get; set; }
+        public decimal? overallBandScore { get; set; }
 
         // 4 Cretieria score
-        public decimal taskAchievementScore { get; set; }
-        public decimal taskResponseScore { get; set; }
-        public decimal coherenceScore { get; set; }
-        public decimal lexicalResourceScore { get; set; }
-        public decimal grammarScore { get; set; }
+        public decimal? taskAchievementScore { get; set; }
+        public decimal? taskResponseScore { get; set; }
+        public decimal? coherenceScore { get; set; }
+        public decimal? lexicalResourceScore { get; set; }
+        public decimal? grammarScore { get; set; }
+
+        // Task Achievement scores
+        public decimal? fulfillRequirements { get; set; }
+        public decimal? highlightKeyFeatures { get; set; }
+        public decimal? compareAndContrast { get; set; }
+        public decimal? dataSelection { get; set; }
 
         // Task Response scores
-        public decimal addressingAllParts { get; set; }
-        public decimal clarityOfPosition { get; set; }
-        public decimal developmentOfIdeas { get; set; }
-        public decimal justificationOfOpinion { get; set; }
-        public decimal coherenceinArgument { get; set; }
+        public decimal? addressingAllParts { get; set; }
+        public decimal? clarityOfPosition { get; set; }
+        public decimal? developmentOfIdeas { get; set; }
+        public decimal? justificationOfOpinion { get; set; }
+        //public decimal coherenceinArgument { get; set; }
         public bool appropriateWordCount { get; set; }
 
         // Coherence & Cohesion scores
-        public decimal logicalOrganization { get; set; }
-        public decimal paragraphing { get; set; }
-        public decimal cohesiveDevices { get; set; }
-        public decimal referencing { get; set; }
+        public decimal? logicalOrganization { get; set; }
+        public decimal? paragraphing { get; set; }
+        public decimal? cohesiveDevices { get; set; }
+        public decimal? referencing { get; set; }
 
         // Lexical Resource scores
-        public decimal rangeOfVocabulary { get; set; }
-        public decimal accuracyOfWordChoice { get; set; }
-        public decimal spellingAndFormation { get; set; }
-        public decimal registerAndStyle { get; set; }
+        public decimal? rangeOfVocabulary { get; set; }
+        public decimal? accuracyOfWordChoice { get; set; }
+        public decimal? spellingAndFormation { get; set; }
+        public decimal? registerAndStyle { get; set; }
 
         // Grammatical Range and Accuracy scores
-        public decimal grammarRange { get; set; }
-        public decimal sentenceComplexity { get; set; }
-        public decimal grammarAccuracy { get; set; }
+        public decimal? grammarRange { get; set; }
+        public decimal? sentenceComplexity { get; set; }
+        public decimal? grammarAccuracy { get; set; }
     }
 
 

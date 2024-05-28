@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Reboost.DataAccess.Entities;
 using Reboost.DataAccess.Repositories;
 
 namespace Reboost.DataAccess
@@ -23,6 +24,7 @@ namespace Reboost.DataAccess
         IArticlesRepository Articles { get; }
         IOrderRepository Orders { get; }
         ISubscriptionRepository Subscriptions { get; }
+        IReviewScoreRepository ReviewScores { get; }
         Task<int> CommitAsync();
     }
 
@@ -46,7 +48,7 @@ namespace Reboost.DataAccess
         private ArticlesRepository _articlesRepository;
         private OrderRepository _orderRepository;
         private SubscriptionRepository _subscriptionRepository;
-
+        private ReviewScoreRepository _reviewScoreRepository;
         public UnitOfWork(ReboostDbContext context)
         {
             _context = context;
@@ -69,6 +71,7 @@ namespace Reboost.DataAccess
         public IArticlesRepository Articles => _articlesRepository = _articlesRepository ?? new ArticlesRepository(_context);
         public IOrderRepository Orders => _orderRepository = _orderRepository ?? new OrderRepository(_context);
         public ISubscriptionRepository Subscriptions => _subscriptionRepository = _subscriptionRepository ?? new SubscriptionRepository(_context);
+        public IReviewScoreRepository ReviewScores => _reviewScoreRepository = _reviewScoreRepository ?? new ReviewScoreRepository(_context);
 
         public async Task<int> CommitAsync()
         {

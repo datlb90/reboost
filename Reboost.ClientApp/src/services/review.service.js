@@ -1,6 +1,12 @@
 import http from '@/utils/axios'
 
 const reviewService = {
+  getEssayScore(model) {
+    return http.post('/review/essay/score', model).then(rs => rs.data)
+  },
+  getChartDescription(fileName) {
+    return http.get('/review/get/chart/description/' + fileName).then(rs => rs.data)
+  },
   getIntextComments(model) {
     return http.post('/review/ai/feedback/intext/comment', model).then(rs => rs.data)
   },
@@ -25,9 +31,9 @@ const reviewService = {
   createAIReviewRating(data) {
     return http.post(`/review/rate/ai`, data).then(rs => rs.data)
   },
-  getEssayScore(model) {
-    return http.post('/review/ai/score', model).then(rs => rs.data)
-  },
+  // getEssayScore(model) {
+  //   return http.post('/review/ai/score', model).then(rs => rs.data)
+  // },
   getAIFeedbackForCriteriaV3(model) {
     return http.post('/review/ai/feedback/criteria/v3', model).then(rs => rs.data)
   },
@@ -37,9 +43,7 @@ const reviewService = {
   getAIFeedbackForCriteriaV2(model) {
     return http.post('/review/ai/feedback/criteria/v2', model).then(rs => rs.data)
   },
-  getChartDescription(fileName) {
-    return http.get('/review/get/chart/description/' + fileName).then(rs => rs.data)
-  },
+
   getAIFeedbackForCriteriaV1(model) {
     return http.post('/review/ai/feedback/criteria', model).then(rs => rs.data)
   },

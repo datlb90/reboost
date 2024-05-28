@@ -54,6 +54,7 @@ namespace Reboost.DataAccess
         public virtual DbSet<UserLogins> UserLogins { get; set; }
         public virtual DbSet<Plans> Plans { get; set; }
         public virtual DbSet<Subscriptions> Subscriptions { get; set; }
+        public virtual DbSet<ReviewScores> ReviewScores { get; set; }
 
         public ReboostDbContext(DbContextOptions<ReboostDbContext> options)
             : base(options)

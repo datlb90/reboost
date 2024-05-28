@@ -45,17 +45,54 @@ namespace Reboost.WebApi.Controllers
             db = ctx;
         }
 
-        //[Authorize]
-        //[HttpPost("ai/feedback/criteria/v6")]
-        //public async Task<string> getAIFeedbackForCriteriaV5(CriteriaFeedbackModel model)
-        //{
-        //    return await _service.getAIFeedbackForCriteriaV5(model);
-        //}
-
-        [HttpPost("essay/score")]
-        public async Task<EssayScore> getEssayScore(CriteriaFeedbackModel model)
+        [Authorize]
+        [HttpGet("get/chart/description/{fileName}")]
+        public async Task<IActionResult> getChartDescription(string fileName)
         {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            var rs = await _service.getChartDescription(currentUser.Id, fileName);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [HttpPost("essay/score")]
+        public async Task<ReviewScores> getEssayScore(FeedbackRequestModel model)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+            model.userId = currentUser.Id;
             return await _service.getEssayScore(model);
+        }
+
+
+        [Authorize]
+        [HttpPost("ai/feedback/intext/comment")]
+        public async Task<ErrorsInText> getIntextComments(CriteriaFeedbackModel model)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            return await _service.getIntextComments(currentUser, model);
+        }
+
+        [Authorize]
+        [HttpPost("feedback")]
+        public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            return await _service.GetCriteriaFeedback(currentUser, model);
         }
 
 
@@ -71,20 +108,6 @@ namespace Reboost.WebApi.Controllers
         public async Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model)
         {
             return await _service.getGrammarErrorsInText(model);
-        }
-
-        [Authorize]
-        [HttpPost("ai/feedback/intext/comment")]
-        public async Task<ErrorsInText> getIntextComments(CriteriaFeedbackModel model)
-        {
-            return await _service.getIntextComments(model);
-        }
-
-        [Authorize]
-        [HttpPost("feedback")]
-        public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model)
-        {
-            return await _service.GetCriteriaFeedback(model);
         }
 
         [HttpPost("ai/feedback/criteria/v5")]
@@ -158,19 +181,6 @@ namespace Reboost.WebApi.Controllers
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
             var rs = await _service.getAIFeedbackForCriteria(model);
-            return Ok(rs);
-        }
-
-        [Authorize]
-        [HttpGet("get/chart/description/{fileName}")]
-        public async Task<IActionResult> getChartDescription(string fileName)
-        {
-            var currentUserClaim = HttpContext.User;
-            var email = currentUserClaim.FindFirst("Email");
-            var role = currentUserClaim.FindFirst("Role");
-            var currentUser = await _userService.GetByEmailAsync(email.Value);
-
-            var rs = await _service.getChartDescription(fileName);
             return Ok(rs);
         }
 

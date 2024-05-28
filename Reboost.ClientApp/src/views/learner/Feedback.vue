@@ -648,7 +648,8 @@ export default {
       loadCriteriaFeedbackCompleted: false,
       loadingReview: false,
       freeToken: this.$store.state.auth.user.freeToken,
-      userSubscription: this.$store.state.auth.user.subscription
+      userSubscription: this.$store.state.auth.user.subscription,
+      chartDescription: null
     }
   },
   computed: {
@@ -727,6 +728,13 @@ export default {
     this.docData = this.base64ToArrayBuffer(doc.data.data)
 
     // await this.loadRubric()
+    if (!this.hasGrade) {
+      const chart = question.questionsPart.find(q => q.name == 'Chart')
+      if (chart) {
+        this.chartDescription = await reviewService.getChartDescription(chart.content)
+      }
+    }
+    this.getReviewScores()
     this.getReviewFeedback()
 
     // Get annotations in db first
@@ -840,10 +848,9 @@ export default {
         reviewService.saveRubric(this.reviewId, reviewData)
       }
     },
-    async getReviewFeedback() {
+    async getReviewScores() {
       const question = this.$store.getters['question/getSelected']
       const topic = question.questionsPart.find(q => q.name == 'Question').content
-      const chart = question.questionsPart.find(q => q.name == 'Chart')
       const essay = this.documentText
       // create a review model
       const model = {
@@ -854,7 +861,37 @@ export default {
         essay: essay,
         task: question.section,
         hasGrade: this.hasGrade,
-        chartFileName: chart ? chart.content : null,
+        chartDescription: this.chartDescription,
+        feedbackLanguage: this.review.reviewRequest.feedbackLanguage
+      }
+      // get review feedback
+      reviewService.getEssayScore(model).then(rs => {
+        if (rs) {
+          console.log('Review Scores:', rs)
+        } else {
+          this.$notify.error({
+            title: 'Không thể chấm bài luận',
+            message: 'Đã có sự cố xảy ra trong quá trình chấm bài',
+            type: 'error',
+            duration: 5000
+          })
+        }
+      })
+    },
+    async getReviewFeedback() {
+      const question = this.$store.getters['question/getSelected']
+      const topic = question.questionsPart.find(q => q.name == 'Question').content
+      const essay = this.documentText
+      // create a review model
+      const model = {
+        userId: this.$store.state.auth.user.id,
+        questionId: this.questionId,
+        reviewId: this.reviewId,
+        topic: topic,
+        essay: essay,
+        task: question.section,
+        hasGrade: this.hasGrade,
+        chartDescription: this.chartDescription,
         feedbackLanguage: this.review.reviewRequest.feedbackLanguage
       }
       // get review feedback

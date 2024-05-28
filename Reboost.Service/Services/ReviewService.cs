@@ -23,13 +23,14 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
-        Task<EssayScore> getEssayScore(CriteriaFeedbackModel model);
+        Task<string> getChartDescription(string userId, string fileName);
+        Task<ReviewScores> getEssayScore(FeedbackRequestModel model);
 
         Task<ErrorsInText> getVocabularyErrorsInText(CriteriaFeedbackModel model);
         Task<ErrorsInText> getGrammarErrorsInText(CriteriaFeedbackModel model);
 
-        Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model);
-        Task<ErrorsInText> getIntextComments(CriteriaFeedbackModel model);
+        Task<List<CriteriaFeedback>> GetCriteriaFeedback(User user, FeedbackRequestModel model);
+        Task<ErrorsInText> getIntextComments(User user, CriteriaFeedbackModel model);
 
         Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model);
         Task<ErrorsInText> getIntextCommentsGPTTurbo(CriteriaFeedbackModel model);  
@@ -42,10 +43,11 @@ namespace Reboost.Service.Services
         Task<ReviewRatings> CreateAIReviewRatingAsync(ReviewRatings data);
         
         Task<string> getCriteriaFeedback(CriteriaFeedbackModel model);
+
         Task<string> getFeedbackForErrors(ErrorFeedbackModel model);
         Task<string> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model);
         Task<SubmissionRequestModel> GetSubmissionRequestModel(int submissionId, string userId);
-        Task<string> getChartDescription(string fileName);
+        
         Task<AutomatedFeedbackModel> getAIFeedbackForCriteria(CriteriaFeedbackModel model);
         Task<GetReviewsModel> GetReviewByReviewRequestAsync(int requestId);
         Task<bool> EligibleForPeerReview(string userId);
@@ -121,12 +123,75 @@ namespace Reboost.Service.Services
             subscriptionService = _subscriptionService;
         }
 
-        public async Task<EssayScore> getEssayScore(CriteriaFeedbackModel model)
+        public async Task<string> getChartDescription(string userId, string fileName)
         {
-            return await chatGPTService.getEssayScore(model);
+            try
+            {
+
+                if (!String.IsNullOrEmpty(fileName))
+                {
+                    var user = await userService.GetByIdAsync(userId);
+                    var userSubscription = await subscriptionService.GetUserSubscription(userId);
+                    if (userSubscription != null || user.FreeToken > 0)
+                    {
+                        string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/photo", fileName);
+                        return await chatGPTService.getChartDescription(filePath);
+                    }
+                      
+                }
+            }
+            catch (Exception e)
+            {
+                return "";
+            }
+            return "";
         }
 
-        public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(FeedbackRequestModel model)
+
+        public async Task<ReviewScores> getEssayScore(FeedbackRequestModel model)
+        {
+            if (model.hasGrade)
+            {
+                return await _unitOfWork.ReviewScores.GetEssayScores(model.reviewId);
+            }
+            else
+            {
+                var user = await userService.GetByIdAsync(model.userId);
+                var userSubscription = await subscriptionService.GetUserSubscription(model.userId);
+                if (userSubscription != null || user.FreeToken > 0)
+                {
+                    try
+                    {
+                        //string chartDescription = "";
+                        //if (!String.IsNullOrEmpty(model.chartFileName))
+                        //{
+                        //    // This is going to take 6-10s.
+                        //    chartDescription = await getChartDescription(model.chartFileName);
+                        //}
+
+                        CriteriaFeedbackModel scoreModel = new CriteriaFeedbackModel
+                        {
+                            essay = model.essay,
+                            task = model.task,
+                            topic = model.topic,
+                            chartDescription = model.chartDescription
+                        };
+
+                        // Get essay score from ChatGPT
+                        ReviewScores result = await chatGPTService.getEssayScore(scoreModel);
+
+                        return result;
+                    }
+                    catch (Exception e)
+                    {
+                        return null;
+                    }
+                }
+                return null;
+            }
+        }
+
+        public async Task<List<CriteriaFeedback>> GetCriteriaFeedback(User user, FeedbackRequestModel model)
         {
             if (model.hasGrade)
             {
@@ -135,8 +200,7 @@ namespace Reboost.Service.Services
             }
             else
             {
-                var user = await userService.GetByIdAsync(model.userId);
-                var userSubscription = await subscriptionService.GetUserSubscription(model.userId);
+                var userSubscription = await subscriptionService.GetUserSubscription(user.Id);
                 if(userSubscription != null || user.FreeToken > 0)
                 {
                     // If there is no grade, get the feedback from chatGPT, save the feedback in database, then return the feedback
@@ -146,35 +210,7 @@ namespace Reboost.Service.Services
                     {
                         // 1. Get the rubric for the question
                         var rubricCriteria = await _unitOfWork.Rubrics.GetFeedbackRubric(model.questionId, model.task);
-                        var taskList = new Task<EssayFeedback>[rubricCriteria.Count + 1];
-
-                        string chartDescription = "";
-                        if (!String.IsNullOrEmpty(model.chartFileName))
-                        {
-                            // This is going to take 6-10s.
-                            // Get chart description for Task Achievement only?
-                            chartDescription = await getChartDescription(model.chartFileName);
-                        }
-
-                        CriteriaFeedbackModel scoreModel = new CriteriaFeedbackModel
-                        {
-                            essay = model.essay,
-                            task = model.task,
-                            topic = model.topic,
-                            chartDescription = chartDescription
-                        };
-
-                        // 1. Get essay score
-                        if (userSubscription != null && userSubscription.PlanId >= 4)
-                        {
-                            // Phản hồi chuyên sâu 
-                            taskList[0] = chatGPTService.getEssayScoreGPT4(scoreModel);
-                        }
-                        else
-                        {
-                            // Phản hồi chi tiết
-                            taskList[0] = chatGPTService.getEssayScoreGPTTurbo(scoreModel);
-                        }
+                        var taskList = new Task<EssayFeedback>[rubricCriteria.Count];
 
                         // 2. Get feedback from chatGPT
                         for (int i = 0; i < rubricCriteria.Count; i++)
@@ -185,7 +221,7 @@ namespace Reboost.Service.Services
                                 essay = model.essay,
                                 task = model.task,
                                 topic = model.topic,
-                                chartDescription = chartDescription,
+                                chartDescription = model.chartDescription,
                                 criteriaName = rubricCriteria[i].name,
                                 feedbackLanguage = model.feedbackLanguage,
                                 criteriaId = rubricCriteria[i].criteriaId,
@@ -195,38 +231,27 @@ namespace Reboost.Service.Services
                             if (userSubscription != null && userSubscription.PlanId >= 4)
                             {
                                 // Phản hồi chuyên sâu 
-                                taskList[i + 1] = chatGPTService.getCriteriaFeedbackGPT4(requestModel);
+                                taskList[i] = chatGPTService.getCriteriaFeedbackGPT4(requestModel);
                             }
                             else
                             {
                                 // Phản hồi chi tiết
-                                taskList[i + 1] = chatGPTService.getCriteriaFeedbackGPTTurbo(requestModel);
+                                taskList[i] = chatGPTService.getCriteriaFeedbackGPTTurbo(requestModel);
                             }
                         }
 
                         var completedTasks = await Task.WhenAll(taskList);
 
-                        var scoreResults = completedTasks[0];
-                        foreach (var completedTask in completedTasks.Skip(1))
+                        //var scoreResults = completedTasks[0];
+                        foreach (var completedTask in completedTasks)
                         {
-                            decimal mark = 0;
-                            if (completedTask.criteriaName == "Task Achievement")
-                                mark = scoreResults.taskAchievementScore;
-                            else if (completedTask.criteriaName == "Task Response")
-                                mark = scoreResults.taskResponseScore;
-                            else if (completedTask.criteriaName == "Coherence & Cohesion")
-                                mark = scoreResults.coherenceScore;
-                            else if (completedTask.criteriaName == "Lexical Resource")
-                                mark = scoreResults.lexicalResourceScore;
-                            else if (completedTask.criteriaName == "Grammatical Range & Accuracy")
-                                mark = scoreResults.grammarScore;
-
                             CriteriaFeedback criteriaFeedback = new CriteriaFeedback
                             {
                                 criteriaId = completedTask.criteriaId,
                                 name = completedTask.criteriaName,
                                 comment = completedTask.comment,
-                                mark = mark
+                                mark = 0
+                                //mark = mark
                             };
 
                             result.Add(criteriaFeedback);
@@ -237,12 +262,12 @@ namespace Reboost.Service.Services
                                 CriteriaId = completedTask.criteriaId,
                                 CriteriaName = completedTask.criteriaName,
                                 Comment = completedTask.comment,
-                                Score = mark
+                                Score = 0
                             };
                             reviewDataList.Add(reviewData);
                         }
 
-                        await SaveFeedback(model.reviewId, reviewDataList);
+                        // await SaveFeedback(model.reviewId, reviewDataList);
                         // update free token count
 
                         if(userSubscription == null && user.FreeToken > 0)
@@ -260,10 +285,9 @@ namespace Reboost.Service.Services
                 return null;
             }
         }
-        public async Task<ErrorsInText> getIntextComments(CriteriaFeedbackModel model)
+        public async Task<ErrorsInText> getIntextComments(User user, CriteriaFeedbackModel model)
         {
-            var user = await userService.GetByIdAsync(model.userId);
-            var userSubscription = await subscriptionService.GetUserSubscription(model.userId);
+            var userSubscription = await subscriptionService.GetUserSubscription(user.Id);
             if (userSubscription != null || user.FreeToken > 0)
             {
                 if (userSubscription != null && userSubscription.PlanId >= 4)
@@ -530,23 +554,6 @@ namespace Reboost.Service.Services
         public async Task<SubmissionRequestModel> GetSubmissionRequestModel(int submissionId, string userId)
         {
             return await _unitOfWork.Review.GetSubmissionRequestModel(submissionId, userId);
-        }
-
-        public async Task<string> getChartDescription(string fileName)
-        {
-            try
-            {
-                if (!String.IsNullOrEmpty(fileName))
-                {
-                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/photo", fileName);
-                    return await chatGPTService.getChartDescription(filePath);
-                }
-            }
-            catch(Exception e)
-            {
-                return "";
-            }
-            return "";
         }
 
         public async Task<string> getAIFeedbackForCriteriaV2(CriteriaFeedbackModel model)
