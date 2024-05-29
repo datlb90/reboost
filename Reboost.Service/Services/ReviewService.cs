@@ -23,6 +23,9 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<ReviewScores> getEssayScoreV2(CriteriaFeedbackModel model);
+        Task<EssayFeedback> getEssayScoreV1(CriteriaFeedbackModel model);
+
         Task<string> getChartDescription(string userId, string fileName);
         Task<ReviewScores> getEssayScore(FeedbackRequestModel model);
 
@@ -123,6 +126,16 @@ namespace Reboost.Service.Services
             subscriptionService = _subscriptionService;
         }
 
+        public async Task<ReviewScores> getEssayScoreV2(CriteriaFeedbackModel model)
+        {
+            return await chatGPTService.getEssayScore(model);
+        }
+
+        public async Task<EssayFeedback> getEssayScoreV1(CriteriaFeedbackModel model)
+        {
+            return await chatGPTService.getEssayScoreGPT4(model);
+        }
+
         public async Task<string> getChartDescription(string userId, string fileName)
         {
             try
@@ -162,13 +175,6 @@ namespace Reboost.Service.Services
                 {
                     try
                     {
-                        //string chartDescription = "";
-                        //if (!String.IsNullOrEmpty(model.chartFileName))
-                        //{
-                        //    // This is going to take 6-10s.
-                        //    chartDescription = await getChartDescription(model.chartFileName);
-                        //}
-
                         CriteriaFeedbackModel scoreModel = new CriteriaFeedbackModel
                         {
                             essay = model.essay,
@@ -178,9 +184,14 @@ namespace Reboost.Service.Services
                         };
 
                         // Get essay score from ChatGPT
-                        ReviewScores result = await chatGPTService.getEssayScore(scoreModel);
-
-                        return result;
+                        ReviewScores scores = await chatGPTService.getEssayScore(scoreModel);
+                        // Save the scores into database
+                        scores.ReviewId = model.reviewId;
+                        scores.UpdatedDate = DateTime.Now;
+                        scores.CreatedDate = DateTime.Now;
+                        await _unitOfWork.ReviewScores.Create(scores);
+                        // Return the score to the UI
+                        return scores;
                     }
                     catch (Exception e)
                     {
@@ -266,10 +277,6 @@ namespace Reboost.Service.Services
                             };
                             reviewDataList.Add(reviewData);
                         }
-
-                        // await SaveFeedback(model.reviewId, reviewDataList);
-                        // update free token count
-
                         if(userSubscription == null && user.FreeToken > 0)
                         {
                             user.FreeToken = user.FreeToken - 1;

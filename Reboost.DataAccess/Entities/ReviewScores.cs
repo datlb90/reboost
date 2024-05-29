@@ -24,11 +24,10 @@ namespace Reboost.DataAccess.Entities
         public decimal? DataSelection { get; set; }
 
         // Task Response scores
-        public decimal? AddressingAllParts { get; set; }
+        public string AddressingAllParts { get; set; }
         public decimal? ClarityOfPosition { get; set; }
         public decimal? DevelopmentOfIdeas { get; set; }
         public decimal? JustificationOfOpinion { get; set; }
-        //public decimal coherenceinArgument { get; set; }
         public bool AppropriateWordCount { get; set; }
 
         // Coherence & Cohesion scores

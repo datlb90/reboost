@@ -45,6 +45,18 @@ namespace Reboost.WebApi.Controllers
             db = ctx;
         }
 
+        [HttpPost("essay/score/v2")]
+        public async Task<ReviewScores> getEssayScoreV2(CriteriaFeedbackModel model)
+        {
+            return await _service.getEssayScoreV2(model);
+        }
+
+        [HttpPost("essay/score/v1")]
+        public async Task<EssayFeedback> getEssayScoreV1(CriteriaFeedbackModel model)
+        {
+            return await _service.getEssayScoreV1(model);
+        }
+
         [Authorize]
         [HttpGet("get/chart/description/{fileName}")]
         public async Task<IActionResult> getChartDescription(string fileName)

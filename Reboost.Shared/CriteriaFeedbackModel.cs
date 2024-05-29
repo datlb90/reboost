@@ -72,14 +72,6 @@ namespace Reboost.Shared
         public decimal lexicalResourceScore { get; set; }
         public decimal grammarScore { get; set; }
         public decimal overallScore { get; set; }
-
-        public decimal logicalStructureScore { get; set; }
-        public decimal linkingWordScore { get; set; }
-
-        public decimal variedVocabularyScore { get; set; }
-        public decimal variedSentenceScore { get; set; }
-
-        public decimal allPartsScore { get; set; }
     }
 
     public class EssayScore

@@ -8,79 +8,240 @@
               <div id="parent-scroll" style="flex-grow: 1;position: relative;">
                 <div id="child-scroll">
                   <div id="rubric">
-                    <div v-if="loadCriteriaFeedbackCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
+                    <div v-if="loadCriteriaFeedbackCompleted || loadEssayScoreCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
                       <el-card
-                        v-for="criteria in rubricCriteria"
-                        :key="criteria.criteriaId"
+                        v-if="loadEssayScoreCompleted"
                         style="margin-bottom: 5px; margin-left: 3px; border: 1px solid rgb(190, 190, 190);"
                         shadow="hover"
                       >
                         <div slot="header" class="clearfix">
                           <div>
                             <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                              <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
-                              <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
-                              <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
-                              <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
-                              <span v-else> Tiêu Chí {{ criteria.name }}</span>
+                              <span>Overall Band Score</span>
                             </div>
                             <div style="float: right;">
-                              <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
-                                <div v-if="isAiReview">
-                                  <div v-if="!criteria.loading && criteria.mark" class="band-score">
-                                    Band:
-                                    {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                              <div>
+                                <div>
+                                  <div v-if="essayScore.overallBandScore" class="band-score">
+                                    {{ essayScore.overallBandScore.toString().length == 1 ? essayScore.overallBandScore.toString() + '.0' : essayScore.overallBandScore }}
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                        <div>
-                          <div>
+                        <div style="border: 1px solid rgb(188, 188, 188); padding: 10px; border-radius: 5px;">
+                          <div v-if="essayScore.taskAchievementScore" class="criteria-score">
                             <div>
-                              <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
+                              <b>
+                                Task Achievement:
+                                {{ essayScore.taskAchievementScore.toString().length == 1 ? essayScore.taskAchievementScore.toString() + '.0' : essayScore.taskAchievementScore }}
+                              </b>
+                            </div>
+                            <div v-if="essayScore.fulfillRequirements">
+                              Fulfilling the Prompt Requirements
+                              {{ essayScore.fulfillRequirements.toString().length == 1 ? essayScore.fulfillRequirements.toString() + '.0' : essayScore.fulfillRequirements }}
+                            </div>
+                            <div v-if="essayScore.highlightKeyFeatures">
+                              Highlighting Key Features
+                              {{ essayScore.highlightKeyFeatures.toString().length == 1 ? essayScore.highlightKeyFeatures.toString() + '.0' : essayScore.highlightKeyFeatures }}
+                            </div>
+                            <div v-if="essayScore.compareAndContrast">
+                              Comparing and Contrasting Data
+                              {{ essayScore.compareAndContrast.toString().length == 1 ? essayScore.compareAndContrast.toString() + '.0' : essayScore.compareAndContrast }}
+                            </div>
+                            <div v-if="essayScore.dataSelection">
+                              Data Selection and Relevance
+                              {{ essayScore.dataSelection.toString().length == 1 ? essayScore.dataSelection.toString() + '.0' : essayScore.dataSelection }}
+                            </div>
+                            <div v-if="essayScore.appropriateWordCount">
+                              Appropriate Word Count
+                            </div>
+                            <div v-else>
+                              Inappropriate Word Count
+                            </div>
+                          </div>
+
+                          <div v-if="essayScore.taskResponseScore" class="criteria-score">
+                            <div>
+                              <b>
+                                Task Achievement:
+                                {{ essayScore.taskResponseScore.toString().length == 1 ? essayScore.taskResponseScore.toString() + '.0' : essayScore.taskResponseScore }}
+                              </b>
+                            </div>
+                            <div v-if="essayScore.addressingAllParts">
+                              <span>{{ essayScore.addressingAllParts.toString().length == 1 ? essayScore.addressingAllParts.toString() + '.0' : essayScore.addressingAllParts }}</span>
+                              Addressing All Parts of the Question
+
+                            </div>
+                            <div v-if="essayScore.clarityOfPosition">
+                              <span>{{ essayScore.clarityOfPosition.toString().length == 1 ? essayScore.clarityOfPosition.toString() + '.0' : essayScore.clarityOfPosition }}</span>
+                              Clarity of Position
+
+                            </div>
+                            <div v-if="essayScore.developmentOfIdeas">
+                              Development of Ideas
+                              {{ essayScore.developmentOfIdeas.toString().length == 1 ? essayScore.developmentOfIdeas.toString() + '.0' : essayScore.developmentOfIdeas }}
+                            </div>
+                            <div v-if="essayScore.justificationOfOpinion">
+                              Justification of Opinions
+                              {{ essayScore.justificationOfOpinion.toString().length == 1 ? essayScore.justificationOfOpinion.toString() + '.0' : essayScore.justificationOfOpinion }}
+                            </div>
+                            <div v-if="essayScore.appropriateWordCount">
+                              Appropriate Word Count
+                            </div>
+                            <div v-else>
+                              Inappropriate Word Count
+                            </div>
+                          </div>
+
+                          <div v-if="essayScore.coherenceScore" class="criteria-score">
+                            <div>
+                              <b>
+                                Coherence and Cohesion:
+                                {{ essayScore.coherenceScore.toString().length == 1 ? essayScore.coherenceScore.toString() + '.0' : essayScore.coherenceScore }}
+                              </b>
+                            </div>
+                            <div v-if="essayScore.logicalOrganization">
+                              Logical Organization
+                              {{ essayScore.logicalOrganization.toString().length == 1 ? essayScore.logicalOrganization.toString() + '.0' : essayScore.logicalOrganization }}
+                            </div>
+                            <div v-if="essayScore.paragraphing">
+                              Paragraphing
+                              {{ essayScore.paragraphing.toString().length == 1 ? essayScore.paragraphing.toString() + '.0' : essayScore.paragraphing }}
+                            </div>
+                            <div v-if="essayScore.cohesiveDevices">
+                              Use of Cohesive Devices
+                              {{ essayScore.cohesiveDevices.toString().length == 1 ? essayScore.cohesiveDevices.toString() + '.0' : essayScore.cohesiveDevices }}
+                            </div>
+                            <div v-if="essayScore.referencing">
+                              Referencing
+                              {{ essayScore.referencing.toString().length == 1 ? essayScore.referencing.toString() + '.0' : essayScore.referencing }}
+                            </div>
+                          </div>
+
+                          <div v-if="essayScore.lexicalResourceScore" class="criteria-score">
+                            <div>
+                              <b>
+                                Lexical Resource:
+                                {{ essayScore.lexicalResourceScore.toString().length == 1 ? essayScore.lexicalResourceScore.toString() + '.0' : essayScore.lexicalResourceScore }}
+                              </b>
+                            </div>
+                            <div v-if="essayScore.rangeOfVocabulary">
+                              Range of Vocabulary
+                              {{ essayScore.rangeOfVocabulary.toString().length == 1 ? essayScore.rangeOfVocabulary.toString() + '.0' : essayScore.rangeOfVocabulary }}
+                            </div>
+                            <div v-if="essayScore.accuracyOfWordChoice">
+                              Accuracy of Word Choice
+                              {{ essayScore.accuracyOfWordChoice.toString().length == 1 ? essayScore.accuracyOfWordChoice.toString() + '.0' : essayScore.accuracyOfWordChoice }}
+                            </div>
+                            <div v-if="essayScore.spellingAndFormation">
+                              Spelling and Word Formation
+                              {{ essayScore.spellingAndFormation.toString().length == 1 ? essayScore.spellingAndFormation.toString() + '.0' : essayScore.spellingAndFormation }}
+                            </div>
+                            <div v-if="essayScore.registerAndStyle">
+                              Appropriateness of Register and Style
+                              {{ essayScore.registerAndStyle.toString().length == 1 ? essayScore.registerAndStyle.toString() + '.0' : essayScore.registerAndStyle }}
+                            </div>
+                          </div>
+
+                          <div v-if="essayScore.grammarScore" class="criteria-score">
+                            <div>
+                              <b>
+                                Grammatical Range and Accuracy:
+                                {{ essayScore.grammarScore.toString().length == 1 ? essayScore.grammarScore.toString() + '.0' : essayScore.grammarScore }}
+                              </b>
+                            </div>
+                            <div v-if="essayScore.grammarRange">
+                              Range of Grammatical Structures
+                              {{ essayScore.grammarRange.toString().length == 1 ? essayScore.grammarRange.toString() + '.0' : essayScore.grammarRange }}
+                            </div>
+                            <div v-if="essayScore.sentenceComplexity">
+                              Sentence Complexity
+                              {{ essayScore.sentenceComplexity.toString().length == 1 ? essayScore.sentenceComplexity.toString() + '.0' : essayScore.sentenceComplexity }}
+                            </div>
+                            <div v-if="essayScore.grammarAccuracy">
+                              Accuracy in Grammatical Forms
+                              {{ essayScore.grammarAccuracy.toString().length == 1 ? essayScore.grammarAccuracy.toString() + '.0' : essayScore.grammarAccuracy }}
                             </div>
                           </div>
                         </div>
                       </el-card>
-                      <el-card
-                        v-if="isAiReview && rubricCriteria && rubricCriteria.length > 0"
-                        style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
-                        shadow="hover"
-                      >
-                        <div slot="header" class="clearfix">
-                          <div style="color: white; float: left; font-size: 16px; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
-                            <span>Đánh Giá Phản Hồi</span>
-                          </div>
-                        </div>
-                        <div>
-                          <div>
-                            <div style="font-size: 15px; color: white;">Đánh giá mức độ hữu ích của phản hồi</div>
-                          </div>
 
-                          <div>
-                            <el-rate v-model="rateValue" style="margin-top: 8px; margin-bottom: 4px; color: rgb(177 177 177);" :allow-half="true" />
+                      <div v-if="loadCriteriaFeedbackCompleted">
+                        <el-card
+                          v-for="criteria in rubricCriteria"
+                          :key="criteria.criteriaId"
+                          style="margin-bottom: 5px; margin-left: 3px; border: 1px solid rgb(190, 190, 190);"
+                          shadow="hover"
+                        >
+                          <div slot="header" class="clearfix">
+                            <div>
+                              <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                                <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
+                                <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
+                                <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
+                                <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
+                                <span v-else>{{ criteria.name }}</span>
+                              </div>
+                              <div style="float: right;">
+                                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
+                                  <div v-if="isAiReview">
+                                    <div v-if="!criteria.loading && criteria.mark" class="band-score">
+                                      Band:
+                                      {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
+                          <div>
+                            <div>
+                              <div>
+                                <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
+                              </div>
+                            </div>
+                          </div>
+                        </el-card>
+                        <el-card
+                          v-if="isAiReview && rubricCriteria && rubricCriteria.length > 0"
+                          style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
+                          shadow="hover"
+                        >
+                          <div slot="header" class="clearfix">
+                            <div style="color: white; float: left; font-size: 16px; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                              <span>Đánh Giá Phản Hồi</span>
+                            </div>
+                          </div>
+                          <div>
+                            <div>
+                              <div style="font-size: 15px; color: white;">Đánh giá mức độ hữu ích của phản hồi</div>
+                            </div>
 
-                          <div>
-                            <el-input
-                              id="rubric-rating"
-                              v-model="rateComment"
-                              type="textarea"
-                              :rows="5"
-                              style="margin-top: 10px; margin-bottom: 5px;"
-                              :maxlength="8000"
-                              placeholder="Cảm nghĩ của bạn về điểm số và phản hồi cho bài viết"
-                            />
+                            <div>
+                              <el-rate v-model="rateValue" style="margin-top: 8px; margin-bottom: 4px; color: rgb(177 177 177);" :allow-half="true" />
+                            </div>
+
+                            <div>
+                              <el-input
+                                id="rubric-rating"
+                                v-model="rateComment"
+                                type="textarea"
+                                :rows="5"
+                                style="margin-top: 10px; margin-bottom: 5px;"
+                                :maxlength="8000"
+                                placeholder="Cảm nghĩ của bạn về điểm số và phản hồi cho bài viết"
+                              />
+                            </div>
+                            <div style="margin-top: 5px;">
+                              <el-button :disabled="rateValue == 0 && rateComment == ''" size="mini" @click="rateAIReview()">
+                                Gửi đánh giá
+                              </el-button>
+                            </div>
                           </div>
-                          <div style="margin-top: 5px;">
-                            <el-button :disabled="rateValue == 0 && rateComment == ''" size="mini" @click="rateAIReview()">
-                              Gửi đánh giá
-                            </el-button>
-                          </div>
-                        </div>
-                      </el-card>
+                        </el-card>
+                      </div>
                     </div>
                     <div v-else>
                       <div v-if="loadingReview" style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
@@ -649,7 +810,9 @@ export default {
       loadingReview: false,
       freeToken: this.$store.state.auth.user.freeToken,
       userSubscription: this.$store.state.auth.user.subscription,
-      chartDescription: null
+      chartDescription: null,
+      essayScore: null,
+      loadEssayScoreCompleted: false
     }
   },
   computed: {
@@ -737,14 +900,15 @@ export default {
     this.getReviewScores()
     this.getReviewFeedback()
 
-    // Get annotations in db first
+    // Get in-text comments
     await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
-    // console.log('Loaded annotations:', this.loadedAnnotation)
     if (this.loadedAnnotation && this.loadedAnnotation.annotations && this.loadedAnnotation.annotations.length > 0) {
-      // load annotations if already saved in db
+      console.log(this.loadedAnnotation.annotations)
+      // load in-text comments saved in db
       PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
+      this.intextCommentCompleted = true
     } else {
-      // Get new list of errors and create the annotations
+      // Get new list of in-text comments and create the annotations
       const model = {
         userId: this.$store.state.auth.user.id,
         task: question.section,
@@ -755,8 +919,8 @@ export default {
       const response = await reviewService.getIntextComments(model)
       if (response) {
         this.errors = response.errors
-        console.log(this.errors)
-        this.saveIntextCommentFeedback()
+        console.log('Errors:', this.errors)
+        this.saveFeedback()
       } else {
         this.$notify.error({
           title: 'Không thể sửa lỗi trong bài viết',
@@ -797,10 +961,8 @@ export default {
     document.body.style.overflow = null
   },
   beforeRouteLeave (to, from, next) {
-    console.log('In-text loaded:', this.intextCommentCompleted)
-    console.log('criteria loaded:', this.loadCriteriaFeedbackCompleted)
     // If the grading has not finished yet
-    if (!this.intextCommentCompleted || !this.loadCriteriaFeedbackCompleted) {
+    if (!this.intextCommentCompleted || !this.loadCriteriaFeedbackCompleted || !this.loadEssayScoreCompleted) {
       this.$confirm('Bài viết chưa được chấm xong nên toàn bộ phản hồi có thể sẽ bị mất. Bạn chắc chứ?', {
         confirmButtonText: 'OK',
         cancelButtonText: 'Cancel',
@@ -822,8 +984,13 @@ export default {
         viewport.content = 'width=device-width'
       }
     },
-    saveIntextCommentFeedback() {
-      if (this.errors && this.errors.length > 0 && this.rubricCriteria) {
+    saveFeedback() {
+      console.log(this.errors)
+      console.log(this.essayScore)
+      console.log(this.rubricCriteria)
+      // When all 3 requests have been completed
+      if (this.errors && this.errors.length > 0 && this.essayScore && this.rubricCriteria) {
+        // 1. Populate data for the critical errors criteria
         let errorFeedback = ''
         let explain = 'Explain'
         if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
@@ -832,22 +999,63 @@ export default {
           const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
           errorFeedback += error
         }
-
         const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
         criticalError.comment = errorFeedback
 
-        // Save this criteria feedback to db
+        // 2. populate the score for each criteria
+        const taskAchivement = this.rubricCriteria.find(c => c.name == 'Task Achievement')
+        if (taskAchivement) { taskAchivement.mark = this.essayScore.taskAchievementScore }
+        const taskResponse = this.rubricCriteria.find(c => c.name == 'Task Response')
+        if (taskResponse) { taskResponse.mark = this.essayScore.taskResponseScore }
+        const coherence = this.rubricCriteria.find(c => c.name == 'Coherence & Cohesion')
+        coherence.mark = this.essayScore.coherenceScore
+        const lexical = this.rubricCriteria.find(c => c.name == 'Lexical Resource')
+        lexical.mark = this.essayScore.lexicalResourceScore
+        const grammar = this.rubricCriteria.find(c => c.name == 'Grammatical Range & Accuracy')
+        grammar.mark = this.essayScore.grammarScore
+
+        // 3. Save feedback into database
         var reviewData = []
-        reviewData.push({
-          Comment: errorFeedback,
-          CriteriaId: criticalError.criteriaId,
-          Score: 0,
-          ReviewId: this.reviewId,
-          UserFeedback: null
+        this.rubricCriteria.forEach(r => {
+          reviewData.push({
+            Comment: r.comment,
+            CriteriaId: r.criteriaId,
+            Score: r.mark != null ? r.marl : 0,
+            ReviewId: this.reviewId,
+            UserFeedback: null
+          })
         })
         reviewService.saveRubric(this.reviewId, reviewData)
+
+        console.log('Review Saved')
       }
     },
+    // saveIntextCommentFeedback() {
+    //   if (this.errors && this.errors.length > 0 && this.rubricCriteria) {
+    //     let errorFeedback = ''
+    //     let explain = 'Explain'
+    //     if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
+    //     for (let i = 0; i < this.errors.length; i++) {
+    //       const order = i + 1
+    //       const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
+    //       errorFeedback += error
+    //     }
+
+    //     const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
+    //     criticalError.comment = errorFeedback
+
+    //     // Save this criteria feedback to db
+    //     var reviewData = []
+    //     reviewData.push({
+    //       Comment: errorFeedback,
+    //       CriteriaId: criticalError.criteriaId,
+    //       Score: 0,
+    //       ReviewId: this.reviewId,
+    //       UserFeedback: null
+    //     })
+    //     reviewService.saveRubric(this.reviewId, reviewData)
+    //   }
+    // },
     async getReviewScores() {
       const question = this.$store.getters['question/getSelected']
       const topic = question.questionsPart.find(q => q.name == 'Question').content
@@ -868,6 +1076,10 @@ export default {
       reviewService.getEssayScore(model).then(rs => {
         if (rs) {
           console.log('Review Scores:', rs)
+          this.essayScore = rs
+
+          this.loadEssayScoreCompleted = true
+          this.saveFeedback()
         } else {
           this.$notify.error({
             title: 'Không thể chấm bài luận',
@@ -905,7 +1117,7 @@ export default {
           }
 
           this.loadCriteriaFeedbackCompleted = true
-          this.saveIntextCommentFeedback()
+          this.saveFeedback()
         } else {
           this.$notify.error({
             title: 'Không thể tải phản hồi',
@@ -917,7 +1129,7 @@ export default {
       })
     },
     beforeWindowUnload(e) {
-      if (!this.intextCommentCompleted || !this.loadCriteriaFeedbackCompleted) {
+      if (!this.intextCommentCompleted || !this.loadCriteriaFeedbackCompleted || !this.loadEssayScoreCompleted) {
         // Cancel the event
         e.preventDefault()
         // Chrome requires returnValue to be set
@@ -1117,8 +1329,6 @@ export default {
                 // Highlight the first comment
                 count++
                 if (count == this.errors.length) {
-                  console.log(count)
-                  this.intextCommentCompleted = true
                   this.handleCommentPositionsRestore()
                 }
               })
@@ -2885,6 +3095,20 @@ export default {
 }
 .free-text__actiion{
   cursor: cell;
+}
+
+.criteria-score{
+  font-size: 15px;
+  border-bottom: grey 1px dashed;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+
+}
+
+.criteria-score:last-of-type{
+  border-bottom: none;
+  margin-bottom: 0px;
+  padding-bottom: 0px;
 }
 
 </style>
