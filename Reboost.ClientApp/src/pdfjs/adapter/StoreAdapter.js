@@ -140,10 +140,10 @@ export default class StoreAdapter {
    * @param {Object} content The definition of the comment
    * @return {Promise}
    */
-  __addComment(documentId, annotation, text, type, category, comment, topPos) { abstractFunction('addComment') }
+  __addComment(documentId, annotation, text, type, category, comment, fix, reason, explain, topPos) { abstractFunction('addComment') }
   get addComment() { return this.__addComment }
   set addComment(fn) {
-    this.__addComment = function addComment(documentId, annotation, text, type, category, comment, topPos) {
+    this.__addComment = function addComment(documentId, annotation, text, type, category, comment, fix, reason, explain, topPos) {
       return fn(...arguments).then((comment) => {
         fireEvent('comment:add', documentId, annotation.uuid, comment)
         return comment

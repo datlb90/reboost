@@ -82,7 +82,7 @@ export default class LocalStoreAdapter extends StoreAdapter {
         })
       },
 
-      addComment(documentId, annotation, text, type, category, comment, topPos, id) {
+      addComment(documentId, annotation, text, type, category, comment, fix, reason, explain, topPos, id) {
         return new Promise((resolve, reject) => {
           const newComment = {
             class: 'Comment',
@@ -92,6 +92,9 @@ export default class LocalStoreAdapter extends StoreAdapter {
             text: text,
             type: type,
             category: category,
+            fix: fix,
+            reason: reason,
+            explain: explain,
             topPosition: topPos,
             id: id
           }
@@ -150,7 +153,8 @@ export default class LocalStoreAdapter extends StoreAdapter {
       loadAnnotations(docId, { annotations, comments }) {
         localStorage.setItem(`${docId}/annotations`, JSON.stringify(annotations))
         comments.forEach(cmt => {
-          this.addComment(cmt.documentId, cmt.annotation, cmt.text, cmt.type, cmt.category, cmt.comment, cmt.topPosition, cmt.id)
+          this.addComment(cmt.documentId, cmt.annotation, cmt.text, cmt.type, cmt.category, cmt.comment,
+            cmt.fix, cmt, cmt.reason, cmt.explain, cmt.topPosition, cmt.id)
         })
       }
     })

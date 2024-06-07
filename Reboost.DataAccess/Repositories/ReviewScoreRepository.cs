@@ -3,7 +3,7 @@ using Reboost.DataAccess.Entities;
 using Reboost.Shared;
 using System.Threading.Tasks;
 using System.Linq;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Reboost.DataAccess.Repositories
 {

@@ -276,8 +276,8 @@ button[disabled='disabled'] .toolbar-icon {
   /* float: left; 
   position: absolute;  */
   /* margin-left: max(425px, 35.5%); */
-  float: left;
-  width: 65%;
+  float: right;
+  width: 64.9%;
   height: 100%;
   background: rgb(248, 249, 250);
 }

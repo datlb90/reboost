@@ -23,6 +23,9 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<EssayFeedback> getCriteriaFeedbackGPTTurbo(EssayFeedbackModel model);
+        Task<EssayFeedback> getCriteriaFeedbackGPT4(EssayFeedbackModel model);
+
         Task<ReviewScores> getEssayScoreV2(CriteriaFeedbackModel model);
         Task<EssayFeedback> getEssayScoreV1(CriteriaFeedbackModel model);
 
@@ -124,6 +127,16 @@ namespace Reboost.Service.Services
             userService = _userService;
             chatGPTService = _chatGPTService;
             subscriptionService = _subscriptionService;
+        }
+
+        public async Task<EssayFeedback> getCriteriaFeedbackGPTTurbo(EssayFeedbackModel model)
+        {
+            return await chatGPTService.getCriteriaFeedbackGPTTurbo(model);
+        }
+
+        public async Task<EssayFeedback> getCriteriaFeedbackGPT4(EssayFeedbackModel model)
+        {
+            return await chatGPTService.getCriteriaFeedbackGPT4(model);
         }
 
         public async Task<ReviewScores> getEssayScoreV2(CriteriaFeedbackModel model)
@@ -356,6 +369,8 @@ namespace Reboost.Service.Services
             }
 
             return result;
+
+            //return await chatGPTService.getIntextCommentsGPTTurbo(model);
         }
 
         public async Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model)

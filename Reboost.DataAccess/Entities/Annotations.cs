@@ -20,7 +20,6 @@ namespace Reboost.DataAccess.Entities
         [NotMapped]
         public string Uuid { get; set; }
 
-
         public virtual ICollection<InTextComments> InTextComments { get; set; }
     }
 }

@@ -80,6 +80,8 @@ namespace Reboost.Shared
         public string type { get; set; }
         public string category { get; set; }
         public string fix { get; set; }
+        public string reason { get; set; }
+        public string explain { get; set; }
         public string comment { get; set; }
     }
 

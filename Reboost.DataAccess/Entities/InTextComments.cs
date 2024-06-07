@@ -19,6 +19,10 @@ namespace Reboost.DataAccess.Entities
         [NotMapped]
         public string Uuid { get; set; }
 
+        public string Fix { get; set; }
+        public string Reason { get; set; }
+        public string Explain { get; set; }
+
         public virtual Annotations Annotation { get; set; }
     }
     public class InsertCommentModel

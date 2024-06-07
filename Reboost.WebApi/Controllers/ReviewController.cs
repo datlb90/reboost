@@ -45,6 +45,25 @@ namespace Reboost.WebApi.Controllers
             db = ctx;
         }
 
+
+        [HttpPost("criteria/feedback/gpt4/v1")]
+        public async Task<EssayFeedback> getCriteriaFeedbackGPT4(EssayFeedbackModel model)
+        {
+            return await _service.getCriteriaFeedbackGPT4(model);
+        }
+
+        [HttpPost("criteria/feedback/gpt/v1")]
+        public async Task<EssayFeedback> getCriteriaFeedbackGPTTurbo(EssayFeedbackModel model)
+        {
+            return await _service.getCriteriaFeedbackGPTTurbo(model);
+        }
+
+        [HttpPost("intext/comment/gpt4o/v1")]
+        public async Task<ErrorsInText> getIntextCommentsGPTTurbo(CriteriaFeedbackModel model)
+        {
+            return await _service.getIntextCommentsGPTTurbo(model);
+        }
+
         [HttpPost("essay/score/v2")]
         public async Task<ReviewScores> getEssayScoreV2(CriteriaFeedbackModel model)
         {
@@ -306,7 +325,7 @@ namespace Reboost.WebApi.Controllers
             //var currentUserClaim = HttpContext.User;
             //var email = currentUserClaim.FindFirst("Email");
             //var currentUser = await _userService.GetByEmailAsync(email.Value);
-            var rs = await _service.SaveRubric(id, data);
+            var rs = await _service.SaveFeedback(id, data);
             return Ok(rs);
         }
         [Authorize]
