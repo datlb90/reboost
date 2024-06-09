@@ -596,8 +596,6 @@
   </div>
 </template>
 <script>
-import reviewService from '../../services/review.service'
-// import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 import questionService from '../../services/question.service'
 import CheckOut from '../../components/controls/CheckOut.vue'
 // import moment from 'moment'
@@ -928,21 +926,6 @@ export default {
       var minutes = Math.floor(time / 60)
       var seconds = time - minutes * 60
       return minutes + ' min ' + seconds + ' sec '
-    },
-    actionClick(action, e) {
-      this.selectedSubId = e.id
-      if (action.trim() === 'Request Review') {
-        this.selectedQuestionId = e.questionId
-        this.$nextTick(() => {
-          this.$refs.checkoutDialog?.openDialog()
-        })
-      } else if (action == 'View Submission') {
-        this.$router.push(`practice/${e.questionId}/${e.id}`)
-      } else if (action == 'View Review') {
-        reviewService.getOrCreateReviewBySubmissionId(e.id).then(rs => {
-          this.$router.push(`review/${e.questionId}/${rs.docId}/${rs.reviewId}`)
-        })
-      }
     },
     reviewRequested() {
       this.submissionsCached.forEach(r => {

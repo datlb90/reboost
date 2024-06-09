@@ -1388,16 +1388,20 @@ export default {
           this.submissionId = rs.submissions[0]?.id
           this.writingSubmitted = true
 
-          this.$nextTick(() => {
-            // Hide View Review button if any
-            this.hasReview = false
-            // Allow editting right after submission
-            this.isEdit = true
-            // Update url for submission
-            this.$router.push('/practice/' + this.questionId + '/' + this.submissionId)
-            // Open the checkout dialog
-            this.$refs.checkoutDialog?.openDialog()
-          })
+          if (this.freeToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
+            this.$nextTick(() => {
+              // Hide View Review button if any
+              this.hasReview = false
+              // Allow editting right after submission
+              this.isEdit = true
+              // Update url for submission
+              this.$router.push('/practice/' + this.questionId + '/' + this.submissionId)
+              // Open the checkout dialog
+              this.$refs.checkoutDialog?.openDialog()
+            })
+          } else {
+            window.location.href = '/pricing'
+          }
         }
       })
     },

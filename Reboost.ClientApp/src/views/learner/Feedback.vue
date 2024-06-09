@@ -295,7 +295,7 @@
                           </div>
                           <div v-else style="font-size: 13px; margin-top: 5px;">
                             <div style="background-color: rgb(244, 244, 245); border-color: rgb(233, 233, 235); color: rgb(144, 147, 153); font-size: 12px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px;">
-                              Please note that the scores provided are not your official IELTS scores and should be used solely for learning and improvement purposes.
+                              Please note that the scores provided are not your official IELTS scores and should be used solely for learning and practicing purposes.
                             </div>
                           </div>
                         </el-card>
@@ -517,9 +517,9 @@
           </div>
           <div v-if="comment.fix" style="margin-top: 10px; border-top: #aeaeae dashed 1px; padding-top: 10px;">
             <div><b>Bản sửa:</b> "{{ comment.fix }}"</div>
-            <div v-if="comment.explain && comment.explain != comment.comment && comment.category != 'Spelling Mistake' ">
+            <!-- <div v-if="comment.explain && comment.explain != comment.comment && comment.category != 'Spelling Mistake' && !comment.comment.toLowerCase().includes(comment.fix.toLowerCase())">
               <b>Giải thích:</b> {{ comment.explain }}
-            </div>
+            </div> -->
           </div>
           <div v-if="isInShowMoreList(comment.uuid)" class="show__more-container" @click="toggleShowMore(comment.uuid)">
             {{ isInShowMoreList(comment.uuid).value==0 ? 'Xem thêm':'Rút gọn' }}
@@ -948,7 +948,7 @@
                         </div>
                         <div v-else style="font-size: 13px; margin-top: 5px;">
                           <div style="background-color: rgb(244, 244, 245); border-color: rgb(233, 233, 235); color: rgb(144, 147, 153); font-size: 12px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px;">
-                            Please note that the scores provided are not your official IELTS scores and should be used solely for learning and improvement purposes.
+                            Please note that the scores provided are not your official IELTS scores and should be used solely for learning and practicing purposes.
                           </div>
                         </div>
                       </el-card>
@@ -1355,7 +1355,8 @@ export default {
       chartDescription: null,
       essayScore: null,
       loadEssayScoreCompleted: false,
-      loadFeedbackCompleted: false
+      loadFeedbackCompleted: false,
+      loadErrorsCompleted: false
     }
   },
   computed: {
@@ -1462,10 +1463,13 @@ export default {
       }
       const response = await reviewService.getIntextComments(model)
       if (response) {
+        this.loadErrorsCompleted = true
         this.errors = response.errors
         console.log('Errors:', this.errors)
         this.finalizeFeedback()
       } else {
+        this.loadErrorsCompleted = true
+        this.finalizeFeedback()
         this.$notify.error({
           title: 'Không thể sửa lỗi trong bài viết',
           message: 'Đã có sự cố xảy ra trong quá trình sửa lỗi',
@@ -1522,19 +1526,21 @@ export default {
   },
   methods: {
     finalizeFeedback() {
-      if (!this.hasGrade && this.errors && this.errors.length > 0 && this.essayScore && this.rubricCriteria) {
+      if (!this.hasGrade && this.loadErrorsCompleted && this.essayScore && this.rubricCriteria) {
         this.loadFeedbackCompleted = true
         // 1. Populate data for the critical errors criteria
-        let errorFeedback = ''
-        let explain = 'Explain'
-        if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
-        for (let i = 0; i < this.errors.length; i++) {
-          const order = i + 1
-          const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + ' ' + this.errors[i].explain + '\n\n'
-          errorFeedback += error
+        if (this.errors && this.errors.length > 0) {
+          let errorFeedback = ''
+          let explain = 'Explain'
+          if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
+          for (let i = 0; i < this.errors.length; i++) {
+            const order = i + 1
+            const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
+            errorFeedback += error
+          }
+          const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
+          criticalError.comment = errorFeedback
         }
-        const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
-        criticalError.comment = errorFeedback
 
         // 2. populate the score for each criteria
         const taskAchivement = this.rubricCriteria.find(c => c.name == 'Task Achievement')
@@ -1577,82 +1583,6 @@ export default {
         viewport.content = 'width=device-width'
       }
     },
-    saveFeedback() {
-      console.log(this.errors)
-      console.log(this.essayScore)
-      console.log(this.rubricCriteria)
-      if (!this.hasGrade) {
-        // When all 3 requests have been completed
-        if (this.errors && this.errors.length > 0 && this.essayScore && this.rubricCriteria) {
-          this.loadFeedbackCompleted = true
-          // 1. Populate data for the critical errors criteria
-          let errorFeedback = ''
-          let explain = 'Explain'
-          if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
-          for (let i = 0; i < this.errors.length; i++) {
-            const order = i + 1
-            const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
-            errorFeedback += error
-          }
-          const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
-          criticalError.comment = errorFeedback
-
-          // 2. populate the score for each criteria
-          const taskAchivement = this.rubricCriteria.find(c => c.name == 'Task Achievement')
-          if (taskAchivement) { taskAchivement.mark = this.essayScore.taskAchievementScore }
-          const taskResponse = this.rubricCriteria.find(c => c.name == 'Task Response')
-          if (taskResponse) { taskResponse.mark = this.essayScore.taskResponseScore }
-          const coherence = this.rubricCriteria.find(c => c.name == 'Coherence & Cohesion')
-          coherence.mark = this.essayScore.coherenceScore
-          const lexical = this.rubricCriteria.find(c => c.name == 'Lexical Resource')
-          lexical.mark = this.essayScore.lexicalResourceScore
-          const grammar = this.rubricCriteria.find(c => c.name == 'Grammatical Range & Accuracy')
-          grammar.mark = this.essayScore.grammarScore
-
-          // 3. Save feedback into database
-          var reviewData = []
-          this.rubricCriteria.forEach(r => {
-            reviewData.push({
-              Comment: r.comment,
-              CriteriaId: r.criteriaId,
-              Score: r.mark != null ? r.marl : 0,
-              ReviewId: this.reviewId,
-              UserFeedback: null
-            })
-          })
-          console.log(reviewData)
-          reviewService.saveRubric(this.reviewId, reviewData)
-
-          console.log('Review Saved')
-        }
-      }
-    },
-    // saveIntextCommentFeedback() {
-    //   if (this.errors && this.errors.length > 0 && this.rubricCriteria) {
-    //     let errorFeedback = ''
-    //     let explain = 'Explain'
-    //     if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
-    //     for (let i = 0; i < this.errors.length; i++) {
-    //       const order = i + 1
-    //       const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
-    //       errorFeedback += error
-    //     }
-
-    //     const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
-    //     criticalError.comment = errorFeedback
-
-    //     // Save this criteria feedback to db
-    //     var reviewData = []
-    //     reviewData.push({
-    //       Comment: errorFeedback,
-    //       CriteriaId: criticalError.criteriaId,
-    //       Score: 0,
-    //       ReviewId: this.reviewId,
-    //       UserFeedback: null
-    //     })
-    //     reviewService.saveRubric(this.reviewId, reviewData)
-    //   }
-    // },
     async getReviewScores() {
       const question = this.$store.getters['question/getSelected']
       const topic = question.questionsPart.find(q => q.name == 'Question').content
@@ -1949,15 +1879,19 @@ export default {
         const type = target.getAttribute('data-pdf-annotate-type')
         this.annotationClicked = target
         if (type == 'comment-highlight') {
-          // Get the currently selected one
+          // Get the currently selected elements
           const selectedVocabulary = document.getElementsByClassName('vocabulary-highlight-selected')
-          for (const element of selectedVocabulary) {
-            element.classList.remove('vocabulary-highlight-selected')
+          // Loop while there are elements in the collection
+          while (selectedVocabulary.length > 0) {
+            selectedVocabulary[0].classList.remove('vocabulary-highlight-selected')
           }
 
+          // Get the currently selected elements
           const selectedGrammar = document.getElementsByClassName('grammar-highlight-selected')
-          for (const element of selectedGrammar) {
-            element.classList.remove('grammar-highlight-selected')
+
+          // Loop while there are elements in the collection
+          while (selectedGrammar.length > 0) {
+            selectedGrammar[0].classList.remove('grammar-highlight-selected')
           }
 
           // add selected class to all groups associated with this annotation

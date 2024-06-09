@@ -18,6 +18,9 @@ using PayPal.Api;
 using Newtonsoft.Json.Linq;
 using OpenAI_API.Moderation;
 using iTextSharp.text;
+using static System.Net.Mime.MediaTypeNames;
+using Org.BouncyCastle.Asn1.Ocsp;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Reboost.Service.Services
 {
@@ -310,6 +313,8 @@ namespace Reboost.Service.Services
             var userSubscription = await subscriptionService.GetUserSubscription(user.Id);
             if (userSubscription != null || user.FreeToken > 0)
             {
+                //return await getIntextCommentsGPTTurbo(model);
+
                 if (userSubscription != null && userSubscription.PlanId >= 4)
                 {
                     // Phản hồi chuyên sâu 
@@ -334,85 +339,212 @@ namespace Reboost.Service.Services
         {
             // Make a ChatGpt call for each paragraph
             ErrorsInText result = new ErrorsInText();
-            result.errors = new List<ErrorInText>();
-            model.essay = model.essay.Replace("\r", String.Empty);
-            string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-            var taskList = new Task<ErrorsInText>[paragraphs.Length];
-            for (int i = 0; i < paragraphs.Length; i++)
+            if (!String.IsNullOrEmpty(model.essay))
             {
-                CriteriaFeedbackModel requestModel = new CriteriaFeedbackModel
+                result.errors = new List<ErrorInText>();
+                model.essay = model.essay.Replace("\r", String.Empty);
+                string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                if (paragraphs.Length > 1)
                 {
-                    essay = paragraphs[i],
-                    task = model.task,
-                    topic = model.topic,
-                    feedbackLanguage = model.feedbackLanguage
-                };
-
-                taskList[i] = chatGPTService.getIntextCommentsGPTTurbo(requestModel);
-            }
-
-            var completedTasks = await Task.WhenAll(taskList);
-
-            foreach (var completedTask in completedTasks)
-            {
-                if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
-                {
-                    foreach (ErrorInText error in completedTask.errors)
+                    var taskList = new Task<ErrorsInText>[paragraphs.Length];
+                    for (int i = 0; i < paragraphs.Length; i++)
                     {
-                        if (!result.errors.Any(e => e.error == error.error))
+                        CriteriaFeedbackModel requestModel = new CriteriaFeedbackModel
                         {
-                            result.errors.Add(error);
+                            essay = paragraphs[i],
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        taskList[i] = chatGPTService.getIntextCommentsGPTTurbo(requestModel);
+                    }
+                    var completedTasks = await Task.WhenAll(taskList);
+
+                    foreach (var completedTask in completedTasks)
+                    {
+                        if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
+                        {
+                            foreach (ErrorInText error in completedTask.errors)
+                            {
+                                if (!result.errors.Any(e => e.error == error.error))
+                                {
+                                    result.errors.Add(error);
+                                }
+                            }
                         }
                     }
-                    //result.errors = result.errors.Concat(completedTask.errors).ToList();
+
+                    return result;
+                }
+                else
+                {
+                    // If this is a 1-paragraph essay
+                    // Regular expression to split on period, exclamation or question mark, followed by space or end of string.
+                    // This regex handles cases where the punctuation is followed by a space or is at the end of the text.
+                    string[] sentences = Regex.Split(model.essay, @"(?<=[\.!\?])\s+(?=(?:[A-Z]|$))");
+
+                    if (sentences.Length >= 2)
+                    {
+                        var taskList = new Task<ErrorsInText>[2];
+                        int median = sentences.Length / 2;
+                        if (sentences.Length % 2 != 0) median += 1; // Optionally adjust how the median is calculated for odd numbers
+
+                        string[] firstList = sentences.Take(median).ToArray();
+                        string firstPart = String.Join(Environment.NewLine, firstList);
+
+                        CriteriaFeedbackModel request1 = new CriteriaFeedbackModel
+                        {
+                            essay = firstPart,
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        taskList[0] = chatGPTService.getIntextCommentsGPTTurbo(request1);
+
+                        int remain = sentences.Length - median;
+                        string[] secondList = sentences.Skip(median).Take(remain).ToArray();
+                        string secondPart = String.Join(Environment.NewLine, secondList);
+
+
+                        CriteriaFeedbackModel request2 = new CriteriaFeedbackModel
+                        {
+                            essay = secondPart,
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        taskList[1] = chatGPTService.getIntextCommentsGPTTurbo(request2);
+
+                        var completedTasks = await Task.WhenAll(taskList);
+
+                        foreach (var completedTask in completedTasks)
+                        {
+                            if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
+                            {
+                                foreach (ErrorInText error in completedTask.errors)
+                                {
+                                    if (!result.errors.Any(e => e.error == error.error))
+                                    {
+                                        result.errors.Add(error);
+                                    }
+                                }
+                            }
+                        }
+
+                        return result;
+
+                    }
+                    else
+                    {
+                        // Handle case with fewer than two sentences
+                        CriteriaFeedbackModel request = new CriteriaFeedbackModel
+                        {
+                            essay = model.essay,
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        return await chatGPTService.getIntextCommentsGPTTurbo(request);
+                    }
                 }
             }
-
             return result;
-
-            //return await chatGPTService.getIntextCommentsGPTTurbo(model);
         }
 
         public async Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model)
         {
-            // Make a ChatGpt call for each paragraph
+            // Make a ChatGpt call for each sentence
             ErrorsInText result = new ErrorsInText();
             result.errors = new List<ErrorInText>();
-            model.essay = model.essay.Replace("\r", String.Empty);
-            string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-            var taskList = new Task<ErrorsInText>[paragraphs.Length];
-            for (int i = 0; i < paragraphs.Length; i++)
+            if (!String.IsNullOrEmpty(model.essay))
             {
-                CriteriaFeedbackModel requestModel = new CriteriaFeedbackModel
+                // If this is a 1-paragraph essay
+                // Regular expression to split on period, exclamation or question mark, followed by space or end of string.
+                // This regex handles cases where the punctuation is followed by a space or is at the end of the text.
+                //string[] sentences = Regex.Split(model.essay, @"(?<=[\.!\?])\s+(?=(?:[A-Z]|$))");
+                string[] sentences = Regex.Split(model.essay, @"(?<=[\.!\?])\s+(?=\S*(?:[A-Z]|$))");
+
+                // Filtering out any empty or whitespace-only entries
+                sentences = sentences.Where(sentence => !string.IsNullOrWhiteSpace(sentence)).ToArray();
+
+
+                var taskList = new Task<ErrorsInText>[sentences.Length];
+                for (int i = 0; i < sentences.Length; i++)
                 {
-                    essay = paragraphs[i],
-                    task = model.task,
-                    topic = model.topic,
-                    feedbackLanguage = model.feedbackLanguage
-                };
-
-                taskList[i] = chatGPTService.getIntextCommentsGPT4(requestModel);
-            }
-
-            var completedTasks = await Task.WhenAll(taskList);
-
-            foreach (var completedTask in completedTasks)
-            {
-                if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
-                {
-                    foreach (ErrorInText error in completedTask.errors)
+                    CriteriaFeedbackModel requestModel = new CriteriaFeedbackModel
                     {
-                        if (!result.errors.Any(e => e.error == error.error))
+                        essay = sentences[i],
+                        task = model.task,
+                        topic = model.topic,
+                        feedbackLanguage = model.feedbackLanguage
+                    };
+
+                    taskList[i] = chatGPTService.getIntextCommentsGPTTurbo(requestModel);
+                }
+                var completedTasks = await Task.WhenAll(taskList);
+
+                foreach (var completedTask in completedTasks)
+                {
+                    if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
+                    {
+                        foreach (ErrorInText error in completedTask.errors)
                         {
-                            result.errors.Add(error);
+                            if (!result.errors.Any(e => e.error == error.error))
+                            {
+                                result.errors.Add(error);
+                            }
                         }
                     }
-                    //result.errors = result.errors.Concat(completedTask.errors).ToList();
                 }
             }
-
             return result;
         }
+
+
+        //public async Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model)
+        //{
+        //    // Make a ChatGpt call for each paragraph
+        //    ErrorsInText result = new ErrorsInText();
+        //    result.errors = new List<ErrorInText>();
+        //    model.essay = model.essay.Replace("\r", String.Empty);
+        //    string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+        //    var taskList = new Task<ErrorsInText>[paragraphs.Length];
+        //    for (int i = 0; i < paragraphs.Length; i++)
+        //    {
+        //        CriteriaFeedbackModel requestModel = new CriteriaFeedbackModel
+        //        {
+        //            essay = paragraphs[i],
+        //            task = model.task,
+        //            topic = model.topic,
+        //            feedbackLanguage = model.feedbackLanguage
+        //        };
+
+        //        taskList[i] = chatGPTService.getIntextCommentsGPT4(requestModel);
+        //    }
+
+        //    var completedTasks = await Task.WhenAll(taskList);
+
+        //    foreach (var completedTask in completedTasks)
+        //    {
+        //        if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
+        //        {
+        //            foreach (ErrorInText error in completedTask.errors)
+        //            {
+        //                if (!result.errors.Any(e => e.error == error.error))
+        //                {
+        //                    result.errors.Add(error);
+        //                }
+        //            }
+        //            //result.errors = result.errors.Concat(completedTask.errors).ToList();
+        //        }
+        //    }
+
+        //    return result;
+        //}
 
 
         //public async Task<ErrorsInText> getIntextCommentsGPT4(CriteriaFeedbackModel model)
