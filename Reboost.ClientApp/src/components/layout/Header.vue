@@ -1,5 +1,6 @@
 <template>
   <header
+    v-if="screenWidth > 850"
     id="header"
     :class="['headroom navbar-style-two', {'is-sticky': isSticky}]"
     style="position: static;"
@@ -141,6 +142,148 @@
           </div>
         </nav>
 
+      </div>
+    </div>
+
+    <contact-dialog ref="contactDialog" />
+    <review-request-dialog ref="reviewRequestDialog" @openCheckoutDialog="openCheckoutDialog" />
+    <checkout-dialog
+      ref="checkoutDialog"
+      :question-id="questionId"
+      :submission-id="submissionId"
+      :requested-language="feedbackLanguage"
+    />
+  </header>
+
+  <header
+    v-else
+    id="header"
+    :class="['headroom navbar-style-two', {'is-sticky': isSticky}]"
+    style="position: static;"
+  >
+    <div class="startp-nav">
+      <div class="nav-container" :class="{ 'full-size': fullSizeHeader }" style="height: 50px;">
+        <router-link v-if="selectedTest && selectedTest.length > 0" to="/questions" style="margin-top: 4px; margin-left: 2px;">
+          <img src="../../assets/logo/logo.png" alt="logo" class="main-header-logo">
+        </router-link>
+        <router-link v-else to="/select/test" style="margin-top: 0px; padding-top: 0px;">
+          <img src="../../assets/logo/logo.png" alt="logo" class="main-header-logo">
+        </router-link>
+
+        <el-dropdown style="float: right; margin-top: 5px; margin-right: 5px;" trigger="click">
+          <span class="el-dropdown-link" style="cursor: pointer;" @click="getSubscription()">
+            <i class="el-icon-menu" style="font-size: 40px;" />
+          </span>
+
+          <el-dropdown-menu id="top-menu" slot="dropdown">
+            <el-dropdown-item command="a">
+              <a style="font-size: 16px; font-weight: 500; cursor: pointer; margin-left: 15px; margin-right: 15px;" href="/questions">
+                Chủ đề viết
+              </a>
+            </el-dropdown-item>
+            <el-dropdown-item command="b">
+              <a style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-left: 15px; margin-right: 15px;" href="/submissions">
+                Bài viết của tôi
+              </a>
+            </el-dropdown-item>
+            <el-dropdown-item command="c">
+              <a style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-left: 15px; margin-right: 15px;" href="/pricing">
+                Bảng giá
+              </a>
+            </el-dropdown-item>
+            <el-dropdown-item command="d">
+              <a style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-left: 15px; margin-right: 15px; color: #4a6f8a;" @click.prevent="openContactDialog()">
+                Liên hệ
+              </a>
+            </el-dropdown-item>
+            <el-dropdown-item divided>
+              <a style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-left: 15px; margin-right: 15px;">
+                {{ displayName }}
+              </a>
+            </el-dropdown-item>
+            <el-dropdown-item>
+              <a style="font-size: 15px;  font-weight: 400; cursor: pointer; margin-left: 15px; margin-right: 15px;">
+                {{ currentUser.email }}
+              </a>
+            </el-dropdown-item>
+            <el-dropdown-item divided>
+              <div>
+                <div style="font-size: 15px;  font-weight: 400; cursor: pointer; margin-left: 15px; margin-right: 15px;">
+                  {{ subscriptionName }}
+                  <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
+                </div>
+                <div v-if="subscriptionName == 'Gói luyện tập cơ bản'" style="font-size: 15px; font-weight: 400; cursor: pointer; margin-left: 15px; margin-right: 15px;">
+                  Bài chấm miễn phí: {{ freeToken }}
+                </div>
+                <div v-else-if="!isExpired" style="font-size: 15px;  font-weight: 400; cursor: pointer; margin-left: 15px; margin-right: 15px;">
+                  Ngày hết hạn: {{ expiredDate }}
+                </div>
+                <div v-else style="font-size: 15px;  font-weight: 400; cursor: pointer; margin-left: 15px; margin-right: 15px;">Đã hết hạn</div>
+              </div>
+            </el-dropdown-item>
+            <el-dropdown-item divided>
+              <div style="font-size: 16px;  font-weight: 500; cursor: pointer; margin-left: 15px; margin-right: 15px;" @click="logout()"> Đăng xuất</div>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+
+        </el-dropdown>
+
+        <div class="menu-btns" style="float: right; margin-right: 5px; margin-top: 10px;">
+          <el-button
+            v-if="role == userRole.LEARNER"
+            class="btn btn-gradient"
+            style="margin-right: 5px; padding: 6px 20px; font-size: 12px;"
+            @click="openRequestReviewDialog"
+          >Nhận phản hồi cho bài viết
+          </el-button>
+        </div>
+
+        <!-- <div class="user-option">
+            <el-button
+              v-if="role == userRole.LEARNER"
+              icon="el-icon-edit"
+              class="btn btn-gradient"
+              style="margin-right: 20px; padding: 6px 20px; font-size: 12px;"
+              @click="openRequestReviewDialog"
+            >Nhận phản hồi cho bài viết
+            </el-button>
+
+            <el-dropdown style="margin-top: 5px; margin-right: 2px;" trigger="click">
+              <span class="el-dropdown-link" @click="getSubscription()">
+                <el-link :underline="false" type="info">
+                  <i class="far fa-user-circle" style="font-size: 24px;" />
+                </el-link>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <div style="padding:0px 20px; margin-bottom: 0px; display:inline-grid">
+                  <span style="padding:5px 0px; font-weight:500; font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap; max-width: 200px;">
+                    {{ displayName }}
+                  </span>
+                  <div style="font-size:14px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                    {{ currentUser.email }}
+                  </div>
+                </div>
+                <el-dropdown-item divided>
+                  <div>
+                    <div>
+                      {{ subscriptionName }}
+                      <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
+                    </div>
+                    <div v-if="subscriptionName == 'Gói luyện tập cơ bản'">
+                      Bài chấm miễn phí: {{ freeToken }}
+                    </div>
+                    <div v-else-if="!isExpired">
+                      Ngày hết hạn: {{ expiredDate }}
+                    </div>
+                    <div v-else>Đã hết hạn</div>
+                  </div>
+                </el-dropdown-item>
+                <el-dropdown-item divided>
+                  <div @click="logout()"> Đăng xuất</div>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div> -->
       </div>
     </div>
 

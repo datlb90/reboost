@@ -114,7 +114,7 @@
             </router-link>
           </div>
 
-          <el-dropdown style="float: right;" :hide-on-click="true">
+          <el-dropdown style="float: right;" trigger="click">
             <span class="el-dropdown-link" style="cursor: pointer;">
               <i class="el-icon-menu" style="font-size: 40px;" />
             </span>
