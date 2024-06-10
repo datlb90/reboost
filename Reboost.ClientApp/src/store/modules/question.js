@@ -52,7 +52,8 @@ const actions = {
         const rs = await reviewService.createAutomatedReview({
           UserId: userId,
           SubmissionId: submission.id,
-          FeedbackLanguage: state.personalQuestion.FeedbackLanguage
+          FeedbackLanguage: state.personalQuestion.FeedbackLanguage,
+          ReviewType: 'detail'
         })
         commit('CLEAR_PERSONAL_QUESTION')
         return rs
@@ -69,7 +70,8 @@ const actions = {
       const rs = await reviewService.createAutomatedReview({
         UserId: userId,
         SubmissionId: response.submissions[0].id,
-        FeedbackLanguage: 'vn'
+        FeedbackLanguage: 'vn',
+        ReviewType: 'detail'
       })
       commit('CLEAR_INITIAL_SUBMISSION')
       return rs
@@ -79,6 +81,10 @@ const actions = {
   },
   saveInitialTestData({ commit, state }, data) {
     commit('SET_INITIAL_SUBMISSION', data)
+  },
+  selectTopic({ commit, state }, selectedTopic) {
+    const selectedTest = state.questionsForInitialTest.find(q => q.title == selectedTopic)
+    commit('SET_QUESTION', selectedTest)
   },
   switchTest({ commit, state }, test) {
     if (test == 'Đề Task 1') {
@@ -231,7 +237,8 @@ const getters = {
   getSampleByQuestion: state => state.sampleByQuestion,
   getAllSample: state => state.samples,
   getPersonalQuestion: state => state.personalQuestion,
-  getInitialSubmission: state => state.initialSubmission
+  getInitialSubmission: state => state.initialSubmission,
+  getInitialQuestions: state => state.questionsForInitialTest
   // getSelected: state => state.selectedRater
 }
 

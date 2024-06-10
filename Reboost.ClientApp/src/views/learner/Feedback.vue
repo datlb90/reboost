@@ -1633,7 +1633,7 @@ export default {
         hasGrade: this.hasGrade,
         chartDescription: this.chartDescription,
         feedbackLanguage: this.review.reviewRequest.feedbackLanguage,
-        feedbackType: this.review.reviewRequest.feedbackType
+        feedbackType: this.review.reviewRequest.reviewType
       }
       // get review feedback
       reviewService.getReviewFeedback(model).then(rs => {
@@ -1644,7 +1644,7 @@ export default {
             // Update user's free token in store
 
             if (!this.userSubscription) {
-              if (model.feedbackType == 'Chi Tiết' && this.freeToken > 0) { this.$store.dispatch('auth/updateToken', this.freeToken - 1) } else if (model.feedbackType == 'Chuyên Sâu' && this.premiumToken > 0) { this.$store.dispatch('auth/updatePremiumToken', this.premiumToken - 1) }
+              if (model.feedbackType == 'detail' && this.freeToken > 0) { this.$store.dispatch('auth/updateToken', this.freeToken - 1) } else if (model.feedbackType == 'deep' && this.premiumToken > 0) { this.$store.dispatch('auth/updatePremiumToken', this.premiumToken - 1) }
             }
           }
 

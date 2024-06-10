@@ -484,7 +484,7 @@ namespace Reboost.WebApi.Controllers
             var email = currentUserClaim.FindFirst("Email");
             var currentUser = await _userService.GetByEmailAsync(email.Value);
 
-            var rs = await _service.CreateAutomatedReview(currentUser.Id, request.SubmissionId, request.FeedbackLanguage);
+            var rs = await _service.CreateAutomatedReview(currentUser.Id, request.SubmissionId, request.FeedbackLanguage, request.ReviewType);
             return Ok(rs);
         }
         [Authorize]

@@ -62,7 +62,7 @@ namespace Reboost.Service.Services
         Task<bool> EligibleForPeerReview(string userId);
         Task<Submissions> GetSubmissionById(int submissionId);
         Task<GetReviewsModel> GetAIReviewBySubmissionId(int submissionId);
-        Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage);
+        Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage, string reviewType);
         Task<AnnotationModel> GetAnnotationsAsync(int docId, int reviewId);
         Task<IEnumerable<Annotations>> SaveAnnotationsAsync(int docId, int reviewId, IEnumerable<Annotations> annotations);
         Task<IEnumerable<InTextComments>> SaveCommentsAsync(IEnumerable<Annotations> annotations, IEnumerable<InTextComments> comments);
@@ -255,7 +255,7 @@ namespace Reboost.Service.Services
                                 order = rubricCriteria[i].order
                             };
 
-                            if ((userSubscription != null && userSubscription.PlanId >= 4) || model.feedbackType == "Chuyên Sâu")
+                            if ((userSubscription != null && userSubscription.PlanId >= 4) || model.feedbackType == "deep")
                             {
                                 // Phản hồi chuyên sâu 
                                 taskList[i] = chatGPTService.getCriteriaFeedbackGPT4(requestModel);
@@ -296,11 +296,11 @@ namespace Reboost.Service.Services
                         // Update feedback token
                         if(userSubscription == null)
                         {
-                            if(model.feedbackType == "Chi Tiết" && user.FreeToken > 0)
+                            if(model.feedbackType == "detail" && user.FreeToken > 0)
                             {
                                 user.FreeToken = user.FreeToken - 1;
                             }
-                            else if(model.feedbackType == "Chuyên Sâu" && user.PremiumToken > 0)
+                            else if(model.feedbackType == "deep" && user.PremiumToken > 0)
                             {
                                 user.PremiumToken = user.PremiumToken - 1;
                             }
@@ -321,9 +321,7 @@ namespace Reboost.Service.Services
             var userSubscription = await subscriptionService.GetUserSubscription(user.Id);
             if (userSubscription != null || user.FreeToken > 0)
             {
-                //return await getIntextCommentsGPTTurbo(model);
-
-                if (userSubscription != null && userSubscription.PlanId >= 4)
+                if ((userSubscription != null && userSubscription.PlanId >= 4) || model.feedbackType == "deep")
                 {
                     // Phản hồi chuyên sâu 
                     return await getIntextCommentsGPT4(model);
@@ -839,7 +837,7 @@ namespace Reboost.Service.Services
             return result;
         }
 
-        public async Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage = "vn")
+        public async Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage = "vn", string reviewType = "detail")
         {
             Submissions submission = await _unitOfWork.Submission.GetByIdAsync(submissionId);
 
@@ -860,6 +858,7 @@ namespace Reboost.Service.Services
                 CompletedDateTime = DateTime.UtcNow,
                 Status = "Completed",
                 FeedbackLanguage = feedbackLanguage,
+                ReviewType = reviewType
             };
             ReviewRequests newRequest = await _unitOfWork.Review.CreateReviewRequest(request);
 

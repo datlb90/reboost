@@ -49,7 +49,8 @@ namespace Reboost.DataAccess.Repositories
             List<InitQuestionModel> model = new List<InitQuestionModel>();
             var initQuesitons = await (from quest in ReboostDbContext.Questions
                                        join task in ReboostDbContext.Tasks on quest.TaskId equals task.Id
-                                       where quest.Id == 194 || quest.Id == 202 // Getting the 2 questions for the 2 test
+                                       where quest.Id == 3047 || quest.Id == 3075 || quest.Id == 3119 || quest.Id == 3084 ||
+                                       quest.Id == 3696 || quest.Id == 3125 || quest.Id == 3685
                                        select new InitQuestionModel
                                        {
                                            Id = quest.Id,
@@ -183,7 +184,7 @@ namespace Reboost.DataAccess.Repositories
                             Test = test.Name,
                             Time = task.Time,
                             Type = quest.Type,
-                            Sample = true,
+                            Sample = quest.HasSample,
                             AverageScore = quest.AverageScore,
                             Submission = quest.SubmissionCount,
                             Like = quest.LikeCount,

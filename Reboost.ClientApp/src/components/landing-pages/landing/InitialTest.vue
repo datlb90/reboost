@@ -28,10 +28,32 @@
                       <el-col>
                         <div style="">
                           <div>
-                            <div style="height: 32px;">
-                              <div class="title-tab">
+                            <div style="height: 45px;">
+
+                              <el-select
+                                v-model="selectedTopic"
+                                class="question-select"
+                                placeholder="Lựa chọn 1 chủ đề viết"
+                                style="width: 100%;"
+                                @change="onTopicSelect()"
+                              >
+                                <el-option-group
+                                  v-for="group in topicOptions"
+                                  :key="group.label"
+                                  :label="group.label"
+                                >
+                                  <el-option
+                                    v-for="item in group.options"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value"
+                                  />
+                                </el-option-group>
+                              </el-select>
+
+                              <!-- <div class="title-tab">
                                 {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
-                              </div>
+                              </div> -->
                             </div>
                             <div>
                               <el-tag
@@ -789,7 +811,16 @@ export default {
         new TextColor(),
         new Indent()
         // new LineHeight()
-      ]
+      ],
+      questions: null,
+      topicOptions: [{
+          label: 'Task 2 Topics',
+          options: []
+        }, {
+          label: 'Task 1 Topics',
+          options: []
+        }],
+        selectedTopic: ''
     }
   },
   computed: {
@@ -894,6 +925,21 @@ export default {
     window.component = this
     this.$store.dispatch('question/loadQuestionsForInitialTest').then(rs => {
       this.loadCompleted = true
+      this.questions = this.$store.getters['question/getInitialQuestions']
+      this.topicOptions[0].options = this.questions.filter(q => q.section == 'Academic Writing Task 2').map(q => {
+        return {
+          value: q.title,
+          label: q.title
+        }
+      })
+      this.topicOptions[1].options = this.questions.filter(q => q.section == 'Academic Writing Task 1').map(q => {
+        return {
+          value: q.title,
+          label: q.title
+        }
+      })
+      this.selectedTopic = this.topicOptions[0].options[0].label
+      console.log('Questions:', this.questions)
       this.questionId = this.$store.getters['question/getSelected'].id
       this.questionNote = localStorage.getItem('Init_QuestionId' + this.questionId + '_Note')
       this.idSubmissionStorage = 'initialTestSubmission'
@@ -905,6 +951,12 @@ export default {
     clearInterval(this.timeSpentInterval)
   },
   methods: {
+    onTopicSelect() {
+      this.$store.dispatch('question/selectTopic', this.selectedTopic)
+        this.activeTab = 'description'
+        this.questionId = this.$store.getters['question/getSelected'].id
+        this.questionNote = localStorage.getItem('Init_QuestionId' + this.questionId + '_Note')
+    },
     onNoteUpdate() {
       localStorage.setItem('Init_QuestionId' + this.questionId + '_Note', this.questionNote)
     },
@@ -1179,6 +1231,13 @@ export default {
 </script>
 
 <style>
+
+.question-select > .el-input > .el-input__inner{
+  background: #5f819b;
+  color: white;
+  font-size: 16px;
+}
+
 #tipContent p {
   line-height: 1.5;
   color: rgb(13, 13, 13);
@@ -1259,6 +1318,7 @@ export default {
 }
 </style>
 <style scoped>
+
 .el-tabs--border-card>.el-tabs__header .el-tabs__item>p {
     color: #909399;
 }

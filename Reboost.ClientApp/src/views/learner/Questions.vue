@@ -211,7 +211,7 @@
             fixed="left"
           >
             <template slot-scope="scope">
-              <span class="title-row cursor" style="word-break: break-word" @click="titleClicked(scope.row)">{{ scope.row.title }}</span>
+              <span class="title-row cursor" style="word-break: break-word" @click="titleClicked(scope.row)">  {{ scope.row.id + '. ' + scope.row.title }}</span>
             </template>
           </el-table-column>
           <el-table-column

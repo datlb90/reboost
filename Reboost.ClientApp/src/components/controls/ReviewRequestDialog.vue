@@ -15,14 +15,14 @@
         :model="form"
         label-width="120px"
       >
-        <el-form-item size="medium">
+        <el-form-item size="medium" style="margin-bottom: 7px;">
           <label slot="label" style="font-size: 16px;">Loại đề</label>
           <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 2" border>Task 2</el-radio>
           <el-radio v-model="selectedTask" style="margin-right: 5px;" label="IELTS Task 1" border>Task 1</el-radio>
           <el-radio v-model="selectedTask" style="margin-right: 5px;" label="Other" border>Đề khác</el-radio>
         </el-form-item>
 
-        <el-form-item size="medium">
+        <el-form-item size="medium" style="margin-bottom: 7px;">
           <label slot="label" style="font-size: 16px;">Kiểu viết</label>
           <el-radio v-model="selectedWriteType" style="margin-right: 5px;" label="Đánh máy" border>Đánh máy</el-radio>
           <el-radio v-model="selectedWriteType" style="margin-right: 5px;" label="Viết tay" border>Tải lên bản viết tay</el-radio>
@@ -90,7 +90,7 @@
 
         </el-form-item>
 
-        <el-form-item v-if="selectedWriteType != 'Viết tay'" prop="response" :rules="[{ required: true, message: 'Hãy thêm bài viết của bạn cho chủ đề này' }]" size="medium">
+        <el-form-item v-if="selectedWriteType != 'Viết tay'" style="margin-bottom: 25px;" prop="response" :rules="[{ required: true, message: 'Hãy thêm bài viết của bạn cho chủ đề này' }]" size="medium">
           <label slot="label" style="font-size: 16px;">Bài viết</label>
           <el-input
             v-model="form.response"
@@ -101,8 +101,18 @@
           />
         </el-form-item>
 
-        <el-form-item size="medium">
+        <el-form-item v-if="currentUser && currentUser.id" size="medium" style="margin-bottom: 7px;">
           <label slot="label" style="font-size: 16px;">Phản hồi</label>
+          <el-badge :value="freeToken + ' free'" class="item" type="primary">
+            <el-radio v-model="selectedType" style="margin-right: 5px;" label="detail" border :disabled="freeToken == 0">Chi tiết</el-radio>
+          </el-badge>
+          <el-badge :value="premiumToken + ' free'" class="item" type="primary">
+            <el-radio v-model="selectedType" style="margin-right: 5px; margin-left: 30px;" label="deep" border :disabled="premiumToken == 0">Chuyên sâu</el-radio>
+          </el-badge>
+        </el-form-item>
+
+        <el-form-item size="medium" style="margin-bottom: 7px;">
+          <label slot="label" style="font-size: 16px;">Ngôn ngữ</label>
           <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
           <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="en" border>Phản hồi tiếng Anh</el-radio>
         </el-form-item>
@@ -118,7 +128,7 @@
   <el-dialog
     v-else
     id="addEditQuestionDialog"
-    title="Gửi Yêu Cầu Chấm Bài Miễn Phí"
+    title="Nhận Phản Hồi Cho Bài Viết"
     :visible.sync="dialogVisible"
     :before-close="handleClose"
     :fullscreen="true"
@@ -269,6 +279,7 @@ export default {
       selectedTask: 'IELTS Task 2',
       selectedLanguage: 'vn',
       selectedWriteType: 'Đánh máy',
+      selectedType: 'detail',
       fileUrl: null,
       LISTENING_FILE_MAX_SIZE: 10000000,
       CHART_FILE_MAX_SIZE: 10000000,
@@ -278,7 +289,9 @@ export default {
       listeningList: [],
       screenWidth: window.innerWidth,
       isLoading: false,
-      gettingTextFromImage: false
+      gettingTextFromImage: false,
+      freeToken: this.$store.state.auth.user.freeToken,
+      premiumToken: this.$store.state.auth.user.premiumToken
     }
   },
   computed: {
@@ -298,6 +311,8 @@ export default {
   },
   methods: {
     openDialog() {
+      this.freeToken = this.$store.state.auth.user.freeToken
+      this.premiumToken = this.$store.state.auth.user.premiumToken
       this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
       if (this.personalQuestion) {
         this.selectedTask = this.personalQuestion.TaskName
@@ -406,7 +421,8 @@ export default {
                     UserId: this.currentUser.id,
                     SubmissionId: submission.id,
                     FeedbackType: 'AI',
-                    FeedbackLanguage: this.selectedLanguage
+                    FeedbackLanguage: this.selectedLanguage,
+                    ReviewType: this.selectedType
                   }).then(rs => {
                     this.loading = false
                     this.resetData()
@@ -548,6 +564,10 @@ export default {
 }
 </script>
 <style>
+.el-badge__content.is-fixed{
+  right: 30px !important;
+}
+
 #addEditQuestionDialog .el-dialog__header {
   text-align: center;
 }
