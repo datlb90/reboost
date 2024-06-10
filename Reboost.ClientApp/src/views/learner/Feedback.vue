@@ -1351,6 +1351,7 @@ export default {
       loadCriteriaFeedbackCompleted: false,
       loadingReview: false,
       freeToken: this.$store.state.auth.user.freeToken,
+      premiumToken: this.$store.state.auth.user.premiumToken,
       userSubscription: this.$store.state.auth.user.subscription,
       chartDescription: null,
       essayScore: null,
@@ -1631,7 +1632,8 @@ export default {
         task: question.section,
         hasGrade: this.hasGrade,
         chartDescription: this.chartDescription,
-        feedbackLanguage: this.review.reviewRequest.feedbackLanguage
+        feedbackLanguage: this.review.reviewRequest.feedbackLanguage,
+        feedbackType: this.review.reviewRequest.feedbackType
       }
       // get review feedback
       reviewService.getReviewFeedback(model).then(rs => {
@@ -1640,7 +1642,10 @@ export default {
           console.log(this.rubricCriteria)
           if (!this.hasGrade) {
             // Update user's free token in store
-            if (!this.userSubscription && this.freeToken > 0) { this.$store.dispatch('auth/updateToken', this.freeToken - 1) }
+
+            if (!this.userSubscription) {
+              if (model.feedbackType == 'Chi Tiết' && this.freeToken > 0) { this.$store.dispatch('auth/updateToken', this.freeToken - 1) } else if (model.feedbackType == 'Chuyên Sâu' && this.premiumToken > 0) { this.$store.dispatch('auth/updatePremiumToken', this.premiumToken - 1) }
+            }
           }
 
           this.loadCriteriaFeedbackCompleted = true

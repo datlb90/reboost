@@ -161,7 +161,7 @@ namespace Reboost.Service.Services
                 {
                     var user = await userService.GetByIdAsync(userId);
                     var userSubscription = await subscriptionService.GetUserSubscription(userId);
-                    if (userSubscription != null || user.FreeToken > 0)
+                    if (userSubscription != null || user.FreeToken > 0 || user.PremiumToken > 0)
                     {
                         string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/photo", fileName);
                         return await chatGPTService.getChartDescription(filePath);
@@ -187,7 +187,7 @@ namespace Reboost.Service.Services
             {
                 var user = await userService.GetByIdAsync(model.userId);
                 var userSubscription = await subscriptionService.GetUserSubscription(model.userId);
-                if (userSubscription != null || user.FreeToken > 0)
+                if (userSubscription != null || user.FreeToken > 0 || user.PremiumToken > 0)
                 {
                     try
                     {
@@ -228,7 +228,7 @@ namespace Reboost.Service.Services
             else
             {
                 var userSubscription = await subscriptionService.GetUserSubscription(user.Id);
-                if(userSubscription != null || user.FreeToken > 0)
+                if(userSubscription != null || user.FreeToken > 0 || user.PremiumToken > 0)
                 {
                     // If there is no grade, get the feedback from chatGPT, save the feedback in database, then return the feedback
                     List<CriteriaFeedback> result = new List<CriteriaFeedback>(); // display feedback result
@@ -255,7 +255,7 @@ namespace Reboost.Service.Services
                                 order = rubricCriteria[i].order
                             };
 
-                            if (userSubscription != null && userSubscription.PlanId >= 4)
+                            if ((userSubscription != null && userSubscription.PlanId >= 4) || model.feedbackType == "Chuyên Sâu")
                             {
                                 // Phản hồi chuyên sâu 
                                 taskList[i] = chatGPTService.getCriteriaFeedbackGPT4(requestModel);
@@ -293,9 +293,17 @@ namespace Reboost.Service.Services
                             };
                             reviewDataList.Add(reviewData);
                         }
-                        if(userSubscription == null && user.FreeToken > 0)
+                        // Update feedback token
+                        if(userSubscription == null)
                         {
-                            user.FreeToken = user.FreeToken - 1;
+                            if(model.feedbackType == "Chi Tiết" && user.FreeToken > 0)
+                            {
+                                user.FreeToken = user.FreeToken - 1;
+                            }
+                            else if(model.feedbackType == "Chuyên Sâu" && user.PremiumToken > 0)
+                            {
+                                user.PremiumToken = user.PremiumToken - 1;
+                            }
                             await _unitOfWork.Users.UpdateAsync(user);
                         }
                         return result;

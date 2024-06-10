@@ -965,6 +965,7 @@ export default {
   data() {
     return {
       freeToken: this.$store.state.auth.user.freeToken,
+      premiumToken: this.$store.state.auth.user.premiumToken,
       userSubscription: this.$store.state.auth.user.subscription,
       submissionsTabs: 'Comments',
       userSubmissions: [],
@@ -1388,7 +1389,7 @@ export default {
           this.submissionId = rs.submissions[0]?.id
           this.writingSubmitted = true
 
-          if (this.freeToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
+          if (this.freeToken > 0 || this.premiumToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
             this.$nextTick(() => {
               // Hide View Review button if any
               this.hasReview = false
@@ -1510,7 +1511,7 @@ export default {
       this.countWords()
     },
     requestReview() {
-      if (this.freeToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
+      if (this.freeToken > 0 || this.premiumToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
         this.$refs.checkoutDialog?.openDialog()
       } else {
         window.location.href = '/pricing'

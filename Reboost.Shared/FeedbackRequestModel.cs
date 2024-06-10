@@ -13,6 +13,7 @@ namespace Reboost.Shared
         public string chartFileName { get; set; }
         public string feedbackLanguage { get; set; }
         public string chartDescription { get; set; }
+        public string feedbackType { get; set; } // 'Chi Tiết' and 'Chuyên Sâu'
     }
 }
 

@@ -14,6 +14,7 @@ const getDefaultState = () => {
       firstName: null,
       lastName: null,
       freeToken: null,
+      premiumToken: null,
       subscription: null
     },
     selectedTest: []
@@ -31,6 +32,11 @@ const actions = {
   updateToken({ state, commit }, token) {
     if (token >= 0) {
       commit('SET_FREE_TOKEN', token)
+    }
+  },
+  updatePremiumToken({ state, commit }, token) {
+    if (token >= 0) {
+      commit('SET_PREMIUM_TOKEN', token)
     }
   },
   async login({ state, commit }, data) {
@@ -120,6 +126,9 @@ const actions = {
 const mutations = {
   SET_FREE_TOKEN(state, token) {
     state.user.freeToken = token
+  },
+  SET_PREMIUM_TOKEN(state, token) {
+    state.user.premiumToken = token
   },
   SET_SUBSCRIPTION(state, subscription) {
     state.user.subscription = subscription

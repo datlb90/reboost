@@ -56,7 +56,7 @@
                           <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
                         </div>
                         <div v-if="subscriptionName == 'Gói luyện tập cơ bản'">
-                          Bài chấm miễn phí: {{ freeToken }}
+                          Bài chấm miễn phí: {{ parseInt(freeToken) + parseInt(premiumToken) }}
                         </div>
                         <div v-else-if="!isExpired">
                           Ngày hết hạn: {{ expiredDate }}
@@ -126,7 +126,7 @@
                       <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
                     </div>
                     <div v-if="subscriptionName == 'Gói luyện tập cơ bản'">
-                      Bài chấm miễn phí: {{ freeToken }}
+                      Bài chấm miễn phí: {{ parseInt(freeToken) + parseInt(premiumToken) }}
                     </div>
                     <div v-else-if="!isExpired">
                       Ngày hết hạn: {{ expiredDate }}
@@ -213,7 +213,7 @@
                   <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
                 </div>
                 <div v-if="subscriptionName == 'Gói luyện tập cơ bản'" style="font-size: 15px; font-weight: 400; cursor: pointer; margin-left: 15px; margin-right: 15px;">
-                  Bài chấm miễn phí: {{ freeToken }}
+                  Bài chấm miễn phí: {{ parseInt(freeToken) + parseInt(premiumToken) }}
                 </div>
                 <div v-else-if="!isExpired" style="font-size: 15px;  font-weight: 400; cursor: pointer; margin-left: 15px; margin-right: 15px;">
                   Ngày hết hạn: {{ expiredDate }}
@@ -237,53 +237,6 @@
           >Nhận phản hồi cho bài viết
           </el-button>
         </div>
-
-        <!-- <div class="user-option">
-            <el-button
-              v-if="role == userRole.LEARNER"
-              icon="el-icon-edit"
-              class="btn btn-gradient"
-              style="margin-right: 20px; padding: 6px 20px; font-size: 12px;"
-              @click="openRequestReviewDialog"
-            >Nhận phản hồi cho bài viết
-            </el-button>
-
-            <el-dropdown style="margin-top: 5px; margin-right: 2px;" trigger="click">
-              <span class="el-dropdown-link" @click="getSubscription()">
-                <el-link :underline="false" type="info">
-                  <i class="far fa-user-circle" style="font-size: 24px;" />
-                </el-link>
-              </span>
-              <el-dropdown-menu slot="dropdown">
-                <div style="padding:0px 20px; margin-bottom: 0px; display:inline-grid">
-                  <span style="padding:5px 0px; font-weight:500; font-size:15px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap; max-width: 200px;">
-                    {{ displayName }}
-                  </span>
-                  <div style="font-size:14px; text-overflow: ellipsis; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                    {{ currentUser.email }}
-                  </div>
-                </div>
-                <el-dropdown-item divided>
-                  <div>
-                    <div>
-                      {{ subscriptionName }}
-                      <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
-                    </div>
-                    <div v-if="subscriptionName == 'Gói luyện tập cơ bản'">
-                      Bài chấm miễn phí: {{ freeToken }}
-                    </div>
-                    <div v-else-if="!isExpired">
-                      Ngày hết hạn: {{ expiredDate }}
-                    </div>
-                    <div v-else>Đã hết hạn</div>
-                  </div>
-                </el-dropdown-item>
-                <el-dropdown-item divided>
-                  <div @click="logout()"> Đăng xuất</div>
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-          </div> -->
       </div>
     </div>
 
@@ -321,6 +274,7 @@ export default {
     return {
       role: this.$store.state.auth.user.role,
       freeToken: this.$store.state.auth.user.freeToken,
+      premiumToken: this.$store.state.auth.user.premiumToken,
       userSubscription: null,
       isSticky: false,
       appInProgress: true,
@@ -391,6 +345,7 @@ export default {
   methods: {
    async getSubscription() {
       this.freeToken = this.$store.state.auth.user.freeToken
+      this.premiumToken = this.$store.state.auth.user.premiumToken
       const userSubscription = this.$store.state.auth.user.subscription
       if (userSubscription) {
         if (userSubscription.planId <= 3) { this.subscriptionName = 'Gói phản hồi chi tiết' } else { this.subscriptionName = 'Gói phản hồi chuyên sâu' }
@@ -477,7 +432,7 @@ export default {
     },
     openRequestReviewDialog() {
       // Check user token & subscription
-      if (this.freeToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
+      if (this.freeToken > 0 || this.premiumToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
         this.$refs.reviewRequestDialog?.openDialog()
       } else {
         window.location.href = '/pricing'

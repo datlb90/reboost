@@ -102,7 +102,8 @@ namespace Reboost.WebApi.Identity
                         PhoneNumber = model.PhoneNumber,
                         CreatedDate = DateTime.UtcNow,
                         UpdatedDate = DateTime.UtcNow,
-                        FreeToken = 5
+                        FreeToken = 3,
+                        PremiumToken = 2
                     };
 
                     // Create the user account
@@ -158,7 +159,8 @@ namespace Reboost.WebApi.Identity
                                 ExpireDate = token.ValidTo,
                                 FirstName = model.FullName,
                                 LastName = "",
-                                FreeToken = 5,
+                                FreeToken = 3,
+                                PremiumToken = 2,
                                 Subscription = null
                             };
 
@@ -252,7 +254,8 @@ namespace Reboost.WebApi.Identity
                                 LastName = lastName == null ? "" : lastName,
                                 CreatedDate = DateTime.UtcNow,
                                 UpdatedDate = DateTime.UtcNow,
-                                FreeToken = 5
+                                FreeToken = 3,
+                                PremiumToken = 2
                             };
                             var result = await _userManger.CreateAsync(identityUser);
                             if (result.Succeeded)
@@ -342,6 +345,7 @@ namespace Reboost.WebApi.Identity
                             Token = tokenAsString,
                             ExpireDate = token.ValidTo,
                             FreeToken = user.FreeToken,
+                            PremiumToken = user.PremiumToken,
                             Subscription = await _subscriptionService.GetUserSubscriptionModel(user.Id)
                         };
 
@@ -457,6 +461,7 @@ namespace Reboost.WebApi.Identity
                     Token = tokenAsString,
                     ExpireDate = token.ValidTo,
                     FreeToken = user.FreeToken,
+                    PremiumToken = user.PremiumToken,
                     Subscription = await _subscriptionService.GetUserSubscriptionModel(user.Id)
                 };
 

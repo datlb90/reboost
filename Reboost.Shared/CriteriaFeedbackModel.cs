@@ -23,6 +23,7 @@ namespace Reboost.Shared
         public string essay { get; set; }
         public string criteriaName { get; set; }
         public string feedbackLanguage { get; set; }
+        public string feedbackType { get; set; }
     }
 
     public class EssayFeedbackModel
