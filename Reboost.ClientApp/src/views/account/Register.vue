@@ -74,46 +74,6 @@
                   </el-button>
                 </form>
               </el-form-item>
-
-              <!-- <hr> -->
-
-              <!-- <div style="font-size: 14px; text-align: center; padding-bottom: 5px; margin-top: 30px;">
-                Khi tạo tài khoản, bạn đồng ý với
-                <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
-                  {{ messageTranslates('login', 'terms') }}
-                </a> {{ messageTranslates('login', 'and') }}
-                <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
-                  chính sách bảo mật
-                </a>
-                của chúng tôi.
-              </div> -->
-
-              <!-- <hr>
-              <div style="font-size: 14px; text-align: center; padding-bottom: 10px;">
-                {{ messageTranslates('register', 'orSignInWith') }}
-              </div>
-              <el-form-item>
-                <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
-                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
-                    Facebook
-                  </el-button>
-                </form>
-                <form ref="googleLoginForm" method="post" :action="googleFormAction">
-                  <el-button type="danger" plain style="width: 48%; float: right;" @click="submitGoogleLoginForm()">
-                    Google
-                  </el-button>
-                </form>
-              </el-form-item>
-              <div style="font-size: 14px; text-align: center; padding-bottom: 5px;">
-                Bằng việc đăng ký tài khoản, bạn đồng ý với
-                <a href="/terms" style="color: rgb(101 139 179); text-decoration: none;">
-                  điều khoản
-                </a> và
-                <a href="/privacy" style="color: rgb(101 139 179); text-decoration: none;">
-                  chính sách bảo mật
-                </a>
-                của chúng tôi
-              </div> -->
             </el-form>
           </div>
         </div>
@@ -123,21 +83,21 @@
 </template>
 <script>
 import { mapActions } from 'vuex'
-import { PageName } from '@/app.constant'
-import { SCORES } from '../../app.constant'
-import userService from '@/services/user.service'
-import moment from 'moment'
+// import { PageName } from '@/app.constant'
+// import { SCORES } from '../../app.constant'
+// import userService from '@/services/user.service'
+// import moment from 'moment'
 export default {
   name: 'Login',
   data() {
-    var validatePhone = (rule, value, callback) => {
-      var phoneno = /^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/
-      if (!value.match(phoneno)) {
-        callback(new Error('Vui lòng nhập một số điện thoại hợp lệ'))
-      } else {
-        callback()
-      }
-    }
+    // var validatePhone = (rule, value, callback) => {
+    //   var phoneno = /^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/
+    //   if (!value.match(phoneno)) {
+    //     callback(new Error('Vui lòng nhập một số điện thoại hợp lệ'))
+    //   } else {
+    //     callback()
+    //   }
+    // }
     var validateEmail = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('Vui lòng điền địa chỉ email của bạn'))
@@ -176,11 +136,11 @@ export default {
             validator: validateEmail, trigger: 'blur'
           }
         ],
-        phoneNumber: [
-          {
-            validator: validatePhone, trigger: 'blur'
-          }
-        ],
+        // phoneNumber: [
+        //   {
+        //     validator: validatePhone, trigger: 'blur'
+        //   }
+        // ],
         password: [
           {
             validator: validatePassword, trigger: 'blur'
@@ -268,32 +228,8 @@ export default {
           })
           if (this.user) {
             document.removeEventListener('keydown', this.pressEnterToLogin)
-            // Add IELTS test score for all user
-            var scores = []
-            const formData = {
-              ieltsTestScore: {
-                WRITING: 0,
-                READING: 0,
-                LISTENING: 0,
-                SPEAKING: 0
-              }
-            }
-            for (const key in formData.ieltsTestScore) {
-              scores.push({
-                sectionId: SCORES.IELTS[key].sectionId,
-                score: 0,
-                updatedDate: moment().format('yyyy-MM-DD')
-              })
-            }
-            userService.addScore(this.user.id, scores).then(rs => {
-              const planId = this.getUrlParameter('planId')
-              console.log(this.$store.getters['auth/getUser'])
-              if (planId && planId != '0') {
-                this.$store.dispatch('auth/setSelectedTest').then(rs => {
-                  window.location.href = '/pricing?planId=' + planId
-                })
-              } else { this.$router.push({ name: PageName.AFTER_LOGIN }) }
-            })
+            // Send user to confirm email page
+            this.$router.push('/confirm/email')
           } else {
             this.loading = false
           }

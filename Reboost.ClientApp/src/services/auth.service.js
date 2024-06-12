@@ -3,6 +3,9 @@ import http from '@/utils/axios'
 import store from '@/store'
 
 const authService = {
+  resendConfirmationEmail(userId) {
+    return http.get('/auth/resend/confirm/email/' + userId).then(rs => rs.data)
+  },
   resetPassword(model) {
     return http.post(`/auth/reset/password`, model).then(rs => rs.data)
   },

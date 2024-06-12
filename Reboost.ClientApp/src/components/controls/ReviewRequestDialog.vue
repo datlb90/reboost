@@ -34,7 +34,7 @@
             v-model="form.topic"
             type="textarea"
             :rows="3"
-            :placeholder="selectedTask != 'Other' ? 'Đề bài viết cho ' + selectedTask + '' : 'Đê bài viết bất kỳ'"
+            :placeholder="selectedTask != 'Other' ? 'Đề bài viết ' + selectedTask + '' : 'Đê bài viết bất kỳ'"
             style="width: 96%;"
           />
         </el-form-item>
@@ -103,12 +103,18 @@
 
         <el-form-item v-if="currentUser && currentUser.id" size="medium" style="margin-bottom: 7px;">
           <label slot="label" style="font-size: 16px;">Phản hồi</label>
-          <el-badge :value="freeToken + ' free'" class="item" type="primary">
-            <el-radio v-model="selectedType" style="margin-right: 5px;" label="detail" border :disabled="freeToken == 0">Chi tiết</el-radio>
-          </el-badge>
-          <el-badge :value="premiumToken + ' free'" class="item" type="primary">
-            <el-radio v-model="selectedType" style="margin-right: 5px; margin-left: 30px;" label="deep" border :disabled="premiumToken == 0">Chuyên sâu</el-radio>
-          </el-badge>
+          <div v-if="!userSubscription">
+            <el-badge :value="freeToken + ' free'" class="item" type="primary">
+              <el-radio v-model="selectedType" style="margin-right: 5px;" label="detail" border :disabled="freeToken == 0">Chi tiết</el-radio>
+            </el-badge>
+            <el-badge :value="premiumToken + ' free'" class="item" type="primary">
+              <el-radio v-model="selectedType" style="margin-right: 5px; margin-left: 30px;" label="deep" border :disabled="premiumToken == 0">Chuyên sâu</el-radio>
+            </el-badge>
+          </div>
+          <div v-else>
+            <el-radio v-model="selectedType" style="margin-right: 5px;" label="detail" border :disabled="userSubscription.planId >= 4">Chi tiết</el-radio>
+            <el-radio v-model="selectedType" style="margin-right: 5px; margin-left: 10px;" label="deep" border :disabled="userSubscription.planId <= 3">Chuyên sâu</el-radio>
+          </div>
         </el-form-item>
 
         <el-form-item size="medium" style="margin-bottom: 7px;">
@@ -139,7 +145,7 @@
         ref="personalQuestionForm"
         :model="form"
       >
-        <el-form-item size="medium" style="margin-bottom: 10px;">
+        <el-form-item size="medium" style="margin-bottom: 5px;">
           <label>Loại đề</label>
           <div>
             <div>
@@ -151,7 +157,7 @@
 
         </el-form-item>
 
-        <el-form-item size="medium" style="margin-bottom: 10px;">
+        <el-form-item size="medium" style="margin-bottom: 5px;">
           <label>Kiểu viết</label>
           <div>
             <div>
@@ -168,7 +174,7 @@
             v-model="form.topic"
             type="textarea"
             :rows="3"
-            :placeholder="selectedTask != 'Other' ? 'Đề bài viết cho ' + selectedTask + '' : 'Đê bài viết bất kỳ'"
+            :placeholder="selectedTask != 'Other' ? 'Đề bài viết ' + selectedTask + '' : 'Đê bài viết bất kỳ'"
           />
         </el-form-item>
 
@@ -228,13 +234,32 @@
           <el-input
             v-model="form.response"
             type="textarea"
-            :rows="5"
+            :rows="4"
             :placeholder="'Bài viết của bạn'"
           />
         </el-form-item>
 
+        <el-form-item v-if="currentUser && currentUser.id" size="medium" style="margin-bottom: 5px;">
+          <label>Phản hồi</label>
+          <div>
+            <div v-if="!userSubscription">
+              <el-badge :value="freeToken + ' free'" class="item" type="primary">
+                <el-radio v-model="selectedType" style="margin-right: 5px;" label="detail" border :disabled="freeToken == 0">Chi tiết</el-radio>
+              </el-badge>
+              <el-badge :value="premiumToken + ' free'" class="item" type="primary">
+                <el-radio v-model="selectedType" style="margin-right: 5px; margin-left: 30px;" label="deep" border :disabled="premiumToken == 0">Chuyên sâu</el-radio>
+              </el-badge>
+            </div>
+            <div v-else>
+              <el-radio v-model="selectedType" style="margin-right: 5px;" label="detail" border :disabled="userSubscription.planId >= 4">Chi tiết</el-radio>
+              <el-radio v-model="selectedType" style="margin-right: 5px; margin-left: 10px;" label="deep" border :disabled="userSubscription.planId <= 3">Chuyên sâu</el-radio>
+            </div>
+          </div>
+
+        </el-form-item>
+
         <el-form-item size="medium" style="margin-bottom: 15px;">
-          <label>Ngôn ngữ phản hồi</label>
+          <label>Ngôn ngữ</label>
           <div>
             <div>
               <el-radio v-model="selectedLanguage" style="margin-right: 10px; margin-left: 0px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
@@ -291,7 +316,8 @@ export default {
       isLoading: false,
       gettingTextFromImage: false,
       freeToken: this.$store.state.auth.user.freeToken,
-      premiumToken: this.$store.state.auth.user.premiumToken
+      premiumToken: this.$store.state.auth.user.premiumToken,
+      userSubscription: this.$store.state.auth.user.subscription
     }
   },
   computed: {
@@ -313,6 +339,13 @@ export default {
     openDialog() {
       this.freeToken = this.$store.state.auth.user.freeToken
       this.premiumToken = this.$store.state.auth.user.premiumToken
+      this.userSubscription = this.$store.state.auth.user.subscription
+      if (this.freeToken <= 0 && this.premiumToken > 0) {
+        this.selectedType = 'deep'
+      }
+      if (this.userSubscription && this.userSubscription.planId >= 4) {
+        this.selectedType = 'deep'
+      }
       this.personalQuestion = this.$store.getters['question/getPersonalQuestion']
       if (this.personalQuestion) {
         this.selectedTask = this.personalQuestion.TaskName

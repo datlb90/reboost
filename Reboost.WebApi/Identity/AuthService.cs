@@ -25,6 +25,8 @@ namespace Reboost.WebApi.Identity
 {
     public interface IAuthService
     {
+        Task<UserManagerResponse> ResendEmailVerification(string userId);
+
         Task<UserManagerResponse> RegisterUserAsync(RegisterViewModel model);
 
         Task<UserManagerResponse> LoginUserAsync(LoginViewModel model);
@@ -95,7 +97,7 @@ namespace Reboost.WebApi.Identity
                     var identityUser = new ApplicationUser
                     {
                         Email = model.Email,
-                        EmailConfirmed = true,
+                        EmailConfirmed = false,
                         UserName = GetUsernameFromEmail(model.Email),
                         FirstName = model.FullName,
                         LastName = "",
@@ -115,6 +117,42 @@ namespace Reboost.WebApi.Identity
 
                         if (roleResult.Succeeded)
                         {
+                            // Add user score
+                            List<UserScores> scores = new List<UserScores>();
+                            UserScores writing = new UserScores
+                            {
+                                SectionId = 8,
+                                Score = 0,
+                                UpdatedDate = DateTime.UtcNow,
+                                UserId = identityUser.Id
+                            };
+                            scores.Add(writing);
+                            UserScores speaking = new UserScores
+                            {
+                                SectionId = 7,
+                                Score = 0,
+                                UpdatedDate = DateTime.UtcNow,
+                                UserId = identityUser.Id
+                            };
+                            scores.Add(speaking);
+                            UserScores listening = new UserScores
+                            {
+                                SectionId = 6,
+                                Score = 0,
+                                UpdatedDate = DateTime.UtcNow,
+                                UserId = identityUser.Id
+                            };
+                            scores.Add(listening);
+                            UserScores reading = new UserScores
+                            {
+                                SectionId = 5,
+                                Score = 0,
+                                UpdatedDate = DateTime.UtcNow,
+                                UserId = identityUser.Id
+                            };
+                            scores.Add(reading);
+                            await _userService.AddScoreAsync(identityUser.Id, scores);
+
                             // Send account verificaton email
                             await SendEmailVerification(identityUser);
                             // Generate access token
@@ -481,6 +519,45 @@ namespace Reboost.WebApi.Identity
                     IsSuccess = false,
                 };
             }
+        }
+
+        public async Task<UserManagerResponse> ResendEmailVerification(string userId)
+        {
+            var user = await _userManger.FindByIdAsync(userId);
+            if (user != null)
+            {
+                // Send email with account confirmation
+                var confirmEmailToken = await _userManger.GenerateEmailConfirmationTokenAsync(user);
+
+                var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+                var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
+
+                string url = $"{_configuration["AppUrl"]}/api/auth/confirm/email?id={user.Id}&code={validEmailToken}";
+
+                string message = $"<p>Xin chào " + user.FirstName + ",</p>" +
+                                $"<p>Chào mừng bạn đên với Reboost!</p>" +
+                                $"<p>Để hoàn thiện quá trình đăng ký tài khoản, bạn vui lòng xác nhận địa chỉ email sử dụng đường dẫn dưới đây:</p>" +
+                                $"<p><a href='{url}'>Đường dẫn xác nhận địa chỉ email</a></p>" +
+                                $"<p>Nếu bạn không yêu cầu đăng ký tài khoản, bạn có thể bỏ qua email này.</p>" +
+                                $"<p>Xin chân thành cảm ơn!</p>" +
+                                $"<p>Reboost Support</p>";
+
+                await _mailService.SendEmailAsync(user.Email, "Xác nhận địa chỉ email", message);
+
+                return new UserManagerResponse
+                {
+                    IsSuccess = true,
+                    Message = "Email xác nhận đã được gửi lại thành công.",
+                };
+
+            }
+
+            return new UserManagerResponse
+            {
+                IsSuccess = false,
+                Message = "Đã có lỗi xảy ra trong quá trình gửi lại email."
+            };
+
         }
 
         public async Task SendEmailVerification(ApplicationUser user)

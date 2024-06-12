@@ -156,7 +156,6 @@ namespace Reboost.Service.Services
         {
             try
             {
-
                 if (!String.IsNullOrEmpty(fileName))
                 {
                     var user = await userService.GetByIdAsync(userId);
@@ -228,7 +227,7 @@ namespace Reboost.Service.Services
             else
             {
                 var userSubscription = await subscriptionService.GetUserSubscription(user.Id);
-                if(userSubscription != null || user.FreeToken > 0 || user.PremiumToken > 0)
+                if(userSubscription != null || (model.feedbackType == "detail" && user.FreeToken > 0) || (model.feedbackType == "deep" && user.PremiumToken > 0))
                 {
                     // If there is no grade, get the feedback from chatGPT, save the feedback in database, then return the feedback
                     List<CriteriaFeedback> result = new List<CriteriaFeedback>(); // display feedback result
@@ -319,7 +318,8 @@ namespace Reboost.Service.Services
         public async Task<ErrorsInText> getIntextComments(User user, CriteriaFeedbackModel model)
         {
             var userSubscription = await subscriptionService.GetUserSubscription(user.Id);
-            if (userSubscription != null || user.FreeToken > 0)
+
+            if (userSubscription != null || (model.feedbackType == "detail" && user.FreeToken > 0) || (model.feedbackType == "deep" && user.PremiumToken > 0))
             {
                 if ((userSubscription != null && userSubscription.PlanId >= 4) || model.feedbackType == "deep")
                 {

@@ -3,136 +3,48 @@
     v-if="screenWidth > 780"
     id="practiceWritingCheckoutContainer"
     :visible.sync="dlVisible"
-    width="620px"
-    height="820px"
+    width="600px"
     @closed="dialogClosed"
   >
     <div slot="title">
-      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Lựa Chọn Ngôn Ngữ Phản Hồi</div>
+      <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Tuỳ Chọn Cho Phản Hồi</div>
     </div>
     <div class="dialog-body">
-      <div style="padding: 20px; padding-top: 20px;">
-        <!-- <div class="tip">
-          <span style="font-size: 15px; color: #6084a4;">Xác nhận lựa chọn cho ngôn ngữ phản hồi</span>
-        </div> -->
-        <!-- <el-page-header v-if="selectedReview == 'Pro'" class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
-        <el-page-header v-if="selectedReview == 'Free' || selectedReview == 'AI'" class="tip" content="Xác nhận lựa chọn của bạn và gửi yêu cầu chấm bài" @back="goBack" /> -->
-
-        <div v-if="selectedReview == '' || selectedReview == 'Pro'" id="pro-review-card" class="box-card review-card" style="height: 140px;" @click="onReviewSelect('Pro')">
-          <div>
-            <div class="review-icon-wrapper" style="width: 62px;"> <i class="fas fa-user-graduate review-icon" /></div>
-            <div class="review-description-wrapper">
-              <div class="review-title">Phản Hồi Chuyên Sâu Từ Giáo Viên</div>
-              <div class="review-description" style="margin-bottom: 20px;">
-                Nhận phản hồi có chiều sâu cùng những hướng dẫn bổ ích từ giáo viên của Reboost.
-                Giáo viên có thể đánh giá sự tiến bộ của bạn dựa theo những bài đã nộp trước đó và phản hồi theo yêu cầu cụ thể.
-                <!-- trong vòng 24 giờ (<a href="#">đánh giá mẫu</a>) -->
-                <!-- Our certified rater will score your essay and provide detailed feedback within 24 hours (<a href="#">sample feedback</a>) -->
-              </div>
-
+      <div id="feedbackConfigDialog" class="dialog-content" style="margin-top: 45px; margin-bottom: 50px;">
+        <el-form
+          ref="personalQuestionForm"
+          :model="form"
+          label-width="160px"
+        >
+          <el-form-item v-if="currentUser && currentUser.id" size="medium" style="margin-bottom: 10px;">
+            <label slot="label" style="font-size: 16px;">Phản hồi</label>
+            <div v-if="!userSubscription">
+              <el-badge :value="freeToken + ' free'" class="item" type="primary">
+                <el-radio v-model="selectedType" style="margin-right: 5px;" label="detail" border :disabled="freeToken == 0">Chi tiết</el-radio>
+              </el-badge>
+              <el-badge :value="premiumToken + ' free'" class="item" type="primary">
+                <el-radio v-model="selectedType" style="margin-right: 5px; margin-left: 30px;" label="deep" border :disabled="premiumToken == 0">Chuyên sâu</el-radio>
+              </el-badge>
             </div>
-            <div class="review-price">100.000 VNĐ</div>
-          </div>
-        </div>
-
-        <div v-if="selectedReview == '' || selectedReview == 'AI'" id="ai-review-card" class="box-card review-card" @click="onReviewSelect('AI')">
-          <div>
-            <div class="review-icon-wrapper"><i class="el-icon-chat-line-square review-icon" /></div>
-            <div class="review-description-wrapper">
-
-              <div class="review-title">Phản Hồi Chi Tiết Từ AI</div>
-              <div class="review-description">
-                Nhận phản hồi chi tiết, chuyên sâu, và chính xác cho bài viết của bạn từ hệ thống chấm bài tự động.
-              </div>
+            <div v-else>
+              <el-radio v-model="selectedType" style="margin-right: 5px;" label="detail" border :disabled="userSubscription.planId >= 4">Chi tiết</el-radio>
+              <el-radio v-model="selectedType" style="margin-right: 5px; margin-left: 10px;" label="deep" border :disabled="userSubscription.planId <= 3">Chuyên sâu</el-radio>
             </div>
-            <div class="review-price">Miễn phí</div>
-          </div>
-        </div>
+          </el-form-item>
 
-        <div v-if="selectedReview == 'Free'">
-          <div style="padding-top: 20px; text-align: center;">
-            <el-alert
-              title="Để tạo môi trường học tập lành mạnh và khuyến khích các bạn thực hiện đánh giá cho các học viên khác. Chúng tôi sẽ yêu cầu các bạn cung cấp ít nhất 1 đánh giá trước khi có thể nhận phản hồi miễn phí từ học viên khác. Quy định này sẽ không áp dụng cho lần yêu cầu nhận phản hồi đầu tiên."
-              type="info"
-              style="word-break: break-word; text-align: left;"
-              :closable="false"
-            />
-          </div>
-        </div>
+          <el-form-item size="medium" style="margin-bottom: 15px;">
+            <label slot="label" style="font-size: 16px;">Ngôn ngữ</label>
+            <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
+            <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="en" border>Phản hồi tiếng Anh</el-radio>
+          </el-form-item>
 
-        <div v-if="selectedReview == '' || selectedReview == 'Free'" id="peer-review-card" class="box-card review-card" @click="onReviewSelect('Free')">
-          <div>
-            <div class="review-icon-wrapper"> <i class="fas fa-user-friends review-icon" /></div>
-            <div class="review-description-wrapper">
-              <!-- <div class="review-title">Free Peer Review</div> -->
-              <div class="review-title">Góp Ý Từ Học Viên Khác</div>
-              <!-- <div class="review-title">Đánh Giá Miễn Phí Từ Học Viên Khác</div> -->
-              <div class="review-description">
-                Nhận phản hồi mang tính xây dựng từ học viên khác giúp bạn có cái nhìn đa chiều về bài viết, mở ra cơ hội học hỏi và cải thiện kỹ năng 1 cách hiệu quả.
-                <!-- Get constructive feedback from another learner with similar or higher writing level (<a href="#">sample feedback</a>) -->
-              </div>
-            </div>
-            <div class="review-price">Miễn Phí</div>
-          </div>
-        </div>
-      </div>
-
-      <div v-show="selectedReview == 'Pro' || (selectedReview == 'AI' && !requestedLanguage)" style="padding: 20px; padding-top: 0px;">
-        <div>
-          <div>
-            <!-- <el-divider>
-              <div class="review-title">
-                Lựa chọn ngôn ngữ cho phản hồi
-              </div>
-            </el-divider> -->
-            <div>
-              <div style="text-align: center;">
-                <el-radio-group v-if="!requestedLanguage" v-model="feedbackLanguage" style="margin-top: 20px; margin-bottom: 10px;">
-                  <el-radio-button label="Phản hồi bằng tiếng Việt" />
-                  <el-radio-button label="Phản hồi bằng tiếng Anh" />
-                </el-radio-group>
-
-                <el-input
-                  v-if="selectedReview == 'Pro'"
-                  v-model="specialRequest"
-                  type="textarea"
-                  :rows="3"
-                  style="margin-bottom: 10px;"
-                  placeholder="Cung cấp yêu cầu cụ thể của bạn cho giáo viên. Ví dụ: chú trọng phần từ vựng, ý tưởng, ngữ pháp, và bố cục bài. Nếu không có yêu cầu gì bạn có thể để trống phần này."
-                />
-              </div>
-
-            </div>
-          </div>
-
-          <el-divider v-if="selectedReview == 'Pro'">
-            <div class="review-title">
-              Phương thức thanh toán
-            </div>
-          </el-divider>
-          <div v-if="selectedReview == 'Pro'" style="text-align: center; padding-top: 10px;">
-            <el-button plain style="margin-right: 10px;" @click="submitZaloPayRequest()">
-              <div style="font-size: 20px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
-              <img style="height: 26px;" src="../../assets/logo/zalopay.png" alt="logo" class="main-header-logo">
-            </el-button>
-
-            <el-button plain style="margin-left: 10px;" @click="submitVNPayRequest()">
-              <div style="font-size: 20px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
-              <img style="height: 26px;" src="../../assets/logo/vnpay.png" alt="logo" class="main-header-logo">
-            </el-button>
-          </div>
-          <!-- <div v-if="!paid" id="paypal-button-container" class="pay-button-container" /> -->
-        </div>
-      </div>
-
-      <div v-if="selectedReview == 'Free'|| selectedReview == 'AI'">
-        <div style="padding-top: 0px; text-align: center;">
-          <el-button v-if="selectedReview == 'Free'" type="primary" :loading="loading" @click="requestReview()">Xác nhận</el-button>
-          <el-button v-else :loading="loading" @click="requestReview()">Xác nhận</el-button>
-        </div>
+          <el-form-item>
+            <el-button size="medium" type="primary" :loading="loading" @click="requestAIReview()">Xác nhận</el-button>
+            <el-button size="medium" @click="cancelRequest()">Huỷ</el-button>
+          </el-form-item>
+        </el-form>
       </div>
     </div>
-    <div slot="footer" class="dialog-footer" />
   </el-dialog>
 
   <el-dialog
@@ -143,146 +55,61 @@
     @closed="dialogClosed"
   >
     <div slot="title">
-      <div style="padding: 0px 20px; font-size: 18px; text-align:center;">Lựa Chọn Ngôn Ngữ Phản Hồi</div>
+      <div style="padding: 0px 20px; font-size: 18px; text-align:center;">Tuỳ Chọn Cho Phản Hồi</div>
     </div>
     <div class="dialog-body">
       <div>
-        <!-- <div v-if="selectedReview == ''" class="tip">
-          <span style="font-size: 15px; color: #6084a4; word-break: break-word;">Cảm ơn bạn đã gửi bài viết cho chúng tôi! Để nhận phản hồi, hãy chọn 1 trong các dịch vụ dưới đây:</span>
-        </div>
-        <el-page-header v-if="selectedReview == 'Pro' " class="tip" content="Cung cấp yêu cầu cho phản hồi và lựa chọn phương thức thanh toán" @back="goBack" />
-        <el-page-header v-if="selectedReview == 'Free' || selectedReview == 'AI'" class="tip" content="Hãy xác nhận lựa chọn của bạn và gửi yêu cầu chấm bài" @back="goBack" /> -->
 
-        <div v-if="selectedReview == '' || selectedReview == 'Pro'" id="pro-review-card" class="box-card review-card-mobile" @click="onReviewSelect('Pro')">
-          <div>
-            <div class="pricing-title-wrapper">
-              <div class="pricing-option-icon"><i class="fas fa-user-graduate review-icon" /> </div>
-              <div class="pricing-option-title">Phản Hồi Chuyên Sâu Từ Giáo Viên</div>
-            </div>
-            <div>
-              <div class="pricing-option-description">
-                <!-- Đội ngũ giáo viên giàu kinh nghiệm của Reboost sẽ chấm bài viết của bạn và cung cấp phản hồi chi tiết trong vòng 24 giờ. <a href="#">Xem phản hồi mẫu</a> -->
-                Nhận phản hồi có chiều sâu cùng những hướng dẫn bổ ích từ giáo viên của Reboost.
-                Giáo viên có thể đánh giá sự tiến bộ của bạn dựa theo những bài đã nộp trước đó và phản hồi theo yêu cầu cụ thể.
+        <div id="feedbackConfigDialog" class="dialog-content" style="margin-top: 15px;">
+          <el-form
+            ref="personalQuestionForm"
+            :model="form"
+          >
+            <el-form-item v-if="currentUser && currentUser.id" size="medium" style="margin-bottom: 20px;">
+              <label style="font-size: 16px;">Phản hồi</label>
+              <div>
+                <div v-if="!userSubscription">
+                  <el-badge :value="freeToken + ' free'" class="item" type="primary">
+                    <el-radio v-model="selectedType" style="margin-right: 5px;" label="detail" border :disabled="freeToken == 0">Chi tiết</el-radio>
+                  </el-badge>
+                  <el-badge :value="premiumToken + ' free'" class="item" type="primary">
+                    <el-radio v-model="selectedType" style="margin-right: 5px; margin-left: 30px;" label="deep" border :disabled="premiumToken == 0">Chuyên sâu</el-radio>
+                  </el-badge>
+                </div>
+                <div v-else>
+                  <el-radio v-model="selectedType" style="margin-right: 5px;" label="detail" border :disabled="userSubscription.planId >= 4">Chi tiết</el-radio>
+                  <el-radio v-model="selectedType" style="margin-right: 5px; margin-left: 10px;" label="deep" border :disabled="userSubscription.planId <= 3">Chuyên sâu</el-radio>
+                </div>
               </div>
-            </div>
-            <div class="pricing-option-price" style="width: 120px;">100.000 VNĐ</div>
-          </div>
-        </div>
+            </el-form-item>
 
-        <div v-if="selectedReview == '' || selectedReview == 'AI'" id="ai-review-card" class="box-card review-card-mobile" @click="onReviewSelect('AI')">
-          <div>
-            <div class="pricing-title-wrapper" style="margin-bottom: 10px;">
-              <div class="pricing-option-icon"><i class="el-icon-chat-line-square review-icon" /></div>
-              <div class="pricing-option-title" style="margin-top: 5px;">Phản Hồi Chi Tiết Từ AI</div>
-            </div>
-            <div>
-              <div class="pricing-option-description" style="margin-bottom: 15px;">
-                <!-- Nhận phản hồi ngay lập tức và chính xác về bài viết của mình từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4. <a href="#">Xem phản hồi mẫu</a> -->
-                <!-- Nhận phản hồi nhanh chóng, chi tiết, và chính xác cho bài viết của bạn từ hệ thống chấm bài tự động được vận hành bởi ChatGPT-4. -->
-                Nhận phản hồi chi tiết, chuyên sâu, và chính xác cho bài viết của bạn từ hệ thống chấm bài tự động.
+            <el-form-item size="medium" style="margin-bottom: 30px;">
+              <label style="font-size: 16px;">Ngôn ngữ</label>
+              <div>
+                <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
+                <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="en" border>Phản hồi tiếng Anh</el-radio>
               </div>
-            </div>
-            <div class="pricing-option-price" style="width: 90px;">Miễn Phí</div>
-          </div>
-        </div>
-        <div v-if="selectedReview == 'Free'">
-          <div style="padding-top: 20px; text-align: center;">
-            <el-alert
-              title="Để tạo môi trường học tập lành mạnh và khuyến khích các bạn thực hiện đánh giá cho các học viên khác. Chúng tôi sẽ yêu cầu các bạn cung cấp ít nhất 1 đánh giá trước khi có thể nhận phản hồi miễn phí từ học viên khác. Quy định này sẽ không áp dụng cho lần yêu cầu nhận phản hồi đầu tiên."
-              type="info"
-              style="word-break: break-word; text-align: left;"
-              :closable="false"
-            />
-          </div>
-        </div>
-        <div v-if="selectedReview == '' || selectedReview == 'Free'" id="peer-review-card" class="box-card review-card-mobile" @click="onReviewSelect('Free')">
-          <div>
-            <div class="pricing-title-wrapper">
-              <div class="pricing-option-icon"> <i class="fas fa-user-friends review-icon" /></div>
-              <div class="pricing-option-title">Góp Ý Từ Học Viên Khác</div>
-            </div>
-            <div>
-              <div class="pricing-option-description">
-                <!-- Nhận phản hồi mang tính xây dựng từ một học viên khác có band score tương đương hoặc cao hơn bạn. <a href="#">Xem phản hồi mẫu</a> -->
-                Nhận phản hồi mang tính xây dựng từ học viên khác giúp bạn có cái nhìn đa chiều về bài viết, mở ra cơ hội học hỏi và cải thiện kỹ năng 1 cách hiệu quả.
-              </div>
-            </div>
-            <div class="pricing-option-price" style="width: 90px;">Miễn Phí</div>
-          </div>
-        </div>
-      </div>
-      <div v-show="selectedReview == 'Pro' || (selectedReview == 'AI' && !requestedLanguage)" style="padding-top: 30px;">
-        <div>
-          <div>
-            <div>
-              <div style="text-align: center;">
-                <el-radio-group v-if="!requestedLanguage" v-model="feedbackLanguage" style="margin-top: 10px; margin-bottom: 10px;" size="small">
-                  <el-radio-button label="Phản hồi bằng tiếng Việt" />
-                  <el-radio-button label="Phản hồi bằng tiếng Anh" />
-                </el-radio-group>
+            </el-form-item>
 
-                <el-input
-                  v-if="selectedReview == 'Pro'"
-                  v-model="specialRequest"
-                  type="textarea"
-                  :rows="3"
-                  style="margin-bottom: 20px;"
-                  placeholder="Cung cấp yêu cầu cụ thể của bạn cho giáo viên. Ví dụ: chú trọng phần từ vựng, ý tưởng, ngữ pháp, và bố cục bài. Nếu không có yêu cầu gì bạn có thể để trống phần này."
-                />
-              </div>
-
-            </div>
-          </div>
-
-          <el-divider v-if="selectedReview == 'Pro'" content-position="center">
-            <div class="review-title" style="width: 200px;">
-              Phương thức thanh toán
-            </div>
-          </el-divider>
-          <div v-if="selectedReview == 'Pro'" style="text-align: center; padding-top: 20px;">
-            <el-button plain style="width: 100%;" @click="submitZaloPayRequest()">
-              <div style="width: 240px; margin: auto;">
-                <div style="font-size: 20px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
-                <img style="height: 26px;" src="../../assets/logo/zalopay.png" alt="logo" class="main-header-logo">
-              </div>
-
-            </el-button>
-
-            <el-button plain style="width: 100%; margin-left: 0px; margin-top: 10px;" @click="submitVNPayRequest()">
-              <div style="width: 240px; margin: auto;">
-                <div style="font-size: 20px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
-                <img style="height: 26px;" src="../../assets/logo/vnpay.png" alt="logo" class="main-header-logo">
-              </div>
-
-            </el-button>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="selectedReview == 'Free' || selectedReview == 'AI'">
-        <div style="padding-top: 10px; text-align: center;">
-          <el-button v-if="selectedReview == 'Free'" type="primary" :loading="loading" @click="requestReview()">Xác nhận</el-button>
-          <el-button v-else :loading="loading" @click="requestReview()">Xác nhận</el-button>
+            <el-form-item>
+              <el-button size="medium" type="primary" :loading="loading" @click="requestAIReview()">Xác nhận</el-button>
+              <el-button size="medium" @click="cancelRequest()">Huỷ</el-button>
+            </el-form-item>
+          </el-form>
         </div>
       </div>
     </div>
-    <div slot="footer" class="dialog-footer" />
   </el-dialog>
 </template>
 
 <script>
-
-import { REVIEW_REQUEST_STATUS } from '../../app.constant'
 import reviewService from '../../services/review.service'
-import paymentService from '../../services/payment.service'
 
 export default {
   name: 'Checkout',
   props: {
     submissionId: { type: Number, default: null },
-    questionId: { type: Number, default: null },
-    requestedLanguage: {type: String, default: null}
+    questionId: { type: Number, default: null }
   },
   data() {
     return {
@@ -296,12 +123,16 @@ export default {
       paymentIntent: null,
       epaySelected: false,
       paid: false,
-      selectedReview: 'AI',
       loadingAutomatedReview: false,
       feedbackLanguage: 'Phản hồi bằng tiếng Việt',
+      selectedLanguage: 'vn',
       specialRequest: null,
       screenWidth: window.innerWidth,
-      loading: false
+      loading: false,
+      selectedType: 'detail',
+      freeToken: this.$store.state.auth.user.freeToken,
+      premiumToken: this.$store.state.auth.user.premiumToken,
+      userSubscription: this.$store.state.auth.user.subscription
     }
   },
   computed: {
@@ -327,33 +158,13 @@ export default {
     // console.log(this.requestedLanguage)
   },
   methods: {
-    async submitZaloPayRequest() {
-      const model = {
-        userId: this.currentUser.id,
-        submissionId: this.submissionId,
-        reviewType: this.selectedReview,
-        amount: this.amount,
-        status: 0,
-        feedbackLanguage: this.requestedLanguage ? this.requestedLanguage : this.feedbackLanguage,
-        specialRequest: this.specialRequest
-      }
-      var zaloPayUrl = await paymentService.submitZaloPayRequest(model)
-      window.location.href = zaloPayUrl
-    },
-    async submitVNPayRequest() {
-      const model = {
-        userId: this.currentUser.id,
-        submissionId: this.submissionId,
-        reviewType: this.selectedReview,
-        amount: this.amount,
-        status: 0,
-        feedbackLanguage: this.requestedLanguage ? this.requestedLanguage : this.feedbackLanguage,
-        specialRequest: this.specialRequest
-      }
-      var vnPayUrl = await paymentService.submitVNPayRequest(model)
-      window.location.href = vnPayUrl
-    },
     openDialog() {
+      this.freeToken = this.$store.state.auth.user.freeToken
+      this.premiumToken = this.$store.state.auth.user.premiumToken
+      this.userSubscription = this.$store.state.auth.user.subscription
+      if (this.userSubscription && this.userSubscription.planId >= 4) {
+        this.selectedType = 'deep'
+      }
       this.dlVisible = true
       console.log(this.submissionId)
     },
@@ -363,61 +174,14 @@ export default {
     goBack() {
       this.selectedReview = ''
     },
-    onReviewSelect(reviewType) {
-      if (reviewType === 'Pro') {
-        this.amount = 100000
-        this.selectedReview = reviewType
-      } else if (reviewType === 'AI') {
-        this.amount = 100000
-        this.selectedReview = reviewType
-        if (this.requestedLanguage) {
-          this.requestAIReview()
-        }
-      } else {
-        this.amount = 0
-        this.selectedReview = reviewType
-      }
-    },
-    requestReview() {
-      if (this.selectedReview == 'Free') {
-        this.requestPeerReview()
-      } else {
-        this.requestAIReview()
-      }
-    },
-    requestPeerReview() {
-      this.loading = true
-      reviewService.createReviewRequest({
-        UserId: this.currentUser.id,
-        SubmissionId: this.submissionId,
-        FeedbackType: 'Free',
-        FeedbackLanguage: 'vn',
-        Status: REVIEW_REQUEST_STATUS.REQUESTED
-      }).then(rs => {
-        this.dlVisible = false
-        this.$notify.success({
-          title: 'Yêu cầu đã được gửi đi',
-          message: 'Yêu cầu nhận đánh giá từ học viên khác đã được gửi đi thành công. Chúng tôi sẽ thông báo cho bạn khi có phản hồi.',
-          type: 'success',
-          duration: 5000
-        })
-        this.loading = false
-        this.selectedReview = ''
-        this.$emit('reviewRequested')
-      }).catch(rs => {
-        // this.dlVisible = false
-        this.selectedReview = ''
-        this.loading = false
-        this.$router.push('/reviews')
-      })
-    },
     requestAIReview() {
       this.loading = true
       reviewService.createAutomatedReview({
         UserId: this.currentUser.id,
         SubmissionId: this.submissionId,
         FeedbackType: 'AI',
-        FeedbackLanguage: this.requestedLanguage ? this.requestedLanguage == 'Phản hồi bằng tiếng Việt' ? 'vn' : 'en' : this.feedbackLanguage == 'Phản hồi bằng tiếng Việt' ? 'vn' : 'en'
+        FeedbackLanguage: this.selectedLanguage,
+        ReviewType: this.selectedType
       }).then(rs => {
         this.loading = false
         this.dlVisible = false

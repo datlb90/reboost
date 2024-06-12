@@ -3,17 +3,13 @@
     <el-dialog
       id="contactDialog"
       :visible.sync="dialogVisible"
+      title="Liên Hệ Hỗ Trợ"
       width="650px"
       :fullscreen="screenWidth <= 780"
+      :close-on-click-modal="false"
       @opened="dialogOpened"
       @closed="dialogClosed"
     >
-      <div slot="title">
-        <div class="title-container">
-          {{ messageTranslates('contactDialog', 'title') }}
-        </div>
-        <!-- <div class="divider--horizontal divider" /> -->
-      </div>
       <div class="body-container">
         <el-form
           ref="contactForm"
@@ -23,7 +19,7 @@
           style="width:100%;"
         >
           <el-form-item
-            size="mini"
+            size="medium"
             label="Họ và tên"
             prop="fullName"
             :rules="[{ required: true, message: 'Hãy điền họ và tên của bạn'}]"
@@ -31,7 +27,7 @@
             <el-input v-model="formData.fullName" :disabled="currentUser.id != undefined" type="text" placeholder="Điền họ và tên của bạn" style="width: 90%;" />
           </el-form-item>
           <el-form-item
-            size="mini"
+            size="medium"
             label="Địa chỉ email"
             prop="email"
             :rules="[{ required: true, message: 'Hãy điền địa chỉ email của bạn'}]"
@@ -39,7 +35,7 @@
             <el-input v-model="formData.email" :disabled="currentUser.id != undefined" type="text" placeholder="Điền địa chỉ email của bạn" style="width: 90%;" />
           </el-form-item>
           <el-form-item
-            size="mini"
+            size="medium"
             :label="messageTranslates('contactDialog', 'reason')"
             prop="reason"
             :rules="[{ required: true, message: 'Hãy chọn 1 lý do' }]"
@@ -54,7 +50,7 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            size="mini"
+            size="medium"
             label="Yêu cầu"
             prop="message"
             :rules="[{ required: true, message: 'Hãy điền yêu cầu của bạn'}]"
@@ -68,7 +64,7 @@
             />
           </el-form-item>
           <el-form-item
-            size="mini"
+            size="medium"
             label="Tệp đính kèm"
             prop="files"
           >
@@ -85,22 +81,18 @@
               accept=".jpg,.png,.jpeg,.JPG,.PGN,.JPEG"
             >
               <el-button>Nhấp để tải</el-button>
-              <div slot="tip" class="el-upload__tip">Ảnh có định dạng jpg hoặc png với dung lượng nhỏ hơn 3mb</div>
+              <div slot="tip" class="el-upload__tip">Ảnh jpg hoặc png với dung lượng nhỏ hơn 3mb</div>
             </el-upload>
           </el-form-item>
 
           <el-form-item
-            size="mini"
+            size="medium"
           >
-            <el-button size="mini" type="primary" :disabled="isLoading" style="margin-top: 10px;" @click="submitMessage">{{ messageTranslates('contactDialog', 'submit') }}</el-button>
-            <el-button size="mini" :disabled="isLoading" style="margin-top: 10px;" @click="dialogVisible=false">{{ messageTranslates('contactDialog', 'cancel') }}</el-button>
+            <el-button size="medium" type="primary" :disabled="isLoading" style="margin-top: 10px;" @click="submitMessage">{{ messageTranslates('contactDialog', 'submit') }}</el-button>
+            <el-button size="medium" :disabled="isLoading" style="margin-top: 10px;" @click="dialogVisible=false">{{ messageTranslates('contactDialog', 'cancel') }}</el-button>
           </el-form-item>
         </el-form>
       </div>
-      <!-- <div slot="footer" style="text-align: center;">
-        <el-button size="mini" @click="dialogVisible=false">{{ messageTranslates('contactDialog', 'cancel') }}</el-button>
-        <el-button size="mini" type="primary" @click="submitMessage">{{ messageTranslates('contactDialog', 'submit') }}</el-button>
-      </div> -->
     </el-dialog>
   </div>
 </template>
@@ -120,7 +112,7 @@ export default {
         message: '',
         files: []
       },
-      reasons: ['Report a problem', 'Suggest new features', 'Other reasons'],
+      reasons: ['Hỗ trợ tài khoản', 'Hỗ trợ thanh toán', 'Thông báo lỗi', 'Gợi ý chức năng', 'Lý do khác'],
       isLoading: false,
       screenWidth: window.innerWidth
     }

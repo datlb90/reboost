@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <el-alert v-if="emailConfirmed" title="You email has been verified. You can log in now." type="success" center show-icon />
+      <el-alert v-if="emailConfirmed" title="Địa chỉ email đã được xác thực thành công! Bạn có thể đăng nhập ngay bây giờ." type="success" center show-icon />
 
       <div class="wrapper">
         <div>

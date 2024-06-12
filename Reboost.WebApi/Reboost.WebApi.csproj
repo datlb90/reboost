@@ -2046,6 +2046,9 @@
     <Content Remove="wwwroot\img\logo.760ee3d0.png" />
     <Content Remove="wwwroot\img\static-main.716d4d02.png" />
     <Content Remove="wwwroot\img\shape1.c4a654a7.png" />
+    <Content Remove="wwwroot\img\improved-version.6f085b7b.png" />
+    <Content Remove="wwwroot\img\intext-comment.e1587188.png" />
+    <Content Remove="wwwroot\img\4-criteria.fc0bdd68.png" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="log4net" />

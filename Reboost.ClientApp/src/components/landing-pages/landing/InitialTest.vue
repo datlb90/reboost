@@ -10,13 +10,6 @@
           <p style="max-width: 85%;">Chúng tôi cung cấp miễn phí bộ chủ đề được cập nhật thường xuyên kèm theo gợi ý từ vựng nâng band,
             hướng dẫn phân tích, và bài viết mẫu cho từng chủ đề. Hãy cùng luyện tập và tiến bộ mỗi ngày với Reboost.</p>
         </div>
-
-        <!-- <div style="text-align: center; margin-bottom: 20px; ">
-          <el-radio-group id="radio-select-test" v-model="initTest" style="margin-top: 20px; margin-bottom: 25px; " text-color="#4b6f8a" @change="switchTest">
-            <el-radio label="Đề Task 2" border />
-            <el-radio label="Đề Task 1" border />
-          </el-radio-group>
-        </div> -->
         <splitpanes class="default-theme" vertical style="height: 800px; width: 100%; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);">
           <pane>
             <el-tabs v-model="activeTab" type="border-card" style="height: 100%;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
@@ -50,10 +43,6 @@
                                   />
                                 </el-option-group>
                               </el-select>
-
-                              <!-- <div class="title-tab">
-                                {{ getDataQuestion.id }}. {{ getDataQuestion.title }}
-                              </div> -->
                             </div>
                             <div>
                               <el-tag
@@ -173,6 +162,14 @@
                       <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))">
                         <img :src="'/photo/' + getChart.content" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
                       </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-else>
+                  <div style="background: rgb(248 249 250); height: 740px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px; margin-bottom: 5px;">
+                    <div class="el-loading-spinner" style="position: relative; top: 150px;">
+                      <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                      <p class="el-loading-text" style="word-break: break-word;">Đang tải chủ đề viết</p>
                     </div>
                   </div>
                 </div>
@@ -379,8 +376,167 @@
         <div style="width: 100%;">
           <div id="tabs-wrapper">
             <el-tabs v-model="activeTab" type="border-card" style="margin-bottom: 10px;" @tab-click="showDiscussion" @tab-remove="onTabRemove">
-              <el-tab-pane label="Chủ đề" name="description">
+              <el-tab-pane label="Đề bài" name="description">
                 <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
+                  <div style="margin-bottom: 8px;">
+                    <el-row>
+                      <el-col>
+                        <div style="">
+                          <div>
+                            <div style="height: 45px;">
+
+                              <el-select
+                                v-model="selectedTopic"
+                                class="question-select"
+                                placeholder="Lựa chọn 1 chủ đề viết"
+                                style="width: 100%;"
+                                @change="onTopicSelect()"
+                              >
+                                <el-option-group
+                                  v-for="group in topicOptions"
+                                  :key="group.label"
+                                  :label="group.label"
+                                >
+                                  <el-option
+                                    v-for="item in group.options"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value"
+                                  />
+                                </el-option-group>
+                              </el-select>
+                            </div>
+                            <div>
+                              <el-tag
+                                v-if="getDataQuestion.difficulty == 'Medium'"
+                                type="warning"
+                                size="medium"
+                                style="margin-bottom: 5px; margin-right: 5px;"
+                              >
+                                {{ getDataQuestion.difficulty }}
+                              </el-tag>
+                              <el-tag
+                                v-else-if="getDataQuestion.difficulty == 'Hard'"
+                                type="danger"
+                                size="medium"
+                                style="margin-bottom: 5px; margin-right: 5px;"
+                              >
+                                {{ getDataQuestion.difficulty }}
+                              </el-tag>
+                              <el-tag
+                                v-else-if="getDataQuestion.difficulty == 'Easy'"
+                                size="medium"
+                                type="success"
+                                style="margin-bottom: 5px; margin-right: 5px;"
+                              >
+                                {{ getDataQuestion.difficulty }}
+                              </el-tag>
+
+                              <el-tag
+                                v-else
+                                size="medium"
+                                type="info"
+                                style="margin-bottom: 5px; margin-right: 5px;"
+                              >
+                                Undefined
+                              </el-tag>
+
+                              <el-tag
+                                size="medium"
+                                type="info"
+                                style="margin-bottom: 5px; margin-right: 5px;"
+                              >
+                                {{ getDataQuestion.section }}
+                              </el-tag>
+
+                              <el-tag
+                                size="medium"
+                                type="info"
+                                style="margin-bottom: 5px; margin-right: 5px;"
+                              >
+                                {{ getDataQuestion.type }}
+                              </el-tag>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="info" style="margin-top: 5px; font-size: 16px;" v-html="getDataQuestion.direction" />
+                      </el-col>
+                    </el-row>
+                  </div>
+                  <div>
+                    <div>
+                      <el-row style="margin-bottom: 8px;">
+                        <div id="questionContent" class="tip" style="font-size: 16px;" v-html="getQuestion.content" />
+                      </el-row>
+                      <el-row v-if="isShowQuestion">
+                        <div v-if="!isShowListeningTab && getReading != ''">
+                          <el-card class="box-card sample-box">
+                            <div style="height: 40px; border-bottom: 1px solid rgb(220 223 229); margin-bottom: 10px; ">
+                              <div style="float: left; margin-top: 2px;">
+                                <span style="font-size: 16px; font-weight: 600;"> Reading Passage</span>
+                              </div>
+                              <div style="float: right;">
+                                <el-button size="mini" @click="toggleBtnShowTab()">Go to listening</el-button>
+                              </div>
+                            </div>
+                            <div class="box-card__content">
+                              <div>
+                                <div v-html="getReading.content" />
+                              </div>
+                            </div>
+                          </el-card>
+                        </div>
+
+                        <el-col v-if="getReading =='' && getListening != '' || isShowListeningTab || getReading == ''" :span="24">
+                          <div v-if="isShowListeningTab" style="width: 100%;">
+                            <el-card class="box-card sample-box">
+                              <div style="height: 40px; border-bottom: 1px solid rgb(220 223 229); margin-bottom: 10px; ">
+                                <div style="float: left; margin-top: 2px;">
+                                  <span style="font-size: 16px; font-weight: 600;"> Listening Lecture</span>
+                                </div>
+                                <div style="float: right;">
+                                  <el-button size="mini" @click="backClick()">Back to Reading</el-button>
+                                </div>
+                              </div>
+                              <div class="box-card__content">
+                                <div>
+                                  <audio v-if="getListening != ''" controls style="width: 100%; height: 35px; margin-bottom: 3px;">
+                                    <source :src="'/audio/'+getListening.content" type="audio/mpeg">
+                                  </audio>
+                                  <div class="script-select" style="border: 2px solid #eff0f2; display: flex; padding: 5px 10px;" @click="toggleBtnShowScript">
+                                    <div style="flex-grow: 1;">
+                                      <i class="el-icon-document-copy" />
+                                      Audio Script
+                                    </div>
+                                    <div :class="{'rotate-icon' : isShowScript}">
+                                      <i class="fas fa-caret-down" />
+                                    </div>
+                                  </div>
+                                  <div v-if="isShowQuestion && isShowScript && isShowListeningTab" class="body-transcript" style="margin: 0;">
+                                    <pre id="transcriptContent" v-html="getTranscript.content" />
+                                  </div>
+                                </div>
+                              </div>
+                            </el-card>
+                          </div>
+                        </el-col>
+                      </el-row>
+                      <div v-if="isShowQuestion && (isShowChart || (getReading == '' && getChart != ''))">
+                        <img :src="'/photo/' + getChart.content" :alt="getChart.content" style="max-height: 100%; max-width: 100%;">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-else>
+                  <div style="background: rgb(248 249 250); height: 200px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px; margin-bottom: 5px;">
+                    <div class="el-loading-spinner" style="position: relative; top: 50px;">
+                      <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                      <p class="el-loading-text" style="word-break: break-word;">Đang tải chủ đề viết</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- <div v-if="getDataQuestion.title" style="height: 100%;display: flex; flex-direction: column">
                   <div style="margin-bottom: 8px;">
                     <el-row>
                       <el-col>
@@ -515,7 +671,7 @@
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> -->
               </el-tab-pane>
               <el-tab-pane label="Từ vựng" name="vocabulary" style="height: 100%; position: relative;">
                 <div>
@@ -1232,10 +1388,16 @@ export default {
 
 <style>
 
-.question-select > .el-input > .el-input__inner{
+.question-select > .el-input > .el-input__inner {
   background: #5f819b;
   color: white;
   font-size: 16px;
+}
+
+.question-select > .el-input > .el-input__suffix > .el-input__suffix-inner > .el-select__caret {
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 #tipContent p {

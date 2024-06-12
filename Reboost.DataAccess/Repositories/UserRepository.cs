@@ -32,7 +32,7 @@ namespace Reboost.DataAccess.Repositories
         }
         public async Task<bool> UsernameExist(string email, string phoneNumber)
         {
-            return await _context.Users.AnyAsync(u => u.Email == email || u.PhoneNumber == phoneNumber);
+            return await _context.Users.AnyAsync(u => u.Email == email || String.IsNullOrEmpty(phoneNumber) ? false : u.PhoneNumber == phoneNumber);
         }
         public async Task RecordUserLogin(string userId)
         {

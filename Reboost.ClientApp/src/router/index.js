@@ -14,6 +14,7 @@ import Logout from '../views/account/Logout.vue'
 import Register from '../views/account/Register.vue'
 import RaterRegister from '../views/account/RaterRegister.vue'
 import Redirect from '../views/account/Redirect.vue'
+import ConfirmEmail from '../views/account/ConfirmEmail.vue'
 import ForgotPassword from '../views/account/ForgotPassword.vue'
 import ResetPassword from '../views/account/ResetPassword.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
@@ -192,6 +193,15 @@ const router = new VueRouter({
       path: '/redirect',
       name: PageName.REDIRECT,
       component: Redirect,
+      meta: {
+        plainLayout: true,
+        landingPage: false
+      }
+    },
+    {
+      path: '/confirm/email',
+      name: 'Confirm Email',
+      component: ConfirmEmail,
       meta: {
         plainLayout: true,
         landingPage: false

@@ -162,6 +162,23 @@ namespace Reboost.WebApi.Controllers
         }
 
         // /api/auth/confirm_email?userid&token
+        [HttpGet("resend/confirm/email/{userId}")]
+        public async Task<IActionResult> ResendEmailVerification(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return NotFound();
+
+            var result = await _authService.ResendEmailVerification(userId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+        }
+
+        // /api/auth/confirm_email?userid&token
         [HttpGet("confirm/email")]
         public async Task<IActionResult> ConfirmEmail(string id, string code)
         {

@@ -17,6 +17,10 @@ const getDefaultState = () => {
       premiumToken: null,
       subscription: null
     },
+    unconfirmedUser: {
+      id: null,
+      email: null
+    },
     selectedTest: []
   }
 }
@@ -50,7 +54,7 @@ const actions = {
   async register({ state, commit }, data) {
     const result = await authService.register(data)
     if (result) {
-      commit('SET_USER', result.user)
+      commit('SET_UNCONFIRMED_USER', result.user)
       return result.user
     }
     return null
@@ -132,6 +136,9 @@ const mutations = {
   },
   SET_SUBSCRIPTION(state, subscription) {
     state.user.subscription = subscription
+  },
+  SET_UNCONFIRMED_USER: (state, user) => {
+    state.unconfirmedUser = user
   },
   SET_USER: (state, user) => {
     state.user = user

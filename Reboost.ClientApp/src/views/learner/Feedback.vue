@@ -8,7 +8,6 @@
               <div id="parent-scroll" style="flex-grow: 1;position: relative;">
                 <div id="child-scroll">
                   <div id="rubric">
-
                     <div v-if="loadCriteriaFeedbackCompleted || loadEssayScoreCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
                       <div v-if="loadEssayScoreCompleted">
                         <el-card
@@ -464,7 +463,7 @@
             <div
               v-loading="true"
               style="height: 545px;"
-              element-loading-text="Đang tìm các lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
+              element-loading-text="Đang tìm lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
               element-loading-background="rgb(248 249 250)"
             />
           </div>
@@ -588,80 +587,6 @@
             <div id="parent-scroll" style="flex-grow: 1;position: relative;">
               <div id="child-scroll">
                 <div id="rubric">
-                  <!-- <div v-if="loadCriteriaFeedbackCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
-                    <el-card
-                      v-for="criteria in rubricCriteria"
-                      :key="criteria.criteriaId"
-                      style="margin-bottom: 5px; margin-left: 3px; border: 1px solid rgb(190, 190, 190);"
-                      shadow="hover"
-                    >
-                      <div slot="header" class="clearfix">
-                        <div>
-                          <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                            <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
-                            <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
-                            <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
-                            <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
-                            <span v-else> Tiêu Chí {{ criteria.name }}</span>
-                          </div>
-                          <div style="float: right;">
-                            <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
-                              <div v-if="isAiReview">
-                                <div v-if="!criteria.loading && criteria.mark" class="band-score">
-                                  Band:
-                                  {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <div>
-                          <div>
-                            <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
-                          </div>
-                        </div>
-                      </div>
-                    </el-card>
-                    <el-card
-                      v-if="isAiReview && rubricCriteria && rubricCriteria.length > 0"
-                      style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
-                      shadow="hover"
-                    >
-                      <div slot="header" class="clearfix">
-                        <div style="color: white; float: left; font-size: 16px; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
-                          <span>Đánh Giá Phản Hồi</span>
-                        </div>
-                      </div>
-                      <div>
-                        <div>
-                          <div style="font-size: 15px; color: white;">Đánh giá mức độ hữu ích của phản hồi</div>
-                        </div>
-
-                        <div>
-                          <el-rate v-model="rateValue" style="margin-top: 8px; margin-bottom: 4px; color: rgb(177 177 177);" :allow-half="true" />
-                        </div>
-
-                        <div>
-                          <el-input
-                            id="rubric-rating"
-                            v-model="rateComment"
-                            type="textarea"
-                            :rows="5"
-                            style="margin-top: 10px; margin-bottom: 5px;"
-                            :maxlength="8000"
-                            placeholder="Cảm nghĩ của bạn về điểm số và phản hồi cho bài viết"
-                          />
-                        </div>
-                        <div style="margin-top: 5px;">
-                          <el-button :disabled="rateValue == 0 && rateComment == ''" size="mini" @click="rateAIReview()">
-                            Gửi đánh giá
-                          </el-button>
-                        </div>
-                      </div>
-                    </el-card>
-                  </div> -->
                   <div v-if="loadCriteriaFeedbackCompleted || loadEssayScoreCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
                     <div v-if="loadEssayScoreCompleted">
                       <el-card
@@ -1115,7 +1040,7 @@
             <div
               v-loading="true"
               style="height: 545px;"
-              element-loading-text="Đang tìm các lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
+              element-loading-text="Đang tìm lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
               element-loading-background="rgb(248 249 250)"
             />
           </div>
@@ -1326,7 +1251,7 @@ export default {
       isView: false,
       isRate: false,
       rateValue: 0,
-      rateComment: null,
+      rateComment: '',
       selectedTab: 'rubric',
       isReviewAuth: false,
       isRated: false,
@@ -1460,7 +1385,8 @@ export default {
         task: question.section,
         topic: question.questionsPart.find(q => q.name == 'Question').content,
         essay: this.documentText,
-        feedbackLanguage: this.review.reviewRequest.feedbackLanguage
+        feedbackLanguage: this.review.reviewRequest.feedbackLanguage,
+        feedbackType: this.review.reviewRequest.reviewType
       }
       const response = await reviewService.getIntextComments(model)
       if (response) {
@@ -1526,6 +1452,23 @@ export default {
     }
   },
   methods: {
+    rateAIReview() {
+      reviewService.createAIReviewRating({
+        UserId: 'AI Review Version 1.5',
+        ReviewId: this.reviewId,
+        Rate: parseFloat(this.rateValue),
+        Comment: this.rateComment
+      }).then(r => {
+        if (r) {
+          this.$notify.success({
+            title: 'Cảm ơn đánh giá của bạn!',
+            message: 'Dữ liệu bạn cung cấp sẽ được sử dụng để nâng cấp hệ thống chấm bài tự động và mang lại cho bạn những phản hồi tốt hơn.',
+            type: 'success',
+            duration: 7000
+          })
+        }
+      })
+    },
     finalizeFeedback() {
       if (!this.hasGrade && this.loadErrorsCompleted && this.essayScore && this.rubricCriteria) {
         this.loadFeedbackCompleted = true
@@ -1642,7 +1585,6 @@ export default {
           console.log(this.rubricCriteria)
           if (!this.hasGrade) {
             // Update user's free token in store
-
             if (!this.userSubscription) {
               if (model.feedbackType == 'detail' && this.freeToken > 0) { this.$store.dispatch('auth/updateToken', this.freeToken - 1) } else if (model.feedbackType == 'deep' && this.premiumToken > 0) { this.$store.dispatch('auth/updatePremiumToken', this.premiumToken - 1) }
             }

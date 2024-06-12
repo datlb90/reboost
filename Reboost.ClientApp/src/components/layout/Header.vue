@@ -233,7 +233,7 @@ export default {
       role: this.$store.state.auth.user.role,
       freeToken: this.$store.state.auth.user.freeToken,
       premiumToken: this.$store.state.auth.user.premiumToken,
-      userSubscription: null,
+      userSubscription: this.$store.state.auth.user.subscription,
       isSticky: false,
       appInProgress: true,
       raterRating: 0,
@@ -392,6 +392,7 @@ export default {
     openRequestReviewDialog() {
       this.freeToken = this.$store.state.auth.user.freeToken
       this.premiumToken = this.$store.state.auth.user.premiumToken
+      this.userSubscription = this.$store.state.auth.user.subscription
       // Check user token & subscription
       if (this.freeToken > 0 || this.premiumToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
         this.$refs.reviewRequestDialog?.openDialog()

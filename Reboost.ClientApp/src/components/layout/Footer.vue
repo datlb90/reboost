@@ -18,7 +18,7 @@
     v-else
     class="bg-f7fafd"
     style="border-top: 1px solid #d8ebfd; text-align: center; padding-top: 14px;
-    padding-bottom: 1px; background: #4b6f8a; margin-top: 40px;"
+    padding-bottom: 1px; background: #4b6f8a;"
   >
     <p style="color: white;">Công Ty TNHH Reboost. Mã số thuế: 0110542943</p>
     <p style="color: white;">Email: <a style="color: white;" href="mailto:support@reboost.vn">support@reboost.vn</a>. Điện Thoại: 0393535216</p>
