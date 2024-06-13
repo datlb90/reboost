@@ -165,8 +165,8 @@ export default {
           userService.supportRequest(postData).then(rs => {
             if (rs) {
               this.$notify.success({
-                title: 'Support Request Submitted',
-                message: 'Your inquiry has been submitted successfully',
+                title: 'Yêu cầu của bạn đã được gửi',
+                message: 'Yêu cầu của bạn đã được gửi thành công. Chúng tôi sẽ liên lạc với bạn trong thời gian sớm nhất.',
                 type: 'success',
                 duration: 2000
               })

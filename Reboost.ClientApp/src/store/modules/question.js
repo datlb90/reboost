@@ -222,8 +222,10 @@ const mutations = {
   },
   CLEAR_STATE(state) {
     const personalQuestion = state.personalQuestion
+    const initialSubmission = state.initialSubmission
     Object.assign(state, getDefaultState())
     state.personalQuestion = personalQuestion
+    state.initialSubmission = initialSubmission
   }
 }
 

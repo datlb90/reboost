@@ -32,7 +32,7 @@
             <div class="pricing-features">
               <ul>
                 <li class="active">5 Bài Chấm</li>
-                <li class="active">Highest Speed</li>
+                <li class="active">Speed</li>
                 <li class="active">1 GB Storage</li>
                 <li class="active">Unlimited Website</li>
                 <li class="active">Unlimited Users</li>
@@ -128,7 +128,11 @@ export default {
       this.screenWidth = newWidth
     }
   },
+  created() {
+    document.title = 'Reboost - Bảng Giá'
+  },
   mounted() {
+    document.title = 'Reboost - Bảng Giá'
     window.addEventListener('resize', () => {
       this.screenWidth = window.innerWidth
     })

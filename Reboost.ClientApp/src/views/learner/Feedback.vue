@@ -1345,80 +1345,91 @@ export default {
       if (this.review.review.reviewerId === 'AI') {
         this.isAiReview = true
       }
-      if (this.review.review.finalScore) { this.hasGrade = true }
-    }
-
-    this.loadingReview = false
-
-    // Load question and get task info
-    const question = await this.$store.dispatch('question/loadQuestion', this.questionId)
-    this.task = question.section
-    document.title = 'Đánh giá - ' + question.title
-
-    // Load document and its data
-    const doc = await docService.getDocument(this.documentId)
-    this.documentText = doc.data.text
-    this.docData = this.base64ToArrayBuffer(doc.data.data)
-
-    // await this.loadRubric()
-    if (!this.hasGrade) {
-      const chart = question.questionsPart.find(q => q.name == 'Chart')
-      if (chart) {
-        this.chartDescription = await reviewService.getChartDescription(chart.content)
+      if (this.review.review.finalScore) { this.hasGrade = true } else {
+        this.subscriptionCheck()
+        // Update user's free token in store
+        if (!this.userSubscription) {
+          if (this.review.reviewRequest.reviewType == 'detail' && this.freeToken > 0) { this.$store.dispatch('auth/updateToken', this.freeToken - 1) } else if (this.review.reviewRequest.reviewType == 'deep' && this.premiumToken > 0) { this.$store.dispatch('auth/updatePremiumToken', this.premiumToken - 1) }
+        }
       }
-    }
-    this.getReviewScores()
-    this.getReviewFeedback()
 
-    // Get in-text comments
-    await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
-    if (this.loadedAnnotation && this.loadedAnnotation.annotations && this.loadedAnnotation.annotations.length > 0) {
-      console.log(this.loadedAnnotation.annotations)
-      // load in-text comments saved in db
-      PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
-      this.intextCommentCompleted = true
-      this.finalizeFeedback()
-    } else {
-      // Get new list of in-text comments and create the annotations
-      const model = {
-        userId: this.$store.state.auth.user.id,
-        task: question.section,
-        topic: question.questionsPart.find(q => q.name == 'Question').content,
-        essay: this.documentText,
-        feedbackLanguage: this.review.reviewRequest.feedbackLanguage,
-        feedbackType: this.review.reviewRequest.reviewType
+      this.loadingReview = false
+
+      // Load question and get task info
+      const question = await this.$store.dispatch('question/loadQuestion', this.questionId)
+      this.task = question.section
+      document.title = 'Đánh giá - ' + question.title
+
+      // Load document and its data
+      const doc = await docService.getDocument(this.documentId)
+      this.documentText = doc.data.text
+      this.docData = this.base64ToArrayBuffer(doc.data.data)
+
+      // await this.loadRubric()
+      if (!this.hasGrade) {
+        const chart = question.questionsPart.find(q => q.name == 'Chart')
+        if (chart) {
+          this.chartDescription = await reviewService.getChartDescription(chart.content)
+        }
       }
-      const response = await reviewService.getIntextComments(model)
-      if (response) {
-        this.loadErrorsCompleted = true
-        this.errors = response.errors
-        console.log('Errors:', this.errors)
+      this.getReviewScores()
+      this.getReviewFeedback()
+
+      // Get in-text comments
+      await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
+      if (this.loadedAnnotation && this.loadedAnnotation.annotations && this.loadedAnnotation.annotations.length > 0) {
+        console.log(this.loadedAnnotation.annotations)
+        // load in-text comments saved in db
+        PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
+        this.intextCommentCompleted = true
         this.finalizeFeedback()
       } else {
-        this.loadErrorsCompleted = true
-        this.finalizeFeedback()
-        this.$notify.error({
-          title: 'Không thể sửa lỗi trong bài viết',
-          message: 'Đã có sự cố xảy ra trong quá trình sửa lỗi',
-          type: 'error',
-          duration: 5000
-        })
+        if (!this.hasGrade) {
+          // Get new list of in-text comments and create the annotations
+          const model = {
+            userId: this.$store.state.auth.user.id,
+            task: question.section,
+            topic: question.questionsPart.find(q => q.name == 'Question').content,
+            essay: this.documentText,
+            feedbackLanguage: this.review.reviewRequest.feedbackLanguage,
+            feedbackType: this.review.reviewRequest.reviewType
+          }
+          const response = await reviewService.getIntextComments(model)
+          if (response) {
+            this.loadErrorsCompleted = true
+            this.errors = response.errors
+            console.log('Errors:', this.errors)
+            this.finalizeFeedback()
+          } else {
+            this.loadErrorsCompleted = true
+            this.finalizeFeedback()
+            this.$notify.error({
+              title: 'Không thể sửa lỗi trong bài viết',
+              message: 'Đã có sự cố xảy ra trong quá trình sửa lỗi cho bài viết. Xin vui lòng thử lại.',
+              type: 'error',
+              duration: 5000
+            })
+          }
+        } else {
+          this.loadErrorsCompleted = true
+          this.finalizeFeedback()
+        }
       }
+
+      // render the document
+      this.completeLoading = true
+      await this.render()
+
+      if (this.errors && this.errors.length > 0) {
+        this.highlightErrors()
+      } else {
+        this.handleCommentPositionsRestore()
+        this.intextCommentCompleted = true
+      }
+
+      this.$refs.toolBar?.handleScale('fitPage')
+      this.$refs.toolBar?.insertExpandMenu()
     }
-
-    // render the document
-    this.completeLoading = true
-    await this.render()
-
-    if (this.errors && this.errors.length > 0) {
-      this.highlightErrors()
-    } else {
-      this.handleCommentPositionsRestore()
-      this.intextCommentCompleted = true
-    }
-
-    this.$refs.toolBar?.handleScale('fitPage')
-    this.$refs.toolBar?.insertExpandMenu()
   },
   beforeCreate() {
     document.body.style = 'overflow: hidden'
@@ -1452,6 +1463,30 @@ export default {
     }
   },
   methods: {
+    subscriptionCheck() {
+      const feedbackType = this.review.reviewRequest.reviewType
+      if (this.userSubscription == null) {
+        if (feedbackType == 'detail' && this.freeToken <= 0) {
+          this.$notify.info({
+            title: 'Đã hết lượt chấm miễn phí',
+            message: 'Lượt chấm miễn phí cho phản hồi chi tiết đã được sử dụng hết.',
+            type: 'info',
+            duration: 5000
+          })
+          this.$router.push('/pricing')
+          return false
+        } else if (feedbackType == 'deep' && this.premiumToken <= 0) {
+          this.$notify.error({
+            title: 'Đã hết lượt chấm miễn phí',
+            message: 'Lượt chấm miễn phí cho phản hồi chuyên sâu đã được sử dụng hết.',
+            type: 'info',
+            duration: 5000
+          })
+          this.$router.push('/pricing')
+          return false
+        }
+      }
+    },
     rateAIReview() {
       reviewService.createAIReviewRating({
         UserId: 'AI Review Version 1.5',
@@ -1583,13 +1618,6 @@ export default {
         if (rs) {
           this.rubricCriteria = rs
           console.log(this.rubricCriteria)
-          if (!this.hasGrade) {
-            // Update user's free token in store
-            if (!this.userSubscription) {
-              if (model.feedbackType == 'detail' && this.freeToken > 0) { this.$store.dispatch('auth/updateToken', this.freeToken - 1) } else if (model.feedbackType == 'deep' && this.premiumToken > 0) { this.$store.dispatch('auth/updatePremiumToken', this.premiumToken - 1) }
-            }
-          }
-
           this.loadCriteriaFeedbackCompleted = true
           this.finalizeFeedback()
         } else {

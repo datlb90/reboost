@@ -104,8 +104,8 @@ namespace Reboost.WebApi.Identity
                         PhoneNumber = model.PhoneNumber,
                         CreatedDate = DateTime.UtcNow,
                         UpdatedDate = DateTime.UtcNow,
-                        FreeToken = 3,
-                        PremiumToken = 2
+                        FreeToken = 2,
+                        PremiumToken = 1
                     };
 
                     // Create the user account
@@ -197,8 +197,8 @@ namespace Reboost.WebApi.Identity
                                 ExpireDate = token.ValidTo,
                                 FirstName = model.FullName,
                                 LastName = "",
-                                FreeToken = 3,
-                                PremiumToken = 2,
+                                FreeToken = 2,
+                                PremiumToken = 1,
                                 Subscription = null
                             };
 
@@ -292,8 +292,8 @@ namespace Reboost.WebApi.Identity
                                 LastName = lastName == null ? "" : lastName,
                                 CreatedDate = DateTime.UtcNow,
                                 UpdatedDate = DateTime.UtcNow,
-                                FreeToken = 3,
-                                PremiumToken = 2
+                                FreeToken = 2,
+                                PremiumToken = 1
                             };
                             var result = await _userManger.CreateAsync(identityUser);
                             if (result.Succeeded)
@@ -535,7 +535,7 @@ namespace Reboost.WebApi.Identity
                 string url = $"{_configuration["AppUrl"]}/api/auth/confirm/email?id={user.Id}&code={validEmailToken}";
 
                 string message = $"<p>Xin chào " + user.FirstName + ",</p>" +
-                                $"<p>Chào mừng bạn đên với Reboost!</p>" +
+                                $"<p>Chào mừng bạn đến với Reboost!</p>" +
                                 $"<p>Để hoàn thiện quá trình đăng ký tài khoản, bạn vui lòng xác nhận địa chỉ email sử dụng đường dẫn dưới đây:</p>" +
                                 $"<p><a href='{url}'>Đường dẫn xác nhận địa chỉ email</a></p>" +
                                 $"<p>Nếu bạn không yêu cầu đăng ký tài khoản, bạn có thể bỏ qua email này.</p>" +
@@ -571,7 +571,7 @@ namespace Reboost.WebApi.Identity
             string url = $"{_configuration["AppUrl"]}/api/auth/confirm/email?id={user.Id}&code={validEmailToken}";
 
             string message = $"<p>Xin chào " + user.FirstName + ",</p>" +
-                            $"<p>Chào mừng bạn đên với Reboost!</p>" +
+                            $"<p>Chào mừng bạn đến với Reboost!</p>" +
                             $"<p>Để hoàn thiện quá trình đăng ký tài khoản, bạn vui lòng xác nhận địa chỉ email sử dụng đường dẫn dưới đây:</p>" +
                             $"<p><a href='{url}'>Đường dẫn xác nhận địa chỉ email</a></p>" +
                             $"<p>Nếu bạn không yêu cầu đăng ký tài khoản, bạn có thể bỏ qua email này.</p>" +

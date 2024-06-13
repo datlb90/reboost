@@ -1,12 +1,12 @@
 <template>
-  <section id="pricing" class="features-area-two ptb-80" :style="user.id ? 'margin-top: 0px; min-height: 100vh;' : 'margin-top: 50px; min-height: 100vh;'">
+  <section v-if="screenWidth > 780" id="pricing" class="features-area-two ptb-80" :style="user.id ? 'margin-top: 0px; min-height: 100vh; padding-top: 30px;' : 'margin-top: 10px; min-height: 100vh;'">
     <div class="container">
       <div class="section-title" style="margin-bottom: 40px;">
         <h1 v-if="user.id" style="font-size: 30px;">Bảng Giá</h1>
         <h1 v-else style="font-size: 30px;">Bảng Giá</h1>
-        <div class="bar" />
+        <div class="bar" style="margin: 10px auto;" />
         <div style="text-align: center;">
-          <div class="menu-btns" style="margin-top: 30px; margin-left: 5px;">
+          <div class="menu-btns" style="margin-top: 20px; margin-left: 5px;">
             <a style="margin-right: 20px; padding: 10px 25px;" class="btn btn-light" :class="{ 'active': durationActive(6) }" @click="selectDuration(6)">
               6 tháng
             </a>
@@ -23,28 +23,39 @@
       <div v-if="activeDuration == 6" class="row">
         <div class="col-lg-4 col-md-6 col-sm-6">
           <div class="pricing-table">
-            <div class="pricing-header">
+            <div class="pricing-header" style="margin-bottom: 20px">
               <h3>Luyện tập cơ bản</h3>
             </div>
-            <div class="price">
+            <div class="price" style="margin-bottom: 20px">
               <span>Miễn Phí</span>
             </div>
 
             <div class="pricing-features">
-              <ul>
-                <li class="active">5 Bài Chấm</li>
-                <li class="active">Highest Speed</li>
-                <li class="active">1 GB Storage</li>
-                <li class="active">Unlimited Website</li>
-                <li class="active">Unlimited Users</li>
-                <li class="active">24x7 Great Support</li>
-                <li>Data Security and Backups</li>
-                <li>Monthly Reports and Analytics</li>
+              <ul style="margin-bottom: 10px;">
+                <li class="active">3 Bài Chấm Miễn Phí</li>
+                <li class="active">2 Phản Hồi Chi Tiết</li>
+                <li class="active">1 Phản Hồi Chuyên Sâu</li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                  <li>Hoàn Tiền 14 Ngày</li>
+                </ul>
               </ul>
             </div>
 
             <div class="pricing-footer">
-              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }" @click="selectPlan(0)">
+              <a href="#" class="btn btn-primary disabled" @click="selectPlan(0)">
                 {{ getOptionText(0) }}
               </a>
             </div>
@@ -53,24 +64,53 @@
 
         <div class="col-lg-4 col-md-6 col-sm-6">
           <div class="pricing-table" :class="{ 'active-plan': planActive(1) }">
-            <div class="pricing-header">
+            <div class="pricing-header" style="margin-bottom: 20px">
               <h3>Phản Hồi Chi Tiết</h3>
             </div>
 
-            <div class="price">
+            <div class="price" style="margin-bottom: 20px">
               <span><sup>đ</sup>99.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
-              <ul>
-                <li class="active">Không giới hạn bài chấm</li>
-                <li class="active">Highest Speed</li>
-                <li class="active">3 GB Storage</li>
-                <li class="active">Unlimited Website</li>
-                <li class="active">Unlimited Users</li>
-                <li class="active">24x7 Great Support</li>
-                <li class="active">Data Security and Backups</li>
-                <li>Monthly Reports and Analytics</li>
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Chấm điểm 4 tiêu chí <br>- Nâng cấp lập luận <br>- Bài chữa tham khảo <br>- Nâng cấp từ vựng</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Sửa các lỗi từ vựng và ngữ pháp <br> nổi bật nhất trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                  <li class="active">
+                    Hoàn Tiền 14 Ngày
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">Bạn được đảm bảo trong 14 ngày đầu tiên có thể <br> hoàn tiền bất kỳ lúc nào với bất kỳ lý do nào</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                </ul>
               </ul>
             </div>
 
@@ -81,27 +121,66 @@
             </div>
           </div>
         </div>
+
         <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-0 offset-md-3 offset-sm-3">
           <div class="pricing-table" :class="{ 'active-plan': planActive(4) }">
-            <div class="pricing-header">
+            <div class="pricing-header" style="margin-bottom: 20px">
               <h3>Phản Hồi Chuyên Sâu</h3>
             </div>
 
-            <div class="price">
-              <span><sup>đ</sup>199.000<span>/THÁNG</span></span>
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>249.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
-              <ul>
-                <li class="active">15 GB Bandwidth</li>
-                <li class="active">Highest Speed</li>
-                <li class="active">5 GB Storage</li>
-                <li class="active">Unlimited Website</li>
-                <li class="active">Unlimited Users</li>
-                <li class="active">24x7 Great Support</li>
-                <li class="active">Data Security and Backups</li>
-                <li class="active">Monthly Reports and Analytics</li>
-                <!-- <li v-if="proratedAmount != 0 && !planDisabled(4)" class="active">Nhận lại <span><sup>đ</sup>{{ proratedAmount / 1000 }}.000<span /></span> từ gói hiện tại</li> -->
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Cung cấp phản hồi cụ thể và <br> chính xác hơn với ChatGPT-4</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Chỉ ra các lỗi sai và cách sửa <br> cho từng câu văn trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">Hỗ Trợ Bản Viết Tay</li>
+                <li class="active">AI Chấm Sửa Trong Khi Viết
+
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng AI hỗ trợ chấm sửa <br>khi làm bài viết mà không cần trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip>
+                </li>
+                <li class="active">Phản Hồi Cho IELTS Speaking
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng cung cấp phản hồi <br>cho IELST Speaking mà không phải trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip></li>
+              </ul>
+              <hr style="margin-left: 40px; margin-right: 40px;">
+              <ul style="margin-bottom: 20px;">
+                <li class="active">Luyện Tập Không Giới Hạn</li>
+                <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                <li class="active">
+                  Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Hoàn Tiền 14 Ngày
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Bạn được đảm bảo trong 14 ngày đầu tiên có thể <br> hoàn tiền bất kỳ lúc nào với bất kỳ lý do nào</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
               </ul>
             </div>
 
@@ -117,28 +196,39 @@
       <div v-else-if="activeDuration == 3" class="row">
         <div class="col-lg-4 col-md-6 col-sm-6">
           <div class="pricing-table">
-            <div class="pricing-header">
+            <div class="pricing-header" style="margin-bottom: 20px">
               <h3>Luyện tập cơ bản</h3>
             </div>
-            <div class="price">
+            <div class="price" style="margin-bottom: 20px">
               <span>Miễn Phí</span>
             </div>
 
             <div class="pricing-features">
-              <ul>
-                <li class="active">5 Bài Chấm</li>
-                <li class="active">Highest Speed</li>
-                <li class="active">1 GB Storage</li>
-                <li class="active">Unlimited Website</li>
-                <li class="active">Unlimited Users</li>
-                <li class="active">24x7 Great Support</li>
-                <li>Data Security and Backups</li>
-                <li>Monthly Reports and Analytics</li>
+              <ul style="margin-bottom: 10px;">
+                <li class="active">3 Bài Chấm Miễn Phí</li>
+                <li class="active">2 Phản Hồi Chi Tiết</li>
+                <li class="active">1 Phản Hồi Chuyên Sâu</li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                  <li>Hoàn Tiền 14 Ngày</li>
+                </ul>
               </ul>
             </div>
 
             <div class="pricing-footer">
-              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }" @click="selectPlan(0)">
+              <a href="#" class="btn btn-primary disabled" @click="selectPlan(0)">
                 {{ getOptionText(0) }}
               </a>
             </div>
@@ -147,24 +237,53 @@
 
         <div class="col-lg-4 col-md-6 col-sm-6">
           <div class="pricing-table" :class="{ 'active-plan': planActive(2) }">
-            <div class="pricing-header">
+            <div class="pricing-header" style="margin-bottom: 20px">
               <h3>Phản Hồi Chi Tiết</h3>
             </div>
 
-            <div class="price">
-              <span><sup>đ</sup>139.000<span>/THÁNG</span></span>
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>129.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
-              <ul>
-                <li class="active">Không giới hạn bài chấm</li>
-                <li class="active">Highest Speed</li>
-                <li class="active">3 GB Storage</li>
-                <li class="active">Unlimited Website</li>
-                <li class="active">Unlimited Users</li>
-                <li class="active">24x7 Great Support</li>
-                <li class="active">Data Security and Backups</li>
-                <li>Monthly Reports and Analytics</li>
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Chấm điểm 4 tiêu chí <br>- Nâng cấp lập luận <br>- Bài chữa tham khảo <br>- Nâng cấp từ vựng</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Sửa các lỗi từ vựng và ngữ pháp <br> nổi bật nhất trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                  <li class="active">
+                    Hoàn Tiền 14 Ngày
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">Bạn được đảm bảo trong 14 ngày đầu tiên có thể <br> hoàn tiền bất kỳ lúc nào với bất kỳ lý do nào</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                </ul>
               </ul>
             </div>
 
@@ -175,27 +294,66 @@
             </div>
           </div>
         </div>
+
         <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-0 offset-md-3 offset-sm-3">
           <div class="pricing-table" :class="{ 'active-plan': planActive(5) }">
-            <div class="pricing-header">
+            <div class="pricing-header" style="margin-bottom: 20px">
               <h3>Phản Hồi Chuyên Sâu</h3>
             </div>
 
-            <div class="price">
-              <span><sup>đ</sup>249.000<span>/THÁNG</span></span>
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>299.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
-              <ul>
-                <li class="active">15 GB Bandwidth</li>
-                <li class="active">Highest Speed</li>
-                <li class="active">5 GB Storage</li>
-                <li class="active">Unlimited Website</li>
-                <li class="active">Unlimited Users</li>
-                <li class="active">24x7 Great Support</li>
-                <li class="active">Data Security and Backups</li>
-                <li class="active">Monthly Reports and Analytics</li>
-                <!-- <li v-if="proratedAmount != 0 && !planDisabled(4)" class="active">Nhận lại <span><sup>đ</sup>{{ proratedAmount / 1000 }}.000<span /></span> từ gói hiện tại</li> -->
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Cung cấp phản hồi cụ thể và <br> chính xác hơn với ChatGPT-4</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Chỉ ra các lỗi sai và cách sửa <br> cho từng câu văn trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">Hỗ Trợ Bản Viết Tay</li>
+                <li class="active">AI Chấm Sửa Trong Khi Viết
+
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng AI hỗ trợ chấm sửa <br>khi làm bài viết mà không cần trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip>
+                </li>
+                <li class="active">Phản Hồi Cho IELTS Speaking
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng cung cấp phản hồi <br>cho IELST Speaking mà không phải trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip></li>
+              </ul>
+              <hr style="margin-left: 40px; margin-right: 40px;">
+              <ul style="margin-bottom: 20px;">
+                <li class="active">Luyện Tập Không Giới Hạn</li>
+                <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                <li class="active">
+                  Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Hoàn Tiền 14 Ngày
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Bạn được đảm bảo trong 14 ngày đầu tiên có thể <br> hoàn tiền bất kỳ lúc nào với bất kỳ lý do nào</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
               </ul>
             </div>
 
@@ -211,28 +369,38 @@
       <div v-else class="row">
         <div class="col-lg-4 col-md-6 col-sm-6">
           <div class="pricing-table">
-            <div class="pricing-header">
+            <div class="pricing-header" style="margin-bottom: 20px">
               <h3>Luyện tập cơ bản</h3>
             </div>
-            <div class="price">
+            <div class="price" style="margin-bottom: 20px">
               <span>Miễn Phí</span>
             </div>
 
             <div class="pricing-features">
-              <ul>
-                <li class="active">5 Bài Chấm</li>
-                <li class="active">Highest Speed</li>
-                <li class="active">1 GB Storage</li>
-                <li class="active">Unlimited Website</li>
-                <li class="active">Unlimited Users</li>
-                <li class="active">24x7 Great Support</li>
-                <li>Data Security and Backups</li>
-                <li>Monthly Reports and Analytics</li>
+              <ul style="margin-bottom: 10px;">
+                <li class="active">3 Bài Chấm Miễn Phí</li>
+                <li class="active">2 Phản Hồi Chi Tiết</li>
+                <li class="active">1 Phản Hồi Chuyên Sâu</li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                </ul>
               </ul>
             </div>
 
             <div class="pricing-footer">
-              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(0) }" @click="selectPlan(0)">
+              <a href="#" class="btn btn-primary disabled" @click="selectPlan(0)">
                 {{ getOptionText(0) }}
               </a>
             </div>
@@ -241,24 +409,46 @@
 
         <div class="col-lg-4 col-md-6 col-sm-6">
           <div class="pricing-table" :class="{ 'active-plan': planActive(3) }">
-            <div class="pricing-header">
+            <div class="pricing-header" style="margin-bottom: 20px">
               <h3>Phản Hồi Chi Tiết</h3>
             </div>
 
-            <div class="price">
-              <span><sup>đ</sup>179.000<span>/THÁNG</span></span>
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>149.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
-              <ul>
-                <li class="active">Không giới hạn bài chấm</li>
-                <li class="active">Highest Speed</li>
-                <li class="active">3 GB Storage</li>
-                <li class="active">Unlimited Website</li>
-                <li class="active">Unlimited Users</li>
-                <li class="active">24x7 Great Support</li>
-                <li class="active">Data Security and Backups</li>
-                <li>Monthly Reports and Analytics</li>
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Chấm điểm 4 tiêu chí <br>- Nâng cấp lập luận <br>- Bài chữa tham khảo <br>- Nâng cấp từ vựng</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Sửa các lỗi từ vựng và ngữ pháp <br> nổi bật nhất trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                </ul>
               </ul>
             </div>
 
@@ -269,27 +459,59 @@
             </div>
           </div>
         </div>
+
         <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-0 offset-md-3 offset-sm-3">
           <div class="pricing-table" :class="{ 'active-plan': planActive(6) }">
-            <div class="pricing-header">
+            <div class="pricing-header" style="margin-bottom: 20px">
               <h3>Phản Hồi Chuyên Sâu</h3>
             </div>
 
-            <div class="price">
-              <span><sup>đ</sup>299.000<span>/THÁNG</span></span>
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>349.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
-              <ul>
-                <li class="active">15 GB Bandwidth</li>
-                <li class="active">Highest Speed</li>
-                <li class="active">5 GB Storage</li>
-                <li class="active">Unlimited Website</li>
-                <li class="active">Unlimited Users</li>
-                <li class="active">24x7 Great Support</li>
-                <li class="active">Data Security and Backups</li>
-                <li class="active">Monthly Reports and Analytics</li>
-                <!-- <li v-if="proratedAmount != 0 && !planDisabled(4)" class="active">Nhận lại <span><sup>đ</sup>{{ proratedAmount / 1000 }}.000<span /></span> từ gói hiện tại</li> -->
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Cung cấp phản hồi cụ thể và <br> chính xác hơn với ChatGPT-4</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Chỉ ra các lỗi sai và cách sửa <br> cho từng câu văn trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">Hỗ Trợ Bản Viết Tay</li>
+                <li class="active">AI Chấm Sửa Trong Khi Viết
+
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng AI hỗ trợ chấm sửa <br>khi làm bài viết mà không cần trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip>
+                </li>
+                <li class="active">Phản Hồi Cho IELTS Speaking
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng cung cấp phản hồi <br>cho IELST Speaking mà không phải trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip></li>
+              </ul>
+              <hr style="margin-left: 40px; margin-right: 40px;">
+              <ul style="margin-bottom: 20px;">
+                <li class="active">Luyện Tập Không Giới Hạn</li>
+                <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                <li class="active">
+                  Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
               </ul>
             </div>
 
@@ -452,6 +674,683 @@
     </el-dialog>
 
   </section>
+
+  <section v-else id="pricing" class="features-area-two ptb-80" :style="user.id ? 'margin-top: 0px; min-height: 100vh; padding-top: 80px;' : 'margin-top: 10px; min-height: 100vh;'">
+    <div class="container">
+      <div class="section-title" style="margin-bottom: 40px;">
+        <h1 v-if="user.id" style="font-size: 30px;">Bảng Giá</h1>
+        <h1 v-else style="font-size: 30px;">Bảng Giá</h1>
+        <div class="bar" style="margin: 10px auto;" />
+        <div style="text-align: center;">
+          <div class="menu-btns" style="margin-top: 20px; margin-left: 5px;">
+            <a style="margin-right: 20px; padding: 10px 25px;" class="btn btn-light" :class="{ 'active': durationActive(6) }" @click="selectDuration(6)">
+              6 tháng
+            </a>
+            <a style="margin-right: 20px; padding: 10px 25px;" class="btn btn-light" :class="{ 'active': durationActive(3) }" @click="selectDuration(3)">
+              3 tháng
+            </a>
+            <a style="padding: 10px 25px;" class="btn btn-light" :class="{ 'active': durationActive(1) }" @click="selectDuration(1)">
+              1 tháng
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="activeDuration == 6" class="row">
+        <div class="col-lg-4 col-md-6 col-sm-6">
+          <div class="pricing-table">
+            <div class="pricing-header" style="margin-bottom: 20px">
+              <h3>Luyện tập cơ bản</h3>
+            </div>
+            <div class="price" style="margin-bottom: 20px">
+              <span>Miễn Phí</span>
+            </div>
+
+            <div class="pricing-features">
+              <ul style="margin-bottom: 10px;">
+                <li class="active">3 Bài Chấm Miễn Phí</li>
+                <li class="active">2 Phản Hồi Chi Tiết</li>
+                <li class="active">1 Phản Hồi Chuyên Sâu</li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                  <li>Hoàn Tiền 14 Ngày</li>
+                </ul>
+              </ul>
+            </div>
+
+            <div class="pricing-footer">
+              <a href="#" class="btn btn-primary disabled" @click="selectPlan(0)">
+                {{ getOptionText(0) }}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-6">
+          <div class="pricing-table" :class="{ 'active-plan': planActive(1) }">
+            <div class="pricing-header" style="margin-bottom: 20px">
+              <h3>Phản Hồi Chi Tiết</h3>
+            </div>
+
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>99.000<span>/THÁNG</span></span>
+            </div>
+
+            <div class="pricing-features">
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Chấm điểm 4 tiêu chí <br>- Nâng cấp lập luận <br>- Bài chữa tham khảo <br>- Nâng cấp từ vựng</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Sửa các lỗi từ vựng và ngữ pháp <br> nổi bật nhất trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                  <li class="active">
+                    Hoàn Tiền 14 Ngày
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">Bạn được đảm bảo trong 14 ngày đầu tiên có thể <br> hoàn tiền bất kỳ lúc nào với bất kỳ lý do nào</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                </ul>
+              </ul>
+            </div>
+
+            <div class="pricing-footer">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(1) }" @click="selectPlan(1)">
+                {{ getOptionText(1) }}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-0 offset-md-3 offset-sm-3">
+          <div class="pricing-table" :class="{ 'active-plan': planActive(4) }">
+            <div class="pricing-header" style="margin-bottom: 20px">
+              <h3>Phản Hồi Chuyên Sâu</h3>
+            </div>
+
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>249.000<span>/THÁNG</span></span>
+            </div>
+
+            <div class="pricing-features">
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Cung cấp phản hồi cụ thể và <br> chính xác hơn với ChatGPT-4</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Chỉ ra các lỗi sai và cách sửa <br> cho từng câu văn trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">Hỗ Trợ Bản Viết Tay</li>
+                <li class="active">AI Chấm Sửa Trong Khi Viết
+
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng AI hỗ trợ chấm sửa <br>khi làm bài viết mà không cần trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip>
+                </li>
+                <li class="active">Phản Hồi Cho IELTS Speaking
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng cung cấp phản hồi <br>cho IELST Speaking mà không phải trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip></li>
+              </ul>
+              <hr style="margin-left: 40px; margin-right: 40px;">
+              <ul style="margin-bottom: 20px;">
+                <li class="active">Luyện Tập Không Giới Hạn</li>
+                <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                <li class="active">
+                  Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Hoàn Tiền 14 Ngày
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Bạn được đảm bảo trong 14 ngày đầu tiên có thể <br> hoàn tiền bất kỳ lúc nào với bất kỳ lý do nào</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+              </ul>
+            </div>
+
+            <div class="pricing-footer">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(4) }" @click="selectPlan(4)">
+                {{ getOptionText(4) }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="activeDuration == 3" class="row">
+        <div class="col-lg-4 col-md-6 col-sm-6">
+          <div class="pricing-table">
+            <div class="pricing-header" style="margin-bottom: 20px">
+              <h3>Luyện tập cơ bản</h3>
+            </div>
+            <div class="price" style="margin-bottom: 20px">
+              <span>Miễn Phí</span>
+            </div>
+
+            <div class="pricing-features">
+              <ul style="margin-bottom: 10px;">
+                <li class="active">3 Bài Chấm Miễn Phí</li>
+                <li class="active">2 Phản Hồi Chi Tiết</li>
+                <li class="active">1 Phản Hồi Chuyên Sâu</li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                  <li>Hoàn Tiền 14 Ngày</li>
+                </ul>
+              </ul>
+            </div>
+
+            <div class="pricing-footer">
+              <a href="#" class="btn btn-primary disabled" @click="selectPlan(0)">
+                {{ getOptionText(0) }}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-6">
+          <div class="pricing-table" :class="{ 'active-plan': planActive(2) }">
+            <div class="pricing-header" style="margin-bottom: 20px">
+              <h3>Phản Hồi Chi Tiết</h3>
+            </div>
+
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>129.000<span>/THÁNG</span></span>
+            </div>
+
+            <div class="pricing-features">
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Chấm điểm 4 tiêu chí <br>- Nâng cấp lập luận <br>- Bài chữa tham khảo <br>- Nâng cấp từ vựng</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Sửa các lỗi từ vựng và ngữ pháp <br> nổi bật nhất trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                  <li class="active">
+                    Hoàn Tiền 14 Ngày
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">Bạn được đảm bảo trong 14 ngày đầu tiên có thể <br> hoàn tiền bất kỳ lúc nào với bất kỳ lý do nào</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                </ul>
+              </ul>
+            </div>
+
+            <div class="pricing-footer">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(2) }" @click="selectPlan(2)">
+                {{ getOptionText(2) }}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-0 offset-md-3 offset-sm-3">
+          <div class="pricing-table" :class="{ 'active-plan': planActive(5) }">
+            <div class="pricing-header" style="margin-bottom: 20px">
+              <h3>Phản Hồi Chuyên Sâu</h3>
+            </div>
+
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>299.000<span>/THÁNG</span></span>
+            </div>
+
+            <div class="pricing-features">
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Cung cấp phản hồi cụ thể và <br> chính xác hơn với ChatGPT-4</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Chỉ ra các lỗi sai và cách sửa <br> cho từng câu văn trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">Hỗ Trợ Bản Viết Tay</li>
+                <li class="active">AI Chấm Sửa Trong Khi Viết
+
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng AI hỗ trợ chấm sửa <br>khi làm bài viết mà không cần trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip>
+                </li>
+                <li class="active">Phản Hồi Cho IELTS Speaking
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng cung cấp phản hồi <br>cho IELST Speaking mà không phải trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip></li>
+              </ul>
+              <hr style="margin-left: 40px; margin-right: 40px;">
+              <ul style="margin-bottom: 20px;">
+                <li class="active">Luyện Tập Không Giới Hạn</li>
+                <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                <li class="active">
+                  Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Hoàn Tiền 14 Ngày
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Bạn được đảm bảo trong 14 ngày đầu tiên có thể <br> hoàn tiền bất kỳ lúc nào với bất kỳ lý do nào</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+              </ul>
+            </div>
+
+            <div class="pricing-footer">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(5) }" @click="selectPlan(5)">
+                {{ getOptionText(5) }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="row">
+        <div class="col-lg-4 col-md-6 col-sm-6">
+          <div class="pricing-table">
+            <div class="pricing-header" style="margin-bottom: 20px">
+              <h3>Luyện tập cơ bản</h3>
+            </div>
+            <div class="price" style="margin-bottom: 20px">
+              <span>Miễn Phí</span>
+            </div>
+
+            <div class="pricing-features">
+              <ul style="margin-bottom: 10px;">
+                <li class="active">3 Bài Chấm Miễn Phí</li>
+                <li class="active">2 Phản Hồi Chi Tiết</li>
+                <li class="active">1 Phản Hồi Chuyên Sâu</li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                </ul>
+              </ul>
+            </div>
+
+            <div class="pricing-footer">
+              <a href="#" class="btn btn-primary disabled" @click="selectPlan(0)">
+                {{ getOptionText(0) }}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-6">
+          <div class="pricing-table" :class="{ 'active-plan': planActive(3) }">
+            <div class="pricing-header" style="margin-bottom: 20px">
+              <h3>Phản Hồi Chi Tiết</h3>
+            </div>
+
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>149.000<span>/THÁNG</span></span>
+            </div>
+
+            <div class="pricing-features">
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Chấm điểm 4 tiêu chí <br>- Nâng cấp lập luận <br>- Bài chữa tham khảo <br>- Nâng cấp từ vựng</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chi Tiết
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Sửa các lỗi từ vựng và ngữ pháp <br> nổi bật nhất trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li>Hỗ Trợ Bản Viết Tay</li>
+                <li>AI Chấm Sửa Trong Khi Viết</li>
+                <li>Phản Hồi Cho IELTS Speaking</li>
+                <hr style="margin-left: 40px; margin-right: 40px;">
+                <ul style="margin-bottom: 20px;">
+                  <li class="active">Luyện Tập Không Giới Hạn</li>
+                  <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                  <li class="active">
+                    Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                    <el-tooltip class="item" effect="light" placement="right">
+                      <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                      <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                    </el-tooltip>
+                  </li>
+                </ul>
+              </ul>
+            </div>
+
+            <div class="pricing-footer">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(3) }" @click="selectPlan(3)">
+                {{ getOptionText(3) }}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-0 offset-md-3 offset-sm-3">
+          <div class="pricing-table" :class="{ 'active-plan': planActive(6) }">
+            <div class="pricing-header" style="margin-bottom: 20px">
+              <h3>Phản Hồi Chuyên Sâu</h3>
+            </div>
+
+            <div class="price" style="margin-bottom: 20px">
+              <span><sup>đ</sup>349.000<span>/THÁNG</span></span>
+            </div>
+
+            <div class="pricing-features">
+              <ul style="margin-bottom: 10px;">
+                <li class="active">Không Giới Hạn Bài Chấm</li>
+                <li class="active">
+                  Phản Hồi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Cung cấp phản hồi cụ thể và <br> chính xác hơn với ChatGPT-4</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">
+                  Sửa Lỗi Chuyên Sâu
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Chỉ ra các lỗi sai và cách sửa <br> cho từng câu văn trong bài viết</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+                <li class="active">Hỗ Trợ Bản Viết Tay</li>
+                <li class="active">AI Chấm Sửa Trong Khi Viết
+
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng AI hỗ trợ chấm sửa <br>khi làm bài viết mà không cần trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip>
+                </li>
+                <li class="active">Phản Hồi Cho IELTS Speaking
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">Trải nghiệm sớm chức năng cung cấp phản hồi <br>cho IELST Speaking mà không phải trả thêm phí</div>
+                    <el-tag size="small">Early</el-tag>
+                  </el-tooltip></li>
+              </ul>
+              <hr style="margin-left: 40px; margin-right: 40px;">
+              <ul style="margin-bottom: 20px;">
+                <li class="active">Luyện Tập Không Giới Hạn</li>
+                <li class="active">Chủ Đề Mới Cập Nhật Mỗi Tuần</li>
+                <li class="active">
+                  Tài Liệu Hữu Dụng Cho Từng Chủ Đề
+                  <el-tooltip class="item" effect="light" placement="right">
+                    <div slot="content">- Từ Vựng Hữu Dụng<br>- Ý Tưởng Phát Triển <br>- Gợi Ý Bố Cục <br>- Bài Mẫu Kèm Phân Tích</div>
+                    <el-button style="padding: 0; border: none;"><i class="fas fa-question-circle" /></el-button>
+                  </el-tooltip>
+                </li>
+              </ul>
+            </div>
+
+            <div class="pricing-footer">
+              <a href="#" class="btn btn-primary" :class="{ 'disabled': planDisabled(6) }" @click="selectPlan(6)">
+                {{ getOptionText(6) }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <el-dialog
+      v-if="screenWidth > 760"
+      id="checkout-dialog"
+      :visible.sync="checkoutDialogVisiable"
+      width="620px"
+      height="820px"
+      @closed="dialogClosed"
+    >
+      <div slot="title">
+        <div style="padding: 5px 20px; font-size: 18px; text-align:center;">Thanh Toán</div>
+      </div>
+      <div class="dialog-body">
+        <div v-if="orderSummary" style="padding: 20px; padding-top: 0px;">
+          <div>
+            <el-table :data="orderSummary">
+              <el-table-column prop="planName" label="Gói Phản Hồi">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div>{{ scope.row.planName }}</div>
+                </template>
+              </el-table-column>
+              <el-table-column prop="duration" label="Thời hạn" width="80">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div>{{ scope.row.duration + ' tháng' }}</div>
+                </template>
+              </el-table-column>
+              <el-table-column prop="price" label="Một tháng" width="110">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div>{{ scope.row.price.toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="Tổng cộng" width="120">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div style="float: left;">{{ (scope.row.duration * scope.row.price).toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
+                </template>
+              </el-table-column>
+
+            </el-table>
+
+            <div v-if="proratedAmount != 0 && type != 'renew'" style="height: 25px; margin-top: 20px;">
+              <div style="float: right; width: 110px; ">{{ proratedAmount.toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
+              <div style="float: right; width: calc(100% - 110px); text-align: right; padding-right: 10px;">Số tiền nhận lại từ gói hiện tại:</div>
+            </div>
+
+            <div v-if="orderSummary && orderSummary.length > 0" style="height: 25px; margin-top: 15px;">
+              <div style="float: right; width: 110px; "><b>{{ (orderSummary[0].total).toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</b></div>
+              <div style="float: right; width: calc(100% - 110px); text-align: right; padding-right: 10px;"><b>Tổng giá trị đơn hàng:</b></div>
+            </div>
+
+            <hr>
+            <div style="text-align: center; margin-top: 10px; font-size: 16px;">
+              <div><b>Phương Thức Thanh Toán</b></div>
+              <div style="text-align: center; padding-top: 20px;">
+                <el-button plain style="margin-right: 10px;" @click="submitZaloPayRequest()">
+                  <div style="font-size: 16px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
+                  <img style="height: 20px;" src="../../assets/logo/zalopay.png" alt="logo" class="main-header-logo">
+                </el-button>
+
+                <el-button plain style="margin-left: 10px;" @click="submitVNPayRequest()">
+                  <div style="font-size: 16px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
+                  <img style="height: 21px;" src="../../assets/logo/vnpay.png" alt="logo" class="main-header-logo">
+                </el-button>
+              </div>
+
+            </div>
+            <div style="margin-top: 30px; text-align: center;">
+              <el-tag style="margin-top: 5px; font-size: 13px; width: 100%;">Email nhận biên lai: {{ user.email }}</el-tag>
+              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng này được hoàn trả trong vòng 30 ngày với bất kỳ lý do gì.</el-tag>
+              <el-tag type="info" style="margin-top: 10px; font-size: 13px; width: 100%;">Bằng cách mua gói phản hồi, bạn đồng ý với điều khoản và dịch vụ của Reboost.</el-tag>
+            </div>
+          </div>
+        </div>
+        <div slot="footer" class="dialog-footer" />
+      </div>
+    </el-dialog>
+
+    <el-dialog
+      v-else
+      id="checkout-dialog"
+      :visible.sync="checkoutDialogVisiable"
+      :fullscreen="true"
+      :style="'margin-top: 50px;'"
+      @closed="dialogClosed"
+    >
+      <div slot="title">
+        <div style="padding: 0px 20px; font-size: 18px; text-align:center;">Thanh Toán</div>
+      </div>
+      <div class="dialog-body">
+        <div v-if="orderSummary">
+          <div>
+            <el-table :data="orderSummary">
+              <el-table-column prop="planName" label="Gói Phản Hồi">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div style="word-break: break-word;">{{ scope.row.planName }}</div>
+                  <div style="margin-top: 5px;">{{ scope.row.price.toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}/tháng</div>
+                </template>
+              </el-table-column>
+              <el-table-column prop="duration" label="Thời hạn" width="80">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div>{{ scope.row.duration + ' tháng' }}</div>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="Tổng cộng" width="120">
+                <template v-if="scope.row" slot-scope="scope">
+                  <div style="float: left;">{{ (scope.row.duration * scope.row.price).toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
+                </template>
+              </el-table-column>
+
+            </el-table>
+
+            <div v-if="proratedAmount != 0 && type != 'renew'" style="height: 25px; margin-top: 20px;">
+              <div style="float: right; width: 110px; ">{{ proratedAmount.toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</div>
+              <div style="float: right; width: calc(100% - 110px); text-align: right; padding-right: 10px;">Số tiền nhận lại từ gói hiện tại:</div>
+            </div>
+
+            <div v-if="orderSummary && orderSummary.length > 0" style="height: 25px; margin-top: 15px;">
+              <div style="float: right; width: 110px; "><b>{{ (orderSummary[0].total).toLocaleString('it-IT', { style: 'currency', currency: 'VND'}) }}</b></div>
+              <div style="float: right; width: calc(100% - 110px); text-align: right; padding-right: 10px;"><b>Tổng giá trị đơn hàng:</b></div>
+            </div>
+
+            <hr>
+            <div style="text-align: center; margin-top: 20px; font-size: 16px;">
+              <div><b>Phương Thức Thanh Toán</b></div>
+              <div style="text-align: center; padding-top: 20px;">
+                <el-button plain style=" padding-left: 30px; padding-right: 30px;" @click="submitZaloPayRequest()">
+                  <div style="font-size: 16px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
+                  <img style="height: 20px;" src="../../assets/logo/zalopay.png" alt="logo" class="main-header-logo">
+                </el-button>
+
+                <el-button plain style="margin-top: 15px; margin-left: 0px; padding-left: 30px; padding-right: 30px;" @click="submitVNPayRequest()">
+                  <div style="font-size: 16px; float: left; margin-top: 4px; margin-right: 6px;">Thanh toán qua</div>
+                  <img style="height: 21px;" src="../../assets/logo/vnpay.png" alt="logo" class="main-header-logo">
+                </el-button>
+              </div>
+
+            </div>
+            <div style="margin-top: 30px; text-align: center;">
+              <el-tag style="margin-top: 5px; font-size: 13px; width: 100%;">Email nhận biên lai: {{ user.email }}</el-tag>
+              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng này được hoàn trả trong 30 ngày với bất kỳ lý do gì.</el-tag>
+              <el-tag type="info" style="margin-top: 10px; font-size: 13px; width: 100%; height: 100%;">Bằng cách mua gói phản hồi, bạn đồng ý với điều khoản và dịch vụ của Reboost.</el-tag>
+            </div>
+          </div>
+        </div>
+        <div slot="footer" class="dialog-footer" />
+      </div>
+    </el-dialog>
+
+  </section>
+
 </template>
 
 <script>
@@ -477,6 +1376,7 @@ export default {
     }
   },
   async mounted() {
+    document.title = 'Reboost - Bảng Giá'
     window.addEventListener('resize', () => {
       this.screenWidth = window.innerWidth
     })
@@ -569,23 +1469,23 @@ export default {
         } else if (planId == 2) {
           planName = 'Phản Hồi Chi Tiết'
           duration = 3
-          price = 139000
+          price = 129000
         } else if (planId == 3) {
           planName = 'Phản Hồi Chi Tiết'
           duration = 1
-          price = 179000
+          price = 149000
         } else if (planId == 4) {
           planName = 'Phản Hồi Chuyên Sâu'
           duration = 6
-          price = 199000
+          price = 249000
         } else if (planId == 5) {
           planName = 'Phản Hồi Chuyên Sâu'
           duration = 3
-          price = 249000
+          price = 299000
         } else if (planId == 6) {
           planName = 'Phản Hồi Chuyên Sâu'
           duration = 1
-          price = 299000
+          price = 349000
         }
 
         const option = this.getOptionText(planId)

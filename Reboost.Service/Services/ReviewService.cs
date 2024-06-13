@@ -292,19 +292,21 @@ namespace Reboost.Service.Services
                             };
                             reviewDataList.Add(reviewData);
                         }
+
                         // Update feedback token
-                        if(userSubscription == null)
+                        if (userSubscription == null)
                         {
-                            if(model.feedbackType == "detail" && user.FreeToken > 0)
+                            if (model.feedbackType == "detail" && user.FreeToken > 0)
                             {
                                 user.FreeToken = user.FreeToken - 1;
                             }
-                            else if(model.feedbackType == "deep" && user.PremiumToken > 0)
+                            else if (model.feedbackType == "deep" && user.PremiumToken > 0)
                             {
                                 user.PremiumToken = user.PremiumToken - 1;
                             }
                             await _unitOfWork.Users.UpdateAsync(user);
                         }
+
                         return result;
                     }
                     catch (Exception e)

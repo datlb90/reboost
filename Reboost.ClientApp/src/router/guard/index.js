@@ -18,6 +18,7 @@ export default async (router) => {
   router.beforeEach(async (to, from, next) => {
     // Check if the user has been externally authenticated
     const externalUserId = decodeURIComponent(getCookie('userId'))
+    console.log('test')
     if (externalUserId != 'undefined') {
       const user = {
         id: decodeURIComponent(getCookie('userId')),

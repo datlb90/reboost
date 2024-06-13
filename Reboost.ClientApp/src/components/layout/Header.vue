@@ -397,7 +397,13 @@ export default {
       if (this.freeToken > 0 || this.premiumToken > 0 || (this.userSubscription && new Date(this.userSubscription.endDate) > new Date())) {
         this.$refs.reviewRequestDialog?.openDialog()
       } else {
-        window.location.href = '/pricing'
+        this.$notify.info({
+          title: 'Đã hết lượt chấm miễn phí',
+          message: 'Bạn đã sử dụng hết lượt chấm miễn phí. Hãy lựa chọn 1 gọi phản hồi phù hợp.',
+          type: 'info',
+          duration: 5000
+        })
+        this.$router.push('/pricing')
       }
     },
     onChangeLanguage(e) {

@@ -53,15 +53,15 @@ namespace Reboost.Service.Services
                     }
                 }
             }
-            string subject = "Reboost Customer Support Ticket";
+            string subject = "Reboost - Hỗ Trợ Khách Hàng";
 
-            var content = $"<p>Hi " + model.Fullname + ",</p>" +
-                            $"<p>Thank you for contacting us!</p>" +
-                            $"<p>We will respond as soon as we can with the following query:</p>" +
-                            $"<p><strong>Reason: </strong>" + model.Reason + "</p>" +
-                            $"<p><strong>Message: </strong>" + model.Message + "</p>" +
-                            $"<p>Please reply to this email directly if you want to add any additional information.</p>" +
-                            $"<p>Sincerely,</p><p>Reboost Support Team</p>";
+            var content = $"<p>Xin chào " + model.Fullname + ",</p>" +
+                            $"<p>Cảm ơn bạn đã liên hệ với chúng tôi.</p>" +
+                            $"<p>Chuyên viên hỗ trợ khách hàng của Reboost sẽ liên hệ với bạn trong thời gian sớm nhất liên quan tới yêu cầu sau đây:</p>" +
+                            $"<p><strong>Lý do: </strong>" + model.Reason + "</p>" +
+                            $"<p><strong>Yêu cầu: </strong>" + model.Message + "</p>" +
+                            $"<p>Nếu cần cung cấp thêm thông tin gì, bạn có thể gửi trực tiếp qua luồng email này.</p>" +
+                            $"<p>Xin chân thành cảm ơn,</p><p>Reboost Support</p>";
 
             await mailService.SendSupportEmail(model.Email, model.Fullname, subject, content, model.UploadedFiles);
 
