@@ -9,7 +9,7 @@
       @close="closeIntro()"
     >
       <span slot="title" style="font-size: 15px;">
-        Đây là nơi hiển thị các bài viết bạn đã hoàn thành. Bạn có thể xem lại bài, tham khảo đánh giá, hoặc yêu cầu phản hồi cho bài viết của mình.
+        Đây là nơi hiển thị các bài viết bạn đã hoàn thành. Bạn có thể xem lịch sử bài đã viết hoặc nhận phản hồi cho bài viết mới ở đây.
       </span>
     </el-alert>
 
@@ -324,7 +324,7 @@
       @close="closeIntro()"
     >
       <span slot="title" style="font-size: 15px;">
-        Đây là nơi hiển thị các bài viết bạn đã hoàn thành. Bạn có thể xem lại bài, tham khảo đánh giá, hoặc yêu cầu phản hồi cho bài viết của mình.
+        Đây là nơi hiển thị các bài viết bạn đã hoàn thành. Bạn có thể xem lịch sử bài đã viết hoặc nhận phản hồi cho bài viết mới ở đây.
       </span>
     </el-alert>
 

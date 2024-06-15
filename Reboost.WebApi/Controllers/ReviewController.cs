@@ -45,7 +45,12 @@ namespace Reboost.WebApi.Controllers
             db = ctx;
         }
 
-
+        [HttpPost("criteria/feedback/gpt4o/v1")]
+        public async Task<EssayFeedback> getCriteriaFeedbackGPT4O(EssayFeedbackModel model)
+        {
+            return await _service.getCriteriaFeedbackGPT4O(model);
+        }
+        [Authorize]
         [HttpPost("criteria/feedback/gpt4/v1")]
         public async Task<EssayFeedback> getCriteriaFeedbackGPT4(EssayFeedbackModel model)
         {
@@ -57,19 +62,19 @@ namespace Reboost.WebApi.Controllers
         {
             return await _service.getCriteriaFeedbackGPTTurbo(model);
         }
-
+        [Authorize]
         [HttpPost("intext/comment/gpt4o/v1")]
         public async Task<ErrorsInText> getIntextCommentsGPTTurbo(CriteriaFeedbackModel model)
         {
             return await _service.getIntextCommentsGPTTurbo(model);
         }
-
+        [Authorize]
         [HttpPost("essay/score/v2")]
         public async Task<ReviewScores> getEssayScoreV2(CriteriaFeedbackModel model)
         {
             return await _service.getEssayScoreV2(model);
         }
-
+        [Authorize]
         [HttpPost("essay/score/v1")]
         public async Task<EssayFeedback> getEssayScoreV1(CriteriaFeedbackModel model)
         {

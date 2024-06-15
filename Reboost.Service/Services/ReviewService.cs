@@ -26,6 +26,7 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<EssayFeedback> getCriteriaFeedbackGPT4O(EssayFeedbackModel model);
         Task<EssayFeedback> getCriteriaFeedbackGPTTurbo(EssayFeedbackModel model);
         Task<EssayFeedback> getCriteriaFeedbackGPT4(EssayFeedbackModel model);
 
@@ -130,6 +131,11 @@ namespace Reboost.Service.Services
             userService = _userService;
             chatGPTService = _chatGPTService;
             subscriptionService = _subscriptionService;
+        }
+
+        public async Task<EssayFeedback> getCriteriaFeedbackGPT4O(EssayFeedbackModel model)
+        {
+            return await chatGPTService.getCriteriaFeedbackGPT4O(model);
         }
 
         public async Task<EssayFeedback> getCriteriaFeedbackGPTTurbo(EssayFeedbackModel model)
@@ -257,7 +263,7 @@ namespace Reboost.Service.Services
                             if ((userSubscription != null && userSubscription.PlanId >= 4) || model.feedbackType == "deep")
                             {
                                 // Phản hồi chuyên sâu 
-                                taskList[i] = chatGPTService.getCriteriaFeedbackGPT4(requestModel);
+                                taskList[i] = chatGPTService.getCriteriaFeedbackGPT4O(requestModel);
                             }
                             else
                             {

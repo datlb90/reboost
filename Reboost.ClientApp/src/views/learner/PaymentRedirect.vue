@@ -136,7 +136,7 @@ export default {
             if (rs.subscription) {
               let duration = 6
               if (rs.subscription.planId == 1) {
-                duration = 0
+                duration = 6
               } else if (rs.subscription.planId == 2) {
                 duration = 3
               } else if (rs.subscription.planId == 3) {

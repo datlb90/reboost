@@ -9,7 +9,7 @@
       @close="closeIntro()"
     >
       <span slot="title" style="font-size: 15px;">
-        Đây là nơi hiển thị đa dạng chủ đề viết đã được phân loại. Hãy lựa chọn đề phù hợp với bạn sử dụng công cụ tìm kiếm có sẵn và làm ít nhất một bài mỗi ngày nhé.
+        Đây là nơi hiển thị đa dạng chủ đề viết đã được phân loại. Hãy lựa chọn đề phù hợp với bạn sử dụng công cụ tìm kiếm có sẵn và luyện tập hàng ngày nhé.
       </span>
     </el-alert>
 
@@ -322,7 +322,7 @@
       @close="closeIntro()"
     >
       <span slot="title" style="font-size: 15px;">
-        Đây là nơi hiển thị đa dạng chủ đề viết đã được phân loại. Hãy lựa chọn đề phù hợp với bạn sử dụng công cụ tìm kiếm có sẵn và làm ít nhất một bài mỗi ngày nhé.
+        Đây là nơi hiển thị đa dạng chủ đề viết đã được phân loại. Hãy lựa chọn đề phù hợp với bạn sử dụng công cụ tìm kiếm có sẵn và luyện tập hàng ngày nhé.
       </span>
     </el-alert>
 

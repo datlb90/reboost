@@ -221,6 +221,9 @@ namespace Reboost.Service.Services
                             await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
                         else
                             await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
+
+                        // Send payment confirmation
+                        await SendPaymentConfirmation(order, order.PlanId);
                         // Payment success, update order status
                         order.Status = PaymentStatus.PROCESSED;
                         order.TransactionCode = rs.vnp_TransactionNo;
@@ -476,6 +479,8 @@ namespace Reboost.Service.Services
                     else
                         await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
 
+                    // Send payment confirmation
+                    await SendPaymentConfirmation(order, order.PlanId);
                     // Payment success, update order
                     order.Status = PaymentStatus.PROCESSED;
                     order.TransactionCode = orderStatusResult["zp_trans_id"].ToString();
@@ -680,6 +685,9 @@ namespace Reboost.Service.Services
                                     result.subscription = await _subscriptionService.RenewUserSubscription(order.UserId, order.PlanId);
                                 else
                                     result.subscription = await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
+
+                                // Send payment confirmation
+                                await SendPaymentConfirmation(order, order.PlanId);
                                 // Update status to processed
                                 order.Status = PaymentStatus.PROCESSED;
                                 order.LastActivityDate = DateTime.UtcNow;
@@ -714,6 +722,8 @@ namespace Reboost.Service.Services
                             else
                                 result.subscription = await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
 
+                            // Send payment confirmation
+                            await SendPaymentConfirmation(order, order.PlanId);
                             // Update status to processed
                             order.Status = PaymentStatus.PROCESSED;
                             order.LastActivityDate = DateTime.UtcNow;
@@ -733,6 +743,8 @@ namespace Reboost.Service.Services
                     else
                         result.subscription = await _subscriptionService.UpgradeUserSubscription(order.UserId, order.PlanId);
 
+                    // Send payment confirmation
+                    await SendPaymentConfirmation(order, order.PlanId);
                     // Update status to processed
                     order.Status = PaymentStatus.PROCESSED;
                     order.LastActivityDate = DateTime.UtcNow;
@@ -750,6 +762,64 @@ namespace Reboost.Service.Services
                 }
             }
             return result;
+        }
+
+        public async Task SendPaymentConfirmation(Orders order, int planId)
+        {
+            VerifyPaymentModel result = new VerifyPaymentModel();
+            // Gửi biên lai thanh toán cho khách hàng
+            User user = await _userService.GetByIdAsync(order.UserId);
+            string plan = "gói phản hồi chi tiết";
+            if (planId >= 4)
+            {
+                plan = "gói phản hồi chuyên sâu";
+            }
+
+            string duration = "";
+
+            if (planId == 1)
+            {
+                duration = " - 6 tháng";
+            }
+            else if (planId == 2)
+            {
+                duration = " - 3 tháng";
+            }
+            else if (planId == 3)
+            {
+                duration = " - 1 tháng";
+            }
+            else if (planId == 4)
+            {
+                duration = " - 6 tháng";
+            }
+            else if (planId == 5)
+            {
+                duration = " - 3 tháng";
+            }
+            else
+            {
+                duration = " - 1 tháng";
+            }
+
+            string renew = "";
+            if (order.SubscriptionType == "renew")
+            {
+                renew = " (gia hạn)";
+            }
+
+            string orderDetail = plan + duration + renew;
+
+            string message = $"<p>Xin chào {user.FirstName},</p>" +
+                            $"<p>Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của Reboost!</p>" +
+                            $"<p>Bạn đã thanh toán thành công số tiền " + order.Amount + "VNĐ cho " + orderDetail + ".</p>" +
+                            $"<p>Mã đơn hàng của bạn là: #" + order.Id + ". Thanh toán ngày " + order.LastActivityDate.ToString("dd/MM/yy H:mm:ss") + "</p>" +
+                            $"<p>Nếu bạn có gì thắc mắc xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p>" +
+                            $"<p>Xin chân thành cảm ơn!</p>" +
+                            $"<p>Reboost Support</p>";
+
+            await _mailService.SendEmailAsync(user.Email, "Xác Nhận Đơn Hàng", message);
+           
         }
         public async Task<IEnumerable<Payments>> GetAllAsync()
         {
