@@ -228,6 +228,17 @@ export default {
           })
           if (this.user) {
             document.removeEventListener('keydown', this.pressEnterToLogin)
+            // Submit the personal question or initial test before redirecting
+            const personalQuestion = this.$store.getters['question/getPersonalQuestion']
+            if (personalQuestion) {
+              // Create the new submission
+              this.$store.dispatch('question/submitPersonalQuestion', this.user.id)
+            }
+            const initialSubmission = this.$store.getters['question/getInitialSubmission']
+            if (initialSubmission) {
+              // Create the new submission
+              this.$store.dispatch('question/submitInitialTest', this.user.id)
+            }
             // Send user to confirm email page
             this.$router.push('/confirm/email')
           } else {

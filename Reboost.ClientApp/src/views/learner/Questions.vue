@@ -52,16 +52,6 @@
               <i class="fas fa-random" style="margin-right: 5px;" />
               Viết 1 đề ngẫu nhiên
             </el-button>
-
-            <!-- <el-button
-              v-if="showRightArrow"
-              type="text"
-              size="medium"
-              icon="el-icon-d-arrow-right"
-              style="color: grey; padding-bottom: 8px; padding-top: 8px;"
-              @click="moveRight()"
-            /> -->
-
           </div>
         </div>
         <div style="height: 40px;">
@@ -209,6 +199,7 @@
             prop="title"
             sortable
             fixed="left"
+            width="350"
           >
             <template slot-scope="scope">
               <span class="title-row cursor" style="word-break: break-word" @click="titleClicked(scope.row)">  {{ scope.row.id + '. ' + scope.row.title }}</span>
@@ -218,22 +209,36 @@
             label="Loại đề"
             prop="section"
             sortable
+            width="100"
           >
             <template slot-scope="scope">
               <span style="word-break: break-word"> {{ scope.row.section }}</span>
             </template>
           </el-table-column>
+
+          <el-table-column
+            label="Ngày Thi"
+            width="120"
+            sortable
+            prop="testDate"
+          >
+            <template slot-scope="scope">
+              <span>{{ formatDatetime(scope.row.testDate) }}</span>
+            </template>
+          </el-table-column>
+
           <el-table-column
             label="Dạng đề"
             prop="type"
             sortable
+            width="150"
           >
             <template slot-scope="scope">
               <span style="word-break: break-word">{{ scope.row.type }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="Độ khó" prop="difficulty" sortable width="100">
+          <el-table-column label="Độ khó" prop="difficulty">
             <template slot-scope="scope">
               <el-tag
                 v-if="scope.row.difficulty == 'Medium'"
@@ -318,7 +323,7 @@
       type="info"
       :show-icon="true"
       center
-      style="margin-bottom: 10px; margin-top: 10px;"
+      style="margin-bottom: 10px; margin-top: 5px;"
       @close="closeIntro()"
     >
       <span slot="title" style="font-size: 15px;">
@@ -341,7 +346,7 @@
             style="float: left; color: grey; padding-bottom: 8px; padding-top: 8px; margin-right: 10px;"
             @click="moveLeft()"
           />
-          <div id="topic-container" style="display: flex; float: left; width: calc(100% - 20px); overflow: hidden;">
+          <div id="topic-container" style="display: flex; float: left; width: calc(100% - 70px); overflow: hidden;">
             <el-tag
               type="info"
               :effect="allTopicEffect"
@@ -358,37 +363,24 @@
               style="font-size: 14px; margin-right: 5px; margin-bottom: 5px; cursor: pointer;"
               @click="onTopicClick(item)"
             >
-              {{ item.section == 'Academic Writing Task 1' ? 'Task 1' : 'Task 2' }}: {{ item.count }}
+              {{ item.section }}: {{ item.count }}
             </el-tag>
           </div>
-          <div>
-            <!-- <el-button
-              v-if="showRightArrow"
-              type="text"
-              size="medium"
-              icon="el-icon-d-arrow-right"
-              style="color: grey; padding-bottom: 8px; padding-top: 8px;"
-              @click="moveRight()"
-            /> -->
-
-          </div>
+          <el-button size="mini" style="float: right; color: #409EFF; font-size: 15px;" @click="clickPickOne">
+            <i class="fas fa-random" style="font-size: 15px;" />
+          </el-button>
         </div>
 
         <div style="margin-left: 5px; margin-right: 5px;">
-          <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px; color: #409EFF;" @click="clickPickOne">
-            <i class="fas fa-random" style="margin-right: 5px;" />
-            Ngẫu nhiên
-          </el-button>
-
           <el-input
             v-model="textSearch"
             size="mini"
-            :placeholder="messageTranslates('question', 'placeholderSearch')"
-            style="float: left; width: 150px; margin-top: 5px;"
+            placeholder="Nhập để tìm kiếm chủ đề viết"
+            style="float: left; width: calc(100% - 110px); margin-top: 5px;"
             @input="search()"
           />
-          <el-button size="mini" style="float: left; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
-            Đặt lại
+          <el-button size="mini" style="float: right; margin-top: 5px; margin-left: 5px;" @click="clearFilter">
+            Đặt lại bộ lọc
           </el-button>
         </div>
 
@@ -501,12 +493,11 @@
           </el-tag>
         </div>
 
-        <el-table v-if="questions" ref="filterTable" :data="questions" stripe style="width: 100%;" empty-text="Không có chủ đề nào" @sort-change="sortChange" @row-click="rowClicked">
+        <el-table v-if="questions" ref="filterTable" :data="questions" stripe style="width: 100%; border-top: 1px dashed #dadada; margin-top: 40px;" empty-text="Không có chủ đề nào" @sort-change="sortChange" @row-click="rowClicked">
           <el-table-column
             prop="status"
-            sortable
             fixed="left"
-            width="30"
+            width="25"
           >
             <template slot-scope="scope">
               <div style="width: 100%; text-align: left;">
@@ -520,7 +511,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column
+          <!-- <el-table-column
             label="Chủ đề"
             prop="title"
             sortable
@@ -530,30 +521,27 @@
             <template slot-scope="scope">
               <span class="title-row cursor" style="word-break: break-word;" @click="titleClicked(scope.row)">{{ scope.row.id }}. {{ scope.row.title }}</span>
             </template>
-          </el-table-column>
+          </el-table-column> -->
 
           <el-table-column
             label="Loại đề"
             prop="section"
-            :width="questions.find(q => q.test == 'TOEFL') ? '100' : '80'"
-            sortable
+            width="80"
           >
             <template slot-scope="scope">
-              <span v-if="scope.row.section == 'Independent Writing'" style="word-break: break-word;">
-                Independent
-              </span>
-              <span v-else-if="scope.row.section == 'Integrated Writing'" style="word-break: break-word;">
-                Integrated
-              </span>
-              <span v-else-if="scope.row.section == 'Academic Writing Task 1'" style="word-break: break-word">
-                Task 1
-              </span>
-              <span v-else-if="scope.row.section == 'Academic Writing Task 2'" style="word-break: break-word">
-                Task 2
-              </span>
+              <span style="word-break: break-word"> {{ scope.row.section }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="Độ khó" prop="difficulty" sortable width="90">
+          <el-table-column
+            label="Ngày Thi"
+            width="110"
+          >
+            <template slot-scope="scope">
+              <span>{{ formatDatetime(scope.row.testDate) }}</span>
+            </template>
+          </el-table-column>
+
+          <!-- <el-table-column label="Độ khó" prop="difficulty" sortable width="90">
             <template slot-scope="scope">
               <el-tag
                 v-if="scope.row.difficulty == 'Medium'"
@@ -580,11 +568,20 @@
                 {{ scope.row.difficulty }}
               </el-tag>
             </template>
+          </el-table-column> -->
+
+          <el-table-column
+            label="Dạng đề"
+            prop="type"
+          >
+            <template slot-scope="scope">
+              <span style="word-break: break-word">{{ scope.row.type }}</span>
+            </template>
           </el-table-column>
+
           <el-table-column
             width="30"
             prop="sample"
-            sortable
           >
             <template slot-scope="scope">
               <div v-if="scope.row.sample" class="show-title">
@@ -594,7 +591,9 @@
               </div>
             </template>
           </el-table-column>
+
         </el-table>
+
         <div class="pagination">
           <el-pagination
             background
@@ -634,6 +633,8 @@
 </template>
 <script>
 import _ from 'lodash'
+import moment from 'moment-timezone'
+
 export default {
   data() {
     return {
@@ -728,6 +729,13 @@ export default {
 
   },
   methods: {
+    formatDatetime(time) {
+      if (time) {
+        var tz = moment.tz.guess()
+        return moment.utc(time).tz(tz).format('DD/MM/YYYY')
+      }
+      return 'N/A'
+    },
     zoomOutMobile() {
       const viewport = document.querySelector('meta[name="viewport"]')
 
@@ -789,6 +797,7 @@ export default {
         result = result.filter(q => q.title.toLowerCase().includes(this.textSearch.toLowerCase()))
       }
       result = result.sort((a, b) => new Date(b.testDate) - new Date(a.testDate))
+      console.log('Questions:', result)
       return result
     },
     loadSummary() {

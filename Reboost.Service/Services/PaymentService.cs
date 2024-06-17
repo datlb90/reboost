@@ -810,10 +810,15 @@ namespace Reboost.Service.Services
 
             string orderDetail = plan + duration + renew;
 
+            //string amount = string.Format("{0:#.00}", Convert.ToDecimal(order.Amount.ToString()) / 100);
+
+            decimal amountDecimal = Convert.ToDecimal(order.Amount.ToString());
+            string formattedAmount = string.Format("{0:#,##0}", amountDecimal);
+
             string message = $"<p>Xin chào {user.FirstName},</p>" +
                             $"<p>Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của Reboost!</p>" +
-                            $"<p>Bạn đã thanh toán thành công số tiền " + order.Amount + "VNĐ cho " + orderDetail + ".</p>" +
-                            $"<p>Mã đơn hàng của bạn là: #" + order.Id + ". Thanh toán ngày " + order.LastActivityDate.ToString("dd/MM/yy H:mm:ss") + "</p>" +
+                            $"<p>Bạn đã thanh toán thành công số tiền " + formattedAmount + " VNĐ cho " + orderDetail + ".</p>" +
+                            $"<p>Mã đơn hàng của bạn là: #" + order.Id + ". Thời điểm thanh toán: " + order.LastActivityDate.ToString("dd/MM/yy H:mm:ss") + ".</p>" +
                             $"<p>Nếu bạn có gì thắc mắc xin vui lòng liên hệ trực tiếp với chúng tôi qua luồng email này.</p>" +
                             $"<p>Xin chân thành cảm ơn!</p>" +
                             $"<p>Reboost Support</p>";

@@ -25,4 +25,10 @@ namespace Reboost.DataAccess.Models
         public string Rating { get; set; }
         public string ReviewType { get; set; }
     }
+
+    public class InitialSubmissionModel
+    {
+        public int id { get; set; }
+        public string feedbackLanguage { get; set; }
+    }
 }

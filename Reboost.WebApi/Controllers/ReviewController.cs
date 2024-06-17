@@ -45,6 +45,12 @@ namespace Reboost.WebApi.Controllers
             db = ctx;
         }
 
+        [HttpGet("intial/submission/{userId}")]
+        public async Task<InitialSubmissionModel> GetInitialSubmission(string userId)
+        {
+            return await _service.GetInitialSubmission(userId);
+        }
+
         [HttpPost("criteria/feedback/gpt4o/v1")]
         public async Task<EssayFeedback> getCriteriaFeedbackGPT4O(EssayFeedbackModel model)
         {

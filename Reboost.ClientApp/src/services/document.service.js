@@ -1,6 +1,9 @@
 import http from '@/utils/axios'
 
 const documentService = {
+  createInitialSubmission(data) {
+    return http.post('/document/initial', data).then(rs => rs.data)
+  },
   submitDocument(data) {
     return http.post('/document', data).then(rs => rs.data)
   },

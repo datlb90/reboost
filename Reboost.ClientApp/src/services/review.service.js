@@ -1,6 +1,9 @@
 import http from '@/utils/axios'
 
 const reviewService = {
+  getInitialSubmission(userId) {
+    return http.get(`/review/intial/submission/${userId}`).then(rs => rs.data)
+  },
   getEssayScore(model) {
     return http.post('/review/essay/score', model).then(rs => rs.data)
   },

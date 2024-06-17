@@ -179,7 +179,7 @@ namespace Reboost.DataAccess.Repositories
                         {
                             Id = quest.Id,
                             Title = quest.Title,
-                            Section = task.Name,
+                            Section = task.Name == "Academic Writing Task 1" ? "Task 1" : "Task 2",
                             Test = test.Name,
                             Time = task.Time,
                             Type = quest.Type,

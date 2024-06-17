@@ -418,12 +418,12 @@
           </el-tab-pane>
           <el-tab-pane name="question" label="Chủ đề">
             <tabQuestion
-              v-if="review"
+              v-if="task"
               ref="tabQuestion"
               :questionid="questionId"
             />
             <div
-              v-if="!review"
+              v-if="!task"
               v-loading="true"
               style="height: 520px;"
               element-loading-text="Đang tải chủ đề và tiêu chí đánh giá"
@@ -516,9 +516,6 @@
           </div>
           <div v-if="comment.fix" style="margin-top: 10px; border-top: #aeaeae dashed 1px; padding-top: 10px;">
             <div><b>Bản sửa:</b> "{{ comment.fix }}"</div>
-            <!-- <div v-if="comment.explain && comment.explain != comment.comment && comment.category != 'Spelling Mistake' && !comment.comment.toLowerCase().includes(comment.fix.toLowerCase())">
-              <b>Giải thích:</b> {{ comment.explain }}
-            </div> -->
           </div>
           <div v-if="isInShowMoreList(comment.uuid)" class="show__more-container" @click="toggleShowMore(comment.uuid)">
             {{ isInShowMoreList(comment.uuid).value==0 ? 'Xem thêm':'Rút gọn' }}
@@ -1093,9 +1090,6 @@
             </div>
             <div v-if="comment.fix" style="margin-top: 10px; border-top: #aeaeae dashed 1px; padding-top: 10px;">
               <div><b>Bản sửa:</b> "{{ comment.fix }}"</div>
-              <div v-if="comment.explain && comment.explain != comment.comment && comment.category != 'Spelling Mistake' ">
-                <b>Giải thích:</b> {{ comment.explain }}
-              </div>
             </div>
             <div v-if="isInShowMoreList(comment.uuid)" class="show__more-container" @click="toggleShowMore(comment.uuid)">
               {{ isInShowMoreList(comment.uuid).value==0 ? 'Xem thêm':'Rút gọn' }}

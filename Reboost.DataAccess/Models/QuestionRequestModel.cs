@@ -21,5 +21,6 @@ namespace Reboost.DataAccess.Models
         public string TaskName { get; set; }
         public QuestionRequestModel Question { get; set; }
         public string Text { get; set; }
+        public string FeedbackLanguage { get; set; }
     }
 }

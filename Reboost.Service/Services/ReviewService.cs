@@ -26,6 +26,8 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<InitialSubmissionModel> GetInitialSubmission(string userId);
+
         Task<EssayFeedback> getCriteriaFeedbackGPT4O(EssayFeedbackModel model);
         Task<EssayFeedback> getCriteriaFeedbackGPTTurbo(EssayFeedbackModel model);
         Task<EssayFeedback> getCriteriaFeedbackGPT4(EssayFeedbackModel model);
@@ -131,6 +133,11 @@ namespace Reboost.Service.Services
             userService = _userService;
             chatGPTService = _chatGPTService;
             subscriptionService = _subscriptionService;
+        }
+
+        public async Task<InitialSubmissionModel> GetInitialSubmission(string userId)
+        {
+            return await _unitOfWork.Submission.GetInitialSubmission(userId);
         }
 
         public async Task<EssayFeedback> getCriteriaFeedbackGPT4O(EssayFeedbackModel model)
@@ -848,6 +855,13 @@ namespace Reboost.Service.Services
         public async Task<GetReviewsModel> CreateAutomatedReview(string userId, int submissionId, string feedbackLanguage = "vn", string reviewType = "detail")
         {
             Submissions submission = await _unitOfWork.Submission.GetByIdAsync(submissionId);
+            if(submission.Type == "initial.vn" || submission.Type == "initial.en")
+            {
+                // Clear initial submission for this student.
+                submission.Type = "Submission";
+                submission.UpdatedDate = DateTime.UtcNow;
+                await _unitOfWork.Submission.Update(submission);
+            }
 
             // Delete any review request with this submission
             ReviewRequests existingRequest = await _unitOfWork.Review.GetReviewRequestBySubmissionId(submissionId, userId);

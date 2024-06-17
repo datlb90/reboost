@@ -25,7 +25,7 @@
         <el-form-item size="medium" style="margin-bottom: 7px;">
           <label slot="label" style="font-size: 16px;">Kiểu viết</label>
           <el-radio v-model="selectedWriteType" style="margin-right: 5px;" label="Đánh máy" border>Đánh máy</el-radio>
-          <el-radio v-model="selectedWriteType" style="margin-right: 5px;" label="Viết tay" border>Tải lên bản viết tay</el-radio>
+          <el-radio v-model="selectedWriteType" style="margin-right: 5px;" label="Viết tay" border :disabled="checkHandwriting()">Tải lên bản viết tay</el-radio>
         </el-form-item>
 
         <el-form-item v-if="selectedWriteType != 'Viết tay'" prop="topic" size="medium">
@@ -331,11 +331,22 @@ export default {
     }
   },
   mounted() {
+    this.freeToken = 0
+    this.premiumToken = 0
     window.addEventListener('resize', () => {
       this.screenWidth = window.innerWidth
     })
   },
   methods: {
+    checkHandwriting() {
+      if (this.userSubscription && this.userSubscription.planId >= 4) {
+        return false
+      }
+      if (!this.userSubscription && (this.freeToken > 0 || this.premiumToken > 0)) {
+        return false
+      }
+      return true
+    },
     openDialog() {
       this.freeToken = this.$store.state.auth.user.freeToken
       this.premiumToken = this.$store.state.auth.user.premiumToken

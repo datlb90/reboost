@@ -1,5 +1,5 @@
 import questionService from '@/services/question.service'
-import reviewService from '@/services/review.service'
+// import reviewService from '@/services/review.service'
 import documentService from '@/services/document.service'
 import sampleService from '../../services/sample.service'
 
@@ -22,14 +22,14 @@ const getDefaultState = () => {
 const state = getDefaultState()
 
 const actions = {
-  async submitPersonalQuestion({ commit, state }, userId) {
+  submitPersonalQuestion({ commit, state }, userId) {
     const formData = new FormData()
     formData.set('UserId', userId)
     formData.set('TaskName', state.personalQuestion.TaskName)
     formData.set('TaskId', state.personalQuestion.TaskId)
     formData.set('Test', state.personalQuestion.Test)
     formData.set('Text', state.personalQuestion.Text)
-
+    formData.set('FeedbackLanguage', state.personalQuestion.FeedbackLanguage)
     const question = state.personalQuestion.Parts.find(q => q.Name == 'Question')
     if (question) {
       // Setup question content to send to the backend
@@ -47,37 +47,40 @@ const actions = {
         formData.set(`Question.QuestionParts[1][FileName]`, chart.FileName)
         formData.set(`Question.UploadedFile`, chart.UploadedFile)
       }
-      const submission = await questionService.createPersonalSubmission(formData)
-      if (submission) {
-        const rs = await reviewService.createAutomatedReview({
-          UserId: userId,
-          SubmissionId: submission.id,
-          FeedbackLanguage: state.personalQuestion.FeedbackLanguage,
-          ReviewType: 'detail'
-        })
-        commit('CLEAR_PERSONAL_QUESTION')
-        return rs
-      }
+      questionService.createInitialSubmission(formData)
       commit('CLEAR_PERSONAL_QUESTION')
-      return null
+
+      // if (submission) {
+      //   const rs = await reviewService.createAutomatedReview({
+      //     UserId: userId,
+      //     SubmissionId: submission.id,
+      //     FeedbackLanguage: state.personalQuestion.FeedbackLanguage,
+      //     ReviewType: 'detail'
+      //   })
+      //   commit('CLEAR_PERSONAL_QUESTION')
+      //   return rs
+      // }
+
+      // return null
     }
   },
-  async submitInitialTest({ state, commit }, userId) {
+  submitInitialTest({ state, commit }, userId) {
     state.initialSubmission.userId = userId
     // Create a new submission
-    const response = await documentService.submitDocument(state.initialSubmission)
-    if (response && response.submissions.length > 0) {
-      const rs = await reviewService.createAutomatedReview({
-        UserId: userId,
-        SubmissionId: response.submissions[0].id,
-        FeedbackLanguage: 'vn',
-        ReviewType: 'detail'
-      })
-      commit('CLEAR_INITIAL_SUBMISSION')
-      return rs
-    }
+    documentService.createInitialSubmission(state.initialSubmission)
     commit('CLEAR_INITIAL_SUBMISSION')
-    return null
+    // if (response && response.submissions.length > 0) {
+    //   const rs = await reviewService.createAutomatedReview({
+    //     UserId: userId,
+    //     SubmissionId: response.submissions[0].id,
+    //     FeedbackLanguage: 'vn',
+    //     ReviewType: 'detail'
+    //   })
+    //   commit('CLEAR_INITIAL_SUBMISSION')
+    //   return rs
+    // }
+    // commit('CLEAR_INITIAL_SUBMISSION')
+    // return null
   },
   saveInitialTestData({ commit, state }, data) {
     commit('SET_INITIAL_SUBMISSION', data)

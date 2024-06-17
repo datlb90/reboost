@@ -13,6 +13,7 @@ namespace Reboost.Service.Services
 {
     public interface IQuestionsService
     {
+        Task<Submissions> CreateInitialSubmission(RequestReviewForWriting model);
         Task<ImageToTopicAndEssayModel> getWritingTextFromImage(byte[] imageData);
         Task<List<InitQuestionModel>> GetInitQuestionModels();
         Task<Submissions> CreatePersonalSubmission(RequestReviewForWriting model);
@@ -151,6 +152,55 @@ namespace Reboost.Service.Services
             model.LikeCount = 0;
             model.DisLikeCount = 0;
             return await _unitOfWork.Questions.CreateQuestionAsync(q, model);
+        }
+
+        public async Task<Submissions> CreateInitialSubmission(RequestReviewForWriting model)
+        {
+            // Create a new question
+            Questions question = new Questions
+            {
+                TaskId = model.TaskId,
+                Type = "My Topic",
+                Title = model.TaskName + " Topic",
+                SubmissionCount = 0,
+                ViewCount = 0,
+                LikeCount = 0,
+                DisLikeCount = 0,
+                HasSample = false,
+                AverageScore = "0.0",
+                Status = "Personal",
+                Difficulty = "Undefined",
+                AddedDate = DateTime.UtcNow,
+                LastActivityDate = DateTime.UtcNow,
+                UserId = model.UserId
+            };
+            var newQuestion = await _unitOfWork.Questions.CreateQuestionAsync(question, model.Question);
+
+            // Create new document
+            DocumentRequestModel document = new DocumentRequestModel
+            {
+                Filename = model.UserId + "_" + newQuestion.Id + ".pdf",
+                Text = model.Text,
+                UserId = model.UserId,
+                QuestionId = newQuestion.Id,
+                TimeSpentInSeconds = 0,
+            };
+            var newDoc = await _documentService.Create(document);
+
+            // Create new submission
+            Submissions submission = new Submissions
+            {
+                DocId = newDoc.Id,
+                UserId = model.UserId,
+                QuestionId = newQuestion.QuestionId,
+                SubmittedDate = DateTime.UtcNow,
+                Type = "initial." + model.FeedbackLanguage,
+                TimeSpentInSeconds = 0,
+                Status = "Submitted",
+                UpdatedDate = DateTime.UtcNow
+            };
+
+            return await _unitOfWork.Submission.Create(submission);
         }
 
         public async Task<Submissions> CreatePersonalSubmission(RequestReviewForWriting model)

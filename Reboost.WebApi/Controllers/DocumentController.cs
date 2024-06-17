@@ -30,6 +30,28 @@ namespace Reboost.WebApi.Controllers
         }
 
         [HttpPost]
+        [Route("initial")]
+        public async Task<Documents> CreateInitialSubmission(DocumentRequestModel model)
+        {
+            var newDoc = await _docService.Create(model);
+            var newSub = await _submissionService.CreateAsync(new Submissions
+            {
+                DocId = newDoc.Id,
+                UserId = model.UserId,
+                QuestionId = model.QuestionId,
+                SubmittedDate = DateTime.UtcNow,
+                Type = "initial.vn",
+                TimeSpentInSeconds = model.TimeSpentInSeconds,
+                Status = "Submitted",
+                UpdatedDate = DateTime.UtcNow
+            });
+            // Why do we create a new review for every submission?
+            //await _reviewService.Create(new { revieweeId = model.UserId, submissionId = newSub.Id });
+
+            return newDoc;
+        }
+
+        [HttpPost]
         [Route("")]
         public async Task<Documents> Create(DocumentRequestModel model)
         {

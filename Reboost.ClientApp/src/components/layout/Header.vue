@@ -399,7 +399,7 @@ export default {
       } else {
         this.$notify.info({
           title: 'Đã hết lượt chấm miễn phí',
-          message: 'Bạn đã sử dụng hết lượt chấm miễn phí. Hãy lựa chọn 1 gọi phản hồi phù hợp.',
+          message: 'Bạn đã sử dụng hết lượt chấm miễn phí. Hãy lựa chọn 1 gói phản hồi phù hợp.',
           type: 'info',
           duration: 5000
         })

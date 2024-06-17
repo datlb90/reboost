@@ -13,7 +13,6 @@
       <div id="feedbackConfigDialog" class="dialog-content" style="margin-top: 45px; margin-bottom: 50px;">
         <el-form
           ref="personalQuestionForm"
-          :model="form"
           label-width="160px"
         >
           <el-form-item v-if="currentUser && currentUser.id" size="medium" style="margin-bottom: 10px;">
@@ -63,7 +62,6 @@
         <div id="feedbackConfigDialog" class="dialog-content" style="margin-top: 15px;">
           <el-form
             ref="personalQuestionForm"
-            :model="form"
           >
             <el-form-item v-if="currentUser && currentUser.id" size="medium" style="margin-bottom: 20px;">
               <label style="font-size: 16px;">Phản hồi</label>

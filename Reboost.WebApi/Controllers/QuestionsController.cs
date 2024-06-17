@@ -70,15 +70,17 @@ namespace Reboost.WebApi.Controllers
             return await _service.GetInitQuestionModels();
         }
 
+        [HttpPost("initial/submission")]
+        public async Task<IActionResult> CreateInitialSubmission([FromForm] RequestReviewForWriting model)
+        {
+            var submission = await _service.CreateInitialSubmission(model);
+            return Ok(submission);
+        }
+
         [HttpPost("peronsal/submission")]
         public async Task<IActionResult> CreatePersonalSubmission([FromForm] RequestReviewForWriting model)
         {
-            //var currentUserClaim = HttpContext.User;
-            //var email = currentUserClaim.FindFirst("Email");
-            //var currentUser = await _userService.GetByEmailAsync(email.Value);
-
             var submission = await _service.CreatePersonalSubmission(model);
-
             return Ok(submission);
         }
 

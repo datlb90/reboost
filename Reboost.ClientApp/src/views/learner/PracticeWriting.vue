@@ -1401,7 +1401,13 @@ export default {
               this.$refs.checkoutDialog?.openDialog()
             })
           } else {
-            window.location.href = '/pricing'
+            this.$notify.info({
+              title: 'Đã hết lượt chấm miễn phí',
+              message: 'Bạn đã sử dụng hết lượt chấm miễn phí. Hãy lựa chọn 1 gói phản hồi phù hợp.',
+              type: 'info',
+              duration: 5000
+            })
+            this.$router.push('/pricing')
           }
         }
       })
@@ -1555,7 +1561,7 @@ export default {
       const headerHeight = document.getElementById('header').clientHeight
       const containerHeight = window.innerHeight - headerHeight
       const elContainer = document.getElementById('practiceWritingContainer')
-      elContainer.style.height = containerHeight + 'px'
+      if (elContainer) { elContainer.style.height = containerHeight + 'px' }
     },
     calculateStylePaddingScroll() {
       const parentHeight = document.getElementById('parent-scroll').offsetHeight

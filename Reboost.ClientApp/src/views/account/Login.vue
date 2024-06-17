@@ -99,6 +99,7 @@
 import { mapActions } from 'vuex'
 import { PageName } from '@/app.constant'
 import authService from '@/services/auth.service'
+import reviewService from '@/services/review.service'
 
 export default {
   name: 'Login',
@@ -191,10 +192,29 @@ export default {
       })
       if (user) {
         document.removeEventListener('keydown', this.pressEnterToLogin)
+        // If this is first time login
+        if (this.emailConfirmed) {
+          // get initial submission if any
+          const initialSubmission = await reviewService.getInitialSubmission(user.id)
+          if (initialSubmission) {
+            const rs = await reviewService.createAutomatedReview({
+              UserId: user.id,
+              SubmissionId: initialSubmission.id,
+              FeedbackLanguage: initialSubmission.feedbackLanguage,
+              ReviewType: 'detail'
+            })
+            const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
+            // Send user to the review feedback page
+            this.$store.dispatch('auth/setSelectedTest').then(rs => {
+              window.location.href = url
+            })
+          }
+        }
         const planId = this.getUrlParameter('planId')
         if (this.$router.currentRoute.query?.returnUrl) {
           this.$router.push({ path: this.$router.currentRoute.query?.returnUrl })
         } else if (planId && planId != '0') {
+          // set selected test
           this.$store.dispatch('auth/setSelectedTest').then(rs => {
             window.location.href = '/pricing?planId=' + planId
           })

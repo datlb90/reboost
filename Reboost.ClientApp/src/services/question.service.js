@@ -7,6 +7,9 @@ const questionService = {
   getQuestionsForInitialTest() {
     return http.get('/questions/initial/test').then(rs => rs.data)
   },
+  createInitialSubmission(model) {
+    return http.post('/questions/initial/submission', model).then(rs => rs.data)
+  },
   createPersonalSubmission(model) {
     return http.post('/questions/peronsal/submission', model).then(rs => rs.data)
   },
