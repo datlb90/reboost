@@ -38,7 +38,7 @@ export default {
     var menuItems = topMenu.find('a')
     // Anchors corresponding to menu items
     var scrollItems = menuItems.map(function() {
-      if ($(this).attr('href') != '/rater') {
+      if ($(this).attr('href') != '/rater' && $(this).attr('href') != '/sample/feedback/basic' && $(this).attr('href') != '/pricing') {
         var item = $('#' + $(this).attr('href'))
       if (item.length) { return item }
       }

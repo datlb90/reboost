@@ -129,7 +129,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>249.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>199.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -302,7 +302,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>299.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>249.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -467,7 +467,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>349.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>299.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -592,7 +592,7 @@
             </div>
             <div style="margin-top: 30px; text-align: center;">
               <el-tag style="margin-top: 5px; font-size: 13px; width: 100%;">Email nhận biên lai: {{ user.email }}</el-tag>
-              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng này được hoàn trả trong vòng 30 ngày với bất kỳ lý do gì.</el-tag>
+              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng này được hoàn trả trong vòng 14 ngày với bất kỳ lý do gì.</el-tag>
               <el-tag type="info" style="margin-top: 10px; font-size: 13px; width: 100%;">Bằng cách mua gói phản hồi, bạn đồng ý với điều khoản và dịch vụ của Reboost.</el-tag>
             </div>
           </div>
@@ -664,7 +664,7 @@
             </div>
             <div style="margin-top: 30px; text-align: center;">
               <el-tag style="margin-top: 5px; font-size: 13px; width: 100%;">Email nhận biên lai: {{ user.email }}</el-tag>
-              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng này được hoàn trả trong 30 ngày với bất kỳ lý do gì.</el-tag>
+              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng này được hoàn trả trong 14 ngày với bất kỳ lý do gì.</el-tag>
               <el-tag type="info" style="margin-top: 10px; font-size: 13px; width: 100%; height: 100%;">Bằng cách mua gói phản hồi, bạn đồng ý với điều khoản và dịch vụ của Reboost.</el-tag>
             </div>
           </div>
@@ -805,7 +805,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>249.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>199.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -978,7 +978,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>299.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>249.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -1143,7 +1143,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>349.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>299.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -1268,7 +1268,7 @@
             </div>
             <div style="margin-top: 30px; text-align: center;">
               <el-tag style="margin-top: 5px; font-size: 13px; width: 100%;">Email nhận biên lai: {{ user.email }}</el-tag>
-              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng này được hoàn trả trong vòng 30 ngày với bất kỳ lý do gì.</el-tag>
+              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng này được hoàn trả trong vòng 14 ngày với bất kỳ lý do gì.</el-tag>
               <el-tag type="info" style="margin-top: 10px; font-size: 13px; width: 100%;">Bằng cách mua gói phản hồi, bạn đồng ý với điều khoản và dịch vụ của Reboost.</el-tag>
             </div>
           </div>
@@ -1340,7 +1340,7 @@
             </div>
             <div style="margin-top: 30px; text-align: center;">
               <el-tag style="margin-top: 5px; font-size: 13px; width: 100%;">Email nhận biên lai: {{ user.email }}</el-tag>
-              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng này được hoàn trả trong 30 ngày với bất kỳ lý do gì.</el-tag>
+              <el-tag v-if="activeDuration > 1" type="success" style="margin-top: 10px; font-size: 13px; width: 100%;">Đơn hàng này được hoàn trả trong 14 ngày với bất kỳ lý do gì.</el-tag>
               <el-tag type="info" style="margin-top: 10px; font-size: 13px; width: 100%; height: 100%;">Bằng cách mua gói phản hồi, bạn đồng ý với điều khoản và dịch vụ của Reboost.</el-tag>
             </div>
           </div>
@@ -1477,15 +1477,15 @@ export default {
         } else if (planId == 4) {
           planName = 'Phản Hồi Chuyên Sâu'
           duration = 6
-          price = 249000
+          price = 199000
         } else if (planId == 5) {
           planName = 'Phản Hồi Chuyên Sâu'
           duration = 3
-          price = 299000
+          price = 249000
         } else if (planId == 6) {
           planName = 'Phản Hồi Chuyên Sâu'
           duration = 1
-          price = 349000
+          price = 299000
         }
 
         const option = this.getOptionText(planId)

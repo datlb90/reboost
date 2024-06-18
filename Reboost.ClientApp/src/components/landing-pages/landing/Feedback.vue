@@ -20,9 +20,81 @@
           <slide>
             <div class="single-ml-feedback-item">
               <div class="client-info">
+                <img src="../../../assets/img/user-feedback/ngoc-anh.png" alt="image">
+                <h3>Ngọc Anh</h3>
+                <span>IELTS Writing 7.0</span>
+              </div>
+              <p>Em thấy phản hồi của Reboost rất hữu ích ạ 💯💯, do em mới làm quen với ielts và tự học nên chưa có nhiều kinh nghiệm cũng như kĩ năng làm bài tốt, app giúp em biết em còn yếu và thiếu gì trong bài viết, nói chung là em rất grateful ạ. ❤</p>
+              <div class="rating">
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+              </div>
+            </div>
+          </slide>
+
+          <slide>
+            <div class="single-ml-feedback-item">
+              <div class="client-info">
+                <img src="../../../assets/img/user-feedback/duy-thanh.png" alt="image">
+                <h3>Duy Thanh</h3>
+                <span>IELTS Writing 8.0</span>
+              </div>
+              <p>Reboost cung cấp phân tích rất kĩ về mặt dùng từ và chấm ngữ pháp rất đúng. Ứng dụng cho mình cảm giác như được đánh giá bởi các giáo viên chuyên dạy IELTS.</p>
+              <div class="rating">
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+              </div>
+            </div>
+          </slide>
+
+          <slide>
+            <div class="single-ml-feedback-item">
+              <div class="client-info">
+                <img src="../../../assets/img/user-feedback/thao-nguyen.png" alt="image">
+                <h3>Thảo Nguyên</h3>
+                <span>IELTS Writing 7.5</span>
+              </div>
+              <p>Reboost đỉnh lắm luôn ạ. Web chấm kĩ theo đủ các tiêu chí và phát hiện lỗi sai, giúp người viết sửa lại và đưa ra thêm những cấu trúc nâng cao hơn để tham khảo nữa ạ. Em còn ấn tượng khi web cung cấp cả ý tưởng, từ vựng và bài viết mẫu ở phần thực hành nữa.</p>
+              <div class="rating">
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+              </div>
+            </div>
+          </slide>
+
+          <slide>
+            <div class="single-ml-feedback-item">
+              <div class="client-info">
+                <img src="../../../assets/img/user-feedback/nam-cuong.png" alt="image">
+                <h3>Nam Cường</h3>
+                <span>IELTS Writing 8.0</span>
+              </div>
+              <p>Sau khi sửa bài theo feedback của Reboost thì bài làm của em được nhận xét bới giáo viên nước ngoài em đang học là khá trơn tru và vốn từ vựng và grammar không bị sai sót nhiều nữa ạ.</p>
+              <div class="rating">
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+                <feather type="star" />
+              </div>
+            </div>
+          </slide>
+
+          <slide>
+            <div class="single-ml-feedback-item">
+              <div class="client-info">
                 <img src="../../../assets/img/user-feedback/tran-ngoc-anh.png" alt="image">
                 <h3>Trần Ngọc Anh</h3>
-                <span>IELTS Writing: 7.0</span>
+                <span>IELTS Writing: 7.5</span>
               </div>
               <p>E thấy web rất tuyệt ạ, có recommend cho e rất nhiều từ vựng và viết lại bài gợi ý cho em rất hay ạ &lt;333.</p>
               <div class="rating">
@@ -182,24 +254,6 @@
           <slide>
             <div class="single-ml-feedback-item">
               <div class="client-info">
-                <img src="../../../assets/img/user-feedback/duy-thanh.png" alt="image">
-                <h3>Duy Thanh</h3>
-                <span>IELTS Writing 8.0</span>
-              </div>
-              <p>Reboost cung cấp phân tích rất kĩ về mặt dùng từ và chấm ngữ pháp rất đúng. Ứng dụng cho mình cảm giác như được đánh giá bởi các giáo viên chuyên dạy IELTS.</p>
-              <div class="rating">
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-              </div>
-            </div>
-          </slide>
-
-          <slide>
-            <div class="single-ml-feedback-item">
-              <div class="client-info">
                 <img src="../../../assets/img/user-feedback/bao-nguyen.png" alt="image">
                 <h3>Bảo Nguyên</h3>
                 <span>IELTS Writing 7.0</span>
@@ -223,60 +277,6 @@
                 <span>IELTS Writing 8.0</span>
               </div>
               <p>Rất cảm ơn Reboost đã khiến em đỡ vất vả hơn trong việc luyện Writing. Ứng dụng giúp rất nhiều cho em trong việc sửa và cải thiện các tiêu chí.</p>
-              <div class="rating">
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-              </div>
-            </div>
-          </slide>
-
-          <slide>
-            <div class="single-ml-feedback-item">
-              <div class="client-info">
-                <img src="../../../assets/img/user-feedback/ngoc-anh.png" alt="image">
-                <h3>Ngọc Anh</h3>
-                <span>IELTS Writing 7.0</span>
-              </div>
-              <p>Em thấy phản hồi của Reboost rất hữu ích ạ 💯💯, do em mới làm quen với ielts và tự học nên chưa có nhiều kinh nghiệm cũng như kĩ năng làm bài tốt, app giúp em biết em còn yếu và thiếu gì trong bài viết, nói chung là em rất grateful ạ. ❤</p>
-              <div class="rating">
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-              </div>
-            </div>
-          </slide>
-
-          <slide>
-            <div class="single-ml-feedback-item">
-              <div class="client-info">
-                <img src="../../../assets/img/user-feedback/thao-nguyen.png" alt="image">
-                <h3>Thảo Nguyên</h3>
-                <span>IELTS Writing 7.5</span>
-              </div>
-              <p>Reboost đỉnh lắm luôn ạ. Web chấm kĩ theo đủ các tiêu chí và phát hiện lỗi sai, giúp người viết sửa lại và đưa ra thêm những cấu trúc nâng cao hơn để tham khảo nữa ạ. Em còn ấn tượng khi web cung cấp cả ý tưởng, từ vựng và bài viết mẫu ở phần thực hành nữa.</p>
-              <div class="rating">
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-                <feather type="star" />
-              </div>
-            </div>
-          </slide>
-
-          <slide>
-            <div class="single-ml-feedback-item">
-              <div class="client-info">
-                <img src="../../../assets/img/user-feedback/nam-cuong.png" alt="image">
-                <h3>Nam Cường</h3>
-                <span>IELTS Writing 7.0</span>
-              </div>
-              <p>Sau khi sửa bài theo feedback của Reboost thì bài làm của em được nhận xét bới giáo viên nước ngoài em đang học là khá trơn tru và vốn từ vựng và grammar không bị sai sót nhiều nữa ạ.</p>
               <div class="rating">
                 <feather type="star" />
                 <feather type="star" />

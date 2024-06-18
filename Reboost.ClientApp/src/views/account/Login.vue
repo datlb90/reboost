@@ -203,6 +203,11 @@ export default {
               FeedbackLanguage: initialSubmission.feedbackLanguage,
               ReviewType: 'detail'
             })
+
+            // clear personal question and initial test
+            this.$store.dispatch('question/clearInitialSubmission')
+            this.$store.dispatch('question/clearPersonalQuestion')
+
             const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
             // Send user to the review feedback page
             this.$store.dispatch('auth/setSelectedTest').then(rs => {

@@ -120,10 +120,13 @@ export default ({
       this.isShowScript = !this.isShowScript
     },
     calculateContainerHeight() {
-      const headerHeight = document.getElementById('header').clientHeight
-      const containerHeight = window.innerHeight - headerHeight
-      const elContainer = document.getElementById('reviewContainer')
-      elContainer.style.height = containerHeight + 'px'
+      const header = document.getElementById('header')
+      if (header) {
+        const headerHeight = header.clientHeight
+        const containerHeight = window.innerHeight - headerHeight
+        const elContainer = document.getElementById('reviewContainer')
+        elContainer.style.height = containerHeight + 'px'
+      }
     }
   }
 })

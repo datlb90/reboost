@@ -48,39 +48,11 @@ const actions = {
         formData.set(`Question.UploadedFile`, chart.UploadedFile)
       }
       questionService.createInitialSubmission(formData)
-      commit('CLEAR_PERSONAL_QUESTION')
-
-      // if (submission) {
-      //   const rs = await reviewService.createAutomatedReview({
-      //     UserId: userId,
-      //     SubmissionId: submission.id,
-      //     FeedbackLanguage: state.personalQuestion.FeedbackLanguage,
-      //     ReviewType: 'detail'
-      //   })
-      //   commit('CLEAR_PERSONAL_QUESTION')
-      //   return rs
-      // }
-
-      // return null
     }
   },
   submitInitialTest({ state, commit }, userId) {
     state.initialSubmission.userId = userId
-    // Create a new submission
     documentService.createInitialSubmission(state.initialSubmission)
-    commit('CLEAR_INITIAL_SUBMISSION')
-    // if (response && response.submissions.length > 0) {
-    //   const rs = await reviewService.createAutomatedReview({
-    //     UserId: userId,
-    //     SubmissionId: response.submissions[0].id,
-    //     FeedbackLanguage: 'vn',
-    //     ReviewType: 'detail'
-    //   })
-    //   commit('CLEAR_INITIAL_SUBMISSION')
-    //   return rs
-    // }
-    // commit('CLEAR_INITIAL_SUBMISSION')
-    // return null
   },
   saveInitialTestData({ commit, state }, data) {
     commit('SET_INITIAL_SUBMISSION', data)

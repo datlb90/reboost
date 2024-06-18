@@ -149,7 +149,32 @@ export default async (router) => {
           return
         } else if (role === UserRole.LEARNER) {
           await store.dispatch('auth/setSelectedTest')
-          return next({ name: PageName.QUESTIONS })
+          // Check if there is personal question or initial test for external login
+          const personalQuestion = store.getters['question/getPersonalQuestion']
+          const initialTest = store.getters['question/getInitialSubmission']
+          if (personalQuestion || initialTest) {
+            const initialSubmission = await reviewService.getInitialSubmission(currentUser.id)
+            if (initialSubmission) {
+              const rs = await reviewService.createAutomatedReview({
+                UserId: currentUser.id,
+                SubmissionId: initialSubmission.id,
+                FeedbackLanguage: initialSubmission.feedbackLanguage,
+                ReviewType: 'detail'
+              })
+
+              // clear initial submission
+              store.dispatch('question/clearPersonalQuestion')
+              store.dispatch('question/clearInitialSubmission')
+              // redirect user to the review page
+              const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
+              next({ path: url })
+            } else {
+              return next({ name: PageName.QUESTIONS })
+            }
+          } else {
+            return next({ name: PageName.QUESTIONS })
+          }
+
           // Check if user is requesting a review
           // Open the request review dialog
           // const personalQuestion = store.getters['question/getPersonalQuestion']

@@ -8,79 +8,350 @@
               <div id="parent-scroll" style="flex-grow: 1;position: relative;">
                 <div id="child-scroll">
                   <div id="rubric">
-                    <div v-if="loadCriteriaFeedbackCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
-                      <el-card
-                        v-for="criteria in rubricCriteria"
-                        :key="criteria.criteriaId"
-                        style="margin-bottom: 5px; margin-left: 3px; border: 1px solid rgb(190, 190, 190);"
-                        shadow="hover"
-                      >
-                        <div slot="header" class="clearfix">
-                          <div>
-                            <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                              <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
-                              <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
-                              <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
-                              <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
-                              <span v-else> Tiêu Chí {{ criteria.name }}</span>
-                            </div>
-                            <div style="float: right;">
-                              <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
-                                <div v-if="isAiReview">
-                                  <div v-if="!criteria.loading && criteria.mark" class="band-score">
-                                    Band:
-                                    {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                    <div v-if="loadCriteriaFeedbackCompleted || loadEssayScoreCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
+                      <div v-if="loadEssayScoreCompleted">
+                        <el-card
+                          style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
+                          shadow="hover"
+                        >
+                          <div slot="header" class="clearfix">
+                            <div>
+                              <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                                <span>Overall Band Score</span>
+                              </div>
+                              <div style="float: right;">
+                                <div>
+                                  <div>
+                                    <div v-if="essayScore.overallBandScore" class="band-score">
+                                      Band: {{ essayScore.overallBandScore.toString().length == 1 ? essayScore.overallBandScore.toString() + '.0' : essayScore.overallBandScore }}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                        <div>
-                          <div>
-                            <div>
-                              <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
+                          <div style="border: 1px solid rgb(188, 188, 188); padding: 10px; border-radius: 5px;">
+                            <div v-if="essayScore.taskAchievementScore" class="criteria-score">
+                              <div>
+                                <b>
+                                  Task Achievement:
+                                  {{ essayScore.taskAchievementScore.toString().length == 1 ? essayScore.taskAchievementScore.toString() + '.0' : essayScore.taskAchievementScore }}
+                                </b>
+                              </div>
+                              <div v-if="essayScore.highlightKeyFeatures" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.highlightKeyFeatures > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
+                                    essayScore.highlightKeyFeatures == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.highlightKeyFeatures.toString().length == 1 ? essayScore.highlightKeyFeatures.toString() + '.0' : essayScore.highlightKeyFeatures }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Highlighting Key Features</div>
+                              </div>
+                              <div v-if="essayScore.compareAndContrast" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.compareAndContrast > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
+                                    essayScore.compareAndContrast == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.compareAndContrast.toString().length == 1 ? essayScore.compareAndContrast.toString() + '.0' : essayScore.compareAndContrast }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Comparing and Contrasting Data</div>
+                              </div>
+
+                              <div v-if="essayScore.dataSelection" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.dataSelection > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
+                                    essayScore.dataSelection == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.dataSelection.toString().length == 1 ? essayScore.dataSelection.toString() + '.0' : essayScore.dataSelection }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Data Selection and Relevance</div>
+                              </div>
+                              <div class="sub-criteria">
+                                <el-tag v-if="essayScore.appropriateWordCount" type="success" size="small">
+                                  <i class="criteria-score-check el-icon-check" />
+                                </el-tag>
+                                <el-tag v-else type="danger" size="small">
+                                  <i class="el-icon-close criteria-score-close" />
+                                </el-tag>
+                                <span class="sub-criteria-label">Appropriate Word Count</span>
+                              </div>
+                            </div>
+
+                            <div v-if="essayScore.taskResponseScore" class="criteria-score">
+                              <div>
+                                <b>
+                                  Task Response:
+                                  {{ essayScore.taskResponseScore.toString().length == 1 ? essayScore.taskResponseScore.toString() + '.0' : essayScore.taskResponseScore }}
+                                </b>
+                              </div>
+                              <div v-if="essayScore.clarityOfPosition" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.clarityOfPosition > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
+                                    essayScore.clarityOfPosition == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.clarityOfPosition.toString().length == 1 ? essayScore.clarityOfPosition.toString() + '.0' : essayScore.clarityOfPosition }}
+                                </el-tag>
+                                <span class="sub-criteria-label">Clarity of Position</span>
+                              </div>
+                              <div v-if="essayScore.developmentOfIdeas" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.developmentOfIdeas > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
+                                    essayScore.developmentOfIdeas == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.developmentOfIdeas.toString().length == 1 ? essayScore.developmentOfIdeas.toString() + '.0' : essayScore.developmentOfIdeas }}
+                                </el-tag>
+                                <span class="sub-criteria-label">Development of Ideas</span>
+                              </div>
+                              <div v-if="essayScore.justificationOfOpinion" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.justificationOfOpinion > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
+                                    essayScore.justificationOfOpinion == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.justificationOfOpinion.toString().length == 1 ? essayScore.justificationOfOpinion.toString() + '.0' : essayScore.justificationOfOpinion }}
+                                </el-tag>
+                                <span class="sub-criteria-label">Justification of Opinions</span>
+                              </div>
+                              <div class="sub-criteria">
+                                <el-tag v-if="essayScore.appropriateWordCount" type="success" size="small">
+                                  <i class="criteria-score-check el-icon-check" />
+                                </el-tag>
+                                <el-tag v-else type="danger" size="small">
+                                  <i class="el-icon-close criteria-score-close" />
+                                </el-tag>
+                                <span class="sub-criteria-label">Appropriate Word Count</span>
+                              </div>
+                            </div>
+
+                            <div v-if="essayScore.coherenceScore" class="criteria-score">
+                              <div>
+                                <b>
+                                  Coherence and Cohesion:
+                                  {{ essayScore.coherenceScore.toString().length == 1 ? essayScore.coherenceScore.toString() + '.0' : essayScore.coherenceScore }}
+                                </b>
+                              </div>
+                              <div v-if="essayScore.logicalOrganization" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.logicalOrganization > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
+                                    essayScore.logicalOrganization == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.logicalOrganization.toString().length == 1 ? essayScore.logicalOrganization.toString() + '.0' : essayScore.logicalOrganization }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Logical Organization</div>
+                              </div>
+                              <div v-if="essayScore.paragraphing" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.paragraphing > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
+                                    essayScore.paragraphing == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.paragraphing.toString().length == 1 ? essayScore.paragraphing.toString() + '.0' : essayScore.paragraphing }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Paragraphing</div>
+                              </div>
+                              <div v-if="essayScore.cohesiveDevices" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.cohesiveDevices > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
+                                    essayScore.cohesiveDevices == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.cohesiveDevices.toString().length == 1 ? essayScore.cohesiveDevices.toString() + '.0' : essayScore.cohesiveDevices }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Use of Cohesive Devices</div>
+                              </div>
+                            </div>
+
+                            <div v-if="essayScore.lexicalResourceScore" class="criteria-score">
+                              <div>
+                                <b>
+                                  Lexical Resource:
+                                  {{ essayScore.lexicalResourceScore.toString().length == 1 ? essayScore.lexicalResourceScore.toString() + '.0' : essayScore.lexicalResourceScore }}
+                                </b>
+                              </div>
+                              <div v-if="essayScore.rangeOfVocabulary" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.rangeOfVocabulary > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
+                                    essayScore.rangeOfVocabulary == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.rangeOfVocabulary.toString().length == 1 ? essayScore.rangeOfVocabulary.toString() + '.0' : essayScore.rangeOfVocabulary }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Range of Vocabulary</div>
+                              </div>
+                              <div v-if="essayScore.accuracyOfWordChoice" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.accuracyOfWordChoice > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
+                                    essayScore.accuracyOfWordChoice == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.accuracyOfWordChoice.toString().length == 1 ? essayScore.accuracyOfWordChoice.toString() + '.0' : essayScore.accuracyOfWordChoice }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Accuracy of Word Choice</div>
+                              </div>
+                              <div v-if="essayScore.spellingAndFormation" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.spellingAndFormation > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
+                                    essayScore.spellingAndFormation == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.spellingAndFormation.toString().length == 1 ? essayScore.spellingAndFormation.toString() + '.0' : essayScore.spellingAndFormation }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Spelling and Word Formation</div>
+                              </div>
+                              <div v-if="essayScore.registerAndStyle" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.registerAndStyle > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
+                                    essayScore.registerAndStyle == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.registerAndStyle.toString().length == 1 ? essayScore.registerAndStyle.toString() + '.0' : essayScore.registerAndStyle }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Appropriateness of Register and Style</div>
+                              </div>
+                            </div>
+
+                            <div v-if="essayScore.grammarScore" class="criteria-score">
+                              <div>
+                                <b>
+                                  Grammatical Range and Accuracy:
+                                  {{ essayScore.grammarScore.toString().length == 1 ? essayScore.grammarScore.toString() + '.0' : essayScore.grammarScore }}
+                                </b>
+                              </div>
+                              <div v-if="essayScore.grammarRange" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.grammarRange > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
+                                    essayScore.grammarRange == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.grammarRange.toString().length == 1 ? essayScore.grammarRange.toString() + '.0' : essayScore.grammarRange }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Range of Grammatical Structures</div>
+                              </div>
+                              <div v-if="essayScore.sentenceComplexity" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.sentenceComplexity > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
+                                    essayScore.sentenceComplexity == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.sentenceComplexity.toString().length == 1 ? essayScore.sentenceComplexity.toString() + '.0' : essayScore.sentenceComplexity }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Sentence Complexity</div>
+                              </div>
+                              <div v-if="essayScore.grammarAccuracy" class="sub-criteria">
+                                <el-tag
+                                  :type="essayScore.grammarAccuracy > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
+                                    essayScore.grammarAccuracy == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
+                                    ? 'success' : 'danger'"
+                                  size="small"
+                                  class="sub-score-tag"
+                                >
+                                  {{ essayScore.grammarAccuracy.toString().length == 1 ? essayScore.grammarAccuracy.toString() + '.0' : essayScore.grammarAccuracy }}
+                                </el-tag>
+                                <div class="sub-criteria-label">Accuracy in Grammatical Forms</div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </el-card>
-                      <el-card
-                        v-if="isAiReview && rubricCriteria && rubricCriteria.length > 0"
-                        style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
-                        shadow="hover"
-                      >
-                        <div slot="header" class="clearfix">
-                          <div style="color: white; float: left; font-size: 16px; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
-                            <span>Đánh Giá Phản Hồi</span>
+                          <div v-if="review && review.reviewRequest && review.reviewRequest.feedbackLanguage == 'vn'" style="font-size: 13px; margin-top: 5px; padding:2px;">
+                            <div style="background-color: rgb(244, 244, 245); border-color: rgb(233, 233, 235); color: rgb(144, 147, 153); font-size: 12px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px;">
+                              Xin lưu ý rằng điểm số được cung cấp không phải là điểm IELTS chính thức của bạn và chỉ nên được sử dụng cho mục đích học tập và cải thiện kỹ năng.
+                            </div>
+                          </div>
+                          <div v-else style="font-size: 13px; margin-top: 5px;">
+                            <div style="background-color: rgb(244, 244, 245); border-color: rgb(233, 233, 235); color: rgb(144, 147, 153); font-size: 12px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px;">
+                              Please note that the scores provided are not your official IELTS scores and should be used solely for learning and practicing purposes.
+                            </div>
+                          </div>
+                        </el-card>
+                      </div>
+                      <div v-else>
+                        <div style="background: rgb(248 249 250); height: 200px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px; margin-bottom: 5px;">
+                          <div class="el-loading-spinner" style="position: relative; top: 50px;">
+                            <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                            <p class="el-loading-text" style="word-break: break-word;">Đang chấm điểm 4 tiêu chí</p>
                           </div>
                         </div>
-                        <div>
-                          <div>
-                            <div style="font-size: 15px; color: white;">Đánh giá mức độ hữu ích của phản hồi</div>
+                      </div>
+                      <div v-if="loadCriteriaFeedbackCompleted">
+                        <el-card
+                          v-for="criteria in rubricCriteria"
+                          :key="criteria.criteriaId"
+                          style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
+                          shadow="hover"
+                        >
+                          <div slot="header" class="clearfix">
+                            <div>
+                              <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                                <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
+                                <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
+                                <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
+                                <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
+                                <span v-else>{{ criteria.name }}</span>
+                              </div>
+                              <div style="float: right;">
+                                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
+                                  <div v-if="isAiReview">
+                                    <div v-if="!criteria.loading && criteria.mark" class="band-score">
+                                      Band:
+                                      {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-
                           <div>
-                            <el-rate v-model="rateValue" style="margin-top: 8px; margin-bottom: 4px; color: rgb(177 177 177);" :allow-half="true" />
+                            <div>
+                              <div>
+                                <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
+                              </div>
+                            </div>
                           </div>
-
-                          <div>
-                            <el-input
-                              id="rubric-rating"
-                              v-model="rateComment"
-                              type="textarea"
-                              :rows="5"
-                              style="margin-top: 10px; margin-bottom: 5px;"
-                              :maxlength="8000"
-                              placeholder="Cảm nghĩ của bạn về điểm số và phản hồi cho bài viết"
-                            />
-                          </div>
-                          <div style="margin-top: 5px;">
-                            <el-button :disabled="rateValue == 0 && rateComment == ''" size="mini" @click="rateAIReview()">
-                              Gửi đánh giá
-                            </el-button>
+                        </el-card>
+                      </div>
+                      <div v-else>
+                        <div style="background: rgb(248 249 250); height: 200px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                          <div class="el-loading-spinner" style="position: relative; top: 50px;">
+                            <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                            <p class="el-loading-text" style="word-break: break-word;">Đang đánh giá bài viết và cung cấp phản hồi</p>
                           </div>
                         </div>
-                      </el-card>
+                      </div>
                     </div>
                     <div v-else>
                       <div v-if="loadingReview" style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
@@ -109,18 +380,18 @@
 
           </el-tab-pane>
           <el-tab-pane name="question" label="Chủ đề">
-            <div style="height: 100%;display: flex; flex-direction: column">
-              <div id="parent-scroll" style="flex-grow: 1;position: relative;">
-                <div id="child-scroll">
-                  <div id="questionContent" class="content-con">
-                    <div style="padding-bottom: 10px; border-bottom: 1px solid #dcddde; margin-bottom: 10px;">
-                      <b><a href="#">{{ question.test + ' ' + question.section + ' - ' + question.title }}</a></b>
-                    </div>
-                    <div v-html="question.questionsPart[0].content" />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <tabQuestion
+              v-if="task"
+              ref="tabQuestion"
+              :questionid="questionId"
+            />
+            <div
+              v-if="!task"
+              v-loading="true"
+              style="height: 520px;"
+              element-loading-text="Đang tải chủ đề và tiêu chí đánh giá"
+              element-loading-background="white"
+            />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -155,7 +426,7 @@
             <div
               v-loading="true"
               style="height: 545px;"
-              element-loading-text="Đang tìm các lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
+              element-loading-text="Đang tìm lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
               element-loading-background="rgb(248 249 250)"
             />
           </div>
@@ -204,7 +475,10 @@
             :style="{'-webkit-line-clamp': isInShowMoreList(comment.uuid).value==0 ? '3':'inherit'}"
             style="text-align: left; overflow-wrap: break-word; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
           >
-            {{ comment.comment }}
+            <div>{{ comment.comment }}</div>
+          </div>
+          <div v-if="comment.fix" style="margin-top: 10px; border-top: #aeaeae dashed 1px; padding-top: 10px;">
+            <div><b>Bản sửa:</b> "{{ comment.fix }}"</div>
           </div>
           <div v-if="isInShowMoreList(comment.uuid)" class="show__more-container" @click="toggleShowMore(comment.uuid)">
             {{ isInShowMoreList(comment.uuid).value==0 ? 'Xem thêm':'Rút gọn' }}
@@ -273,79 +547,387 @@
             <div id="parent-scroll" style="flex-grow: 1;position: relative;">
               <div id="child-scroll">
                 <div id="rubric">
-                  <div v-if="loadCriteriaFeedbackCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
-                    <el-card
-                      v-for="criteria in rubricCriteria"
-                      :key="criteria.criteriaId"
-                      style="margin-bottom: 5px; margin-left: 3px; border: 1px solid rgb(190, 190, 190);"
-                      shadow="hover"
-                    >
-                      <div slot="header" class="clearfix">
-                        <div>
-                          <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                            <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
-                            <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
-                            <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
-                            <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
-                            <span v-else> Tiêu Chí {{ criteria.name }}</span>
-                          </div>
-                          <div style="float: right;">
-                            <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
-                              <div v-if="isAiReview">
-                                <div v-if="!criteria.loading && criteria.mark" class="band-score">
-                                  Band:
-                                  {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                  <div v-if="loadCriteriaFeedbackCompleted || loadEssayScoreCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
+                    <div v-if="loadEssayScoreCompleted">
+                      <el-card
+                        style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
+                        shadow="hover"
+                      >
+                        <div slot="header" class="clearfix">
+                          <div>
+                            <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                              <span>Overall Band Score</span>
+                            </div>
+                            <div style="float: right;">
+                              <div>
+                                <div>
+                                  <div v-if="essayScore.overallBandScore" class="band-score">
+                                    Band: {{ essayScore.overallBandScore.toString().length == 1 ? essayScore.overallBandScore.toString() + '.0' : essayScore.overallBandScore }}
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                      <div>
-                        <div>
-                          <div>
-                            <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
+                        <div style="border: 1px solid rgb(188, 188, 188); padding: 10px; border-radius: 5px;">
+                          <div v-if="essayScore.taskAchievementScore" class="criteria-score">
+                            <div>
+                              <b>
+                                Task Achievement:
+                                {{ essayScore.taskAchievementScore.toString().length == 1 ? essayScore.taskAchievementScore.toString() + '.0' : essayScore.taskAchievementScore }}
+                              </b>
+                            </div>
+                            <div v-if="essayScore.highlightKeyFeatures" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.highlightKeyFeatures > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
+                                  essayScore.highlightKeyFeatures == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.highlightKeyFeatures.toString().length == 1 ? essayScore.highlightKeyFeatures.toString() + '.0' : essayScore.highlightKeyFeatures }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Highlighting Key Features</div>
+                            </div>
+                            <div v-if="essayScore.compareAndContrast" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.compareAndContrast > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
+                                  essayScore.compareAndContrast == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.compareAndContrast.toString().length == 1 ? essayScore.compareAndContrast.toString() + '.0' : essayScore.compareAndContrast }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Comparing and Contrasting Data</div>
+                            </div>
+
+                            <div v-if="essayScore.dataSelection" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.dataSelection > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
+                                  essayScore.dataSelection == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.dataSelection.toString().length == 1 ? essayScore.dataSelection.toString() + '.0' : essayScore.dataSelection }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Data Selection and Relevance</div>
+                            </div>
+                            <div class="sub-criteria">
+                              <el-tag v-if="essayScore.appropriateWordCount" type="success" size="small">
+                                <i class="criteria-score-check el-icon-check" />
+                              </el-tag>
+                              <el-tag v-else type="danger" size="small">
+                                <i class="el-icon-close criteria-score-close" />
+                              </el-tag>
+                              <span class="sub-criteria-label">Appropriate Word Count</span>
+                            </div>
+                          </div>
+
+                          <div v-if="essayScore.taskResponseScore" class="criteria-score">
+                            <div>
+                              <b>
+                                Task Response:
+                                {{ essayScore.taskResponseScore.toString().length == 1 ? essayScore.taskResponseScore.toString() + '.0' : essayScore.taskResponseScore }}
+                              </b>
+                            </div>
+                            <div v-if="essayScore.clarityOfPosition" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.clarityOfPosition > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
+                                  essayScore.clarityOfPosition == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.clarityOfPosition.toString().length == 1 ? essayScore.clarityOfPosition.toString() + '.0' : essayScore.clarityOfPosition }}
+                              </el-tag>
+                              <span class="sub-criteria-label">Clarity of Position</span>
+                            </div>
+                            <div v-if="essayScore.developmentOfIdeas" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.developmentOfIdeas > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
+                                  essayScore.developmentOfIdeas == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.developmentOfIdeas.toString().length == 1 ? essayScore.developmentOfIdeas.toString() + '.0' : essayScore.developmentOfIdeas }}
+                              </el-tag>
+                              <span class="sub-criteria-label">Development of Ideas</span>
+                            </div>
+                            <div v-if="essayScore.justificationOfOpinion" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.justificationOfOpinion > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
+                                  essayScore.justificationOfOpinion == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.justificationOfOpinion.toString().length == 1 ? essayScore.justificationOfOpinion.toString() + '.0' : essayScore.justificationOfOpinion }}
+                              </el-tag>
+                              <span class="sub-criteria-label">Justification of Opinions</span>
+                            </div>
+                            <div class="sub-criteria">
+                              <el-tag v-if="essayScore.appropriateWordCount" type="success" size="small">
+                                <i class="criteria-score-check el-icon-check" />
+                              </el-tag>
+                              <el-tag v-else type="danger" size="small">
+                                <i class="el-icon-close criteria-score-close" />
+                              </el-tag>
+                              <span class="sub-criteria-label">Appropriate Word Count</span>
+                            </div>
+                          </div>
+
+                          <div v-if="essayScore.coherenceScore" class="criteria-score">
+                            <div>
+                              <b>
+                                Coherence and Cohesion:
+                                {{ essayScore.coherenceScore.toString().length == 1 ? essayScore.coherenceScore.toString() + '.0' : essayScore.coherenceScore }}
+                              </b>
+                            </div>
+                            <div v-if="essayScore.logicalOrganization" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.logicalOrganization > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
+                                  essayScore.logicalOrganization == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.logicalOrganization.toString().length == 1 ? essayScore.logicalOrganization.toString() + '.0' : essayScore.logicalOrganization }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Logical Organization</div>
+                            </div>
+                            <div v-if="essayScore.paragraphing" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.paragraphing > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
+                                  essayScore.paragraphing == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.paragraphing.toString().length == 1 ? essayScore.paragraphing.toString() + '.0' : essayScore.paragraphing }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Paragraphing</div>
+                            </div>
+                            <div v-if="essayScore.cohesiveDevices" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.cohesiveDevices > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
+                                  essayScore.cohesiveDevices == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.cohesiveDevices.toString().length == 1 ? essayScore.cohesiveDevices.toString() + '.0' : essayScore.cohesiveDevices }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Use of Cohesive Devices</div>
+                            </div>
+                          </div>
+
+                          <div v-if="essayScore.lexicalResourceScore" class="criteria-score">
+                            <div>
+                              <b>
+                                Lexical Resource:
+                                {{ essayScore.lexicalResourceScore.toString().length == 1 ? essayScore.lexicalResourceScore.toString() + '.0' : essayScore.lexicalResourceScore }}
+                              </b>
+                            </div>
+                            <div v-if="essayScore.rangeOfVocabulary" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.rangeOfVocabulary > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
+                                  essayScore.rangeOfVocabulary == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.rangeOfVocabulary.toString().length == 1 ? essayScore.rangeOfVocabulary.toString() + '.0' : essayScore.rangeOfVocabulary }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Range of Vocabulary</div>
+                            </div>
+                            <div v-if="essayScore.accuracyOfWordChoice" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.accuracyOfWordChoice > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
+                                  essayScore.accuracyOfWordChoice == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.accuracyOfWordChoice.toString().length == 1 ? essayScore.accuracyOfWordChoice.toString() + '.0' : essayScore.accuracyOfWordChoice }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Accuracy of Word Choice</div>
+                            </div>
+                            <div v-if="essayScore.spellingAndFormation" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.spellingAndFormation > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
+                                  essayScore.spellingAndFormation == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.spellingAndFormation.toString().length == 1 ? essayScore.spellingAndFormation.toString() + '.0' : essayScore.spellingAndFormation }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Spelling and Word Formation</div>
+                            </div>
+                            <div v-if="essayScore.registerAndStyle" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.registerAndStyle > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
+                                  essayScore.registerAndStyle == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.registerAndStyle.toString().length == 1 ? essayScore.registerAndStyle.toString() + '.0' : essayScore.registerAndStyle }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Appropriateness of Register and Style</div>
+                            </div>
+                          </div>
+
+                          <div v-if="essayScore.grammarScore" class="criteria-score">
+                            <div>
+                              <b>
+                                Grammatical Range and Accuracy:
+                                {{ essayScore.grammarScore.toString().length == 1 ? essayScore.grammarScore.toString() + '.0' : essayScore.grammarScore }}
+                              </b>
+                            </div>
+                            <div v-if="essayScore.grammarRange" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.grammarRange > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
+                                  essayScore.grammarRange == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.grammarRange.toString().length == 1 ? essayScore.grammarRange.toString() + '.0' : essayScore.grammarRange }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Range of Grammatical Structures</div>
+                            </div>
+                            <div v-if="essayScore.sentenceComplexity" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.sentenceComplexity > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
+                                  essayScore.sentenceComplexity == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.sentenceComplexity.toString().length == 1 ? essayScore.sentenceComplexity.toString() + '.0' : essayScore.sentenceComplexity }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Sentence Complexity</div>
+                            </div>
+                            <div v-if="essayScore.grammarAccuracy" class="sub-criteria">
+                              <el-tag
+                                :type="essayScore.grammarAccuracy > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
+                                  essayScore.grammarAccuracy == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
+                                  ? 'success' : 'danger'"
+                                size="small"
+                                class="sub-score-tag"
+                              >
+                                {{ essayScore.grammarAccuracy.toString().length == 1 ? essayScore.grammarAccuracy.toString() + '.0' : essayScore.grammarAccuracy }}
+                              </el-tag>
+                              <div class="sub-criteria-label">Accuracy in Grammatical Forms</div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </el-card>
-                    <el-card
-                      v-if="isAiReview && rubricCriteria && rubricCriteria.length > 0"
-                      style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
-                      shadow="hover"
-                    >
-                      <div slot="header" class="clearfix">
-                        <div style="color: white; float: left; font-size: 16px; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
-                          <span>Đánh Giá Phản Hồi</span>
+                        <div v-if="review && review.reviewRequest && review.reviewRequest.feedbackLanguage == 'vn'" style="font-size: 13px; margin-top: 5px; padding:2px;">
+                          <div style="background-color: rgb(244, 244, 245); border-color: rgb(233, 233, 235); color: rgb(144, 147, 153); font-size: 12px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px;">
+                            Xin lưu ý rằng điểm số được cung cấp không phải là điểm IELTS chính thức của bạn và chỉ nên được sử dụng cho mục đích học tập và cải thiện kỹ năng.
+                          </div>
+                        </div>
+                        <div v-else style="font-size: 13px; margin-top: 5px;">
+                          <div style="background-color: rgb(244, 244, 245); border-color: rgb(233, 233, 235); color: rgb(144, 147, 153); font-size: 12px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px;">
+                            Please note that the scores provided are not your official IELTS scores and should be used solely for learning and practicing purposes.
+                          </div>
+                        </div>
+                      </el-card>
+                    </div>
+                    <div v-else>
+                      <div style="background: rgb(248 249 250); height: 200px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px; margin-bottom: 5px;">
+                        <div class="el-loading-spinner" style="position: relative; top: 50px;">
+                          <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                          <p class="el-loading-text" style="word-break: break-word;">Đang chấm điểm 4 tiêu chí</p>
                         </div>
                       </div>
-                      <div>
+                    </div>
+                    <div v-if="loadCriteriaFeedbackCompleted">
+                      <el-card
+                        v-for="criteria in rubricCriteria"
+                        :key="criteria.criteriaId"
+                        style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
+                        shadow="hover"
+                      >
+                        <div slot="header" class="clearfix">
+                          <div>
+                            <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                              <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
+                              <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
+                              <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
+                              <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
+                              <span v-else>{{ criteria.name }}</span>
+                            </div>
+                            <div style="float: right;">
+                              <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
+                                <div v-if="isAiReview">
+                                  <div v-if="!criteria.loading && criteria.mark" class="band-score">
+                                    Band:
+                                    {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                         <div>
-                          <div style="font-size: 15px; color: white;">Đánh giá mức độ hữu ích của phản hồi</div>
+                          <div>
+                            <div>
+                              <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
+                            </div>
+                          </div>
                         </div>
+                      </el-card>
+                      <el-card
+                        v-if="isAiReview && rubricCriteria && rubricCriteria.length > 0"
+                        style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
+                        shadow="hover"
+                      >
+                        <div slot="header" class="clearfix">
+                          <div style="color: white; float: left; font-size: 16px; font-weight: 500; width: calc(100% - 100px); text-overflow: ellipsis;  word-break: break-word; overflow: hidden; white-space: nowrap;">
+                            <span>Đánh Giá Phản Hồi</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div>
+                            <div style="font-size: 15px; color: white;">Đánh giá mức độ hữu ích của phản hồi</div>
+                          </div>
 
-                        <div>
-                          <el-rate v-model="rateValue" style="margin-top: 8px; margin-bottom: 4px; color: rgb(177 177 177);" :allow-half="true" />
-                        </div>
+                          <div>
+                            <el-rate v-model="rateValue" style="margin-top: 8px; margin-bottom: 4px; color: rgb(177 177 177);" :allow-half="true" />
+                          </div>
 
-                        <div>
-                          <el-input
-                            id="rubric-rating"
-                            v-model="rateComment"
-                            type="textarea"
-                            :rows="5"
-                            style="margin-top: 10px; margin-bottom: 5px;"
-                            :maxlength="8000"
-                            placeholder="Cảm nghĩ của bạn về điểm số và phản hồi cho bài viết"
-                          />
+                          <div>
+                            <el-input
+                              id="rubric-rating"
+                              v-model="rateComment"
+                              type="textarea"
+                              :rows="5"
+                              style="margin-top: 10px; margin-bottom: 5px;"
+                              :maxlength="8000"
+                              placeholder="Cảm nghĩ của bạn về điểm số và phản hồi cho bài viết"
+                            />
+                          </div>
+                          <div style="margin-top: 5px;">
+                            <el-button :disabled="rateValue == 0 && rateComment == ''" size="mini" @click="rateAIReview()">
+                              Gửi đánh giá
+                            </el-button>
+                          </div>
                         </div>
-                        <div style="margin-top: 5px;">
-                          <el-button :disabled="rateValue == 0 && rateComment == ''" size="mini" @click="rateAIReview()">
-                            Gửi đánh giá
-                          </el-button>
+                      </el-card>
+                    </div>
+                    <div v-else>
+                      <div style="background: rgb(248 249 250); height: 200px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
+                        <div class="el-loading-spinner" style="position: relative; top: 50px;">
+                          <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
+                          <p class="el-loading-text" style="word-break: break-word;">Đang đánh giá bài viết và cung cấp phản hồi</p>
                         </div>
                       </div>
-                    </el-card>
+                    </div>
                   </div>
                   <div v-else>
                     <div v-if="loadingReview" style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
@@ -363,7 +945,7 @@
                     <div v-else style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                       <div class="el-loading-spinner" style="position: relative; top: 220px;">
                         <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
-                        <p class="el-loading-text" style="word-break: break-word;">Đang chấm 4 tiêu chí, đánh giá lập luận, và cung cấp gợi ý cải thiện</p>
+                        <p class="el-loading-text" style="word-break: break-word;">Đang đánh giá bài luận và cung cấp gợi ý cải thiện</p>
                       </div>
                     </div>
                   </div>
@@ -418,7 +1000,7 @@
             <div
               v-loading="true"
               style="height: 545px;"
-              element-loading-text="Đang tìm các lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
+              element-loading-text="Đang tìm lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
               element-loading-background="rgb(248 249 250)"
             />
           </div>
@@ -468,6 +1050,9 @@
               style="text-align: left; overflow-wrap: break-word; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
             >
               {{ comment.comment }}
+            </div>
+            <div v-if="comment.fix" style="margin-top: 10px; border-top: #aeaeae dashed 1px; padding-top: 10px;">
+              <div><b>Bản sửa:</b> "{{ comment.fix }}"</div>
             </div>
             <div v-if="isInShowMoreList(comment.uuid)" class="show__more-container" @click="toggleShowMore(comment.uuid)">
               {{ isInShowMoreList(comment.uuid).value==0 ? 'Xem thêm':'Rút gọn' }}
@@ -560,14 +1145,17 @@ export default {
   data() {
     return {
       reviseDialogVisible: false,
+      form: {
+        noteRevision: null
+      },
       criteriaFeedback: {},
       showDirection: true,
       viewer: null,
       PAGE_HEIGHT: 1,
       NUM_PAGES: 0,
-      questionId: 7902,
-      documentId: 9604,
-      reviewId: 11328,
+      questionId: 11936,
+      documentId: 14390,
+      reviewId: 16811,
       RENDER_OPTIONS: {
         documentId: null,
         pdfDocument: null,
@@ -620,7 +1208,7 @@ export default {
       isView: false,
       isRate: false,
       rateValue: 0,
-      rateComment: null,
+      rateComment: '',
       selectedTab: 'rubric',
       isReviewAuth: false,
       isRated: false,
@@ -637,1003 +1225,2631 @@ export default {
       documentText: null,
       textNodes: [],
       docData: null,
-      intextCommentCompleted: false,
+      intextCommentCompleted: true,
       hasGrade: false,
       errors: null,
-      loadCriteriaFeedbackCompleted: false,
+      loadCriteriaFeedbackCompleted: true,
       loadingReview: false,
+      freeToken: this.$store.state.auth.user.freeToken,
+      premiumToken: this.$store.state.auth.user.premiumToken,
+      userSubscription: this.$store.state.auth.user.subscription,
+      chartDescription: null,
+      loadEssayScoreCompleted: true,
+      loadFeedbackCompleted: true,
+      loadErrorsCompleted: true,
+      essayScore: {
+          'reviewId': 16811,
+          'overallBandScore': 6.5,
+          'taskAchievementScore': null,
+          'taskResponseScore': 6.5,
+          'coherenceScore': 6,
+          'lexicalResourceScore': 6.5,
+          'grammarScore': 6,
+          'fulfillRequirements': null,
+          'highlightKeyFeatures': null,
+          'compareAndContrast': null,
+          'dataSelection': null,
+          'addressingAllParts': null,
+          'clarityOfPosition': 7,
+          'developmentOfIdeas': 6.5,
+          'justificationOfOpinion': 6.5,
+          'appropriateWordCount': true,
+          'logicalOrganization': 6.5,
+          'paragraphing': 6,
+          'cohesiveDevices': 6,
+          'referencing': null,
+          'rangeOfVocabulary': 6.5,
+          'accuracyOfWordChoice': 6,
+          'spellingAndFormation': 6,
+          'registerAndStyle': 6.5,
+          'grammarRange': 6,
+          'sentenceComplexity': 6,
+          'grammarAccuracy': 6,
+          'createdDate': '2024-06-17T18:19:09.597',
+          'updatedDate': '2024-06-17T18:19:09.597',
+          'id': 343
+      },
       review: {
-        'id': 0,
-        'reviewRequest': {
-            'userId': '1147296f-1610-4640-9849-786c9b08232a',
-            'submissionId': 9604,
-            'feedbackType': 'AI',
-            'requestedDateTime': '2024-05-14T22:55:36.5081287',
-            'completedDateTime': '2024-05-14T22:55:48.9183246',
-            'status': 'Completed',
-            'feedbackLanguage': 'vn',
-            'specialRequest': null,
-            'submission': {
-                'userId': '1147296f-1610-4640-9849-786c9b08232a',
-                'questionId': 7902,
-                'docId': 9604,
-                'type': 'Submission',
-                'submittedDate': '2024-05-14T22:55:36.1577155',
-                'updatedDate': '2024-05-14T22:55:48.9183208',
-                'timeSpentInSeconds': 0,
-                'status': 'Reviewed',
-                'document': null,
-                'question': null,
-                'reviewRequests': [],
-                'id': 9604
-            },
-            'id': 9326
-        },
-        'rater': null,
-        'review': {
-            'requestId': 9326,
-            'reviewerId': 'AI',
-            'revieweeId': '1147296f-1610-4640-9849-786c9b08232a',
-            'submissionId': 9604,
-            'finalScore': 6,
-            'status': 'Completed',
-            'timeSpentInSeconds': 0,
-            'lastActivityDate': '2024-05-14T22:55:56.0349886',
-            'reviewData': [],
-            'id': 11328
-        },
-        'submission': {
-            'userId': '1147296f-1610-4640-9849-786c9b08232a',
-            'questionId': 7902,
-            'docId': 9604,
-            'type': 'Submission',
-            'submittedDate': '2024-05-14T22:55:36.1577155',
-            'updatedDate': '2024-05-14T22:55:48.9183208',
-            'timeSpentInSeconds': 0,
-            'status': 'Reviewed',
-            'document': null,
-            'question': null,
-            'reviewRequests': [
-                {
-                    'userId': '1147296f-1610-4640-9849-786c9b08232a',
-                    'submissionId': 9604,
-                    'feedbackType': 'AI',
-                    'requestedDateTime': '2024-05-14T22:55:36.5081287',
-                    'completedDateTime': '2024-05-14T22:55:48.9183246',
-                    'status': 'Completed',
-                    'feedbackLanguage': 'vn',
-                    'specialRequest': null,
-                    'id': 9326
-                }
-            ],
-            'id': 9604
-        },
-        'questionId': 0,
-        'reviewId': 11328,
-        'docId': 0,
-        'status': null,
-        'questionName': null,
-        'test': null,
-        'testSection': null,
-        'questionType': null,
-        'error': null,
-        'rating': null,
-        'reviewType': null
+          'id': 0,
+          'reviewRequest': {
+              'userId': '9230fa91-cf20-4f3f-b640-4c975dfa7ba4',
+              'submissionId': 14390,
+              'feedbackType': 'AI',
+              'requestedDateTime': '2024-06-17T22:18:57.972854',
+              'completedDateTime': '2024-06-17T22:19:29.180318',
+              'status': 'Completed',
+              'feedbackLanguage': 'vn',
+              'specialRequest': null,
+              'reviewType': 'deep',
+              'submission': {
+                  'userId': '9230fa91-cf20-4f3f-b640-4c975dfa7ba4',
+                  'questionId': 11936,
+                  'docId': 14390,
+                  'type': 'Submission',
+                  'submittedDate': '2024-06-17T22:18:56.335124',
+                  'updatedDate': '2024-06-17T22:19:29.180316',
+                  'timeSpentInSeconds': 0,
+                  'status': 'Reviewed',
+                  'document': null,
+                  'question': null,
+                  'reviewRequests': [],
+                  'id': 14390
+              },
+              'id': 14060
+          },
+          'rater': null,
+          'review': {
+              'requestId': 14060,
+              'reviewerId': 'AI',
+              'revieweeId': '9230fa91-cf20-4f3f-b640-4c975dfa7ba4',
+              'submissionId': 14390,
+              'finalScore': 6.5,
+              'status': 'Completed',
+              'timeSpentInSeconds': 0,
+              'lastActivityDate': '2024-06-17T22:19:29.181839',
+              'reviewData': [],
+              'id': 16811
+          },
+          'submission': {
+              'userId': '9230fa91-cf20-4f3f-b640-4c975dfa7ba4',
+              'questionId': 11936,
+              'docId': 14390,
+              'type': 'Submission',
+              'submittedDate': '2024-06-17T22:18:56.335124',
+              'updatedDate': '2024-06-17T22:19:29.180316',
+              'timeSpentInSeconds': 0,
+              'status': 'Reviewed',
+              'document': null,
+              'question': null,
+              'reviewRequests': [
+                  {
+                      'userId': '9230fa91-cf20-4f3f-b640-4c975dfa7ba4',
+                      'submissionId': 14390,
+                      'feedbackType': 'AI',
+                      'requestedDateTime': '2024-06-17T22:18:57.972854',
+                      'completedDateTime': '2024-06-17T22:19:29.180318',
+                      'status': 'Completed',
+                      'feedbackLanguage': 'vn',
+                      'specialRequest': null,
+                      'reviewType': 'deep',
+                      'id': 14060
+                  }
+              ],
+              'id': 14390
+          },
+          'questionId': 0,
+          'reviewId': 16811,
+          'docId': 0,
+          'status': null,
+          'questionName': null,
+          'test': null,
+          'testSection': null,
+          'questionType': null,
+          'error': null,
+          'rating': null,
+          'reviewType': null
       },
       question: {
-        'id': 7902,
-        'title': 'IELTS Task 2 Topic',
-        'section': 'Academic Writing Task 2',
-        'taskId': 4,
-        'test': 'IELTS',
-        'testId': 2,
-        'time': '40 minutes',
-        'type': 'My Topic',
-        'sample': false,
-        'averageScore': '0.0',
-        'submission': 0,
-        'like': 0,
-        'dislike': 0,
-        'status': 'Personal',
-        'difficulty': 'Undefined',
-        'direction': 'You should spend about 40 minutes on this task.\n\nProvide reasons for your answer. Include relevant examples from your own knowledge or experience.\n\nWrite at least 250 words.',
-        'userId': '1147296f-1610-4640-9849-786c9b08232a',
-        'createdBy': null,
-        'testDate': null,
-        'addedDate': '0001-01-01T00:00:00',
-        'lastActivityDate': '0001-01-01T00:00:00',
-        'questionsPart': [
-            {
-                'questionId': 7902,
-                'name': 'Question',
-                'content': 'Nowadays, more people move away from their friends and families for work. Do advantages outweigh the disadvantages?'
-            }
-        ]
-      },
-      doc: {
-        'data': {
-            'filename': '1147296f-1610-4640-9849-786c9b08232a_0.pdf',
-            'data': 'JVBERi0xLjQKJeLjz9MKMiAwIG9iago8PC9MZW5ndGggMTEzNC9GaWx0ZXIvRmxhdGVEZWNvZGU+PnN0cmVhbQp4nJVW247bNhB991fMYwq47u4WQfrcy6J5KIKi7gdQ1GjFLEUqJGWv+vU9M5RcG5ELBFhjLVnizJwb+WX383H3/j19+PEDHdvdA33/+JN8+eH5kR6f6Njt3n0MNMSWUyDvOt6TK+QyucAnV0zjmUpvCo0cR3zPI4cWzyfcdgNTDHSO6dWFlz3luLxr4zBOPsc0UxfTd8fPqPtwU/5d6XmgEmk0qZA5GzyZIu707BK+OlTJZFCqM4Pz84F+j2c+cUJ7aHemOLrgYtjLG+jF4DOYMNOYYt4sKGvZGGQwvIMmB1MKJ62h15wzujg776l12U4Zj5bD5lq0efdTABpMPVa8bqucIzUcuHMl07lnKc/z9uCJvSnuxMvoFYbtHp5dysXPe3RcenmdGOPFwVmyyWUMNHJysRXAWndy7WR8RnMnVtjxU3LF/cNLZSFRfmADHRjKyvxmYRdALx/oKKDhr2FrpgwldMtSVUU65FIuVm5a13XOTr44DIhaOfoTFnqOifjNDJDXfrOigrboTxCtoox19c4FE6wzXuZkUScHi2eANYNK/A+RfAwvLJ3hhRUvty3Mqrelf2tQGBRp+1Nx3pWZGkgkU55sL6sL8vUOAHgxeU/s2Zbk7F5JPBuo7EB/CTstFr7nhpnAT6TA3F5mM8JhjgHD5dFgKmj33DsUFqbC5zgr2Af6dVJApJfO2FIdazpU3iwn/vRcYNor9peRtYtznHyLtV959aizbsQk0kEUbRPKQFVK5QWKhKa9RMFdB47ezFI2jzGVfKCPhbyxr9A7iHzD6Nn23E5QwpIm6scGUIQQ9U0EypoSyhQNPDRA6b5ywLq8qLyzQas6wIF+QRrwl4lDufC9oi/RMIzlYoiqebl0AxLmtO2M2taFMqFGJVC5DFcCLZW3bwsXYbdiv0aMGjCDeyWtSRgTSDZxKlWxgV80TjT4dFQLuhYEh8yw3510OUpmvYjcgNoCjlLRMUOMJSEtAVXDne4E6GyUWxMuruJMQ0UQqCpdEmOz4JoiKJmjdVzmrWiH8RHbiLga3v9Jb9mDCNQk2Zf2hCFDLJu1MrM+PESAg+WiUFPpUuNcrI8FJF9aUadmsay6ZrQmWG+W8VuG5Qcwa/xmTZZiMdS0cwH5Ci6QENbG1KoRq30B4QnVkSWf3oBtS38H1EpZggdNPj08PSgwlMSNeKxlU/rNkm0NBWhOqJEp8bjV0Mc2uLiiM+nr7bcaC6JPbITmZEbXyib8B9iOdRfu7geZxuz9hfe3AG+cKHyMSpAm2P9kNYIJiGdRljqvXlahonMZQr138YGoV02iPEsHno06PstmOUGe3geg9S3WxPkJ/rJ+ynog2QR2nfxqW69t5mmUKFy3t0vyhzt7722C6HqN+HuAWMq6MRaD4NYDxlZcV1QXx1wfrLbd8nW2bG/oa6xcnXHEHEJxw9m160njcsaBFwDNZk0c8MboMCQUe3J83t8c2XoYXvVy4RV0YqOOcIlccddhB77h8Lfj7s/dv7T9pk8KZW5kc3RyZWFtCmVuZG9iago0IDAgb2JqCjw8L1R5cGUvUGFnZS9NZWRpYUJveFswIDAgNjEyIDc5Ml0vUmVzb3VyY2VzPDwvRm9udDw8L0YxIDEgMCBSPj4+Pi9Db250ZW50cyAyIDAgUi9QYXJlbnQgMyAwIFI+PgplbmRvYmoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCjMgMCBvYmoKPDwvVHlwZS9QYWdlcy9Db3VudCAxL0tpZHNbNCAwIFJdPj4KZW5kb2JqCjUgMCBvYmoKPDwvVHlwZS9DYXRhbG9nL1BhZ2VzIDMgMCBSPj4KZW5kb2JqCjYgMCBvYmoKPDwvUHJvZHVjZXIoaVRleHRTaGFycJIgNS41LjEzLjIgqTIwMDAtMjAyMCBpVGV4dCBHcm91cCBOViBcKEFHUEwtdmVyc2lvblwpKS9DcmVhdGlvbkRhdGUoRDoyMDI0MDUxNDIyNTUzNSswMCcwMCcpL01vZERhdGUoRDoyMDI0MDUxNDIyNTUzNSswMCcwMCcpPj4KZW5kb2JqCnhyZWYKMCA3CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMTMyOSAwMDAwMCBuIAowMDAwMDAwMDE1IDAwMDAwIG4gCjAwMDAwMDE0MTcgMDAwMDAgbiAKMDAwMDAwMTIxNyAwMDAwMCBuIAowMDAwMDAxNDY4IDAwMDAwIG4gCjAwMDAwMDE1MTMgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDcvUm9vdCA1IDAgUi9JbmZvIDYgMCBSL0lEIFs8YjI0ODJhNWMwNDUzZTdjNjU0ZGU5ZmJjOTAwNTI0YzY+PGIyNDgyYTVjMDQ1M2U3YzY1NGRlOWZiYzkwMDUyNGM2Pl0+PgolaVRleHQtNS41LjEzLjIKc3RhcnR4cmVmCjE2NzgKJSVFT0YK',
-            'status': 'Submitted',
-            'pageCount': 0,
-            'text': 'In modern life, it is inevitable that people spend more time on working, so it is compulsory for them to part away from their friends and family. However, in my opinion, there are many pros and cons in this matter and this essay will discuss it.\r\n\r\nOn one hand, there are two benefits when they part away from their relatives and friends. Firstly, with the economic crisis period, individuals have to prioritize their work to earn a stable income. This is because of their life, they have too many difficulties to solve. For example, when people are able to have financial independence as well as no longer live with their family, they can pay many utility bills such as the bills of gas, electric, and water. Secondly, they also need to have a personal space in which to enjoy life. Due to the fact that after completing their work, they also would like to participate in other activities such as traveling, and playing sports. It lacks a fixed schedule, so it will be annoying for their family members when living with each other. Consequently, they need to attempt to earn income to improve their personal life and have an independent life.\r\n\r\nOn the other hand, this issue also brings about many negative consequences for themselves. To begin with, they will feel stressed before the pressure from their work and life. This is because in society, there are many problematic matters such as working overtime, or not seeking motivation in life that they can not find a friend or relative to share the detrimental emotion. For instance, according to the survey of Oxford University in 2020, the rate of death due to depression of citizens living far away from their family increased rapidly. Moreover, if they live far away from their family, they can not spend more time on looking after their parents. Their parents will easily have negative feelings that can lead to serious illness.\r\n\r\nIn conclusion, living far away from family, and friends will support people to have an independent life and be comfortable to take part in other activities after working. However, it also brings about too many difficulties for them when they are not beside their relatives. From my point of view, this matter has more negative than positive effects. \r\n',
-            'createdDate': '2024-05-14T22:55:35.7692415',
-            'submissions': [],
-            'id': 9604
-        }
+          'id': 11936,
+          'title': 'IELTS Task 2 Topic',
+          'section': 'Academic Writing Task 2',
+          'taskId': 4,
+          'test': 'IELTS',
+          'testId': 2,
+          'time': '40 minutes',
+          'type': 'My Topic',
+          'sample': false,
+          'averageScore': '0.0',
+          'submission': 0,
+          'like': 0,
+          'dislike': 0,
+          'status': 'Personal',
+          'difficulty': 'Undefined',
+          'direction': 'You should spend about 40 minutes on this task.\n\nProvide reasons for your answer. Include relevant examples from your own knowledge or experience.\n\nWrite at least 250 words.',
+          'userId': '9230fa91-cf20-4f3f-b640-4c975dfa7ba4',
+          'createdBy': null,
+          'testDate': null,
+          'addedDate': '0001-01-01T00:00:00',
+          'lastActivityDate': '0001-01-01T00:00:00',
+          'questionsPart': [
+              {
+                  'questionId': 11936,
+                  'name': 'Question',
+                  'content': 'Social media has revolutionized the way we communicate, but it also has negative effects on society. Discuss the advantages and disadvantages of social media.\r\n'
+              }
+          ]
       },
       loadedAnnotation: {
-        'annotations': [
-            {
-                'type': 'comment-highlight',
-                'color': 'blue',
-                'left': 98.353515625,
-                'rectangles': [
-                    {
-                        'y': 79,
-                        'x': 97.353515625,
-                        'width': 82.359375,
-                        'height': 18
-                    }
-                ],
-                'top': 79,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': 'a5a87bd4-1a4b-40b5-9157-a82d557c70f0',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22922
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'blue',
-                'left': 137.46484375,
-                'rectangles': [
-                    {
-                        'y': 151,
-                        'x': 136.46484375,
-                        'width': 121.7109375,
-                        'height': 18
-                    }
-                ],
-                'top': 151,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': 'f56ce9a8-c1e4-486e-9ad6-e49db85c4398',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22923
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'red',
-                'left': 467.20703125,
-                'rectangles': [
-                    {
-                        'y': 61,
-                        'x': 466.20703125,
-                        'width': 81.69140625,
-                        'height': 18
-                    },
-                    {
-                        'y': 79,
-                        'x': 54,
-                        'width': 249.767578125,
-                        'height': 18
-                    }
-                ],
-                'top': 61,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': 'df52a7cb-e9c0-43dc-a43c-0d40b460813f',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22924
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'blue',
-                'left': 522.326171875,
-                'rectangles': [
-                    {
-                        'y': 79,
-                        'x': 521.326171875,
-                        'width': 26.34375,
-                        'height': 18
-                    },
-                    {
-                        'y': 97,
-                        'x': 54,
-                        'width': 123.7265625,
-                        'height': 18
-                    }
-                ],
-                'top': 79,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': 'd0ae5ab2-ce39-4f11-9938-006462b47377',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22925
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'red',
-                'left': 138.35546875,
-                'rectangles': [
-                    {
-                        'y': 169,
-                        'x': 137.35546875,
-                        'width': 319.171875,
-                        'height': 18
-                    }
-                ],
-                'top': 169,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': 'b35e5b29-9104-45a0-8369-06d1fcf5aece',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22926
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'blue',
-                'left': 295.544921875,
-                'rectangles': [
-                    {
-                        'y': 205,
-                        'x': 294.544921875,
-                        'width': 183.755859375,
-                        'height': 18
-                    }
-                ],
-                'top': 205,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': '5e63ae33-6017-4f2a-b8f8-14063a7bb071',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22927
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'red',
-                'left': 309.138671875,
-                'rectangles': [
-                    {
-                        'y': 259,
-                        'x': 308.138671875,
-                        'width': 229.751953125,
-                        'height': 18
-                    },
-                    {
-                        'y': 277,
-                        'x': 54,
-                        'width': 147.08203125,
-                        'height': 18
-                    }
-                ],
-                'top': 259,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': '6d19803e-d9aa-4cc5-b414-51594fb33db6',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22928
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'blue',
-                'left': 249.091796875,
-                'rectangles': [
-                    {
-                        'y': 349,
-                        'x': 248.091796875,
-                        'width': 231.7734375,
-                        'height': 18
-                    }
-                ],
-                'top': 349,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': '14b8755b-6274-4055-8e22-4073b24fc60d',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22929
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'blue',
-                'left': 353.646484375,
-                'rectangles': [
-                    {
-                        'y': 277,
-                        'x': 352.646484375,
-                        'width': 125.73046875,
-                        'height': 18
-                    }
-                ],
-                'top': 277,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': '40151db0-1f98-48e9-aaa4-f61d558aaea9',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22930
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'red',
-                'left': 508.310546875,
-                'rectangles': [
-                    {
-                        'y': 367,
-                        'x': 507.310546875,
-                        'width': 19.681640625,
-                        'height': 18
-                    },
-                    {
-                        'y': 385,
-                        'x': 54,
-                        'width': 133.734375,
-                        'height': 18
-                    }
-                ],
-                'top': 367,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': '7d6cf9cc-14b3-4b19-99e8-1b96647ff03d',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22931
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'red',
-                'left': 459.19140625,
-                'rectangles': [
-                    {
-                        'y': 403,
-                        'x': 458.19140625,
-                        'width': 90.3984375,
-                        'height': 18
-                    },
-                    {
-                        'y': 421,
-                        'x': 54,
-                        'width': 417.1875,
-                        'height': 18
-                    }
-                ],
-                'top': 403,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': '0be5e0b6-7ae6-420c-ba05-aa66e38d0939',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22932
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'red',
-                'left': 310.884765625,
-                'rectangles': [
-                    {
-                        'y': 439,
-                        'x': 309.884765625,
-                        'width': 204.439453125,
-                        'height': 18
-                    },
-                    {
-                        'y': 457,
-                        'x': 54,
-                        'width': 43.025390625,
-                        'height': 18
-                    }
-                ],
-                'top': 439,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': 'ed3cfe90-521c-4f29-b037-a17b896a961a',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22933
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'red',
-                'left': 175.7265625,
-                'rectangles': [
-                    {
-                        'y': 457,
-                        'x': 174.7265625,
-                        'width': 340.5234375,
-                        'height': 18
-                    }
-                ],
-                'top': 457,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': '84ee1877-6264-4735-a6ce-b5cf4a5aeaf6',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22934
-            },
-            {
-                'type': 'comment-highlight',
-                'color': 'red',
-                'left': 358.234375,
-                'rectangles': [
-                    {
-                        'y': 493,
-                        'x': 357.234375,
-                        'width': 141.7734375,
-                        'height': 18
-                    },
-                    {
-                        'y': 511,
-                        'x': 54,
-                        'width': 349.880859375,
-                        'height': 18
-                    }
-                ],
-                'top': 493,
-                'pageNum': 1,
-                'pageHeight': 792,
-                'class': 'Annotation',
-                'uuid': '9841457e-7504-4b95-9033-e65fa3b30d45',
-                'page': 1,
-                'documentId': 9604,
-                'id': 22935
-            }
-        ],
-        'comments': [
-            {
-                'class': 'Comment',
-                'uuid': 'a5a87bd4-1a4b-40b5-9157-a82d557c70f0',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'blue',
-                    'left': 98.353515625,
-                    'rectangles': [
-                        {
-                            'y': 79,
-                            'x': 97.353515625,
-                            'width': 82.359375,
-                            'height': 18
-                        }
-                    ],
-                    'top': 79,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': 'a5a87bd4-1a4b-40b5-9157-a82d557c70f0',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'part away from' không chính xác trong ngữ cảnh này. 'Part from' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'part from'",
-                'text': 'part away from',
-                'type': 'vocabulary',
-                'category': 'Word Choice',
-                'topPosition': 79,
-                'documentId': 9604,
-                'id': 22447
-            },
-            {
-                'class': 'Comment',
-                'uuid': 'f56ce9a8-c1e4-486e-9ad6-e49db85c4398',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'blue',
-                    'left': 137.46484375,
-                    'rectangles': [
-                        {
-                            'y': 151,
-                            'x': 136.46484375,
-                            'width': 121.7109375,
-                            'height': 18
-                        }
-                    ],
-                    'top': 151,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': 'f56ce9a8-c1e4-486e-9ad6-e49db85c4398',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'economic crisis period' không cần thiết. 'Economic crisis' là cách diễn đạt ngắn gọn và chính xác hơn.",
-                'text': 'economic crisis period',
-                'type': 'vocabulary',
-                'category': 'Word Choice',
-                'topPosition': 151,
-                'documentId': 9604,
-                'id': 22446
-            },
-            {
-                'class': 'Comment',
-                'uuid': 'df52a7cb-e9c0-43dc-a43c-0d40b460813f',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'red',
-                    'left': 467.20703125,
-                    'rectangles': [
-                        {
-                            'y': 61,
-                            'x': 466.20703125,
-                            'width': 81.69140625,
-                            'height': 18
-                        },
-                        {
-                            'y': 79,
-                            'x': 54,
-                            'width': 249.767578125,
-                            'height': 18
-                        }
-                    ],
-                    'top': 61,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': 'df52a7cb-e9c0-43dc-a43c-0d40b460813f',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'compulsory for them to part away from' không chính xác về ngữ pháp. 'Inevitable for them to part from' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'inevitable for them to part from their friends and family'",
-                'text': 'compulsory for them to part away from their friends and family',
-                'type': 'grammar',
-                'category': 'Sentence Structure',
-                'topPosition': 61,
-                'documentId': 9604,
-                'id': 22448
-            },
-            {
-                'class': 'Comment',
-                'uuid': 'd0ae5ab2-ce39-4f11-9938-006462b47377',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'blue',
-                    'left': 522.326171875,
-                    'rectangles': [
-                        {
-                            'y': 79,
-                            'x': 521.326171875,
-                            'width': 26.34375,
-                            'height': 18
-                        },
-                        {
-                            'y': 97,
-                            'x': 54,
-                            'width': 123.7265625,
-                            'height': 18
-                        }
-                    ],
-                    'top': 79,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': 'd0ae5ab2-ce39-4f11-9938-006462b47377',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'pros and cons in this matter' không chính xác về ngữ pháp. 'Pros and cons to this matter' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'pros and cons to this matter'",
-                'text': 'pros and cons in this matter',
-                'type': 'vocabulary',
-                'category': 'Preposition',
-                'topPosition': 79,
-                'documentId': 9604,
-                'id': 22449
-            },
-            {
-                'class': 'Comment',
-                'uuid': 'b35e5b29-9104-45a0-8369-06d1fcf5aece',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'red',
-                    'left': 138.35546875,
-                    'rectangles': [
-                        {
-                            'y': 169,
-                            'x': 137.35546875,
-                            'width': 319.171875,
-                            'height': 18
-                        }
-                    ],
-                    'top': 169,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': 'b35e5b29-9104-45a0-8369-06d1fcf5aece',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'because of their life' không chính xác về ngữ pháp. 'Because in their life' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'because in their life, they have too many difficulties to solve'",
-                'text': 'because of their life, they have too many difficulties to solve',
-                'type': 'grammar',
-                'category': 'Sentence Structure',
-                'topPosition': 169,
-                'documentId': 9604,
-                'id': 22450
-            },
-            {
-                'class': 'Comment',
-                'uuid': '5e63ae33-6017-4f2a-b8f8-14063a7bb071',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'blue',
-                    'left': 295.544921875,
-                    'rectangles': [
-                        {
-                            'y': 205,
-                            'x': 294.544921875,
-                            'width': 183.755859375,
-                            'height': 18
-                        }
-                    ],
-                    'top': 205,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': '5e63ae33-6017-4f2a-b8f8-14063a7bb071',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'the bills of gas, electric, and water' không tự nhiên. 'The gas, electric, and water bills' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'the gas, electric, and water bills'",
-                'text': 'the bills of gas, electric, and water',
-                'type': 'vocabulary',
-                'category': 'Word Choice',
-                'topPosition': 205,
-                'documentId': 9604,
-                'id': 22451
-            },
-            {
-                'class': 'Comment',
-                'uuid': '6d19803e-d9aa-4cc5-b414-51594fb33db6',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'red',
-                    'left': 309.138671875,
-                    'rectangles': [
-                        {
-                            'y': 259,
-                            'x': 308.138671875,
-                            'width': 229.751953125,
-                            'height': 18
-                        },
-                        {
-                            'y': 277,
-                            'x': 54,
-                            'width': 147.08203125,
-                            'height': 18
-                        }
-                    ],
-                    'top': 259,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': '6d19803e-d9aa-4cc5-b414-51594fb33db6',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'when living with each other' không chính xác về ngữ pháp. 'If they live together' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'it will be annoying for their family members if they live together'",
-                'text': 'it will be annoying for their family members when living with each other',
-                'type': 'grammar',
-                'category': 'Sentence Structure',
-                'topPosition': 259,
-                'documentId': 9604,
-                'id': 22452
-            },
-            {
-                'class': 'Comment',
-                'uuid': '14b8755b-6274-4055-8e22-4073b24fc60d',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'blue',
-                    'left': 249.091796875,
-                    'rectangles': [
-                        {
-                            'y': 349,
-                            'x': 248.091796875,
-                            'width': 231.7734375,
-                            'height': 18
-                        }
-                    ],
-                    'top': 349,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': '14b8755b-6274-4055-8e22-4073b24fc60d',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'before the pressure' không chính xác về ngữ pháp. 'Under the pressure' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'under the pressure from their work and life'",
-                'text': 'before the pressure from their work and life',
-                'type': 'vocabulary',
-                'category': 'Preposition',
-                'topPosition': 349,
-                'documentId': 9604,
-                'id': 22453
-            },
-            {
-                'class': 'Comment',
-                'uuid': '40151db0-1f98-48e9-aaa4-f61d558aaea9',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'blue',
-                    'left': 353.646484375,
-                    'rectangles': [
-                        {
-                            'y': 277,
-                            'x': 352.646484375,
-                            'width': 125.73046875,
-                            'height': 18
-                        }
-                    ],
-                    'top': 277,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': '40151db0-1f98-48e9-aaa4-f61d558aaea9',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'attempt to earn income' không tự nhiên. 'Strive to earn an income' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'strive to earn an income'",
-                'text': 'attempt to earn income',
-                'type': 'vocabulary',
-                'category': 'Word Choice',
-                'topPosition': 277,
-                'documentId': 9604,
-                'id': 22454
-            },
-            {
-                'class': 'Comment',
-                'uuid': '7d6cf9cc-14b3-4b19-99e8-1b96647ff03d',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'red',
-                    'left': 508.310546875,
-                    'rectangles': [
-                        {
-                            'y': 367,
-                            'x': 507.310546875,
-                            'width': 19.681640625,
-                            'height': 18
-                        },
-                        {
-                            'y': 385,
-                            'x': 54,
-                            'width': 133.734375,
-                            'height': 18
-                        }
-                    ],
-                    'top': 367,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': '7d6cf9cc-14b3-4b19-99e8-1b96647ff03d',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'not seeking motivation in life' không chính xác về ngữ pháp. 'Lack of motivation in life' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'lack of motivation in life'",
-                'text': 'not seeking motivation in life',
-                'type': 'grammar',
-                'category': 'Sentence Structure',
-                'topPosition': 367,
-                'documentId': 9604,
-                'id': 22455
-            },
-            {
-                'class': 'Comment',
-                'uuid': '0be5e0b6-7ae6-420c-ba05-aa66e38d0939',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'red',
-                    'left': 459.19140625,
-                    'rectangles': [
-                        {
-                            'y': 403,
-                            'x': 458.19140625,
-                            'width': 90.3984375,
-                            'height': 18
-                        },
-                        {
-                            'y': 421,
-                            'x': 54,
-                            'width': 417.1875,
-                            'height': 18
-                        }
-                    ],
-                    'top': 403,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': '0be5e0b6-7ae6-420c-ba05-aa66e38d0939',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'of citizens living far away from their family' không chính xác về ngữ pháp. 'Among citizens living far away from their family' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'the rate of death due to depression among citizens living far away from their family increased rapidly'",
-                'text': 'the rate of death due to depression of citizens living far away from their family increased rapidly',
-                'type': 'grammar',
-                'category': 'Sentence Structure',
-                'topPosition': 403,
-                'documentId': 9604,
-                'id': 22456
-            },
-            {
-                'class': 'Comment',
-                'uuid': 'ed3cfe90-521c-4f29-b037-a17b896a961a',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'red',
-                    'left': 310.884765625,
-                    'rectangles': [
-                        {
-                            'y': 439,
-                            'x': 309.884765625,
-                            'width': 204.439453125,
-                            'height': 18
-                        },
-                        {
-                            'y': 457,
-                            'x': 54,
-                            'width': 43.025390625,
-                            'height': 18
-                        }
-                    ],
-                    'top': 439,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': 'ed3cfe90-521c-4f29-b037-a17b896a961a',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'spend more time on looking after' không chính xác về ngữ pháp. 'Spend more time looking after' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'spend more time looking after their parents'",
-                'text': 'spend more time on looking after their parents',
-                'type': 'grammar',
-                'category': 'Preposition',
-                'topPosition': 439,
-                'documentId': 9604,
-                'id': 22457
-            },
-            {
-                'class': 'Comment',
-                'uuid': '84ee1877-6264-4735-a6ce-b5cf4a5aeaf6',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'red',
-                    'left': 175.7265625,
-                    'rectangles': [
-                        {
-                            'y': 457,
-                            'x': 174.7265625,
-                            'width': 340.5234375,
-                            'height': 18
-                        }
-                    ],
-                    'top': 457,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': '84ee1877-6264-4735-a6ce-b5cf4a5aeaf6',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'will easily have negative feelings' không chính xác về ngữ pháp. 'May easily develop negative feelings' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'may easily develop negative feelings that can lead to serious illness'",
-                'text': 'will easily have negative feelings that can lead to serious illness',
-                'type': 'grammar',
-                'category': 'Sentence Structure',
-                'topPosition': 457,
-                'documentId': 9604,
-                'id': 22458
-            },
-            {
-                'class': 'Comment',
-                'uuid': '9841457e-7504-4b95-9033-e65fa3b30d45',
-                'annotation': {
-                    'type': 'comment-highlight',
-                    'color': 'red',
-                    'left': 358.234375,
-                    'rectangles': [
-                        {
-                            'y': 493,
-                            'x': 357.234375,
-                            'width': 141.7734375,
-                            'height': 18
-                        },
-                        {
-                            'y': 511,
-                            'x': 54,
-                            'width': 349.880859375,
-                            'height': 18
-                        }
-                    ],
-                    'top': 493,
-                    'pageNum': 1,
-                    'pageHeight': 792,
-                    'class': 'Annotation',
-                    'uuid': '9841457e-7504-4b95-9033-e65fa3b30d45',
-                    'page': 1,
-                    'documentId': 9604
-                },
-                'comment': "Cụm từ 'support people to have' và 'be comfortable to take part' không chính xác về ngữ pháp. 'Support people in having' và 'being comfortable taking part' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'support people in having an independent life and being comfortable taking part in other activities'",
-                'text': 'support people to have an independent life and be comfortable to take part in other activities',
-                'type': 'grammar',
-                'category': 'Sentence Structure',
-                'topPosition': 493,
-                'documentId': 9604,
-                'id': 22459
-            }
-        ],
-        'reviewer': null
+          'annotations': [
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 390.501953125,
+                  'rectangles': [
+                      {
+                          'y': 187,
+                          'x': 389.501953125,
+                          'width': 63.0234375,
+                          'height': 18
+                      }
+                  ],
+                  'top': 187,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'b292d820-cd40-4423-b893-4956c3d32f66',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60460
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 407.201171875,
+                  'rectangles': [
+                      {
+                          'y': 205,
+                          'x': 406.201171875,
+                          'width': 60.375,
+                          'height': 18
+                      }
+                  ],
+                  'top': 205,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'e7f72555-9005-4623-bb7e-af9afba7fd88',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60461
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 497.23046875,
+                  'rectangles': [
+                      {
+                          'y': 187,
+                          'x': 496.23046875,
+                          'width': 60.3515625,
+                          'height': 18
+                      }
+                  ],
+                  'top': 187,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'd856bbda-5848-43f6-8086-78323168c19b',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60462
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 328.474609375,
+                  'rectangles': [
+                      {
+                          'y': 205,
+                          'x': 327.474609375,
+                          'width': 78.392578125,
+                          'height': 18
+                      }
+                  ],
+                  'top': 205,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '09819602-c7cb-4b5c-94da-2a4a91b3befe',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60463
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 191.728515625,
+                  'rectangles': [
+                      {
+                          'y': 61,
+                          'x': 190.728515625,
+                          'width': 107.7421875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 61,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '8b06aa88-8b72-41d5-a3dc-cfd37fd75150',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60464
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 481.896484375,
+                  'rectangles': [
+                      {
+                          'y': 61,
+                          'x': 480.896484375,
+                          'width': 52.359375,
+                          'height': 18
+                      },
+                      {
+                          'y': 79,
+                          'x': 54,
+                          'width': 83.701171875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 61,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '09e95524-dc8b-420c-91db-6940fd37bada',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60465
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 289.099609375,
+                  'rectangles': [
+                      {
+                          'y': 223,
+                          'x': 288.099609375,
+                          'width': 85.716796875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 223,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '546e494f-3b24-4dfb-98dd-abbe1d434f8b',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60466
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 101.01953125,
+                  'rectangles': [
+                      {
+                          'y': 223,
+                          'x': 100.01953125,
+                          'width': 69.69140625,
+                          'height': 18
+                      }
+                  ],
+                  'top': 223,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '30131525-c6fd-4f99-9ef3-70d71ffdae7f',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60467
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 126.373046875,
+                  'rectangles': [
+                      {
+                          'y': 241,
+                          'x': 125.373046875,
+                          'width': 43.69921875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 241,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '5384c1b2-46f7-41e7-9b3d-5b8eb1219e8e',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60468
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 170.40625,
+                  'rectangles': [
+                      {
+                          'y': 241,
+                          'x': 169.40625,
+                          'width': 61.6875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 241,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '6fa6c643-c94f-4a3a-b3c2-300a315450c2',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60469
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 336.466796875,
+                  'rectangles': [
+                      {
+                          'y': 79,
+                          'x': 306.466796875,
+                          'width': 89.03125,
+                          'height': 18
+                      }
+                  ],
+                  'top': 79,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '90638299-7302-433e-8836-37f1f87d6dc6',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60470
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 329.142578125,
+                  'rectangles': [
+                      {
+                          'y': 277,
+                          'x': 328.142578125,
+                          'width': 77.70703125,
+                          'height': 18
+                      }
+                  ],
+                  'top': 277,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'b53ee876-503a-4e98-b8ff-bf096c6b6f82',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60473
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 291.8125,
+                  'rectangles': [
+                      {
+                          'y': 295,
+                          'x': 290.8125,
+                          'width': 35.009765625,
+                          'height': 18
+                      }
+                  ],
+                  'top': 295,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'd11c02c4-ec49-4286-8540-c077d5931a55',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60474
+              },
+
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 327.15625,
+                  'rectangles': [
+                      {
+                          'y': 295,
+                          'x': 326.15625,
+                          'width': 113.07421875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 295,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'e86960f2-1885-47ef-92a4-97a3fe6c59a8',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60476
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 123.70703125,
+                  'rectangles': [
+                      {
+                          'y': 313,
+                          'x': 122.70703125,
+                          'width': 81.708984375,
+                          'height': 18
+                      }
+                  ],
+                  'top': 313,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'e4a5e0f0-a79d-4a32-8b6c-e2945b01b086',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60477
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 291.80078125,
+                  'rectangles': [
+                      {
+                          'y': 313,
+                          'x': 290.80078125,
+                          'width': 67.03125,
+                          'height': 18
+                      }
+                  ],
+                  'top': 313,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'c3b050d6-859d-4f8e-b4ed-a0d1376e420c',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60478
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 431.189453125,
+                  'rectangles': [
+                      {
+                          'y': 313,
+                          'x': 430.189453125,
+                          'width': 85.72265625,
+                          'height': 18
+                      }
+                  ],
+                  'top': 313,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '1094ace4-b484-4f3c-b50a-f4545722e9f7',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60479
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 381.8359375,
+                  'rectangles': [
+                      {
+                          'y': 61,
+                          'x': 380.8359375,
+                          'width': 79.7109375,
+                          'height': 18
+                      }
+                  ],
+                  'top': 61,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '3d503f65-4d22-4bf9-8085-622261d6fce8',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60480
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 517.24609375,
+                  'rectangles': [
+                      {
+                          'y': 313,
+                          'x': 516.24609375,
+                          'width': 19.681640625,
+                          'height': 18
+                      },
+                      {
+                          'y': 331,
+                          'x': 54,
+                          'width': 41.689453125,
+                          'height': 18
+                      }
+                  ],
+                  'top': 313,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '589da4d0-aff6-4c6c-8174-75fefea45c6f',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60481
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 167.0546875,
+                  'rectangles': [
+                      {
+                          'y': 331,
+                          'x': 166.0546875,
+                          'width': 55.013671875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 331,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'ec5dcfb0-31f7-4309-9752-d42b6450e1c8',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60482
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 120.37890625,
+                  'rectangles': [
+                      {
+                          'y': 349,
+                          'x': 119.37890625,
+                          'width': 52.37109375,
+                          'height': 18
+                      }
+                  ],
+                  'top': 349,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '5a3f5e1c-857e-4aa1-a56d-e0128851ace6',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60484
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 173.083984375,
+                  'rectangles': [
+                      {
+                          'y': 349,
+                          'x': 172.083984375,
+                          'width': 9,
+                          'height': 18
+                      }
+                  ],
+                  'top': 349,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '3e32c1e7-2a1c-4219-9530-986b95b0c9c5',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60485
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 55,
+                  'rectangles': [
+                      {
+                          'y': 115,
+                          'x': 54,
+                          'width': 66.375,
+                          'height': 18
+                      }
+                  ],
+                  'top': 115,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'd2a04799-9ba7-4aa4-a328-96f7256fc79b',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60486
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 397.896484375,
+                  'rectangles': [
+                      {
+                          'y': 349,
+                          'x': 396.896484375,
+                          'width': 129.7265625,
+                          'height': 18
+                      },
+                      {
+                          'y': 367,
+                          'x': 54,
+                          'width': 41.68359375,
+                          'height': 18
+                      }
+                  ],
+                  'top': 349,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '04944c49-b729-41e2-be86-4e7c16d85c4a',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60487
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 277.1171875,
+                  'rectangles': [
+                      {
+                          'y': 367,
+                          'x': 276.1171875,
+                          'width': 81.732421875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 367,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '194d26fd-5853-4f1f-8889-615c8657a9bf',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60488
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 101.482421875,
+                  'rectangles': [
+                      {
+                          'y': 385,
+                          'x': 100.482421875,
+                          'width': 45.005859375,
+                          'height': 18
+                      }
+                  ],
+                  'top': 385,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '11fffca0-81c7-44f9-b3ec-5114522af46b',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60489
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 410.93359375,
+                  'rectangles': [
+                      {
+                          'y': 385,
+                          'x': 409.93359375,
+                          'width': 75.046875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 385,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '5eb48b7b-fe04-4d5c-8ffd-5ab5302efaf2',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60490
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 376.31640625,
+                  'rectangles': [
+                      {
+                          'y': 403,
+                          'x': 375.31640625,
+                          'width': 15.673828125,
+                          'height': 18
+                      }
+                  ],
+                  'top': 403,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'fba08ea9-db35-42ad-872e-40024d47c7a6',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60492
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 113.69921875,
+                  'rectangles': [
+                      {
+                          'y': 421,
+                          'x': 112.69921875,
+                          'width': 57.029296875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 421,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '298e4f86-2b84-457d-967e-3a1fccf28371',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60493
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 157.697265625,
+                  'rectangles': [
+                      {
+                          'y': 439,
+                          'x': 156.697265625,
+                          'width': 59.0390625,
+                          'height': 18
+                      }
+                  ],
+                  'top': 439,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '1718992d-72d3-4719-ad18-122455d046b0',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60496
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 231.748046875,
+                  'rectangles': [
+                      {
+                          'y': 475,
+                          'x': 230.748046875,
+                          'width': 58.34765625,
+                          'height': 18
+                      }
+                  ],
+                  'top': 475,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '0ef25493-be70-484f-b9aa-2741bb8a957b',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60497
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 418.48046875,
+                  'rectangles': [
+                      {
+                          'y': 475,
+                          'x': 417.48046875,
+                          'width': 26.34375,
+                          'height': 18
+                      }
+                  ],
+                  'top': 475,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '5bd628d9-3891-4ae0-80ba-b425aa073403',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60498
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 465.173828125,
+                  'rectangles': [
+                      {
+                          'y': 475,
+                          'x': 464.173828125,
+                          'width': 87.7265625,
+                          'height': 18
+                      },
+                      {
+                          'y': 493,
+                          'x': 54,
+                          'width': 74.361328125,
+                          'height': 18
+                      }
+                  ],
+                  'top': 475,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'd82ce5be-435d-41bf-8094-b467641f921d',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60499
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 239.1015625,
+                  'rectangles': [
+                      {
+                          'y': 151,
+                          'x': 238.1015625,
+                          'width': 62.373046875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 151,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'c98b9d22-754e-4dcf-a529-5ce30f114474',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60500
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 239.7578125,
+                  'rectangles': [
+                      {
+                          'y': 493,
+                          'x': 238.7578125,
+                          'width': 103.06640625,
+                          'height': 18
+                      }
+                  ],
+                  'top': 493,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'e3748de7-f257-4baa-9a5b-fe2a5f476de5',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60501
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 385.84375,
+                  'rectangles': [
+                      {
+                          'y': 151,
+                          'x': 384.84375,
+                          'width': 35.68359375,
+                          'height': 18
+                      }
+                  ],
+                  'top': 151,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '4ae56df5-038c-4f3e-b650-0fdc166ed31e',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60502
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 431.880859375,
+                  'rectangles': [
+                      {
+                          'y': 493,
+                          'x': 430.880859375,
+                          'width': 73.04296875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 493,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '4fa6ede4-11e9-4fa9-91ad-ee6f00907d34',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60503
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 146.40625,
+                  'rectangles': [
+                      {
+                          'y': 169,
+                          'x': 145.40625,
+                          'width': 73.705078125,
+                          'height': 18
+                      }
+                  ],
+                  'top': 169,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '170a943f-82ca-4673-8063-879506302c0f',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60504
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 354.525390625,
+                  'rectangles': [
+                      {
+                          'y': 169,
+                          'x': 353.525390625,
+                          'width': 103.728515625,
+                          'height': 18
+                      }
+                  ],
+                  'top': 169,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '4a4c6cd0-43cd-4268-a772-5f7556a903c1',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60505
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'red',
+                  'left': 84.337890625,
+                  'rectangles': [
+                      {
+                          'y': 187,
+                          'x': 83.337890625,
+                          'width': 72.369140625,
+                          'height': 18
+                      }
+                  ],
+                  'top': 187,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '93c8b377-82c1-4fce-bd5f-a36b0d153845',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60506
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 458.587890625,
+                  'rectangles': [
+                      {
+                          'y': 169,
+                          'x': 457.587890625,
+                          'width': 73.69921875,
+                          'height': 18
+                      },
+                      {
+                          'y': 187,
+                          'x': 54,
+                          'width': 25.669921875,
+                          'height': 18
+                      }
+                  ],
+                  'top': 169,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': '7c0706ed-d164-4cff-8dbc-070d3674e773',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60507
+              },
+              {
+                  'type': 'comment-highlight',
+                  'color': 'blue',
+                  'left': 447.033203125,
+                  'rectangles': [
+                      {
+                          'y': 97,
+                          'x': 446.033203125,
+                          'width': 59.033203125,
+                          'height': 18
+                      }
+                  ],
+                  'top': 97,
+                  'pageNum': 1,
+                  'pageHeight': 792,
+                  'class': 'Annotation',
+                  'uuid': 'f828ad98-2635-45f8-99fe-ced5f9ad7937',
+                  'page': 1,
+                  'documentId': 14390,
+                  'id': 60508
+              }
+          ],
+          'comments': [
+              {
+                  'class': 'Comment',
+                  'uuid': 'b292d820-cd40-4423-b893-4956c3d32f66',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 390.501953125,
+                      'rectangles': [
+                          {
+                              'y': 187,
+                              'x': 389.501953125,
+                              'width': 63.0234375,
+                              'height': 18
+                          }
+                      ],
+                      'top': 187,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'b292d820-cd40-4423-b893-4956c3d32f66',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'necessarily' không cần thiết trong ngữ cảnh này và làm câu trở nên phức tạp không cần thiết.",
+                  'text': 'necessarily',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'always',
+                  'reason': "Từ 'necessarily' không cần thiết trong ngữ cảnh này và làm câu trở nên phức tạp không cần thiết.",
+                  'explain': "Từ 'always' phù hợp hơn vì nó đơn giản và rõ ràng hơn trong ngữ cảnh này.",
+                  'topPosition': 187,
+                  'documentId': 14390,
+                  'id': 59974
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'e7f72555-9005-4623-bb7e-af9afba7fd88',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 407.201171875,
+                      'rectangles': [
+                          {
+                              'y': 205,
+                              'x': 406.201171875,
+                              'width': 60.375,
+                              'height': 18
+                          }
+                      ],
+                      'top': 205,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'e7f72555-9005-4623-bb7e-af9afba7fd88',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Sử dụng mạo từ 'the' không cần thiết ở đây vì không có ngữ cảnh cụ thể nào đã được đề cập trước đó về tính năng này.",
+                  'text': 'the feature',
+                  'type': 'grammar',
+                  'category': 'Article Misuse',
+                  'fix': 'a feature',
+                  'reason': "Sử dụng mạo từ 'the' không cần thiết ở đây vì không có ngữ cảnh cụ thể nào đã được đề cập trước đó về tính năng này.",
+                  'explain': "Sử dụng mạo từ 'a' để chỉ một tính năng không xác định cụ thể, phù hợp với ngữ cảnh chung chung của câu.",
+                  'topPosition': 205,
+                  'documentId': 14390,
+                  'id': 59975
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'd856bbda-5848-43f6-8086-78323168c19b',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 497.23046875,
+                      'rectangles': [
+                          {
+                              'y': 187,
+                              'x': 496.23046875,
+                              'width': 60.3515625,
+                              'height': 18
+                          }
+                      ],
+                      'top': 187,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'd856bbda-5848-43f6-8086-78323168c19b',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'waste time' không phù hợp vì nó mang nghĩa tiêu cực và không chính xác trong ngữ cảnh này.",
+                  'text': 'waste time',
+                  'type': 'vocabulary',
+                  'category': 'Collocation Error',
+                  'fix': 'spend time',
+                  'reason': "Cụm từ 'waste time' không phù hợp vì nó mang nghĩa tiêu cực và không chính xác trong ngữ cảnh này.",
+                  'explain': "Cụm từ 'spend time' phù hợp hơn vì nó mang nghĩa trung lập và chính xác hơn trong ngữ cảnh này.",
+                  'topPosition': 187,
+                  'documentId': 14390,
+                  'id': 59973
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '8b06aa88-8b72-41d5-a3dc-cfd37fd75150',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 191.728515625,
+                      'rectangles': [
+                          {
+                              'y': 61,
+                              'x': 190.728515625,
+                              'width': 107.7421875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 61,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '8b06aa88-8b72-41d5-a3dc-cfd37fd75150',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ này không hoàn toàn chính xác trong ngữ cảnh này. 'Tendency' thường được dùng để chỉ một xu hướng hoặc thói quen cá nhân hơn là một hiện tượng xã hội rộng lớn.",
+                  'text': 'the tendency to use',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'the increasing use of',
+                  'reason': "Cụm từ này không hoàn toàn chính xác trong ngữ cảnh này. 'Tendency' thường được dùng để chỉ một xu hướng hoặc thói quen cá nhân hơn là một hiện tượng xã hội rộng lớn.",
+                  'explain': "Cụm từ 'the increasing use of' chính xác hơn để mô tả sự gia tăng trong việc sử dụng mạng xã hội như một hiện tượng xã hội rộng lớn.",
+                  'topPosition': 61,
+                  'documentId': 14390,
+                  'id': 59976
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '09819602-c7cb-4b5c-94da-2a4a91b3befe',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 328.474609375,
+                      'rectangles': [
+                          {
+                              'y': 205,
+                              'x': 327.474609375,
+                              'width': 78.392578125,
+                              'height': 18
+                          }
+                      ],
+                      'top': 205,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '09819602-c7cb-4b5c-94da-2a4a91b3befe',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Trong câu này, 'Facebook' là chủ ngữ số ít, nhưng động từ 'has updated' không phù hợp vì nó không rõ ràng ai là người thực hiện hành động.",
+                  'text': 'it has updated',
+                  'type': 'grammar',
+                  'category': 'Subject-verb Agreement',
+                  'fix': 'Facebook has updated',
+                  'reason': "Trong câu này, 'Facebook' là chủ ngữ số ít, nhưng động từ 'has updated' không phù hợp vì nó không rõ ràng ai là người thực hiện hành động.",
+                  'explain': "Cần phải rõ ràng rằng 'Facebook' là chủ ngữ thực hiện hành động cập nhật, vì vậy cần sử dụng 'Facebook has updated' để đảm bảo sự rõ ràng và đúng ngữ pháp.",
+                  'topPosition': 205,
+                  'documentId': 14390,
+                  'id': 59977
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '09e95524-dc8b-420c-91db-6940fd37bada',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 481.896484375,
+                      'rectangles': [
+                          {
+                              'y': 61,
+                              'x': 480.896484375,
+                              'width': 52.359375,
+                              'height': 18
+                          },
+                          {
+                              'y': 79,
+                              'x': 54,
+                              'width': 83.701171875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 61,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '09e95524-dc8b-420c-91db-6940fd37bada',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': 'Cụm từ này không sai nhưng có thể không phải là cách diễn đạt tự nhiên nhất trong ngữ cảnh này.',
+                  'text': 'means of communication',
+                  'type': 'vocabulary',
+                  'category': 'Collocation Error',
+                  'fix': 'ways we communicate',
+                  'reason': 'Cụm từ này không sai nhưng có thể không phải là cách diễn đạt tự nhiên nhất trong ngữ cảnh này.',
+                  'explain': "Cụm từ 'ways we communicate' nghe tự nhiên hơn và dễ hiểu hơn trong ngữ cảnh này.",
+                  'topPosition': 61,
+                  'documentId': 14390,
+                  'id': 59982
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '5384c1b2-46f7-41e7-9b3d-5b8eb1219e8e',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 126.373046875,
+                      'rectangles': [
+                          {
+                              'y': 241,
+                              'x': 125.373046875,
+                              'width': 43.69921875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 241,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '5384c1b2-46f7-41e7-9b3d-5b8eb1219e8e',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'through' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ sự di chuyển qua một không gian vật lý hoặc một quá trình.",
+                  'text': 'through',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'via',
+                  'reason': "Từ 'through' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ sự di chuyển qua một không gian vật lý hoặc một quá trình.",
+                  'explain': "Từ 'via' phù hợp hơn vì nó thường được dùng để chỉ phương tiện hoặc cách thức giao tiếp, đặc biệt là trong ngữ cảnh công nghệ và mạng xã hội.",
+                  'topPosition': 241,
+                  'documentId': 14390,
+                  'id': 59978
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '546e494f-3b24-4dfb-98dd-abbe1d434f8b',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 289.099609375,
+                      'rectangles': [
+                          {
+                              'y': 223,
+                              'x': 288.099609375,
+                              'width': 85.716796875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 223,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '546e494f-3b24-4dfb-98dd-abbe1d434f8b',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'within a second' không chính xác vì nó không phản ánh đúng tốc độ thực tế của việc kết nối trên mạng xã hội.",
+                  'text': 'within a second',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'instantly',
+                  'reason': "Cụm từ 'within a second' không chính xác vì nó không phản ánh đúng tốc độ thực tế của việc kết nối trên mạng xã hội.",
+                  'explain': "Sử dụng 'instantly' để diễn tả tốc độ nhanh chóng và phù hợp hơn với ngữ cảnh của việc kết nối trên mạng xã hội.",
+                  'topPosition': 223,
+                  'documentId': 14390,
+                  'id': 59979
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '30131525-c6fd-4f99-9ef3-70d71ffdae7f',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 101.01953125,
+                      'rectangles': [
+                          {
+                              'y': 223,
+                              'x': 100.01953125,
+                              'width': 69.69140625,
+                              'height': 18
+                          }
+                      ],
+                      'top': 223,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '30131525-c6fd-4f99-9ef3-70d71ffdae7f',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'network with' không phù hợp trong ngữ cảnh này vì nó thường được sử dụng trong các tình huống chuyên nghiệp hơn là mạng xã hội cá nhân.",
+                  'text': 'network with',
+                  'type': 'vocabulary',
+                  'category': 'Collocation Error',
+                  'fix': 'connect with',
+                  'reason': "Cụm từ 'network with' không phù hợp trong ngữ cảnh này vì nó thường được sử dụng trong các tình huống chuyên nghiệp hơn là mạng xã hội cá nhân.",
+                  'explain': "Sử dụng 'connect with' phù hợp hơn trong ngữ cảnh mạng xã hội cá nhân, nơi người dùng kết nối với bạn bè của họ.",
+                  'topPosition': 223,
+                  'documentId': 14390,
+                  'id': 59980
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '6fa6c643-c94f-4a3a-b3c2-300a315450c2',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 170.40625,
+                      'rectangles': [
+                          {
+                              'y': 241,
+                              'x': 169.40625,
+                              'width': 61.6875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 241,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '6fa6c643-c94f-4a3a-b3c2-300a315450c2',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'social sites' không phải là cách diễn đạt phổ biến trong tiếng Anh. Thay vào đó, 'social media' là cụm từ thông dụng hơn.",
+                  'text': 'social sites',
+                  'type': 'vocabulary',
+                  'category': 'Collocation Error',
+                  'fix': 'social media',
+                  'reason': "Cụm từ 'social sites' không phải là cách diễn đạt phổ biến trong tiếng Anh. Thay vào đó, 'social media' là cụm từ thông dụng hơn.",
+                  'explain': "Cụm từ 'social media' là cách diễn đạt phổ biến và chính xác hơn để chỉ các nền tảng mạng xã hội.",
+                  'topPosition': 241,
+                  'documentId': 14390,
+                  'id': 59981
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '90638299-7302-433e-8836-37f1f87d6dc6',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 336.466796875,
+                      'rectangles': [
+                          {
+                              'y': 79,
+                              'x': 335.466796875,
+                              'width': 61.03125,
+                              'height': 18
+                          }
+                      ],
+                      'top': 79,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '90638299-7302-433e-8836-37f1f87d6dc6',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'more persuasive' không phù hợp trong ngữ cảnh này vì nó thường được dùng để miêu tả một người hoặc một lập luận có khả năng thuyết phục, chứ không phải là một lập luận mạnh mẽ hơn.",
+                  'text': 'persuasive',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'stronger',
+                  'reason': "Từ 'more persuasive' không phù hợp trong ngữ cảnh này vì nó thường được dùng để miêu tả một người hoặc một lập luận có khả năng thuyết phục, chứ không phải là một lập luận mạnh mẽ hơn.",
+                  'explain': "Từ 'stronger' phù hợp hơn vì nó miêu tả một lập luận có sức mạnh hoặc tính thuyết phục cao hơn.",
+                  'topPosition': 79,
+                  'documentId': 14390,
+                  'id': 59983
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'b53ee876-503a-4e98-b8ff-bf096c6b6f82',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 329.142578125,
+                      'rectangles': [
+                          {
+                              'y': 277,
+                              'x': 328.142578125,
+                              'width': 77.70703125,
+                              'height': 18
+                          }
+                      ],
+                      'top': 277,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'b53ee876-503a-4e98-b8ff-bf096c6b6f82',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'deteriorate for' không đúng ngữ pháp. Động từ 'deteriorate' không đi kèm với giới từ 'for'.",
+                  'text': 'deteriorate for',
+                  'type': 'grammar',
+                  'category': 'Preposition Mistake',
+                  'fix': 'deteriorate',
+                  'reason': "Cụm từ 'deteriorate for' không đúng ngữ pháp. Động từ 'deteriorate' không đi kèm với giới từ 'for'.",
+                  'explain': "Động từ 'deteriorate' không cần giới từ đi kèm trong ngữ cảnh này.",
+                  'topPosition': 277,
+                  'documentId': 14390,
+                  'id': 59986
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'd11c02c4-ec49-4286-8540-c077d5931a55',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 291.8125,
+                      'rectangles': [
+                          {
+                              'y': 295,
+                              'x': 290.8125,
+                              'width': 35.009765625,
+                              'height': 18
+                          }
+                      ],
+                      'top': 295,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'd11c02c4-ec49-4286-8540-c077d5931a55',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'curtail' không phù hợp trong ngữ cảnh này vì nó thường mang nghĩa giảm bớt hoặc hạn chế một cái gì đó, thường là về số lượng hoặc mức độ.",
+                  'text': 'curtail',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'reduce',
+                  'reason': "Từ 'curtail' không phù hợp trong ngữ cảnh này vì nó thường mang nghĩa giảm bớt hoặc hạn chế một cái gì đó, thường là về số lượng hoặc mức độ.",
+                  'explain': "Từ 'reduce' phù hợp hơn vì nó mang nghĩa giảm bớt một cách tổng quát, phù hợp với ngữ cảnh giảm nhu cầu gặp mặt trực tiếp.",
+                  'topPosition': 295,
+                  'documentId': 14390,
+                  'id': 59987
+              },
+
+              {
+                  'class': 'Comment',
+                  'uuid': 'e86960f2-1885-47ef-92a4-97a3fe6c59a8',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 327.15625,
+                      'rectangles': [
+                          {
+                              'y': 295,
+                              'x': 326.15625,
+                              'width': 113.07421875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 295,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'e86960f2-1885-47ef-92a4-97a3fe6c59a8',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'the need for meeting' cần một giới từ khác để diễn đạt đúng ý.",
+                  'text': 'the need for meeting',
+                  'type': 'grammar',
+                  'category': 'Preposition Mistake',
+                  'fix': 'the need to meet',
+                  'reason': "Cụm từ 'the need for meeting' cần một giới từ khác để diễn đạt đúng ý.",
+                  'explain': "Sử dụng 'to meet' thay vì 'for meeting' để diễn đạt đúng cấu trúc ngữ pháp và ý nghĩa.",
+                  'topPosition': 295,
+                  'documentId': 14390,
+                  'id': 59989
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'e4a5e0f0-a79d-4a32-8b6c-e2945b01b086',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 123.70703125,
+                      'rectangles': [
+                          {
+                              'y': 313,
+                              'x': 122.70703125,
+                              'width': 81.708984375,
+                              'height': 18
+                          }
+                      ],
+                      'top': 313,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'e4a5e0f0-a79d-4a32-8b6c-e2945b01b086',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'misunderstood' là dạng quá khứ phân từ, không phù hợp trong ngữ cảnh này.",
+                  'text': 'misunderstood',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'misunderstanding',
+                  'reason': "Từ 'misunderstood' là dạng quá khứ phân từ, không phù hợp trong ngữ cảnh này.",
+                  'explain': "Sử dụng 'misunderstanding' để diễn đạt đúng ý nghĩa của việc thông tin và biểu cảm bị hiểu lầm.",
+                  'topPosition': 313,
+                  'documentId': 14390,
+                  'id': 59990
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '1094ace4-b484-4f3c-b50a-f4545722e9f7',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 431.189453125,
+                      'rectangles': [
+                          {
+                              'y': 313,
+                              'x': 430.189453125,
+                              'width': 85.72265625,
+                              'height': 18
+                          }
+                      ],
+                      'top': 313,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '1094ace4-b484-4f3c-b50a-f4545722e9f7',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'comprehending' không phù hợp trong ngữ cảnh này vì nó mang nghĩa hiểu biết sâu sắc, trong khi ở đây chỉ cần hiểu đơn giản.",
+                  'text': 'comprehending',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'understanding',
+                  'reason': "Từ 'comprehending' không phù hợp trong ngữ cảnh này vì nó mang nghĩa hiểu biết sâu sắc, trong khi ở đây chỉ cần hiểu đơn giản.",
+                  'explain': "Từ 'understanding' phù hợp hơn vì nó mang nghĩa hiểu đơn giản, phù hợp với ngữ cảnh của câu.",
+                  'topPosition': 313,
+                  'documentId': 14390,
+                  'id': 59991
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'c3b050d6-859d-4f8e-b4ed-a0d1376e420c',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 291.80078125,
+                      'rectangles': [
+                          {
+                              'y': 313,
+                              'x': 290.80078125,
+                              'width': 67.03125,
+                              'height': 18
+                          }
+                      ],
+                      'top': 313,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'c3b050d6-859d-4f8e-b4ed-a0d1376e420c',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'expressions' không phù hợp với ngữ cảnh của thông tin bị hiểu lầm.",
+                  'text': 'expressions',
+                  'type': 'vocabulary',
+                  'category': 'Collocation Error',
+                  'fix': 'communication',
+                  'reason': "Từ 'expressions' không phù hợp với ngữ cảnh của thông tin bị hiểu lầm.",
+                  'explain': "Sử dụng 'communication' để diễn đạt đúng ý nghĩa của việc thông tin và giao tiếp bị hiểu lầm.",
+                  'topPosition': 313,
+                  'documentId': 14390,
+                  'id': 59992
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '3d503f65-4d22-4bf9-8085-622261d6fce8',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 381.8359375,
+                      'rectangles': [
+                          {
+                              'y': 61,
+                              'x': 380.8359375,
+                              'width': 79.7109375,
+                              'height': 18
+                          }
+                      ],
+                      'top': 61,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '3d503f65-4d22-4bf9-8085-622261d6fce8',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ này có thể quá mạnh trong ngữ cảnh này. 'Revolutionizing' ngụ ý một sự thay đổi hoàn toàn và triệt để, trong khi sự thay đổi có thể không đến mức đó.",
+                  'text': 'revolutionizing',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'transforming',
+                  'reason': "Từ này có thể quá mạnh trong ngữ cảnh này. 'Revolutionizing' ngụ ý một sự thay đổi hoàn toàn và triệt để, trong khi sự thay đổi có thể không đến mức đó.",
+                  'explain': "Từ 'transforming' phù hợp hơn vì nó mô tả một sự thay đổi đáng kể nhưng không nhất thiết phải hoàn toàn triệt để.",
+                  'topPosition': 61,
+                  'documentId': 14390,
+                  'id': 59993
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '589da4d0-aff6-4c6c-8174-75fefea45c6f',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 517.24609375,
+                      'rectangles': [
+                          {
+                              'y': 313,
+                              'x': 516.24609375,
+                              'width': 19.681640625,
+                              'height': 18
+                          },
+                          {
+                              'y': 331,
+                              'x': 54,
+                              'width': 41.689453125,
+                              'height': 18
+                          }
+                      ],
+                      'top': 313,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '589da4d0-aff6-4c6c-8174-75fefea45c6f',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Sử dụng mạo từ 'the' không cần thiết vì 'context' ở đây không chỉ đến một ngữ cảnh cụ thể nào.",
+                  'text': 'the context',
+                  'type': 'grammar',
+                  'category': 'Article Misuse',
+                  'fix': 'context',
+                  'reason': "Sử dụng mạo từ 'the' không cần thiết vì 'context' ở đây không chỉ đến một ngữ cảnh cụ thể nào.",
+                  'explain': "Bỏ mạo từ 'the' để câu trở nên tự nhiên hơn và không chỉ đến một ngữ cảnh cụ thể.",
+                  'topPosition': 313,
+                  'documentId': 14390,
+                  'id': 59994
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'ec5dcfb0-31f7-4309-9752-d42b6450e1c8',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 167.0546875,
+                      'rectangles': [
+                          {
+                              'y': 331,
+                              'x': 166.0546875,
+                              'width': 55.013671875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 331,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'ec5dcfb0-31f7-4309-9752-d42b6450e1c8',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'may arise' không sai nhưng có thể làm câu trở nên không rõ ràng về thời gian xảy ra.",
+                  'text': 'may arise',
+                  'type': 'grammar',
+                  'category': 'Tense Error',
+                  'fix': 'can arise',
+                  'reason': "Cụm từ 'may arise' không sai nhưng có thể làm câu trở nên không rõ ràng về thời gian xảy ra.",
+                  'explain': "Sử dụng 'can arise' để làm rõ khả năng xảy ra của xung đột trong bất kỳ thời điểm nào.",
+                  'topPosition': 331,
+                  'documentId': 14390,
+                  'id': 59995
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '3e32c1e7-2a1c-4219-9530-986b95b0c9c5',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 173.083984375,
+                      'rectangles': [
+                          {
+                              'y': 349,
+                              'x': 172.083984375,
+                              'width': 9,
+                              'height': 18
+                          }
+                      ],
+                      'top': 349,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '3e32c1e7-2a1c-4219-9530-986b95b0c9c5',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'if' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ điều kiện, trong khi ngữ cảnh này cần một từ chỉ mục đích.",
+                  'text': 'if',
+                  'type': 'grammar',
+                  'category': 'Preposition Mistake',
+                  'fix': 'when',
+                  'reason': "Từ 'if' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ điều kiện, trong khi ngữ cảnh này cần một từ chỉ mục đích.",
+                  'explain': "Từ 'when' phù hợp hơn vì nó chỉ thời điểm hoặc tình huống mà hành động xảy ra, phù hợp với ngữ cảnh nói về việc tìm kiếm đối tác.",
+                  'topPosition': 349,
+                  'documentId': 14390,
+                  'id': 59997
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '5a3f5e1c-857e-4aa1-a56d-e0128851ace6',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 120.37890625,
+                      'rectangles': [
+                          {
+                              'y': 349,
+                              'x': 119.37890625,
+                              'width': 52.37109375,
+                              'height': 18
+                          }
+                      ],
+                      'top': 349,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '5a3f5e1c-857e-4aa1-a56d-e0128851ace6',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'the youth' không hoàn toàn chính xác trong ngữ cảnh này vì nó thường được dùng để chỉ một nhóm người trẻ tuổi nói chung, không phải là một nhóm cụ thể.",
+                  'text': 'the youth',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'young people',
+                  'reason': "Cụm từ 'the youth' không hoàn toàn chính xác trong ngữ cảnh này vì nó thường được dùng để chỉ một nhóm người trẻ tuổi nói chung, không phải là một nhóm cụ thể.",
+                  'explain': "Cụm từ 'young people' phù hợp hơn vì nó chỉ rõ nhóm người trẻ tuổi mà không mang tính chất tổng quát như 'the youth'.",
+                  'topPosition': 349,
+                  'documentId': 14390,
+                  'id': 59998
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'd2a04799-9ba7-4aa4-a328-96f7256fc79b',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 55,
+                      'rectangles': [
+                          {
+                              'y': 115,
+                              'x': 54,
+                              'width': 66.375,
+                              'height': 18
+                          }
+                      ],
+                      'top': 115,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'd2a04799-9ba7-4aa4-a328-96f7256fc79b',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'being social' không phải là cách diễn đạt tự nhiên trong tiếng Anh để miêu tả việc tham gia vào các hoạt động xã hội.",
+                  'text': 'being social',
+                  'type': 'vocabulary',
+                  'category': 'Collocation Error',
+                  'fix': 'engaging in social activities',
+                  'reason': "Cụm từ 'being social' không phải là cách diễn đạt tự nhiên trong tiếng Anh để miêu tả việc tham gia vào các hoạt động xã hội.",
+                  'explain': "Cụm từ 'engaging in social activities' phù hợp hơn vì nó miêu tả rõ ràng và tự nhiên hơn việc tham gia vào các hoạt động xã hội.",
+                  'topPosition': 115,
+                  'documentId': 14390,
+                  'id': 59999
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '04944c49-b729-41e2-be86-4e7c16d85c4a',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 397.896484375,
+                      'rectangles': [
+                          {
+                              'y': 349,
+                              'x': 396.896484375,
+                              'width': 129.7265625,
+                              'height': 18
+                          },
+                          {
+                              'y': 367,
+                              'x': 54,
+                              'width': 41.68359375,
+                              'height': 18
+                          }
+                      ],
+                      'top': 349,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '04944c49-b729-41e2-be86-4e7c16d85c4a',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ này sử dụng sai dạng động từ. 'Receive' cần được chuyển thành dạng danh động từ (gerund) để phù hợp với cấu trúc câu.",
+                  'text': 'Except for the passively receive',
+                  'type': 'grammar',
+                  'category': 'Verb Form Error',
+                  'fix': 'Except for passively receiving',
+                  'reason': "Cụm từ này sử dụng sai dạng động từ. 'Receive' cần được chuyển thành dạng danh động từ (gerund) để phù hợp với cấu trúc câu.",
+                  'explain': "Dạng danh động từ 'receiving' phù hợp hơn vì nó diễn tả hành động nhận thông điệp một cách thụ động.",
+                  'topPosition': 349,
+                  'documentId': 14390,
+                  'id': 60000
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '194d26fd-5853-4f1f-8889-615c8657a9bf',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 277.1171875,
+                      'rectangles': [
+                          {
+                              'y': 367,
+                              'x': 276.1171875,
+                              'width': 81.732421875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 367,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '194d26fd-5853-4f1f-8889-615c8657a9bf',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Động từ 'evaluate' không cần giới từ 'about' đi kèm.",
+                  'text': 'evaluate about',
+                  'type': 'grammar',
+                  'category': 'Preposition Mistake',
+                  'fix': 'evaluate',
+                  'reason': "Động từ 'evaluate' không cần giới từ 'about' đi kèm.",
+                  'explain': "Động từ 'evaluate' tự nó đã đủ nghĩa mà không cần thêm giới từ 'about'.",
+                  'topPosition': 367,
+                  'documentId': 14390,
+                  'id': 60001
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '11fffca0-81c7-44f9-b3ec-5114522af46b',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 101.482421875,
+                      'rectangles': [
+                          {
+                              'y': 385,
+                              'x': 100.482421875,
+                              'width': 45.005859375,
+                              'height': 18
+                          }
+                      ],
+                      'top': 385,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '11fffca0-81c7-44f9-b3ec-5114522af46b',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'criteria' là dạng số nhiều của 'criterion' và không cần thêm 's'.",
+                  'text': 'criterias',
+                  'type': 'vocabulary',
+                  'category': 'Spelling Mistake',
+                  'fix': 'criteria',
+                  'reason': "Từ 'criteria' là dạng số nhiều của 'criterion' và không cần thêm 's'.",
+                  'explain': "Từ 'criteria' đã là dạng số nhiều, nên không cần thêm 's'.",
+                  'topPosition': 385,
+                  'documentId': 14390,
+                  'id': 60002
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '5eb48b7b-fe04-4d5c-8ffd-5ab5302efaf2',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 410.93359375,
+                      'rectangles': [
+                          {
+                              'y': 385,
+                              'x': 409.93359375,
+                              'width': 75.046875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 385,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '5eb48b7b-fe04-4d5c-8ffd-5ab5302efaf2',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'dominance of' không phù hợp trong ngữ cảnh này vì nó mang nghĩa quá mạnh và không tự nhiên khi nói về việc sử dụng mạng xã hội.",
+                  'text': 'dominance of',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'prevalence of',
+                  'reason': "Cụm từ 'dominance of' không phù hợp trong ngữ cảnh này vì nó mang nghĩa quá mạnh và không tự nhiên khi nói về việc sử dụng mạng xã hội.",
+                  'explain': "Cụm từ 'prevalence of' phù hợp hơn vì nó diễn tả sự phổ biến và thường xuyên xuất hiện của mạng xã hội một cách tự nhiên và chính xác hơn.",
+                  'topPosition': 385,
+                  'documentId': 14390,
+                  'id': 60003
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'fba08ea9-db35-42ad-872e-40024d47c7a6',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 376.31640625,
+                      'rectangles': [
+                          {
+                              'y': 403,
+                              'x': 375.31640625,
+                              'width': 15.673828125,
+                              'height': 18
+                          }
+                      ],
+                      'top': 403,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'fba08ea9-db35-42ad-872e-40024d47c7a6',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'so' không cần thiết vì câu đã có từ 'because' để chỉ lý do.",
+                  'text': 'so',
+                  'type': 'grammar',
+                  'category': 'Conjunction Misuse',
+                  'fix': '',
+                  'reason': "Từ 'so' không cần thiết vì câu đã có từ 'because' để chỉ lý do.",
+                  'explain': "Việc loại bỏ từ 'so' sẽ làm câu gọn gàng hơn và tránh sự lặp lại không cần thiết của các từ nối.",
+                  'topPosition': 403,
+                  'documentId': 14390,
+                  'id': 60005
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '298e4f86-2b84-457d-967e-3a1fccf28371',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 113.69921875,
+                      'rectangles': [
+                          {
+                              'y': 421,
+                              'x': 112.69921875,
+                              'width': 57.029296875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 421,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '298e4f86-2b84-457d-967e-3a1fccf28371',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'in order to' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ mục đích, trong khi ở đây cần một cụm từ chỉ sự khó khăn.",
+                  'text': 'in order to',
+                  'type': 'grammar',
+                  'category': 'Preposition Mistake',
+                  'fix': 'to',
+                  'reason': "Cụm từ 'in order to' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ mục đích, trong khi ở đây cần một cụm từ chỉ sự khó khăn.",
+                  'explain': "Sử dụng 'to' sẽ làm câu rõ ràng hơn và phù hợp với ngữ cảnh của việc ngăn chặn hiện tượng này.",
+                  'topPosition': 421,
+                  'documentId': 14390,
+                  'id': 60006
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '1718992d-72d3-4719-ad18-122455d046b0',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 157.697265625,
+                      'rectangles': [
+                          {
+                              'y': 439,
+                              'x': 156.697265625,
+                              'width': 59.0390625,
+                              'height': 18
+                          }
+                      ],
+                      'top': 439,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '1718992d-72d3-4719-ad18-122455d046b0',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'apparently' không phù hợp trong ngữ cảnh này vì nó mang nghĩa 'có vẻ như' hoặc 'rõ ràng là', không phù hợp với ý nghĩa của câu.",
+                  'text': 'apparently',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'inevitably',
+                  'reason': "Từ 'apparently' không phù hợp trong ngữ cảnh này vì nó mang nghĩa 'có vẻ như' hoặc 'rõ ràng là', không phù hợp với ý nghĩa của câu.",
+                  'explain': "Từ 'inevitably' phù hợp hơn vì nó mang nghĩa 'không thể tránh khỏi', phù hợp với ý nghĩa của câu rằng các mối quan tâm sẽ trở nên phổ biến hơn.",
+                  'topPosition': 439,
+                  'documentId': 14390,
+                  'id': 60009
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '0ef25493-be70-484f-b9aa-2741bb8a957b',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 231.748046875,
+                      'rectangles': [
+                          {
+                              'y': 475,
+                              'x': 230.748046875,
+                              'width': 58.34765625,
+                              'height': 18
+                          }
+                      ],
+                      'top': 475,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '0ef25493-be70-484f-b9aa-2741bb8a957b',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'affirmative' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ sự đồng ý hoặc khẳng định, không phải để mô tả tác động tích cực.",
+                  'text': 'affirmative',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'positive',
+                  'reason': "Từ 'affirmative' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ sự đồng ý hoặc khẳng định, không phải để mô tả tác động tích cực.",
+                  'explain': "Từ 'positive' phù hợp hơn để mô tả các tác động tích cực của mạng xã hội.",
+                  'topPosition': 475,
+                  'documentId': 14390,
+                  'id': 60010
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '5bd628d9-3891-4ae0-80ba-b425aa073403',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 418.48046875,
+                      'rectangles': [
+                          {
+                              'y': 475,
+                              'x': 417.48046875,
+                              'width': 26.34375,
+                              'height': 18
+                          }
+                      ],
+                      'top': 475,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '5bd628d9-3891-4ae0-80ba-b425aa073403',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'alter' không phù hợp trong ngữ cảnh này vì nó thường có nghĩa là thay đổi một chút, trong khi ở đây cần một từ mạnh hơn để chỉ sự thay đổi hoàn toàn cách giao tiếp.",
+                  'text': 'alter',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'transform',
+                  'reason': "Từ 'alter' không phù hợp trong ngữ cảnh này vì nó thường có nghĩa là thay đổi một chút, trong khi ở đây cần một từ mạnh hơn để chỉ sự thay đổi hoàn toàn cách giao tiếp.",
+                  'explain': "Từ 'transform' phù hợp hơn để chỉ sự thay đổi hoàn toàn cách giao tiếp do mạng xã hội mang lại.",
+                  'topPosition': 475,
+                  'documentId': 14390,
+                  'id': 60011
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'd82ce5be-435d-41bf-8094-b467641f921d',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 465.173828125,
+                      'rectangles': [
+                          {
+                              'y': 475,
+                              'x': 464.173828125,
+                              'width': 87.7265625,
+                              'height': 18
+                          },
+                          {
+                              'y': 493,
+                              'x': 54,
+                              'width': 74.361328125,
+                              'height': 18
+                          }
+                      ],
+                      'top': 475,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'd82ce5be-435d-41bf-8094-b467641f921d',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'outdated way to communicate' không tự nhiên trong tiếng Anh. Thường thì người ta sẽ nói 'outdated methods of communication'.",
+                  'text': 'outdated way to communicate',
+                  'type': 'vocabulary',
+                  'category': 'Collocation Error',
+                  'fix': 'outdated methods of communication',
+                  'reason': "Cụm từ 'outdated way to communicate' không tự nhiên trong tiếng Anh. Thường thì người ta sẽ nói 'outdated methods of communication'.",
+                  'explain': "Cụm từ 'outdated methods of communication' tự nhiên hơn và đúng ngữ pháp hơn trong tiếng Anh.",
+                  'topPosition': 475,
+                  'documentId': 14390,
+                  'id': 60012
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'c98b9d22-754e-4dcf-a529-5ce30f114474',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 239.1015625,
+                      'rectangles': [
+                          {
+                              'y': 151,
+                              'x': 238.1015625,
+                              'width': 62.373046875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 151,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'c98b9d22-754e-4dcf-a529-5ce30f114474',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': 'Thì hiện tại hoàn thành không phù hợp vì không có mốc thời gian cụ thể và hành động này vẫn đang tiếp diễn.',
+                  'text': 'have made',
+                  'type': 'grammar',
+                  'category': 'Tense Error',
+                  'fix': 'make',
+                  'reason': 'Thì hiện tại hoàn thành không phù hợp vì không có mốc thời gian cụ thể và hành động này vẫn đang tiếp diễn.',
+                  'explain': "Thì hiện tại đơn 'make' phù hợp hơn vì nó diễn tả một sự thật chung hoặc một hành động thường xuyên xảy ra.",
+                  'topPosition': 151,
+                  'documentId': 14390,
+                  'id': 60013
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'e3748de7-f257-4baa-9a5b-fe2a5f476de5',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 239.7578125,
+                      'rectangles': [
+                          {
+                              'y': 493,
+                              'x': 238.7578125,
+                              'width': 103.06640625,
+                              'height': 18
+                          }
+                      ],
+                      'top': 493,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'e3748de7-f257-4baa-9a5b-fe2a5f476de5',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'disadvantages of it' không tự nhiên và không cần thiết phải dùng 'it' ở đây.",
+                  'text': 'disadvantages of it',
+                  'type': 'grammar',
+                  'category': 'Article Misuse',
+                  'fix': 'its disadvantages',
+                  'reason': "Cụm từ 'disadvantages of it' không tự nhiên và không cần thiết phải dùng 'it' ở đây.",
+                  'explain': "Cụm từ 'its disadvantages' ngắn gọn và tự nhiên hơn trong ngữ cảnh này.",
+                  'topPosition': 493,
+                  'documentId': 14390,
+                  'id': 60014
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '4fa6ede4-11e9-4fa9-91ad-ee6f00907d34',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 431.880859375,
+                      'rectangles': [
+                          {
+                              'y': 493,
+                              'x': 430.880859375,
+                              'width': 73.04296875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 493,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '4fa6ede4-11e9-4fa9-91ad-ee6f00907d34',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'ones' không cần thiết và làm câu trở nên rườm rà.",
+                  'text': 'positive ones',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'positives',
+                  'reason': "Từ 'ones' không cần thiết và làm câu trở nên rườm rà.",
+                  'explain': "Từ 'positives' ngắn gọn và rõ ràng hơn, phù hợp với ngữ cảnh.",
+                  'topPosition': 493,
+                  'documentId': 14390,
+                  'id': 60015
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '4ae56df5-038c-4f3e-b650-0fdc166ed31e',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 385.84375,
+                      'rectangles': [
+                          {
+                              'y': 151,
+                              'x': 384.84375,
+                              'width': 35.68359375,
+                              'height': 18
+                          }
+                      ],
+                      'top': 151,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '4ae56df5-038c-4f3e-b650-0fdc166ed31e',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'easier' không đủ mạnh để diễn tả mức độ cải thiện trong việc giao tiếp qua các nền tảng ảo.",
+                  'text': 'easier',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'much easier',
+                  'reason': "Từ 'easier' không đủ mạnh để diễn tả mức độ cải thiện trong việc giao tiếp qua các nền tảng ảo.",
+                  'explain': "Cụm từ 'much easier' nhấn mạnh hơn mức độ cải thiện, làm cho câu văn rõ ràng và thuyết phục hơn.",
+                  'topPosition': 151,
+                  'documentId': 14390,
+                  'id': 60016
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '170a943f-82ca-4673-8063-879506302c0f',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 146.40625,
+                      'rectangles': [
+                          {
+                              'y': 169,
+                              'x': 145.40625,
+                              'width': 73.705078125,
+                              'height': 18
+                          }
+                      ],
+                      'top': 169,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '170a943f-82ca-4673-8063-879506302c0f',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'at these sites' không sai nhưng có thể gây hiểu nhầm. 'used by these applications' sẽ rõ ràng khi nhắc tới các công nghệ hiện đại được sử dụng.",
+                  'text': 'at these sites',
+                  'type': 'grammar',
+                  'category': 'Preposition Mistake',
+                  'fix': 'used by these applications',
+                  'reason': "Cụm từ 'at these sites' không sai nhưng có thể gây hiểu nhầm. 'In these locations' sẽ rõ ràng hơn trong việc chỉ ra các địa điểm cụ thể.",
+                  'explain': "Sử dụng 'used by these applications' sẽ rõ ràng hơn và phù hợp hơn trong ngữ cảnh này",
+                  'topPosition': 169,
+                  'documentId': 14390,
+                  'id': 60017
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '4a4c6cd0-43cd-4268-a772-5f7556a903c1',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 354.525390625,
+                      'rectangles': [
+                          {
+                              'y': 169,
+                              'x': 353.525390625,
+                              'width': 103.728515625,
+                              'height': 18
+                          }
+                      ],
+                      'top': 169,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '4a4c6cd0-43cd-4268-a772-5f7556a903c1',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'make a connection' không hoàn toàn chính xác trong ngữ cảnh này. 'Establish a connection' là cụm từ thường được sử dụng hơn khi nói về việc tạo ra một kết nối.",
+                  'text': 'make a connection',
+                  'type': 'vocabulary',
+                  'category': 'Collocation Error',
+                  'fix': 'establish a connection',
+                  'reason': "Cụm từ 'make a connection' không hoàn toàn chính xác trong ngữ cảnh này. 'Establish a connection' là cụm từ thường được sử dụng hơn khi nói về việc tạo ra một kết nối.",
+                  'explain': "Sử dụng 'establish a connection' sẽ chính xác hơn và phù hợp hơn trong ngữ cảnh này, vì nó là cụm từ thường được sử dụng khi nói về việc tạo ra một kết nối.",
+                  'topPosition': 169,
+                  'documentId': 14390,
+                  'id': 60018
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '93c8b377-82c1-4fce-bd5f-a36b0d153845',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'red',
+                      'left': 84.337890625,
+                      'rectangles': [
+                          {
+                              'y': 187,
+                              'x': 83.337890625,
+                              'width': 72.369140625,
+                              'height': 18
+                          }
+                      ],
+                      'top': 187,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '93c8b377-82c1-4fce-bd5f-a36b0d153845',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'Compared to' không phù hợp trong ngữ cảnh này vì nó thường được sử dụng để so sánh hai đối tượng cụ thể, trong khi đoạn văn này đang nói về phương pháp truyền thống và phương pháp hiện đại một cách chung chung.",
+                  'text': 'Compared to',
+                  'type': 'grammar',
+                  'category': 'Preposition Mistake',
+                  'fix': 'In comparison with',
+                  'reason': "Cụm từ 'Compared to' không phù hợp trong ngữ cảnh này vì nó thường được sử dụng để so sánh hai đối tượng cụ thể, trong khi đoạn văn này đang nói về phương pháp truyền thống và phương pháp hiện đại một cách chung chung.",
+                  'explain': "Cụm từ 'In comparison with' phù hợp hơn vì nó so sánh hai phương pháp một cách tổng quát và không cụ thể hóa đối tượng so sánh.",
+                  'topPosition': 187,
+                  'documentId': 14390,
+                  'id': 60019
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': '7c0706ed-d164-4cff-8dbc-070d3674e773',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 458.587890625,
+                      'rectangles': [
+                          {
+                              'y': 169,
+                              'x': 457.587890625,
+                              'width': 73.69921875,
+                              'height': 18
+                          },
+                          {
+                              'y': 187,
+                              'x': 54,
+                              'width': 25.669921875,
+                              'height': 18
+                          }
+                      ],
+                      'top': 169,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': '7c0706ed-d164-4cff-8dbc-070d3674e773',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Cụm từ 'within a short time' không sai nhưng 'in a short period of time' sẽ tự nhiên hơn và thường được sử dụng hơn trong văn viết học thuật.",
+                  'text': 'within a short time',
+                  'type': 'vocabulary',
+                  'category': 'Collocation Error',
+                  'fix': 'in a short period of time',
+                  'reason': "Cụm từ 'within a short time' không sai nhưng 'in a short period of time' sẽ tự nhiên hơn và thường được sử dụng hơn trong văn viết học thuật.",
+                  'explain': "Sử dụng 'in a short period of time' sẽ tự nhiên hơn và phù hợp hơn trong ngữ cảnh này, vì nó là cụm từ thường được sử dụng trong văn viết học thuật.",
+                  'topPosition': 169,
+                  'documentId': 14390,
+                  'id': 60020
+              },
+              {
+                  'class': 'Comment',
+                  'uuid': 'f828ad98-2635-45f8-99fe-ced5f9ad7937',
+                  'annotation': {
+                      'type': 'comment-highlight',
+                      'color': 'blue',
+                      'left': 447.033203125,
+                      'rectangles': [
+                          {
+                              'y': 97,
+                              'x': 446.033203125,
+                              'width': 59.033203125,
+                              'height': 18
+                          }
+                      ],
+                      'top': 97,
+                      'pageNum': 1,
+                      'pageHeight': 792,
+                      'class': 'Annotation',
+                      'uuid': 'f828ad98-2635-45f8-99fe-ced5f9ad7937',
+                      'page': 1,
+                      'documentId': 14390
+                  },
+                  'comment': "Từ 'individuals' không phù hợp trong ngữ cảnh này vì nó quá chung chung và không rõ ràng.",
+                  'text': 'individuals',
+                  'type': 'vocabulary',
+                  'category': 'Word Choice Error',
+                  'fix': 'people',
+                  'reason': "Từ 'individuals' không phù hợp trong ngữ cảnh này vì nó quá chung chung và không rõ ràng.",
+                  'explain': "Từ 'people' phù hợp hơn vì nó đơn giản và dễ hiểu hơn trong ngữ cảnh này.",
+                  'topPosition': 97,
+                  'documentId': 14390,
+                  'id': 60021
+              }
+          ],
+          'reviewer': null
       },
       rubricCriteria: [
-        {
-            'criteriaId': 7,
-            'name': 'Task Response',
-            'mark': 6,
-            'comment': '1. Điểm mạnh: Bài luận đã trả lời đầy đủ yêu cầu của đề bài bằng cách đề cập đến cả những lợi ích và nhược điểm của việc xa cách gia đình và bạn bè. Bài viết đã phân tích cả hai mặt của vấn đề này và đưa ra quan điểm cá nhân.\n\n2. Điểm cần cải thiện: Mặc dù bài luận đã trình bày quan điểm cá nhân, nhưng nó có thể cải thiện bằng cách cung cấp thêm ví dụ và lý lẽ để hỗ trợ các luận điểm chính. Ví dụ, trong phần lợi ích, tác giả có thể cung cấp ví dụ cụ thể về việc trả các hóa đơn và chi tiêu cá nhân sau khi xa cách gia đình. Trong phần nhược điểm, tác giả có thể đề cập đến các nghiên cứu hoặc thống kê để minh chứng cho tác động tiêu cực của việc xa cách gia đình đối với sức khỏe tâm lý và sức khỏe của người thân.\n\nNgoài ra, bài luận cũng có thể cải thiện bằng cách mở rộng các ý tưởng để hỗ trợ các luận điểm chính. Ví dụ, trong phần lợi ích, tác giả có thể đề cập đến việc xa cách gia đình và bạn bè có thể giúp người lao động phát triển kỹ năng giao tiếp, độc lập và quản lý thời gian. Trong phần nhược điểm, tác giả có thể nêu rõ hơn về tác động tiêu cực của việc xa cách gia đình đối với mối quan hệ gia đình và sự thiếu hụt hỗ trợ trong cuộc sống hàng ngày.\n\nTóm lại, bài luận đã trả lời đầy đủ yêu cầu của đề bài, nhưng có thể cải thiện bằng cách cung cấp thêm ví dụ và lý lẽ để hỗ trợ các luận điểm chính và mở rộng các ý tưởng để làm rõ hơn các quan điểm được trình bày.'
-        },
-        {
-            'criteriaId': 8,
-            'name': 'Coherence & Cohesion',
-            'mark': 6,
-            'comment': '1. Điểm mạnh:\n- Bài luận có một cấu trúc rõ ràng và hợp lý. Nó bắt đầu bằng một đoạn giới thiệu, sau đó chia thành hai phần: một phần với các lợi ích của việc xa cách gia đình và bạn bè, và một phần với các hậu quả tiêu cực. Cuối cùng, bài luận kết thúc bằng một đoạn kết luận. Cấu trúc này giúp người đọc dễ dàng theo dõi luồng ý tưởng và hiểu rõ quan điểm của tác giả.\n- Bài luận sử dụng các từ nối và cụm từ nối một cách khá tốt để liên kết các ý tưởng và câu trong bài viết. Ví dụ, từ "Firstly", "Secondly", "On the other hand", "To begin with" được sử dụng để đưa ra các lập luận và phân tích. Điều này giúp tạo ra một dòng chảy logic và mạch lạc trong bài viết.\n\n2. Điểm cần cải thiện:\n- Cấu trúc của bài luận không hoàn toàn rõ ràng và hợp lý. Một số đoạn văn có thể được sắp xếp lại để tạo ra một sự liên kết tốt hơn giữa các ý tưởng. Ví dụ, trong phần lợi ích, việc đề cập đến khó khăn trong cuộc sống và việc trả các hóa đơn có thể được đưa vào cùng một đoạn văn để tạo ra một luồng ý tưởng liên quan hơn.\n- Một số đoạn văn có nhiều ý tưởng và không tập trung vào một chủ đề cụ thể. Điều này làm mất đi sự rõ ràng và dễ hiểu của bài viết. Đề nghị tách các ý tưởng này thành các đoạn văn riêng biệt và tập trung vào một chủ đề duy nhất trong mỗi đoạn.\n- Một số thiết bị liên kết được sử dụng không thích hợp hoặc không rõ ràng. Ví dụ, trong câu "Due to the fact that after completing their work, they also would like to participate in other activities such as traveling, and playing sports", từ "Due to the fact that" có thể được thay thế bằng "Because" để làm cho câu trở nên ngắn gọn và dễ hiểu hơn.\n\nTổng quan, bài luận đã có một cấu trúc tổ chức tốt và sử dụng các từ nối và cụm từ nối một cách khá tốt. Tuy nhiên, cần cải thiện cấu trúc và tập trung vào một chủ đề cụ thể trong mỗi đoạn văn. Ngoài ra, cần sử dụng các thiết bị liên kết một cách thích hợp và rõ ràng hơn.'
-        },
-        {
-            'criteriaId': 9,
-            'name': 'Lexical Resource',
-            'mark': 6,
-            'comment': '1. Điểm mạnh:\n- Bài luận sử dụng một loạt các từ vựng và cụm từ phong phú, đa dạng. Ví dụ, "financial independence", "personal space", "detrimental emotion" và "negative consequences" là những từ và cụm từ mạnh mẽ và chính xác để diễn đạt ý kiến.\n- Bài luận cũng sử dụng các từ liên kết và cấu trúc câu phức tạp để kết nối các ý kiến và ý tưởng. Ví dụ, "On one hand... On the other hand" và "To begin with... Moreover" giúp tạo ra sự liên kết mạch lạc giữa các đoạn văn.\n\n2. Điểm cần cải thiện:\n- Một số từ và cụm từ được sử dụng quá mức hoặc lặp lại không cần thiết. Ví dụ, từ "life" được sử dụng nhiều lần trong bài luận. Thay vì lặp lại từ này, có thể sử dụng các từ khác như "existence" hoặc "lifestyle" để làm cho bài viết trở nên đa dạng hơn.\n- Một số từ và cụm từ không chính xác hoặc không phù hợp. Ví dụ, từ "compulsory" được sử dụng để diễn đạt ý "inevitable", nhưng từ này không phù hợp trong ngữ cảnh này. Thay vào đó, có thể sử dụng từ "inevitable" hoặc "unavoidable" để diễn đạt ý tương tự.\n- Ngôn ngữ sử dụng trong bài luận không phù hợp hoặc thiếu sự trang trọng. Ví dụ, cụm từ "part away" không phải là một cách diễn đạt chính xác trong tiếng Anh. Thay vào đó, có thể sử dụng cụm từ "separate from" hoặc "move away from" để diễn đạt ý tương tự một cách chính xác hơn.'
-        },
-        {
-            'criteriaId': 10,
-            'name': 'Grammatical Range & Accuracy',
-            'mark': 6,
-            'comment': '1. Điểm mạnh:\n- Bài luận sử dụng một loạt các cấu trúc ngữ pháp khác nhau, bao gồm cả câu đơn và câu phức. Ví dụ, "In modern life, it is inevitable that people spend more time on working" và "Due to the fact that after completing their work, they also would like to participate in other activities such as traveling, and playing sports."\n- Bài luận cũng sử dụng một số từ vựng và cụm từ phức tạp, như "financial independence", "personal space", và "detrimental emotion", để truyền đạt ý kiến một cách chính xác và rõ ràng.\n\n2. Điểm cần cải thiện:\n- Bài luận có thể cải thiện bằng cách sử dụng một loạt các cấu trúc ngữ pháp phức tạp hơn. Thay vì chỉ sử dụng câu đơn và câu phức đơn giản, bạn có thể thử sử dụng câu ghép và câu phức phức tạp hơn để tăng tính rõ ràng và hấp dẫn của bài luận. Ví dụ, thay vì nói "On one hand, there are two benefits when they part away from their relatives and friends", bạn có thể nói "On one hand, there are two benefits to be gained from separating oneself from relatives and friends."\n- Bài luận cũng có thể cải thiện bằng cách sửa các lỗi ngữ pháp như sai cấu trúc câu, sai thời, hoặc sai cách sử dụng từ vựng. Ví dụ, "they also would like to participate in other activities" có thể được sửa thành "they would also like to participate in other activities" hoặc "they would like to participate in other activities as well."'
-        },
-        {
-            'criteriaId': 36,
-            'name': 'Critical Errors',
-            'mark': 0,
-            'comment': "1. 'part away from' --> 'part from'\n- Giải thích: Cụm từ 'part away from' không chính xác trong ngữ cảnh này. 'Part from' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'part from'\n\n2. 'compulsory for them to part away from their friends and family' --> 'inevitable for them to part from their friends and family'\n- Giải thích: Cụm từ 'compulsory for them to part away from' không chính xác về ngữ pháp. 'Inevitable for them to part from' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'inevitable for them to part from their friends and family'\n\n3. 'pros and cons in this matter' --> 'pros and cons to this matter'\n- Giải thích: Cụm từ 'pros and cons in this matter' không chính xác về ngữ pháp. 'Pros and cons to this matter' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'pros and cons to this matter'\n\n4. 'economic crisis period' --> 'economic crisis'\n- Giải thích: Cụm từ 'economic crisis period' không cần thiết. 'Economic crisis' là cách diễn đạt ngắn gọn và chính xác hơn.\n\n5. 'because of their life, they have too many difficulties to solve' --> 'because in their life, they have too many difficulties to solve'\n- Giải thích: Cụm từ 'because of their life' không chính xác về ngữ pháp. 'Because in their life' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'because in their life, they have too many difficulties to solve'\n\n6. 'the bills of gas, electric, and water' --> 'the gas, electric, and water bills'\n- Giải thích: Cụm từ 'the bills of gas, electric, and water' không tự nhiên. 'The gas, electric, and water bills' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'the gas, electric, and water bills'\n\n7. 'it will be annoying for their family members when living with each other' --> 'it will be annoying for their family members if they live together'\n- Giải thích: Cụm từ 'when living with each other' không chính xác về ngữ pháp. 'If they live together' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'it will be annoying for their family members if they live together'\n\n8. 'attempt to earn income' --> 'strive to earn an income'\n- Giải thích: Cụm từ 'attempt to earn income' không tự nhiên. 'Strive to earn an income' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'strive to earn an income'\n\n9. 'before the pressure from their work and life' --> 'under the pressure from their work and life'\n- Giải thích: Cụm từ 'before the pressure' không chính xác về ngữ pháp. 'Under the pressure' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'under the pressure from their work and life'\n\n10. 'not seeking motivation in life' --> 'lack of motivation in life'\n- Giải thích: Cụm từ 'not seeking motivation in life' không chính xác về ngữ pháp. 'Lack of motivation in life' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'lack of motivation in life'\n\n11. 'the rate of death due to depression of citizens living far away from their family increased rapidly' --> 'the rate of death due to depression among citizens living far away from their family increased rapidly'\n- Giải thích: Cụm từ 'of citizens living far away from their family' không chính xác về ngữ pháp. 'Among citizens living far away from their family' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'the rate of death due to depression among citizens living far away from their family increased rapidly'\n\n12. 'spend more time on looking after their parents' --> 'spend more time looking after their parents'\n- Giải thích: Cụm từ 'spend more time on looking after' không chính xác về ngữ pháp. 'Spend more time looking after' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'spend more time looking after their parents'\n\n13. 'will easily have negative feelings that can lead to serious illness' --> 'may easily develop negative feelings that can lead to serious illness'\n- Giải thích: Cụm từ 'will easily have negative feelings' không chính xác về ngữ pháp. 'May easily develop negative feelings' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'may easily develop negative feelings that can lead to serious illness'\n\n14. 'support people to have an independent life and be comfortable to take part in other activities' --> 'support people in having an independent life and being comfortable taking part in other activities'\n- Giải thích: Cụm từ 'support people to have' và 'be comfortable to take part' không chính xác về ngữ pháp. 'Support people in having' và 'being comfortable taking part' là cách diễn đạt đúng và tự nhiên hơn. Thay thế bằng: 'support people in having an independent life and being comfortable taking part in other activities'\n\n"
-        },
-        {
-            'criteriaId': 43,
-            'name': 'Arguments Assessment',
-            'mark': 0,
-            'comment': 'Đoạn 1:\n- Ý chính: There are advantages to moving away from friends and family for work, such as financial independence and personal freedom.\n- Lập luận: Lập luận hỗ trợ ý chính khá thuyết phục. Tác giả đã đề cập đến tình hình khủng hoảng kinh tế và khó khăn trong cuộc sống, và cho rằng việc tách biệt với gia đình và bạn bè giúp người ta tập trung vào công việc và tạo ra thu nhập ổn định. Ngoài ra, việc có không gian cá nhân cũng giúp người ta thỏa mãn các sở thích và hoạt động khác sau khi làm việc.\n- Gợi ý: Có thể cung cấp thêm ví dụ về các hoạt động mà người ta có thể tham gia sau khi làm việc, như du lịch, thể thao, và giải trí cá nhân.\n\nĐoạn 2:\n- Ý chính: There are disadvantages to moving away from friends and family for work, such as increased stress and lack of support.\n- Lập luận: Lập luận hỗ trợ ý chính cũng khá thuyết phục. Tác giả đã đề cập đến áp lực và căng thẳng trong công việc và cuộc sống, và cho rằng việc sống xa gia đình và bạn bè khiến người ta không có người để chia sẻ những cảm xúc tiêu cực. Ngoài ra, việc không có thời gian để chăm sóc cha mẹ cũng có thể gây ra những tác động tiêu cực cho sức khỏe của họ.\n- Gợi ý: Có thể cung cấp thêm thông tin về những tác động tiêu cực khác của việc sống xa gia đình, như cảm giác cô đơn và mất liên kết xã hội.\n\nĐoạn 3:\n- Ý chính: The author concludes that the disadvantages outweigh the advantages of moving away from friends and family for work.\n- Lập luận: Lập luận hỗ trợ ý chính khá thuyết phục. Tác giả đã trình bày các khó khăn và tác động tiêu cực của việc sống xa gia đình và bạn bè, và kết luận rằng những tác động này nặng hơn so với những lợi ích. \n- Gợi ý: Có thể cung cấp thêm ví dụ hoặc thống kê để củng cố lập luận rằng những tác động tiêu cực của việc sống xa gia đình và bạn bè là nghiêm trọng và đáng quan tâm.'
-        },
-        {
-            'criteriaId': 45,
-            'name': 'Vocabulary',
-            'mark': 0,
-            'comment': "1. Social isolation: cô đơn xã hội\n   - Definition: The state of being separated from society, often leading to feelings of loneliness and disconnection.\n   - Example: Social isolation can have negative impacts on mental health, especially when individuals are far away from their friends and family for work.\n\n2. Work-life balance: cân bằng giữa công việc và cuộc sống\n   - Definition: The equilibrium between the time and effort spent on work and personal life activities.\n   - Example: Moving away from friends and family for work can disrupt one's work-life balance, leading to increased stress and decreased well-being.\n\n3. Emotional support network: mạng lưới hỗ trợ tinh thần\n   - Definition: A group of individuals who provide emotional support, empathy, and encouragement during challenging times.\n   - Example: Being separated from one's emotional support network can make it difficult to cope with stress and emotional challenges that arise from being away from loved ones.\n\n4. Quality time: thời gian chất lượng\n   - Definition: Time spent in a meaningful and fulfilling way, often with loved ones or engaging in activities that bring joy.\n   - Example: Moving away from family and friends may result in a lack of quality time spent together, impacting the overall well-being and happiness of individuals.\n\n5. Sense of belonging: cảm giác thuộc về\n   - Definition: Feeling accepted, valued, and connected to a particular group or community.\n   - Example: Moving away from one's hometown and loved ones can diminish one's sense of belonging and lead to feelings of alienation and loneliness."
-        },
-        {
-            'criteriaId': 47,
-            'name': 'Improved Version',
-            'mark': 0,
-            'comment': "In the contemporary world, the trend of individuals relocating for work purposes, often leading to physical separation from their friends and family, has become increasingly common. This phenomenon presents both advantages and disadvantages, and this essay will delve into the various aspects of this issue.\n\nOn one hand, there are notable benefits to be gained when individuals choose to live apart from their relatives and friends. Firstly, in the face of economic challenges, prioritizing work becomes essential for securing a stable income. This financial independence enables individuals to meet their basic needs and cover essential expenses such as utility bills without relying on familial support. For instance, the ability to manage one's finances independently can lead to a sense of empowerment and self-sufficiency. Secondly, living away from family and friends can provide individuals with the personal space and freedom to pursue their interests and hobbies without the constraints of familial obligations. This autonomy allows them to engage in activities like travel and sports, enhancing their overall well-being and quality of life.\n\nConversely, the decision to live apart from loved ones can also have negative repercussions. One significant drawback is the potential increase in stress and emotional strain resulting from the lack of emotional support and companionship. In today's fast-paced society, individuals facing work-related pressures and personal challenges may find it difficult to cope without the presence of close friends and family members to share their burdens. This isolation can exacerbate feelings of loneliness and contribute to mental health issues such as depression. For example, studies have shown a correlation between social isolation and an increased risk of mental health disorders, highlighting the importance of social connections in maintaining emotional well-being. Furthermore, the physical distance from family members can hinder the ability to provide care and support to aging parents, potentially leading to feelings of guilt and regret for not being present during times of need.\n\nIn conclusion, while living away from friends and family can offer individuals a sense of independence and freedom to pursue personal interests, it also poses challenges in terms of emotional well-being and familial relationships. The decision to prioritize work and physical distance from loved ones must be carefully weighed against the potential consequences on mental health and familial bonds. From my perspective, the disadvantages of separation outweigh the advantages, as the emotional and social support provided by friends and family plays a crucial role in maintaining overall happiness and well-being."
-        }
-      ]
+          {
+              'criteriaId': 7,
+              'name': 'Task Response',
+              'mark': 6.5,
+              'comment': '1. Điểm mạnh:\n- Bài luận đã nêu rõ được cả hai mặt lợi và hại của việc sử dụng mạng xã hội, đáp ứng yêu cầu của đề bài.\n- Tác giả đã đưa ra các ví dụ cụ thể như Facebook và hẹn hò trực tuyến để minh họa cho các luận điểm của mình, giúp bài viết trở nên thuyết phục hơn.\n\n2. Điểm cần cải thiện:\n- Bài luận chưa trả lời đầy đủ mọi khía cạnh của đề bài. Cần bổ sung thêm các khía cạnh khác của mạng xã hội như tác động đến sức khỏe tâm lý, sự riêng tư và bảo mật thông tin cá nhân.\n- Quan điểm của tác giả chưa được trình bày một cách rõ ràng và nhất quán. Cần có một câu chủ đề rõ ràng ở phần mở bài để định hướng cho toàn bộ bài viết.\n- Các ý tưởng chưa được mở rộng đủ để hỗ trợ các luận điểm chính. Ví dụ, khi nói về việc mạng xã hội làm giảm chất lượng giao tiếp, cần phân tích sâu hơn về cách thức và lý do cụ thể.\n- Các ý tưởng cần được hỗ trợ bởi lý lẽ logic, bằng chứng hoặc ví dụ cụ thể hơn. Ví dụ, khi nói về việc mạng xã hội giúp kết nối nhanh chóng, có thể bổ sung thêm số liệu thống kê hoặc nghiên cứu để minh chứng.\n\nGợi ý cải thiện:\n- Bổ sung thêm các khía cạnh khác của mạng xã hội như tác động đến sức khỏe tâm lý, sự riêng tư và bảo mật thông tin cá nhân.\n- Đưa ra một câu chủ đề rõ ràng ở phần mở bài để định hướng cho toàn bộ bài viết.\n- Mở rộng và phát triển các ý tưởng bằng cách phân tích sâu hơn và cung cấp thêm lý lẽ logic, bằng chứng hoặc ví dụ cụ thể.\n- Khi nói về các tác động tiêu cực như hiểu lầm thông tin và bắt nạt trực tuyến, cần cung cấp thêm số liệu hoặc nghiên cứu để minh chứng cho luận điểm của mình.'
+          },
+          {
+              'criteriaId': 8,
+              'name': 'Coherence & Cohesion',
+              'mark': 6,
+              'comment': '1. Điểm mạnh:\n- Bài luận có cấu trúc rõ ràng với phần mở bài, thân bài và kết luận. Người viết đã nêu rõ ràng luận điểm chính trong phần mở bài và kết luận.\n- Các đoạn văn trong thân bài được phân chia hợp lý, mỗi đoạn tập trung vào một khía cạnh cụ thể của vấn đề (lợi ích và tác hại của mạng xã hội).\n- Người viết đã sử dụng một số từ nối và cụm từ liên kết như "On the one hand", "For example", "As a result", "Nevertheless", "Furthermore", "To sum up" để kết nối các ý tưởng và đoạn văn.\n\n2. Điểm cần cải thiện:\n- Cấu trúc của bài luận có thể được cải thiện để dòng chảy logic mạch lạc hơn. Ví dụ, đoạn văn thứ hai và thứ ba có thể được sắp xếp lại để làm rõ hơn sự đối lập giữa lợi ích và tác hại của mạng xã hội. Đoạn văn thứ hai nên tập trung hoàn toàn vào lợi ích, trong khi đoạn văn thứ ba nên tập trung vào tác hại.\n- Một số đoạn văn thiếu sự tập trung và câu chủ đề rõ ràng. Ví dụ, đoạn văn thứ ba bắt đầu bằng việc nói về chất lượng cuộc trò chuyện nhưng sau đó lại chuyển sang vấn đề bắt nạt trên mạng. Để cải thiện, đoạn văn này nên có một câu chủ đề rõ ràng và tập trung vào một ý tưởng chính. Ví dụ: "Một trong những tác hại lớn của mạng xã hội là làm giảm chất lượng cuộc trò chuyện."\n- Một số thiết bị liên kết được sử dụng không thích hợp hoặc thiếu tự nhiên. Ví dụ, câu "As a consequence, more concerns will apparently become universal." có thể được thay thế bằng "Consequently, this issue is becoming increasingly widespread." để tự nhiên hơn. Cụm từ "Due to the lack of genuine interaction" có thể được thay thế bằng "Because of the lack of face-to-face interaction" để rõ ràng hơn.\n\nTóm lại, bài luận cần cải thiện về sự tập trung của các đoạn văn và sử dụng các thiết bị liên kết một cách tự nhiên hơn để đạt được tiêu chí Coherence and Cohesion tốt hơn.'
+          },
+          {
+              'criteriaId': 9,
+              'name': 'Lexical Resource',
+              'mark': 6.5,
+              'comment': '1. Điểm mạnh:\n- Bài luận sử dụng một số từ vựng phong phú và đa dạng, chẳng hạn như "revolutionizing," "cutting-edge technology," "deteriorate," "genuine interaction," "misunderstood information," "cyber bullying," và "dominance."\n- Tác giả đã cố gắng sử dụng các cụm từ phức tạp và cấu trúc câu đa dạng để diễn đạt ý tưởng, điều này cho thấy sự nỗ lực trong việc nâng cao vốn từ vựng.\n\n2. Điểm cần cải thiện:\n- Một số từ và cụm từ được sử dụng quá mức hoặc lặp lại không cần thiết. Ví dụ, từ "individuals" xuất hiện nhiều lần trong bài luận. Có thể thay thế bằng các từ đồng nghĩa như "people," "persons," hoặc "users" để tránh lặp lại.\n- Một số từ và cụm từ không chính xác hoặc không phù hợp. Ví dụ:\n  - "the tendency to use social media" có thể thay bằng "the prevalence of social media use" để chính xác hơn.\n  - "technological advancement" nên thay bằng "social media" để phù hợp với ngữ cảnh của bài luận.\n  - "curtail the need for meeting in person" có thể thay bằng "reduce the necessity of face-to-face interactions" để rõ ràng hơn.\n  - "passively receive the messages" nên thay bằng "passively receiving messages" để đúng ngữ pháp.\n  - "evaluate about the background of family and different criterias" nên thay bằng "evaluate the family background and various criteria" để chính xác hơn.\n- Ngôn ngữ trong bài luận cần trang trọng hơn. Ví dụ:\n  - "having a conversation through social sites" có thể thay bằng "engaging in communication through social media platforms."\n  - "more concerns will apparently become universal" nên thay bằng "more concerns are likely to become widespread."\n\nTóm lại, bài luận cần cải thiện việc sử dụng từ vựng để tránh lặp lại, sử dụng từ chính xác và phù hợp hơn, và duy trì ngôn ngữ trang trọng để đáp ứng tiêu chí Lexical Resource của bài luận học thuật.'
+          },
+          {
+              'criteriaId': 10,
+              'name': 'Grammatical Range & Accuracy',
+              'mark': 6,
+              'comment': '1. Điểm mạnh:\n- Bài luận sử dụng một số cấu trúc ngữ pháp phức tạp, chẳng hạn như câu điều kiện và câu ghép, giúp thể hiện khả năng sử dụng ngữ pháp đa dạng.\n- Các câu trong bài luận phần lớn được viết đúng ngữ pháp và dễ hiểu, không có lỗi ngữ pháp nghiêm trọng làm ảnh hưởng đến ý nghĩa của câu.\n\n2. Điểm cần cải thiện:\n- Bài luận có xu hướng sử dụng cấu trúc câu đơn giản và lặp lại, cần đa dạng hóa hơn nữa các cấu trúc câu để tăng tính phong phú và hấp dẫn. Ví dụ, thay vì viết "The cutting-edge technology at these sites provides opportunities to make a connection within a short time," có thể viết "Thanks to the cutting-edge technology at these sites, individuals are now provided with opportunities to make connections within a short time."\n- Một số câu có thể được viết lại dưới dạng câu phức để tăng cường sự rõ ràng và hấp dẫn. Ví dụ, câu "Due to the lack of genuine interaction, it can curtail the need for meeting in person, which may increase the misunderstood information and expressions" có thể viết lại thành "Because of the lack of genuine interaction, the need for meeting in person is curtailed, which in turn may lead to increased misunderstandings and misinterpretations."\n- Có một số lỗi ngữ pháp nhỏ cần sửa chữa:\n  - "Compared to the traditional methods, individuals may not necessarily need to waste time waiting for a response." Câu này nên sửa thành "Compared to traditional methods, individuals may not necessarily need to waste time waiting for a response."\n  - "Except for the passively receive the messages, it is challenging to evaluate about the background of family and different criterias." Câu này nên sửa thành "Except for passively receiving the messages, it is challenging to evaluate the background of the family and different criteria."\n  - "Because these acts can be done anonymously, so it is challenging for the authorities in order to prevent this phenomenon from being controlled." Câu này nên sửa thành "Because these acts can be done anonymously, it is challenging for the authorities to prevent this phenomenon from being controlled."\n\nNhìn chung, bài luận cần đa dạng hóa cấu trúc câu và chú ý sửa các lỗi ngữ pháp nhỏ để đạt điểm cao hơn trong tiêu chí Grammatical Range & Accuracy.'
+          },
+          {
+              'criteriaId': 36,
+              'name': 'Critical Errors',
+              'mark': 0,
+              'comment': "1. 'the tendency to use' --> 'the increasing use of'\n- Giải thích: Cụm từ này không hoàn toàn chính xác trong ngữ cảnh này. 'Tendency' thường được dùng để chỉ một xu hướng hoặc thói quen cá nhân hơn là một hiện tượng xã hội rộng lớn.\n\n2. 'revolutionizing' --> 'transforming'\n- Giải thích: Từ này có thể quá mạnh trong ngữ cảnh này. 'Revolutionizing' ngụ ý một sự thay đổi hoàn toàn và triệt để, trong khi sự thay đổi có thể không đến mức đó.\n\n3. 'means of communication' --> 'ways we communicate'\n- Giải thích: Cụm từ này không sai nhưng có thể không phải là cách diễn đạt tự nhiên nhất trong ngữ cảnh này.\n\n4. 'persuasive' --> 'stronger'\n- Giải thích: Từ 'persuasive' không phù hợp trong ngữ cảnh này vì nó thường được dùng để miêu tả một người hoặc một lập luận có khả năng thuyết phục, chứ không phải là một lập luận mạnh mẽ hơn.\n\n5. 'discourages' --> 'reduces'\n- Giải thích: Từ 'discourages' không hoàn toàn chính xác trong ngữ cảnh này vì nó mang nghĩa là làm nản lòng hoặc ngăn cản, trong khi ý muốn diễn đạt là công nghệ làm giảm sự tương tác xã hội.\n\n6. 'being social' --> 'engaging in social activities'\n- Giải thích: Cụm từ 'being social' không phải là cách diễn đạt tự nhiên trong tiếng Anh để miêu tả việc tham gia vào các hoạt động xã hội.\n\n7. 'On the one hand' --> 'Firstly'\n- Giải thích: Cụm từ này thường được sử dụng khi so sánh hai ý kiến đối lập, nhưng đoạn văn này không cung cấp ý kiến đối lập.\n\n8. 'have made' --> 'make'\n- Giải thích: Thì hiện tại hoàn thành không phù hợp vì không có mốc thời gian cụ thể và hành động này vẫn đang tiếp diễn.\n\n9. 'easier' --> 'much easier'\n- Giải thích: Từ 'easier' không đủ mạnh để diễn tả mức độ cải thiện trong việc giao tiếp qua các nền tảng ảo.\n\n10. 'cutting-edge' --> 'advanced'\n- Giải thích: Từ 'cutting-edge' thường được sử dụng để mô tả công nghệ tiên tiến, nhưng trong ngữ cảnh này, từ 'advanced' sẽ phù hợp hơn vì nó bao hàm ý nghĩa về sự phát triển và tiến bộ.\n\n11. 'at these sites' --> 'in these locations'\n- Giải thích: Cụm từ 'at these sites' không sai nhưng có thể gây hiểu nhầm. 'In these locations' sẽ rõ ràng hơn trong việc chỉ ra các địa điểm cụ thể.\n\n12. 'make a connection' --> 'establish a connection'\n- Giải thích: Cụm từ 'make a connection' không hoàn toàn chính xác trong ngữ cảnh này. 'Establish a connection' là cụm từ thường được sử dụng hơn khi nói về việc tạo ra một kết nối.\n\n13. 'within a short time' --> 'in a short period of time'\n- Giải thích: Cụm từ 'within a short time' không sai nhưng 'in a short period of time' sẽ tự nhiên hơn và thường được sử dụng hơn trong văn viết học thuật.\n\n14. 'Compared to' --> 'In comparison with'\n- Giải thích: Cụm từ 'Compared to' không phù hợp trong ngữ cảnh này vì nó thường được sử dụng để so sánh hai đối tượng cụ thể, trong khi đoạn văn này đang nói về phương pháp truyền thống và phương pháp hiện đại một cách chung chung.\n\n15. 'individuals' --> 'people'\n- Giải thích: Từ 'individuals' không phù hợp trong ngữ cảnh này vì nó quá chung chung và không rõ ràng.\n\n16. 'necessarily' --> 'always'\n- Giải thích: Từ 'necessarily' không cần thiết trong ngữ cảnh này và làm câu trở nên phức tạp không cần thiết.\n\n17. 'waste time' --> 'spend time'\n- Giải thích: Cụm từ 'waste time' không phù hợp vì nó mang nghĩa tiêu cực và không chính xác trong ngữ cảnh này.\n\n18. 'it has updated' --> 'Facebook has updated'\n- Giải thích: Trong câu này, 'Facebook' là chủ ngữ số ít, nhưng động từ 'has updated' không phù hợp vì nó không rõ ràng ai là người thực hiện hành động.\n\n19. 'the feature' --> 'a feature'\n- Giải thích: Sử dụng mạo từ 'the' không cần thiết ở đây vì không có ngữ cảnh cụ thể nào đã được đề cập trước đó về tính năng này.\n\n20. 'network with' --> 'connect with'\n- Giải thích: Cụm từ 'network with' không phù hợp trong ngữ cảnh này vì nó thường được sử dụng trong các tình huống chuyên nghiệp hơn là mạng xã hội cá nhân.\n\n21. 'within a second' --> 'instantly'\n- Giải thích: Cụm từ 'within a second' không chính xác vì nó không phản ánh đúng tốc độ thực tế của việc kết nối trên mạng xã hội.\n\n22. 'through' --> 'via'\n- Giải thích: Từ 'through' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ sự di chuyển qua một không gian vật lý hoặc một quá trình.\n\n23. 'social sites' --> 'social media'\n- Giải thích: Cụm từ 'social sites' không phải là cách diễn đạt phổ biến trong tiếng Anh. Thay vào đó, 'social media' là cụm từ thông dụng hơn.\n\n24. 'it' --> 'technology'\n- Giải thích: Từ 'it' không rõ ràng và không phù hợp trong ngữ cảnh này.\n\n25. 'deteriorate for' --> 'deteriorate'\n- Giải thích: Cụm từ 'deteriorate for' không đúng ngữ pháp. Động từ 'deteriorate' không đi kèm với giới từ 'for'.\n\n27. 'curtail' --> 'reduce'\n- Giải thích: Từ 'curtail' không phù hợp trong ngữ cảnh này vì nó thường mang nghĩa giảm bớt hoặc hạn chế một cái gì đó, thường là về số lượng hoặc mức độ.\n\n28. 'the need for meeting' --> 'the need to meet'\n- Giải thích: Cụm từ 'the need for meeting' cần một giới từ khác để diễn đạt đúng ý.\n\n29. 'misunderstood' --> 'misunderstanding'\n- Giải thích: Từ 'misunderstood' là dạng quá khứ phân từ, không phù hợp trong ngữ cảnh này.\n\n30. 'expressions' --> 'communication'\n- Giải thích: Từ 'expressions' không phù hợp với ngữ cảnh của thông tin bị hiểu lầm.\n\n31. 'comprehending' --> 'understanding'\n- Giải thích: Từ 'comprehending' không phù hợp trong ngữ cảnh này vì nó mang nghĩa hiểu biết sâu sắc, trong khi ở đây chỉ cần hiểu đơn giản.\n\n32. 'the context' --> 'context'\n- Giải thích: Sử dụng mạo từ 'the' không cần thiết vì 'context' ở đây không chỉ đến một ngữ cảnh cụ thể nào.\n\n33. 'may arise' --> 'can arise'\n- Giải thích: Cụm từ 'may arise' không sai nhưng có thể làm câu trở nên không rõ ràng về thời gian xảy ra.\n\n34. 'tendency' --> 'trend'\n- Giải thích: Từ 'tendency' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ xu hướng hoặc khuynh hướng chung, không phải là hành động cụ thể.\n\n35. 'the youth' --> 'young people'\n- Giải thích: Cụm từ 'the youth' không hoàn toàn chính xác trong ngữ cảnh này vì nó thường được dùng để chỉ một nhóm người trẻ tuổi nói chung, không phải là một nhóm cụ thể.\n\n36. 'if' --> 'when'\n- Giải thích: Từ 'if' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ điều kiện, trong khi ngữ cảnh này cần một từ chỉ mục đích.\n\n37. 'Except for the passively receive' --> 'Except for passively receiving'\n- Giải thích: Cụm từ này sử dụng sai dạng động từ. 'Receive' cần được chuyển thành dạng danh động từ (gerund) để phù hợp với cấu trúc câu.\n\n38. 'evaluate about' --> 'evaluate'\n- Giải thích: Động từ 'evaluate' không cần giới từ 'about' đi kèm.\n\n39. 'criterias' --> 'criteria'\n- Giải thích: Từ 'criteria' là dạng số nhiều của 'criterion' và không cần thêm 's'.\n\n40. 'dominance of' --> 'prevalence of'\n- Giải thích: Cụm từ 'dominance of' không phù hợp trong ngữ cảnh này vì nó mang nghĩa quá mạnh và không tự nhiên khi nói về việc sử dụng mạng xã hội.\n\n42. 'so' --> ''\n- Giải thích: Từ 'so' không cần thiết vì câu đã có từ 'because' để chỉ lý do.\n\n43. 'in order to' --> 'to'\n- Giải thích: Cụm từ 'in order to' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ mục đích, trong khi ở đây cần một cụm từ chỉ sự khó khăn.\n\n45. 'apparently' --> 'inevitably'\n- Giải thích: Từ 'apparently' không phù hợp trong ngữ cảnh này vì nó mang nghĩa 'có vẻ như' hoặc 'rõ ràng là', không phù hợp với ý nghĩa của câu.\n\n46. 'affirmative' --> 'positive'\n- Giải thích: Từ 'affirmative' không phù hợp trong ngữ cảnh này vì nó thường được dùng để chỉ sự đồng ý hoặc khẳng định, không phải để mô tả tác động tích cực.\n\n47. 'alter' --> 'transform'\n- Giải thích: Từ 'alter' không phù hợp trong ngữ cảnh này vì nó thường có nghĩa là thay đổi một chút, trong khi ở đây cần một từ mạnh hơn để chỉ sự thay đổi hoàn toàn cách giao tiếp.\n\n48. 'outdated way to communicate' --> 'outdated methods of communication'\n- Giải thích: Cụm từ 'outdated way to communicate' không tự nhiên trong tiếng Anh. Thường thì người ta sẽ nói 'outdated methods of communication'.\n\n49. 'disadvantages of it' --> 'its disadvantages'\n- Giải thích: Cụm từ 'disadvantages of it' không tự nhiên và không cần thiết phải dùng 'it' ở đây.\n\n50. 'positive ones' --> 'positives'\n- Giải thích: Từ 'ones' không cần thiết và làm câu trở nên rườm rà.\n\n"
+          },
+          {
+              'criteriaId': 43,
+              'name': 'Arguments Assessment',
+              'mark': 0,
+              'comment': "Đoạn văn 1:\n- Ý chính: Social media has made communicating easier and faster.\n- Lập luận: Lập luận này mạnh vì nó chỉ ra rằng công nghệ tiên tiến giúp kết nối nhanh chóng và dễ dàng hơn so với các phương pháp truyền thống. Tuy nhiên, lập luận này có thể yếu nếu không có ví dụ cụ thể hoặc số liệu thống kê để minh chứng.\n- Gợi ý: Để củng cố lập luận, có thể thêm ví dụ cụ thể về các ứng dụng hoặc nền tảng mạng xã hội khác nhau và cách chúng cải thiện giao tiếp, cũng như số liệu thống kê về thời gian phản hồi trung bình trên các nền tảng này.\n- Bản cải thiện: One of the primary advantages of social media is that it has made communication easier and faster. Advanced technology on these platforms allows users to connect within seconds, eliminating the long wait times associated with traditional methods. For instance, Facebook's instant messaging feature enables users to network with friends almost instantaneously. Additionally, platforms like WhatsApp and Instagram have similar features that facilitate quick and efficient communication. As a result, social media significantly broadens the range of connections and enhances the speed of interactions.\n\nĐoạn văn 2:\n- Ý chính: The widespread use of social media can deteriorate the quality of conversations and lead to misunderstandings.\n- Lập luận: Lập luận này mạnh vì nó chỉ ra rằng thiếu tương tác trực tiếp có thể dẫn đến hiểu lầm và xung đột. Tuy nhiên, lập luận này có thể yếu nếu không có ví dụ cụ thể hoặc nghiên cứu để minh chứng.\n- Gợi ý: Để củng cố lập luận, có thể thêm ví dụ cụ thể về các tình huống hiểu lầm trên mạng xã hội và số liệu thống kê về tỷ lệ xung đột hoặc hiểu lầm do giao tiếp qua mạng xã hội.\n- Bản cải thiện: Despite the convenience, the widespread use of social media can deteriorate the quality of conversations and lead to misunderstandings. The lack of face-to-face interaction often results in misinterpretations of messages and expressions, which can escalate conflicts. For example, online dating platforms frequently lead to misunderstandings because users cannot fully gauge each other's backgrounds and intentions through text alone. Furthermore, cyberbullying is a significant issue that arises from the anonymity provided by social media, making it difficult for authorities to control and prevent such behavior. Consequently, the negative impacts on communication quality and the potential for conflict are substantial."
+          },
+          {
+              'criteriaId': 45,
+              'name': 'Vocabulary',
+              'mark': 0,
+              'comment': "1. Social networking sites: các trang mạng xã hội.\n   - Definition: Websites that allow users to create personal profiles, connect with others, and share information and media.\n   - Example: Social networking sites like Facebook and Twitter have revolutionized the way people communicate and interact online.\n\n2. Technological advancement: sự tiến bộ công nghệ.\n   - Definition: Progress and improvement in technology that leads to new innovations and capabilities.\n   - Example: The rapid technological advancement in recent years has significantly impacted how we communicate through social media platforms.\n\n3. Virtual platforms: nền tảng ảo.\n   - Definition: Online spaces where users can interact, communicate, and share information in a digital environment.\n   - Example: Virtual platforms such as Instagram and Snapchat have become popular channels for social media communication.\n\n4. Cutting-edge technology: công nghệ tiên tiến.\n   - Definition: State-of-the-art technology that represents the latest advancements and innovations in a particular field.\n   - Example: Social media platforms constantly incorporate cutting-edge technology to enhance user experience and engagement.\n\n5. Genuine interaction: tương tác chân thực.\n   - Definition: Meaningful and authentic communication or engagement between individuals that is sincere and honest.\n   - Example: Face-to-face conversations often allow for more genuine interaction compared to online exchanges on social media.\n\n6. Misunderstood information: thông tin bị hiểu lầm.\n   - Definition: Data or messages that are not correctly interpreted or comprehended, leading to confusion or misinterpretation.\n   - Example: Misunderstood information shared on social media can result in conflicts and misunderstandings among users.\n\n7. Cyberbullying: bắt nạt trực tuyến.\n   - Definition: Bullying or harassment that occurs online through electronic communication platforms such as social media.\n   - Example: Cyberbullying on social media can have serious consequences for individuals, affecting their mental health and well-being.\n\n8. Anonymously: ẩn danh.\n   - Definition: Without revealing one's identity or remaining unknown or unidentifiable.\n   - Example: Some individuals engage in cyberbullying anonymously to avoid being held accountable for their actions on social media.\n\n9. Phenomenon: hiện tượng.\n   - Definition: A fact or event that can be observed and studied, often with widespread implications or significance.\n   - Example: The rise of social media as a dominant communication platform is a phenomenon that has transformed how people interact and connect globally.\n\n10. Concerns: lo ngại.\n    - Definition: Worries, fears, or issues that cause unease or apprehension about potential negative outcomes.\n    - Example: There are growing concerns about the impact of social media on mental health and well-being, particularly among young users."
+          },
+          {
+              'criteriaId': 47,
+              'name': 'Improved Version',
+              'mark': 0,
+              'comment': "It is a common belief that the rise of social media is revolutionizing the way we communicate today. However, there is a more persuasive argument that this technological advancement has had negative effects on society because it discourages individuals from engaging in face-to-face interactions.\n\nOn the one hand, virtual platforms have made communication easier than ever before. The cutting-edge technology on these sites provides opportunities to connect within a short time. Compared to traditional methods, individuals no longer need to waste time waiting for a response. For example, Facebook has updated features that allow users to network with their preferred friends instantly. As a result, having conversations through social sites can greatly expand one's range of connections.\n\nNevertheless, the widespread use of social media can deteriorate the quality of conversations. Due to the lack of genuine interaction, it can reduce the need for meeting in person, which may increase misunderstandings and misinterpretations. Without fully comprehending the context, conflicts may arise between individuals. For instance, online dating is a common trend among the youth who want to find a suitable partner. However, merely receiving messages passively makes it challenging to evaluate the background and various criteria of potential partners. Furthermore, cyberbullying can also occur as social media becomes more dominant. Because these acts can be done anonymously, it is challenging for authorities to control and prevent this phenomenon. As a consequence, more concerns will inevitably become widespread.\n\nTo sum up, while there are some positive impacts of social media in transforming outdated communication methods, it is evident that the disadvantages far outweigh the benefits."
+          }
+      ],
+      doc: {
+          'data': {
+              'filename': '9230fa91-cf20-4f3f-b640-4c975dfa7ba4_0.pdf',
+              'data': 'JVBERi0xLjQKJeLjz9MKMiAwIG9iago8PC9MZW5ndGggMTA3MC9GaWx0ZXIvRmxhdGVEZWNvZGU+PnN0cmVhbQp4nJVWy47jNhC8+yt43ABeZyfBYnPdTXaQXBIEMJBzm2xJzFBsDR/2OF+fatKe2IAGwR5sSLbYj6rqaj1vvuw3Hz+aTz9+Mnu3+WDeP/ykF98/PpiHH8x+2Lz7rRifDRkr8yzRHDh4HkyZqOCLTeHoONqzKWJqZpPFegpmZudJDyY+SqjFS/T/+Di2MzNTzEaG7/Z/I+WHu8zvNE+N3pKeMVFO5Oicd+ZXOfGR01YjJO41zYKrhVOulP2RDaWxzhzLpTy2U5QgI4KF1VzkjhQttyMTZXyciTwiNYLxMLAtqDO2pric0bwlbdIX43y2UhONnI2Pzh+9qxSyGZLMq7kOrO13eHarT5jVX/+IDTOJjPKi25qjTwWpzBKoDJJmLRvlzuTY3ICHZAxUOCkYyhue5Z3ZI5atRf9/v5qP3cj/QXc2nWdl1hf0uiRBq7iQZREUEn3xuAP7Mz1x00mMwE3JO/ky+Yjf8oRHV7MVP6Oon2VeKLHTME1UiZzXEE1JZRKXt3coz3SGNArIspwzJR9wzz3AiXJBCARezXgi38ABHKgscV4kZtTwiHt+oXkJvFXOH8nyQeRpq2yrOOriqGgKFDgwlQrtNZ1RCHLKq8kgltTAiVxOkp4aJBrBJyDJAyftekgeU5Rv8GKg6Hbmc+4l1lC2yrLWTW9MTcRw5D40ZUpSx+k6i504hWxMqBtQ+Whxlbn1kiiCcRlumMvfIlDzu84lIgVQ0cYTjUAh6A/jRMsSrsOMHMBSC3FcOHlJALQRoYeewazHkPVKXrt5o5ZfKl/VEsg+6amRY/UYEx8RnFojjTwL+duaCvnQnm9C0awzc5MCMFcT0cdPk7eTlria9A632ecK70u5iDjE0FnsfWJMISX0n3NrwPwFYqUWM9QA9DGk+G8C5RdDfIvRwi+lA4qbATCWTiP0jhoOkBRzvJ2LrmIfc1FbUxkHBcR1O7ix8fVZvFq5DC3pGSVPxrebM8ZKfVXMgHzoUIlNsiSvFGJ4S+S0M19fLC/lldKFsvpyWEczYXjVaPtKwBjDSxthKNROmCqOY0NIDB8pVM1EB8VRTxzA+gidoxrUO9CsHgDkV1M5DzNPavM2eZUeKVZVVZt0iWyNPR9glQclSHOqZgCoGLGQjsoiAEeZfVRkNePtoluHE36Y1aUt3OXLZXN0KyVl0jZXRlAwRFHieZaaw3mLyCsgXCBdX2PgSVI3YmhZklPXF3WYY9+GCLZAcIJNB33qjjJ9H6nKkiDL1W2suuFzZdXParK2c/GU5RTVskJQKZCCG9qGRBKDtdAG+Js23V5MrjN8dnvBu296hAYkCErD4NuIQTMeC6Mt53siwFnhrj3opPv1ifTl5H/eNfgqPNbt9voGgThY9O01obRV3y1soKTxT+zHqQtdYLJaF8i8M6yv+82fm38BhSsgZwplbmRzdHJlYW0KZW5kb2JqCjQgMCBvYmoKPDwvVHlwZS9QYWdlL01lZGlhQm94WzAgMCA2MTIgNzkyXS9SZXNvdXJjZXM8PC9Gb250PDwvRjEgMSAwIFI+Pj4+L0NvbnRlbnRzIDIgMCBSL1BhcmVudCAzIDAgUj4+CmVuZG9iagoxIDAgb2JqCjw8L1R5cGUvRm9udC9TdWJ0eXBlL1R5cGUxL0Jhc2VGb250L0hlbHZldGljYS9FbmNvZGluZy9XaW5BbnNpRW5jb2Rpbmc+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2VzL0NvdW50IDEvS2lkc1s0IDAgUl0+PgplbmRvYmoKNSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMyAwIFI+PgplbmRvYmoKNiAwIG9iago8PC9Qcm9kdWNlcihpVGV4dFNoYXJwkiA1LjUuMTMuMiCpMjAwMC0yMDIwIGlUZXh0IEdyb3VwIE5WIFwoQUdQTC12ZXJzaW9uXCkpL0NyZWF0aW9uRGF0ZShEOjIwMjQwNjE3MTgxODU1LTA0JzAwJykvTW9kRGF0ZShEOjIwMjQwNjE3MTgxODU1LTA0JzAwJyk+PgplbmRvYmoKeHJlZgowIDcKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAxMjY1IDAwMDAwIG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMTM1MyAwMDAwMCBuIAowMDAwMDAxMTUzIDAwMDAwIG4gCjAwMDAwMDE0MDQgMDAwMDAgbiAKMDAwMDAwMTQ0OSAwMDAwMCBuIAp0cmFpbGVyCjw8L1NpemUgNy9Sb290IDUgMCBSL0luZm8gNiAwIFIvSUQgWzxlOWI4YzRlNjNkYjVjN2EzY2U0ZTUxZDhjMmVlYjIwYT48ZTliOGM0ZTYzZGI1YzdhM2NlNGU1MWQ4YzJlZWIyMGE+XT4+CiVpVGV4dC01LjUuMTMuMgpzdGFydHhyZWYKMTYxNAolJUVPRgo=',
+              'status': 'Submitted',
+              'pageCount': 0,
+              'text': 'It is a common belief that the tendency to use social media is revolutionizing the means of communication nowadays. However, there is a more persuasive argument that technological advancement has had negative effects on society because it discourages individuals from being social.\r\n\r\nOn the one hand, virtual platforms have made communicating easier than before. The cutting-edge technology at these sites provides opportunities to make a connection within a short time. Compared to the traditional methods, individuals may not necessarily need to waste time waiting for a response. For example, on Facebook, it has updated the feature that allows users to network with their preferred friends within a second. As a result, having a conversation through social sites may greatly increase the range of connections. \r\n\r\n Nevertheless, the widespread application of it may deteriorate for the quality of conversations. Due to the lack of genuine interaction, it can curtail the need for meeting in person, which may increase the misunderstood information and expressions. Without fully comprehending the context, the conflicts may arise between individuals. For instance, online dating is a common tendency of the youth if they want to find an appropriate partner. Except for the passively receive the messages, it is challenging to evaluate about the background of family and different criterias. Furthermore, cyber bullying can also occur while dominance of social media takes place. Because these acts can be done anonymously, so it is challenging for the authorities in order to prevent this phenomenon from being controlled. As a consequence, more concerns will apparently become universal.\r\n\r\nTo sum up, while there are some affirmative impacts of social media alter the outdated way to communicate, it is evident that the disadvantages of it far outweigh the positive ones.\r\n',
+              'createdDate': '2024-06-17T22:18:55.059846',
+              'submissions': [],
+              'id': 14390
+          },
+          'status': 200,
+          'statusText': 'OK',
+          'headers': {
+              'content-length': '4633',
+              'content-type': 'application/json; charset=utf-8'
+          },
+          'config': {
+              'url': 'document/14390',
+              'method': 'get',
+              'headers': {
+                  'Accept': 'application/json, text/plain, */*',
+                  'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFbWFpbCI6ImxlYXJuZXI3MTFAdGVzdC5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjkyMzBmYTkxLWNmMjAtNGYzZi1iNjQwLTRjOTc1ZGZhN2JhNCIsIlJvbGUiOiJsZWFybmVyIiwiZXhwIjoxNzIxMjQ0NTg3LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjY5OTAiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjY5OTAifQ.-0NDvY1cS9Y5ub4qBNt8UuUHlVicDLd4ueaGzHBZQzo'
+              },
+              'baseURL': 'http://localhost:6990/api',
+              'transformRequest': [
+                  null
+              ],
+              'transformResponse': [
+                  null
+              ],
+              'timeout': 600000,
+              'xsrfCookieName': 'XSRF-TOKEN',
+              'xsrfHeaderName': 'X-XSRF-TOKEN',
+              'maxContentLength': -1
+          },
+          'request': {}
+      }
     }
   },
   computed: {
+
     currentUser() {
       return this.$store.getters['auth/getUser']
     },
@@ -1648,7 +3864,14 @@ export default {
     }
   },
   async beforeMount() {
-    this.RENDER_OPTIONS.documentId = this.documentId
+    if (this.$route.params.docId && this.$route.params.reviewId && this.$route.params.questionId) {
+      this.questionId = parseInt(this.$route.params.questionId)
+      this.reviewId = parseInt(this.$route.params.reviewId)
+      this.documentId = parseInt(this.$route.params.docId)
+      this.isView = this.$route.params.isViewOrRate === 'view' || this.$route.params.isViewOrRate === 'rate'
+      this.RENDER_OPTIONS.documentId = this.documentId
+      this.isRate = this.$route.params.isViewOrRate === 'rate'
+    }
   },
   async mounted() {
     this.zoomOutMobile()
@@ -1668,54 +3891,27 @@ export default {
     localStorage.setItem(`${this.documentId}/color`, '#ff0000')
     PDFJSAnnotate.getStoreAdapter().clearAnnotations(this.documentId)
 
-    // Load review data and review request
-    // this.review = await reviewService.getById(this.reviewId)
-    console.log('Review:', this.review)
+    this.isAiReview = true
+    this.hasGrade = true
 
-    if (this.review) {
-      if (this.review.review.reviewerId === 'AI') {
-        this.isAiReview = true
-      }
-      if (this.review.review.finalScore) { this.hasGrade = true }
-    }
+    this.loadingReview = true
+    const question = this.question
+    this.task = question.section
+    document.title = 'Đánh giá - ' + question.title
 
-    this.loadingReview = false
+    const doc = this.doc
+    this.documentText = doc.data.text
+    this.docData = this.base64ToArrayBuffer(doc.data.data)
+    this.loadFeedbackCompleted = true
 
-    // Load question and get task info
-    // const question = await this.$store.dispatch('question/loadQuestion', this.questionId)
-    console.log('Question:', this.question)
-    this.task = this.question.section
-    document.title = 'Đánh giá - ' + this.question.title
+    // load annotations if already saved in db
+    PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
 
-    // Load document and its data
-    // const doc = await docService.getDocument(this.documentId)
-    console.log('Document:', this.doc)
-    this.documentText = this.doc.data.text
-    this.docData = this.base64ToArrayBuffer(this.doc.data.data)
-
-    // await this.loadRubric()
-    // this.getReviewFeedback()
-    this.loadCriteriaFeedbackCompleted = true
-    // Get annotations in db first
-    // await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
-    console.log('Annotations:', this.loadedAnnotation)
-    // console.log('Loaded annotations:', this.loadedAnnotation)
-    if (this.loadedAnnotation && this.loadedAnnotation.annotations && this.loadedAnnotation.annotations.length > 0) {
-      // load annotations if already saved in db
-      PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
-    }
-
-    // render the document
     this.completeLoading = true
     await this.render()
 
-    if (this.errors && this.errors.length > 0) {
-      this.highlightErrors()
-    } else {
-      this.handleCommentPositionsRestore()
-      this.intextCommentCompleted = true
-    }
-
+    this.handleCommentPositionsRestore()
+    this.intextCommentCompleted = true
     this.$refs.toolBar?.handleScale('fitPage')
     this.$refs.toolBar?.insertExpandMenu()
   },
@@ -1735,10 +3931,9 @@ export default {
     document.body.style.overflow = null
   },
   beforeRouteLeave (to, from, next) {
-    console.log('In-text loaded:', this.intextCommentCompleted)
-    console.log('criteria loaded:', this.loadCriteriaFeedbackCompleted)
     // If the grading has not finished yet
-    if (!this.intextCommentCompleted || !this.loadCriteriaFeedbackCompleted) {
+    // if (!this.intextCommentCompleted || !this.loadCriteriaFeedbackCompleted || !this.loadEssayScoreCompleted) {
+      if (!this.loadFeedbackCompleted) {
       this.$confirm('Bài viết chưa được chấm xong nên toàn bộ phản hồi có thể sẽ bị mất. Bạn chắc chứ?', {
         confirmButtonText: 'OK',
         cancelButtonText: 'Cancel',
@@ -1752,6 +3947,97 @@ export default {
     }
   },
   methods: {
+    subscriptionCheck() {
+      const feedbackType = this.review.reviewRequest.reviewType
+      if (this.userSubscription == null) {
+        if (feedbackType == 'detail' && this.freeToken <= 0) {
+          this.$notify.info({
+            title: 'Đã hết lượt chấm miễn phí',
+            message: 'Lượt chấm miễn phí cho phản hồi chi tiết đã được sử dụng hết.',
+            type: 'info',
+            duration: 5000
+          })
+          this.$router.push('/pricing')
+          return false
+        } else if (feedbackType == 'deep' && this.premiumToken <= 0) {
+          this.$notify.error({
+            title: 'Đã hết lượt chấm miễn phí',
+            message: 'Lượt chấm miễn phí cho phản hồi chuyên sâu đã được sử dụng hết.',
+            type: 'info',
+            duration: 5000
+          })
+          this.$router.push('/pricing')
+          return false
+        }
+      }
+    },
+    rateAIReview() {
+      reviewService.createAIReviewRating({
+        UserId: 'AI Review Version 1.5',
+        ReviewId: this.reviewId,
+        Rate: parseFloat(this.rateValue),
+        Comment: this.rateComment
+      }).then(r => {
+        if (r) {
+          this.$notify.success({
+            title: 'Cảm ơn đánh giá của bạn!',
+            message: 'Dữ liệu bạn cung cấp sẽ được sử dụng để nâng cấp hệ thống chấm bài tự động và mang lại cho bạn những phản hồi tốt hơn.',
+            type: 'success',
+            duration: 7000
+          })
+        }
+      })
+    },
+    finalizeFeedback() {
+      if (!this.hasGrade && this.loadErrorsCompleted && this.essayScore && this.rubricCriteria) {
+        this.loadFeedbackCompleted = true
+        // 1. Populate data for the critical errors criteria
+        if (this.errors && this.errors.length > 0) {
+          let errorFeedback = ''
+          let explain = 'Explain'
+          if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
+          for (let i = 0; i < this.errors.length; i++) {
+            const order = i + 1
+            const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
+            errorFeedback += error
+          }
+          const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
+          criticalError.comment = errorFeedback
+        }
+
+        // 2. populate the score for each criteria
+        const taskAchivement = this.rubricCriteria.find(c => c.name == 'Task Achievement')
+        if (taskAchivement) { taskAchivement.mark = this.essayScore.taskAchievementScore }
+        const taskResponse = this.rubricCriteria.find(c => c.name == 'Task Response')
+        if (taskResponse) { taskResponse.mark = this.essayScore.taskResponseScore }
+        const coherence = this.rubricCriteria.find(c => c.name == 'Coherence & Cohesion')
+        coherence.mark = this.essayScore.coherenceScore
+        const lexical = this.rubricCriteria.find(c => c.name == 'Lexical Resource')
+        lexical.mark = this.essayScore.lexicalResourceScore
+        const grammar = this.rubricCriteria.find(c => c.name == 'Grammatical Range & Accuracy')
+        grammar.mark = this.essayScore.grammarScore
+
+        // 3. Save feedback into database
+        var reviewData = []
+        this.rubricCriteria.forEach(r => {
+          reviewData.push({
+            CriteriaName: r.name,
+            Comment: r.comment,
+            CriteriaId: r.criteriaId,
+            Score: r.mark != null ? r.mark : 0,
+            ReviewId: this.reviewId,
+            UserFeedback: null
+          })
+        })
+        console.log('Review Data:', reviewData)
+        reviewService.saveRubric(this.reviewId, reviewData)
+
+        console.log('Review Saved')
+      } else if (this.loadedAnnotation && this.loadedAnnotation.annotations && this.loadedAnnotation.annotations.length > 0 && this.essayScore && this.rubricCriteria) {
+        this.loadFeedbackCompleted = true
+        console.log('Feedback load completed')
+      }
+    },
     zoomOutMobile() {
       const viewport = document.querySelector('meta[name="viewport"]')
 
@@ -1760,56 +4046,77 @@ export default {
         viewport.content = 'width=device-width'
       }
     },
-    saveIntextCommentFeedback() {
-      if (this.errors && this.errors.length > 0 && this.rubricCriteria) {
-        let errorFeedback = ''
-        let explain = 'Explain'
-        if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
-        for (let i = 0; i < this.errors.length; i++) {
-          const order = i + 1
-          const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
-          errorFeedback += error
-        }
-
-        const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
-        criticalError.comment = errorFeedback
-
-        // Save this criteria feedback to db
-        var reviewData = []
-        reviewData.push({
-          Comment: errorFeedback,
-          CriteriaId: criticalError.criteriaId,
-          Score: 0,
-          ReviewId: this.reviewId,
-          UserFeedback: null
-        })
-        reviewService.saveRubric(this.reviewId, reviewData)
-      }
-    },
-    async getReviewFeedback() {
-      const topic = this.question.questionsPart.find(q => q.name == 'Question').content
-      const chart = this.question.questionsPart.find(q => q.name == 'Chart')
+    async getReviewScores() {
+      const question = this.$store.getters['question/getSelected']
+      const topic = question.questionsPart.find(q => q.name == 'Question').content
       const essay = this.documentText
       // create a review model
       const model = {
+        userId: this.$store.state.auth.user.id,
         questionId: this.questionId,
         reviewId: this.reviewId,
         topic: topic,
         essay: essay,
-        task: this.question.section,
+        task: question.section,
         hasGrade: this.hasGrade,
-        chartFileName: chart ? chart.content : null,
+        chartDescription: this.chartDescription,
         feedbackLanguage: this.review.reviewRequest.feedbackLanguage
       }
       // get review feedback
+      reviewService.getEssayScore(model).then(rs => {
+        if (rs) {
+          console.log('Review Scores:', rs)
+          this.essayScore = rs
+
+          this.loadEssayScoreCompleted = true
+          this.finalizeFeedback()
+        } else {
+          this.$notify.error({
+            title: 'Không thể chấm bài luận',
+            message: 'Đã có sự cố xảy ra trong quá trình chấm bài',
+            type: 'error',
+            duration: 5000
+          })
+        }
+      })
+    },
+    async getReviewFeedback() {
+      const question = this.$store.getters['question/getSelected']
+      const topic = question.questionsPart.find(q => q.name == 'Question').content
+      const essay = this.documentText
+      // create a review model
+      const model = {
+        userId: this.$store.state.auth.user.id,
+        questionId: this.questionId,
+        reviewId: this.reviewId,
+        topic: topic,
+        essay: essay,
+        task: question.section,
+        hasGrade: this.hasGrade,
+        chartDescription: this.chartDescription,
+        feedbackLanguage: this.review.reviewRequest.feedbackLanguage,
+        feedbackType: this.review.reviewRequest.reviewType
+      }
+      // get review feedback
       reviewService.getReviewFeedback(model).then(rs => {
-        this.rubricCriteria = rs
-        console.log('Criteria Feedback:', this.rubricCriteria)
-        this.loadCriteriaFeedbackCompleted = true
+        if (rs) {
+          this.rubricCriteria = rs
+          console.log(this.rubricCriteria)
+          this.loadCriteriaFeedbackCompleted = true
+          this.finalizeFeedback()
+        } else {
+          this.$notify.error({
+            title: 'Không thể tải phản hồi',
+            message: 'Đã có sự cố xảy ra trong quá trình tải phản hồi',
+            type: 'error',
+            duration: 5000
+          })
+        }
       })
     },
     beforeWindowUnload(e) {
-      if (!this.intextCommentCompleted || !this.loadCriteriaFeedbackCompleted) {
+      // if (!this.intextCommentCompleted || !this.loadCriteriaFeedbackCompleted || !this.loadEssayScoreCompleted) {
+      if (!this.loadFeedbackCompleted) {
         // Cancel the event
         e.preventDefault()
         // Chrome requires returnValue to be set
@@ -1970,7 +4277,8 @@ export default {
           .then(annotation => {
             appendChild(this.svg, annotation)
             // add the comment asoociated with the newly created annotation
-            PDFJSAnnotate.getStoreAdapter().addComment(this.documentId, annotation, error.error, error.type, this.titleCase(error.category), error.comment, annotation.top)
+            PDFJSAnnotate.getStoreAdapter().addComment(this.documentId, annotation, error.error, error.type,
+              this.titleCase(error.category), error.comment, error.fix, error.reason, error.explain, annotation.top)
             .then(newComment => {
               newComment.annotation.documentId = this.documentId
               this.comments.push(newComment)
@@ -2000,6 +4308,9 @@ export default {
                   Type: newComment.type,
                   Category: newComment.category,
                   Content: newComment.comment,
+                  Fix: newComment.fix,
+                  Reason: newComment.reason,
+                  Explain: newComment.explain,
                   TopPosition: newComment.topPosition,
                   Uuid: newComment.uuid,
                   Data: JSON.stringify(newComment)
@@ -2009,8 +4320,6 @@ export default {
                 // Highlight the first comment
                 count++
                 if (count == this.errors.length) {
-                  console.log(count)
-                  this.intextCommentCompleted = true
                   this.handleCommentPositionsRestore()
                 }
               })
@@ -2029,15 +4338,19 @@ export default {
         const type = target.getAttribute('data-pdf-annotate-type')
         this.annotationClicked = target
         if (type == 'comment-highlight') {
-          // Get the currently selected one
+          // Get the currently selected elements
           const selectedVocabulary = document.getElementsByClassName('vocabulary-highlight-selected')
-          for (const element of selectedVocabulary) {
-            element.classList.remove('vocabulary-highlight-selected')
+          // Loop while there are elements in the collection
+          while (selectedVocabulary.length > 0) {
+            selectedVocabulary[0].classList.remove('vocabulary-highlight-selected')
           }
 
+          // Get the currently selected elements
           const selectedGrammar = document.getElementsByClassName('grammar-highlight-selected')
-          for (const element of selectedGrammar) {
-            element.classList.remove('grammar-highlight-selected')
+
+          // Loop while there are elements in the collection
+          while (selectedGrammar.length > 0) {
+            selectedGrammar[0].classList.remove('grammar-highlight-selected')
           }
 
           // add selected class to all groups associated with this annotation
@@ -3215,7 +5528,6 @@ export default {
       return count
     },
     calculateContainerHeight() {
-      // const headerHeight = document.getElementById('header').clientHeight
       const containerHeight = window.innerHeight
       const elContainer = document.getElementById('reviewContainer')
 
@@ -3226,20 +5538,6 @@ export default {
         const rightPanel = document.getElementById('right-panel')
         const viewerContainer = document.getElementById('viewerContainer')
         viewerContainer.style.height = rightPanel.offsetHeight - document.getElementById('tool-bar').offsetHeight - 5 + 'px'
-
-        // if (this.showQuestion) {
-        //   rightPanel.style.width = window.innerWidth - document.getElementById('left-panel').offsetWidth - 17 + 'px'
-        // } else {
-        //   rightPanel.style.width = window.innerWidth - 10 + 'px'
-        // }
-      } else {
-        // const documentWrapper = document.getElementById('document-wrapper')
-        // console.log(documentWrapper.offsetHeight)
-        // console.log(document.getElementById('tool-bar').offsetHeight)
-        // const viewerContainer1 = document.getElementById('viewerContainer')
-        // viewerContainer1.style.height = '800px'
-        // viewerContainer1.style.height = documentWrapper.offsetHeight - document.getElementById('tool-bar').offsetHeight - 5 + 'px'
-        // console.log(viewerContainer1.offsetHeight)
       }
     },
     calculateStylePaddingScroll() {
@@ -3779,6 +6077,52 @@ export default {
   cursor: cell;
 }
 
+.criteria-score{
+  font-size: 15px;
+  border-bottom: grey 1px dashed;
+  margin-bottom: 10px;
+  padding-bottom: 15px;
+}
+
+.criteria-score:last-of-type{
+  border-bottom: none;
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+}
+
+.sub-criteria {
+  margin-top: 3px;
+  display: inline-flex;
+  width: 100%;
+}
+
+.criteria-score-check {
+  color: rgb(68, 163, 21);
+  margin-left: 2px;
+  margin-right: 2px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.criteria-score-close {
+  right: 0px !important;
+  color: rgb(227, 51, 51);
+  margin-left: 1px;
+  margin-right: 1px;
+  font-size: 16px !important;
+  font-weight: bold;
+}
+
+.sub-criteria-label {
+  float: left;
+  margin-left: 5px;
+  margin-top: 2px;
+}
+
+.sub-score-tag {
+  font-size: 13px;
+  line-height: 23px;
+}
 </style>
 <style>
 /* .el-loading-mask {

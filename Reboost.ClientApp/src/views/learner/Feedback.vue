@@ -1334,7 +1334,7 @@ export default {
 
     // Load review data and review request
     this.review = await reviewService.getById(this.$route.params.reviewId)
-
+    console.log('Review:', this.review)
     if (this.review) {
       if (this.review.review.reviewerId === 'AI') {
         this.isAiReview = true
@@ -1351,11 +1351,13 @@ export default {
 
       // Load question and get task info
       const question = await this.$store.dispatch('question/loadQuestion', this.questionId)
+      console.log('Question:', question)
       this.task = question.section
-      document.title = 'Đánh giá - ' + question.title
+      if (this.review.reviewRequest.reviewType == 'detail') { document.title = 'Phản hồi chi tiết' } else { document.title = 'Phản hồi chuyên sâu' }
 
       // Load document and its data
       const doc = await docService.getDocument(this.documentId)
+      console.log('Document:', doc)
       this.documentText = doc.data.text
       this.docData = this.base64ToArrayBuffer(doc.data.data)
 
@@ -1372,7 +1374,7 @@ export default {
       // Get in-text comments
       await this.$store.dispatch('review/loadReviewAnnotation', { docId: this.documentId, reviewId: this.reviewId })
       if (this.loadedAnnotation && this.loadedAnnotation.annotations && this.loadedAnnotation.annotations.length > 0) {
-        console.log(this.loadedAnnotation.annotations)
+        console.log('Annotation:', this.loadedAnnotation)
         // load in-text comments saved in db
         PDFJSAnnotate.getStoreAdapter().loadAnnotations(this.documentId, this.loadedAnnotation)
         this.intextCommentCompleted = true
@@ -1611,7 +1613,7 @@ export default {
       reviewService.getReviewFeedback(model).then(rs => {
         if (rs) {
           this.rubricCriteria = rs
-          console.log(this.rubricCriteria)
+          console.log('Criteria Feedback:', this.rubricCriteria)
           this.loadCriteriaFeedbackCompleted = true
           this.finalizeFeedback()
         } else {

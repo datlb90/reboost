@@ -78,7 +78,7 @@
                   </div>
                 </div>
                 <el-dropdown-item divided>
-                  <div>
+                  <div @click="gotoPricing()">
                     <div v-if="subscriptionName">
                       {{ subscriptionName }}
                       <i class="fas fa-star" :style="subscriptionName == 'Gói luyện tập cơ bản' ? 'color: #a5a5a5; vertical-align: -1px;' : 'color: gold; vertical-align: -1px;'" />
