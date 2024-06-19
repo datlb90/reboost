@@ -22,7 +22,7 @@ const getDefaultState = () => {
 const state = getDefaultState()
 
 const actions = {
-  submitPersonalQuestion({ commit, state }, userId) {
+  async submitPersonalQuestion({ commit, state }, userId) {
     const formData = new FormData()
     formData.set('UserId', userId)
     formData.set('TaskName', state.personalQuestion.TaskName)
@@ -47,12 +47,12 @@ const actions = {
         formData.set(`Question.QuestionParts[1][FileName]`, chart.FileName)
         formData.set(`Question.UploadedFile`, chart.UploadedFile)
       }
-      questionService.createInitialSubmission(formData)
+      await questionService.createInitialSubmission(formData)
     }
   },
-  submitInitialTest({ state, commit }, userId) {
+  async submitInitialTest({ state, commit }, userId) {
     state.initialSubmission.userId = userId
-    documentService.createInitialSubmission(state.initialSubmission)
+    await documentService.createInitialSubmission(state.initialSubmission)
   },
   saveInitialTestData({ commit, state }, data) {
     commit('SET_INITIAL_SUBMISSION', data)

@@ -81,11 +81,21 @@ namespace Reboost.WebApi
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;  // Important for OAuth2
+                options.Secure = CookieSecurePolicy.Always;  // Ensure cookies are always secure
+            });
+
+
             services.AddAuthentication(auth =>
             {
                 auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
+            })
+            .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
@@ -97,28 +107,27 @@ namespace Reboost.WebApi
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["AuthSettings:JwtSecret"])),
                     ValidateIssuerSigningKey = true
                 };
-            });
-            services.AddAuthentication()
-                .AddGoogle("google", opt =>
-                {
-                    var googleAuth = Configuration.GetSection("Authentication:Google");
+            })
+            .AddGoogle("google", opt =>
+            {
+                var googleAuth = Configuration.GetSection("Authentication:Google");
 
-                    opt.ClientId = googleAuth["ClientId"];
-                    opt.ClientSecret = googleAuth["ClientSecret"];
-                    opt.SignInScheme = IdentityConstants.ExternalScheme;
-                    opt.AccessDeniedPath = "/login";
-                    //opt.CallbackPath = "/auth/external/callback";
-                    //opt.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
-                });
-            services.AddAuthentication()
-                .AddFacebook("facebook", opt => {
-                    var facebookAuth = Configuration.GetSection("Authentication:Facebook");
-                    opt.AppId = facebookAuth["AppId"];
-                    opt.AppSecret = facebookAuth["AppSecret"];
-                    opt.SignInScheme = IdentityConstants.ExternalScheme;
-                    opt.AccessDeniedPath = "/login";
-                    //opt.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
-                });
+                opt.ClientId = googleAuth["ClientId"];
+                opt.ClientSecret = googleAuth["ClientSecret"];
+                opt.SignInScheme = IdentityConstants.ExternalScheme;
+                opt.AccessDeniedPath = "/login";
+                opt.CorrelationCookie.SameSite = SameSiteMode.None;  // Set SameSite to None
+                opt.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;  // Ensure cookie is secure
+            })
+            .AddFacebook("facebook", opt => {
+                var facebookAuth = Configuration.GetSection("Authentication:Facebook");
+                opt.AppId = facebookAuth["AppId"];
+                opt.AppSecret = facebookAuth["AppSecret"];
+                opt.SignInScheme = IdentityConstants.ExternalScheme;
+                opt.AccessDeniedPath = "/login";
+                opt.CorrelationCookie.SameSite = SameSiteMode.None;  // Set SameSite to None
+                opt.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;  // Ensure cookie is secure
+            });
 
 
             services.AddDbContext<ReboostDbContext>(options =>
@@ -132,8 +141,6 @@ namespace Reboost.WebApi
             });
 
             services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
-
-
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IDocumentService, DocumentService>();
             services.AddTransient<IRequestQueueService, RequestQueueService>();
@@ -157,13 +164,8 @@ namespace Reboost.WebApi
             services.AddScoped<IChatGPTService, ChatGPTService>();
             services.AddScoped<IOrderService, Reboost.Service.Services.OrderService>();
             services.AddScoped<ISubscriptionService, Reboost.Service.Services.SubscriptionService>();
-
             services.AddControllers().AddNewtonsoftJson(option => option.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
             services.AddRazorPages();
-            //services.AddSpaStaticFiles(configuration =>
-            //{
-            //    configuration.RootPath = "ClientApp/dist";
-            //});
             services.AddMvc(option => option.EnableEndpointRouting = false);
         }
 
@@ -183,17 +185,12 @@ namespace Reboost.WebApi
 
             app.UseGlobalExceptionHandler();
 
-            //app.UseHttpsRedirection();
-            //app.UseRouting();
+            app.UseHttpsRedirection();
+
             app.UseCors(MyAllowSpecificOrigins);
             //app.UseSpaStaticFiles();
             //app.UseRouting();
-
-            app.UseCookiePolicy(new CookiePolicyOptions
-            {
-                MinimumSameSitePolicy = SameSiteMode.Lax,
-                Secure = CookieSecurePolicy.Always
-            });
+            app.UseCookiePolicy();
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -208,25 +205,6 @@ namespace Reboost.WebApi
             });
 
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-
-            //app.UseEndpoints(endpoints =>
-            //{
-            //    endpoints.MapControllers();
-            //});
-
-            //app.UseSpa(spa =>
-            //{
-            //    if (env.IsDevelopment())
-            //        spa.Options.SourcePath = "ClientApp";
-            //    else
-            //        spa.Options.SourcePath = "dist";
-
-            //    if (env.IsDevelopment())
-            //    {
-            //        spa.UseVueCli(npmScript: "serve");
-            //    }
-
-            //});
         }
     }
 }

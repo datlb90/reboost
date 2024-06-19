@@ -153,6 +153,12 @@ export default async (router) => {
           const personalQuestion = store.getters['question/getPersonalQuestion']
           const initialTest = store.getters['question/getInitialSubmission']
           if (personalQuestion || initialTest) {
+            if (personalQuestion) {
+              await store.dispatch('question/submitPersonalQuestion', currentUser.id)
+            }
+            if (initialTest) {
+              await store.dispatch('question/submitInitialTest', currentUser.id)
+            }
             const initialSubmission = await reviewService.getInitialSubmission(currentUser.id)
             if (initialSubmission) {
               const rs = await reviewService.createAutomatedReview({
