@@ -403,7 +403,7 @@ export default {
           type: 'info',
           duration: 5000
         })
-        this.$router.push('/pricing')
+        window.location.href = '/pricing'
       }
     },
     onChangeLanguage(e) {

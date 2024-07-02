@@ -105,7 +105,7 @@ namespace Reboost.WebApi.Identity
                         CreatedDate = DateTime.UtcNow,
                         UpdatedDate = DateTime.UtcNow,
                         FreeToken = 2,
-                        PremiumToken = 1
+                        PremiumToken = 0
                     };
 
                     // Create the user account
@@ -198,7 +198,7 @@ namespace Reboost.WebApi.Identity
                                 FirstName = model.FullName,
                                 LastName = "",
                                 FreeToken = 2,
-                                PremiumToken = 1,
+                                PremiumToken = 0,
                                 Subscription = null
                             };
 
@@ -293,7 +293,7 @@ namespace Reboost.WebApi.Identity
                                 CreatedDate = DateTime.UtcNow,
                                 UpdatedDate = DateTime.UtcNow,
                                 FreeToken = 2,
-                                PremiumToken = 1
+                                PremiumToken = 0
                             };
                             var result = await _userManger.CreateAsync(identityUser);
                             if (result.Succeeded)
@@ -536,7 +536,7 @@ namespace Reboost.WebApi.Identity
 
                 string message = $"<p>Xin chào " + user.FirstName + ",</p>" +
                                 $"<p>Chào mừng bạn đến với Reboost!</p>" +
-                                $"<p>Để hoàn thiện quá trình đăng ký tài khoản, bạn vui lòng xác nhận địa chỉ email sử dụng đường dẫn dưới đây:</p>" +
+                                $"<p>Để hoàn thiện quá trình đăng ký tài khoản, bạn vui lòng xác nhận địa chỉ email bằng cách nhấp vào đường dẫn dưới đây:</p>" +
                                 $"<p><a href='{url}'>Đường dẫn xác nhận địa chỉ email</a></p>" +
                                 $"<p>Nếu bạn không yêu cầu đăng ký tài khoản, bạn có thể bỏ qua email này.</p>" +
                                 $"<p>Xin chân thành cảm ơn!</p>" +

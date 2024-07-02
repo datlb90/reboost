@@ -339,6 +339,7 @@ export default {
   },
   methods: {
     checkHandwriting() {
+      if (!this.currentUser.id) { return false }
       if (this.userSubscription && this.userSubscription.planId >= 4) {
         return false
       }

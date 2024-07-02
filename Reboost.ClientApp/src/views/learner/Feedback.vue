@@ -46,7 +46,15 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.highlightKeyFeatures.toString().length == 1 ? essayScore.highlightKeyFeatures.toString() + '.0' : essayScore.highlightKeyFeatures }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.highlightKeyFeatures.toString().length == 1 ? essayScore.highlightKeyFeatures.toString() + '.0' : essayScore.highlightKeyFeatures }}
+                                  </span>
                                 </el-tag>
                                 <div class="sub-criteria-label">Highlighting Key Features</div>
                               </div>
@@ -58,7 +66,15 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.compareAndContrast.toString().length == 1 ? essayScore.compareAndContrast.toString() + '.0' : essayScore.compareAndContrast }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.compareAndContrast.toString().length == 1 ? essayScore.compareAndContrast.toString() + '.0' : essayScore.compareAndContrast }}
+                                  </span>
                                 </el-tag>
                                 <div class="sub-criteria-label">Comparing and Contrasting Data</div>
                               </div>
@@ -71,7 +87,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.dataSelection.toString().length == 1 ? essayScore.dataSelection.toString() + '.0' : essayScore.dataSelection }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.dataSelection.toString().length == 1 ? essayScore.dataSelection.toString() + '.0' : essayScore.dataSelection }}
+                                  </span>
+
                                 </el-tag>
                                 <div class="sub-criteria-label">Data Selection and Relevance</div>
                               </div>
@@ -101,7 +126,15 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.clarityOfPosition.toString().length == 1 ? essayScore.clarityOfPosition.toString() + '.0' : essayScore.clarityOfPosition }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.clarityOfPosition.toString().length == 1 ? essayScore.clarityOfPosition.toString() + '.0' : essayScore.clarityOfPosition }}
+                                  </span>
                                 </el-tag>
                                 <span class="sub-criteria-label">Clarity of Position</span>
                               </div>
@@ -113,7 +146,15 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.developmentOfIdeas.toString().length == 1 ? essayScore.developmentOfIdeas.toString() + '.0' : essayScore.developmentOfIdeas }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.developmentOfIdeas.toString().length == 1 ? essayScore.developmentOfIdeas.toString() + '.0' : essayScore.developmentOfIdeas }}
+                                  </span>
                                 </el-tag>
                                 <span class="sub-criteria-label">Development of Ideas</span>
                               </div>
@@ -125,7 +166,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.justificationOfOpinion.toString().length == 1 ? essayScore.justificationOfOpinion.toString() + '.0' : essayScore.justificationOfOpinion }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.justificationOfOpinion.toString().length == 1 ? essayScore.justificationOfOpinion.toString() + '.0' : essayScore.justificationOfOpinion }}
+                                  </span>
+
                                 </el-tag>
                                 <span class="sub-criteria-label">Justification of Opinions</span>
                               </div>
@@ -155,7 +205,15 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.logicalOrganization.toString().length == 1 ? essayScore.logicalOrganization.toString() + '.0' : essayScore.logicalOrganization }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.logicalOrganization.toString().length == 1 ? essayScore.logicalOrganization.toString() + '.0' : essayScore.logicalOrganization }}
+                                  </span>
                                 </el-tag>
                                 <div class="sub-criteria-label">Logical Organization</div>
                               </div>
@@ -167,7 +225,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.paragraphing.toString().length == 1 ? essayScore.paragraphing.toString() + '.0' : essayScore.paragraphing }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.paragraphing.toString().length == 1 ? essayScore.paragraphing.toString() + '.0' : essayScore.paragraphing }}
+                                  </span>
+
                                 </el-tag>
                                 <div class="sub-criteria-label">Paragraphing</div>
                               </div>
@@ -179,7 +246,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.cohesiveDevices.toString().length == 1 ? essayScore.cohesiveDevices.toString() + '.0' : essayScore.cohesiveDevices }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.cohesiveDevices.toString().length == 1 ? essayScore.cohesiveDevices.toString() + '.0' : essayScore.cohesiveDevices }}
+                                  </span>
+
                                 </el-tag>
                                 <div class="sub-criteria-label">Use of Cohesive Devices</div>
                               </div>
@@ -200,7 +276,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.rangeOfVocabulary.toString().length == 1 ? essayScore.rangeOfVocabulary.toString() + '.0' : essayScore.rangeOfVocabulary }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.rangeOfVocabulary.toString().length == 1 ? essayScore.rangeOfVocabulary.toString() + '.0' : essayScore.rangeOfVocabulary }}
+                                  </span>
+
                                 </el-tag>
                                 <div class="sub-criteria-label">Range of Vocabulary</div>
                               </div>
@@ -212,7 +297,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.accuracyOfWordChoice.toString().length == 1 ? essayScore.accuracyOfWordChoice.toString() + '.0' : essayScore.accuracyOfWordChoice }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.accuracyOfWordChoice.toString().length == 1 ? essayScore.accuracyOfWordChoice.toString() + '.0' : essayScore.accuracyOfWordChoice }}
+                                  </span>
+
                                 </el-tag>
                                 <div class="sub-criteria-label">Accuracy of Word Choice</div>
                               </div>
@@ -224,7 +318,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.spellingAndFormation.toString().length == 1 ? essayScore.spellingAndFormation.toString() + '.0' : essayScore.spellingAndFormation }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.spellingAndFormation.toString().length == 1 ? essayScore.spellingAndFormation.toString() + '.0' : essayScore.spellingAndFormation }}
+                                  </span>
+
                                 </el-tag>
                                 <div class="sub-criteria-label">Spelling and Word Formation</div>
                               </div>
@@ -236,7 +339,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.registerAndStyle.toString().length == 1 ? essayScore.registerAndStyle.toString() + '.0' : essayScore.registerAndStyle }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.registerAndStyle.toString().length == 1 ? essayScore.registerAndStyle.toString() + '.0' : essayScore.registerAndStyle }}
+                                  </span>
+
                                 </el-tag>
                                 <div class="sub-criteria-label">Appropriateness of Register and Style</div>
                               </div>
@@ -257,7 +369,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.grammarRange.toString().length == 1 ? essayScore.grammarRange.toString() + '.0' : essayScore.grammarRange }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.grammarRange.toString().length == 1 ? essayScore.grammarRange.toString() + '.0' : essayScore.grammarRange }}
+                                  </span>
+
                                 </el-tag>
                                 <div class="sub-criteria-label">Range of Grammatical Structures</div>
                               </div>
@@ -269,7 +390,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.sentenceComplexity.toString().length == 1 ? essayScore.sentenceComplexity.toString() + '.0' : essayScore.sentenceComplexity }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.sentenceComplexity.toString().length == 1 ? essayScore.sentenceComplexity.toString() + '.0' : essayScore.sentenceComplexity }}
+                                  </span>
+
                                 </el-tag>
                                 <div class="sub-criteria-label">Sentence Complexity</div>
                               </div>
@@ -281,7 +411,16 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  {{ essayScore.grammarAccuracy.toString().length == 1 ? essayScore.grammarAccuracy.toString() + '.0' : essayScore.grammarAccuracy }}
+                                  <span v-if="!userSubscription">
+                                    <el-tooltip class="item" effect="light" placement="top">
+                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
+                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
+                                    </el-tooltip>
+                                  </span>
+                                  <span v-else>
+                                    {{ essayScore.grammarAccuracy.toString().length == 1 ? essayScore.grammarAccuracy.toString() + '.0' : essayScore.grammarAccuracy }}
+                                  </span>
+
                                 </el-tag>
                                 <div class="sub-criteria-label">Accuracy in Grammatical Forms</div>
                               </div>
@@ -572,6 +711,8 @@
       </ul>
     </div>
     <!-- /Inline color picker -->
+
+    <pricing-dialog ref="pricingDialog" />
 
   </div>
   <!-- Optimize for mobile -->
@@ -1143,6 +1284,9 @@
         </div>
       </div>
     </div>
+
+    <pricing-dialog ref="pricingDialog" />
+
   </div>
 </template>
 
@@ -1151,6 +1295,7 @@ import PDFJS from 'pdf-dist/webpack.js'
 import ToolBar from '../../components/controls/Viewer_ToolBar'
 import TabQuestion from './Review_TabQuestion'
 import TextToolGroup from '../../components/controls/TextToolGroup'
+import PricingDialog from '../../components/controls/PricingDialog'
 // PDFJSAnnotate
 import PDFJSAnnotate from '@/pdfjs/PDFJSAnnotate'
 const { UI } = PDFJSAnnotate
@@ -1177,7 +1322,8 @@ export default {
   components: {
     'toolbar': ToolBar,
     'tabQuestion': TabQuestion,
-    'textToolGroup': TextToolGroup
+    'textToolGroup': TextToolGroup,
+    'pricing-dialog': PricingDialog
   },
   data() {
     return {
@@ -1501,7 +1647,12 @@ export default {
       })
     },
     finalizeFeedback() {
+      const that = this
       if (!this.hasGrade && this.loadErrorsCompleted && this.essayScore && this.rubricCriteria) {
+        setTimeout(function() {
+          if (!that.userSubscription) { that.$refs.pricingDialog?.openDialog() }
+        }, 5000)
+
         this.loadFeedbackCompleted = true
         // 1. Populate data for the critical errors criteria
         if (this.errors && this.errors.length > 0) {
@@ -1546,6 +1697,9 @@ export default {
 
         console.log('Review Saved')
       } else if (this.loadedAnnotation && this.loadedAnnotation.annotations && this.loadedAnnotation.annotations.length > 0 && this.essayScore && this.rubricCriteria) {
+        setTimeout(function() {
+          if (!that.userSubscription) { that.$refs.pricingDialog?.openDialog() }
+        }, 5000)
         this.loadFeedbackCompleted = true
         console.log('Feedback load completed')
       }

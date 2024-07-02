@@ -45,17 +45,41 @@ namespace Reboost.WebApi.Controllers
             db = ctx;
         }
 
+        //[Authorize]
+        [HttpPost("intext/comment/free")]
+        public async Task<ErrorsInText> getIntextCommentsFree(CriteriaFeedbackModel model)
+        {
+            return await _service.getIntextCommentsFree(model);
+        }
+
+        //[Authorize]
+        [HttpPost("essay/score/free")]
+        public async Task<ReviewScores> getEssayScoreFree(CriteriaFeedbackModel model)
+        {
+            return await _service.getEssayScoreFree(model);
+        }
+
+        //[Authorize]
+        [HttpPost("criteria/feedback/free")]
+        public async Task<EssayFeedback> getCriteriaFeedbackFree(EssayFeedbackModel model)
+        {
+            return await _service.getCriteriaFeedbackFree(model);
+        }
+
+        [Authorize]
         [HttpGet("intial/submission/{userId}")]
         public async Task<InitialSubmissionModel> GetInitialSubmission(string userId)
         {
             return await _service.GetInitialSubmission(userId);
         }
 
+        [Authorize]
         [HttpPost("criteria/feedback/gpt4o/v1")]
         public async Task<EssayFeedback> getCriteriaFeedbackGPT4O(EssayFeedbackModel model)
         {
             return await _service.getCriteriaFeedbackGPT4O(model);
         }
+
         [Authorize]
         [HttpPost("criteria/feedback/gpt4/v1")]
         public async Task<EssayFeedback> getCriteriaFeedbackGPT4(EssayFeedbackModel model)

@@ -149,9 +149,9 @@ namespace Reboost.Service.Services
                 vnpay.AddRequestData("vnp_TxnRef", newOrder.Id.ToString());
 
                 // Create schedule to check callback after 15 minute
-                BackgroundJob.Schedule(
-                    () => CheckVnPayStatusAfter15Minutes(newOrder.Id, model.ipAddress), TimeSpan.FromMinutes(15)
-                );
+                //BackgroundJob.Schedule(
+                //    () => CheckVnPayStatusAfter15Minutes(newOrder.Id, model.ipAddress), TimeSpan.FromMinutes(15)
+                //);
 
                 return vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
             }
@@ -439,9 +439,9 @@ namespace Reboost.Service.Services
                 if (return_code == 1)
                 {
                     // Create schedule to check callback after 15 minute?
-                    BackgroundJob.Schedule(
-                        () => CheckZaloPayStatusAfter15Minutes(newOrder.Id, newOrder.CreatedDate.ToString("yyMMdd") + "_" + app_trans_id), TimeSpan.FromMinutes(15)
-                    );
+                    //BackgroundJob.Schedule(
+                    //    () => CheckZaloPayStatusAfter15Minutes(newOrder.Id, newOrder.CreatedDate.ToString("yyMMdd") + "_" + app_trans_id), TimeSpan.FromMinutes(15)
+                    //);
                     return result["order_url"].ToString();
                 }
                 return null;

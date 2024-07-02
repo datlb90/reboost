@@ -3897,7 +3897,7 @@ export default {
     this.loadingReview = true
     const question = this.question
     this.task = question.section
-    document.title = 'Đánh giá - ' + question.title
+    document.title = 'Bài chấm mẫu'
 
     const doc = this.doc
     this.documentText = doc.data.text

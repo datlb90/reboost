@@ -5,7 +5,7 @@
       <div class="section-title">
         <h2>Cảm nhận của người dùng</h2>
         <div class="bar" />
-        <p>{{ messageTranslates('feedback', 'description') }}</p>
+        <p style="max-width: 600px;">Reboost đã và đang giúp ích cho hàng ngàn thí sinh trong quá trình luyện tập chuẩn bị cho bài thi viết IELTS. Hãy cùng lắng nghe cảm nhận của họ.</p>
       </div>
 
       <div class="ml-feedback-slides">

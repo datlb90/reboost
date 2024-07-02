@@ -26,6 +26,9 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<ErrorsInText> getIntextCommentsFree(CriteriaFeedbackModel model);
+        Task<ReviewScores> getEssayScoreFree(CriteriaFeedbackModel model);
+        Task<EssayFeedback> getCriteriaFeedbackFree(EssayFeedbackModel model);
         Task<InitialSubmissionModel> GetInitialSubmission(string userId);
 
         Task<EssayFeedback> getCriteriaFeedbackGPT4O(EssayFeedbackModel model);
@@ -135,6 +138,21 @@ namespace Reboost.Service.Services
             subscriptionService = _subscriptionService;
         }
 
+        public async Task<ErrorsInText> getIntextCommentsFree(CriteriaFeedbackModel model)
+        {
+            return await chatGPTService.getIntextCommentsFree(model);
+        }
+
+        public async Task<ReviewScores> getEssayScoreFree(CriteriaFeedbackModel model)
+        {
+            return await chatGPTService.getEssayScoreFree(model);
+        }
+
+        public async Task<EssayFeedback> getCriteriaFeedbackFree(EssayFeedbackModel model)
+        {
+            return await chatGPTService.getCriteriaFeedbackFree(model);
+        }
+
         public async Task<InitialSubmissionModel> GetInitialSubmission(string userId)
         {
             return await _unitOfWork.Submission.GetInitialSubmission(userId);
@@ -212,7 +230,7 @@ namespace Reboost.Service.Services
                         };
 
                         // Get essay score from ChatGPT
-                        ReviewScores scores = await chatGPTService.getEssayScore(scoreModel);
+                        ReviewScores scores = await chatGPTService.getEssayScoreFree(scoreModel);
                         // Save the scores into database
                         scores.ReviewId = model.reviewId;
                         scores.UpdatedDate = DateTime.Now;
@@ -267,15 +285,20 @@ namespace Reboost.Service.Services
                                 order = rubricCriteria[i].order
                             };
 
-                            if ((userSubscription != null && userSubscription.PlanId >= 4) || model.feedbackType == "deep")
+                            if (userSubscription == null)
                             {
-                                // Phản hồi chuyên sâu 
-                                taskList[i] = chatGPTService.getCriteriaFeedbackGPT4O(requestModel);
+                                taskList[i] = chatGPTService.getCriteriaFeedbackFree(requestModel);
                             }
                             else
                             {
-                                // Phản hồi chi tiết
-                                taskList[i] = chatGPTService.getCriteriaFeedbackGPTTurbo(requestModel);
+                                if(userSubscription.PlanId >= 4)
+                                {
+                                    taskList[i] = chatGPTService.getCriteriaFeedbackGPT4O(requestModel);
+                                }
+                                else
+                                {
+                                    taskList[i] = chatGPTService.getCriteriaFeedbackGPTTurbo(requestModel);
+                                }
                             }
                         }
 
@@ -336,15 +359,20 @@ namespace Reboost.Service.Services
 
             if (userSubscription != null || (model.feedbackType == "detail" && user.FreeToken > 0) || (model.feedbackType == "deep" && user.PremiumToken > 0))
             {
-                if ((userSubscription != null && userSubscription.PlanId >= 4) || model.feedbackType == "deep")
+                if (userSubscription == null)
                 {
-                    // Phản hồi chuyên sâu 
-                    return await getIntextCommentsGPT4(model);
+                    return await chatGPTService.getIntextCommentsFree(model);
                 }
                 else
                 {
-                    // Phản hồi chi tiết
-                    return await getIntextCommentsGPTTurbo(model);
+                    if (userSubscription.PlanId >= 4)
+                    {
+                        return await getIntextCommentsGPT4(model);
+                    }
+                    else
+                    {
+                        return await getIntextCommentsGPTTurbo(model);
+                    }
                 }
             }
 

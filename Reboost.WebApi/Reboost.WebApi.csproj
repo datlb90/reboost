@@ -2057,6 +2057,33 @@
     <Content Remove="wwwroot\img\improved-version.6f085b7b.png" />
     <Content Remove="wwwroot\img\thao-nguyen.7ef54e92.png" />
     <Content Remove="wwwroot\img\shape4.f044bf53.svg" />
+    <Content Remove="wwwroot\js\chunk-vendors.52453cfc.js" />
+    <Content Remove="wwwroot\img\tran-ngoc-anh.466b77a5.png" />
+    <Content Remove="wwwroot\img\thanh-tam.ac876cc2.png" />
+    <Content Remove="wwwroot\img\nguyen-tu.eff0854a.png" />
+    <Content Remove="wwwroot\img\ngoc-anh.21b6a8de.png" />
+    <Content Remove="wwwroot\img\duy-thanh.982ce1e7.png" />
+    <Content Remove="wwwroot\img\bao-nguyen.1375fe58.png" />
+    <Content Remove="wwwroot\img\nguyen-thai-nguyen.4b692c39.png" />
+    <Content Remove="wwwroot\img\kim-anh.b6397dc6.png" />
+    <Content Remove="wwwroot\img\nam-cuong.c495f69a.png" />
+    <Content Remove="wwwroot\img\1.c188c91a.jpg" />
+    <Content Remove="wwwroot\img\6.c188c91a.jpg" />
+    <Content Remove="wwwroot\img\5.c188c91a.jpg" />
+    <Content Remove="wwwroot\fonts\Flaticon.eb217961.woff2" />
+    <Content Remove="wwwroot\img\Flaticon.6d16abf1.svg" />
+    <Content Remove="wwwroot\img\gradient-bg.ca579877.jpg" />
+    <Content Remove="wwwroot\fonts\Flaticon.c9e5b272.ttf" />
+    <Content Remove="wwwroot\fonts\boxicons.42d2adbb.woff2" />
+    <Content Remove="wwwroot\img\logo.760ee3d0.png" />
+    <Content Remove="wwwroot\img\intext-comment.e1587188.png" />
+    <Content Remove="wwwroot\img\improved-version.6f085b7b.png" />
+    <Content Remove="wwwroot\img\thao-nguyen.7ef54e92.png" />
+    <Content Remove="wwwroot\img\shape2.27038015.svg" />
+    <Content Remove="wwwroot\img\zalopay.e7808158.png" />
+    <Content Remove="wwwroot\img\ielts-logo.46a90ee1.png" />
+    <Content Remove="wwwroot\img\avatar-large.77904896.svg" />
+    <Content Remove="wwwroot\static\demand.pdf" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="log4net" />
