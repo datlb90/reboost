@@ -16,5 +16,6 @@ namespace Reboost.WebApi.Identity
         public DateTime UpdatedDate { get; set; }
         public int FreeToken { get; set; }
         public int PremiumToken { get; set; }
+        public string IpAddress { get; set; }
     }
 }

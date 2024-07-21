@@ -119,8 +119,9 @@
 
         <el-form-item size="medium" style="margin-bottom: 7px;">
           <label slot="label" style="font-size: 16px;">Ngôn ngữ</label>
-          <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
           <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="en" border>Phản hồi tiếng Anh</el-radio>
+          <el-radio v-model="selectedLanguage" style="margin-right: 5px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
+
         </el-form-item>
 
         <el-form-item>
@@ -262,8 +263,8 @@
           <label>Ngôn ngữ</label>
           <div>
             <div>
-              <el-radio v-model="selectedLanguage" style="margin-right: 10px; margin-left: 0px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
               <el-radio v-model="selectedLanguage" style="margin-left: 0px;" label="en" border>Phản hồi tiếng Anh</el-radio>
+              <el-radio v-model="selectedLanguage" style="margin-right: 10px; margin-left: 0px;" label="vn" border>Phản hồi tiếng Việt</el-radio>
             </div>
           </div>
         </el-form-item>
@@ -302,7 +303,7 @@ export default {
       personalQuestion: null,
       dialogVisible: false,
       selectedTask: 'IELTS Task 2',
-      selectedLanguage: 'vn',
+      selectedLanguage: 'en',
       selectedWriteType: 'Đánh máy',
       selectedType: 'detail',
       fileUrl: null,

@@ -31,7 +31,7 @@ namespace Reboost.WebApi.Identity
 
         Task<UserManagerResponse> LoginUserAsync(LoginViewModel model);
 
-        Task<UserManagerResponse> LoginExternalAsync(AuthenticateResult result);
+        Task<UserManagerResponse> LoginExternalAsync(AuthenticateResult result, string ipAddress);
 
         Task<UserManagerResponse> ConfirmEmailAsync(string userId, string token);
 
@@ -101,6 +101,7 @@ namespace Reboost.WebApi.Identity
                         UserName = GetUsernameFromEmail(model.Email),
                         FirstName = model.FullName,
                         LastName = "",
+                        IpAddress = model.IpAddress,
                         PhoneNumber = model.PhoneNumber,
                         CreatedDate = DateTime.UtcNow,
                         UpdatedDate = DateTime.UtcNow,
@@ -258,7 +259,7 @@ namespace Reboost.WebApi.Identity
             }
         }
 
-        public async Task<UserManagerResponse> LoginExternalAsync(AuthenticateResult authResult)
+        public async Task<UserManagerResponse> LoginExternalAsync(AuthenticateResult authResult, string ipAddress)
         {
             try
             {
@@ -290,6 +291,7 @@ namespace Reboost.WebApi.Identity
                                 UserName = username,
                                 FirstName = firstName == null ? username : firstName,
                                 LastName = lastName == null ? "" : lastName,
+                                IpAddress = ipAddress,
                                 CreatedDate = DateTime.UtcNow,
                                 UpdatedDate = DateTime.UtcNow,
                                 FreeToken = 2,

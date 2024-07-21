@@ -43,6 +43,8 @@ namespace Reboost.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
+                string ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                model.IpAddress = ipAddress;
                 var result = await _authService.RegisterUserAsync(model);
                 if (result.IsSuccess)
                     return Ok(result);
@@ -102,8 +104,8 @@ namespace Reboost.WebApi.Controllers
                     HttpContext.Response.Cookies.Append("auth_error", "Authentication Failed");
                     Response.Redirect("/auth/error");
                 }
-
-                var response = await _authService.LoginExternalAsync(result);
+                string ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                var response = await _authService.LoginExternalAsync(result, ipAddress);
                 if (response.IsSuccess)
                 {
                     // Send user info to frontend using Cookies

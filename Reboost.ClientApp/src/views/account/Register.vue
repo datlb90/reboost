@@ -90,14 +90,14 @@ import { mapActions } from 'vuex'
 export default {
   name: 'Login',
   data() {
-    // var validatePhone = (rule, value, callback) => {
-    //   var phoneno = /^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/
-    //   if (!value.match(phoneno)) {
-    //     callback(new Error('Vui lòng nhập một số điện thoại hợp lệ'))
-    //   } else {
-    //     callback()
-    //   }
-    // }
+    var validatePhone = (rule, value, callback) => {
+      var phoneno = /^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/
+      if (!value.match(phoneno)) {
+        callback(new Error('Vui lòng nhập một số điện thoại hợp lệ'))
+      } else {
+        callback()
+      }
+    }
     var validateEmail = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('Vui lòng điền địa chỉ email của bạn'))
@@ -136,11 +136,11 @@ export default {
             validator: validateEmail, trigger: 'blur'
           }
         ],
-        // phoneNumber: [
-        //   {
-        //     validator: validatePhone, trigger: 'blur'
-        //   }
-        // ],
+        phoneNumber: [
+          {
+            validator: validatePhone, trigger: 'blur'
+          }
+        ],
         password: [
           {
             validator: validatePassword, trigger: 'blur'

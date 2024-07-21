@@ -80,7 +80,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>119.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>99.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -129,7 +129,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>249.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>199.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -259,7 +259,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>149.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>129.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -308,7 +308,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>299.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>249.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -438,7 +438,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>179.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>149.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -487,7 +487,7 @@
             </div>
 
             <div class="price" style="margin-bottom: 20px">
-              <span><sup>đ</sup>349.000<span>/THÁNG</span></span>
+              <span><sup>đ</sup>299.000<span>/THÁNG</span></span>
             </div>
 
             <div class="pricing-features">
@@ -751,31 +751,31 @@ export default {
       if (this.user.id) {
         let planName = 'Phản Hồi Chi Tiết'
         let duration = 6
-        let price = 119000
+        let price = 99000
         if (planId == 1) {
           planName = 'Phản Hồi Chi Tiết'
           duration = 6
-          price = 119000
+          price = 99000
         } else if (planId == 2) {
           planName = 'Phản Hồi Chi Tiết'
           duration = 3
-          price = 149000
+          price = 129000
         } else if (planId == 3) {
           planName = 'Phản Hồi Chi Tiết'
           duration = 1
-          price = 179000
+          price = 149000
         } else if (planId == 4) {
           planName = 'Phản Hồi Chuyên Sâu'
           duration = 6
-          price = 249000
+          price = 199000
         } else if (planId == 5) {
           planName = 'Phản Hồi Chuyên Sâu'
           duration = 3
-          price = 299000
+          price = 249000
         } else if (planId == 6) {
           planName = 'Phản Hồi Chuyên Sâu'
           duration = 1
-          price = 349000
+          price = 299000
         }
 
         const option = this.getOptionText(planId)

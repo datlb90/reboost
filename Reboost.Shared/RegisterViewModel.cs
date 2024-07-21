@@ -22,5 +22,6 @@ namespace Reboost.Shared
         public string PhoneNumber { get; set; }
         [Required]
         public string Role { get; set; }
+        public string IpAddress { get; set; }
     }
 }

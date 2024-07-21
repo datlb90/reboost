@@ -46,13 +46,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.highlightKeyFeatures.toString().length == 1 ? essayScore.highlightKeyFeatures.toString() + '.0' : essayScore.highlightKeyFeatures }}
                                   </span>
                                 </el-tag>
@@ -66,13 +66,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.compareAndContrast.toString().length == 1 ? essayScore.compareAndContrast.toString() + '.0' : essayScore.compareAndContrast }}
                                   </span>
                                 </el-tag>
@@ -87,13 +87,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.dataSelection.toString().length == 1 ? essayScore.dataSelection.toString() + '.0' : essayScore.dataSelection }}
                                   </span>
 
@@ -126,13 +126,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.clarityOfPosition.toString().length == 1 ? essayScore.clarityOfPosition.toString() + '.0' : essayScore.clarityOfPosition }}
                                   </span>
                                 </el-tag>
@@ -146,13 +146,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.developmentOfIdeas.toString().length == 1 ? essayScore.developmentOfIdeas.toString() + '.0' : essayScore.developmentOfIdeas }}
                                   </span>
                                 </el-tag>
@@ -166,13 +166,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.justificationOfOpinion.toString().length == 1 ? essayScore.justificationOfOpinion.toString() + '.0' : essayScore.justificationOfOpinion }}
                                   </span>
 
@@ -205,13 +205,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.logicalOrganization.toString().length == 1 ? essayScore.logicalOrganization.toString() + '.0' : essayScore.logicalOrganization }}
                                   </span>
                                 </el-tag>
@@ -225,13 +225,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.paragraphing.toString().length == 1 ? essayScore.paragraphing.toString() + '.0' : essayScore.paragraphing }}
                                   </span>
 
@@ -246,13 +246,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.cohesiveDevices.toString().length == 1 ? essayScore.cohesiveDevices.toString() + '.0' : essayScore.cohesiveDevices }}
                                   </span>
 
@@ -276,13 +276,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.rangeOfVocabulary.toString().length == 1 ? essayScore.rangeOfVocabulary.toString() + '.0' : essayScore.rangeOfVocabulary }}
                                   </span>
 
@@ -297,13 +297,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.accuracyOfWordChoice.toString().length == 1 ? essayScore.accuracyOfWordChoice.toString() + '.0' : essayScore.accuracyOfWordChoice }}
                                   </span>
 
@@ -318,13 +318,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.spellingAndFormation.toString().length == 1 ? essayScore.spellingAndFormation.toString() + '.0' : essayScore.spellingAndFormation }}
                                   </span>
 
@@ -339,13 +339,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.registerAndStyle.toString().length == 1 ? essayScore.registerAndStyle.toString() + '.0' : essayScore.registerAndStyle }}
                                   </span>
 
@@ -369,13 +369,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.grammarRange.toString().length == 1 ? essayScore.grammarRange.toString() + '.0' : essayScore.grammarRange }}
                                   </span>
 
@@ -390,13 +390,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.sentenceComplexity.toString().length == 1 ? essayScore.sentenceComplexity.toString() + '.0' : essayScore.sentenceComplexity }}
                                   </span>
 
@@ -411,13 +411,13 @@
                                   size="small"
                                   class="sub-score-tag"
                                 >
-                                  <span v-if="!userSubscription">
+                                  <!-- <span v-if="!userSubscription">
                                     <el-tooltip class="item" effect="light" placement="top">
                                       <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
                                       <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
                                     </el-tooltip>
-                                  </span>
-                                  <span v-else>
+                                  </span> -->
+                                  <span>
                                     {{ essayScore.grammarAccuracy.toString().length == 1 ? essayScore.grammarAccuracy.toString() + '.0' : essayScore.grammarAccuracy }}
                                   </span>
 

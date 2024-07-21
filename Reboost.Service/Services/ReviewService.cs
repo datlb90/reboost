@@ -26,6 +26,7 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        Task<EssayFeedback> getCriteriaFeedbackFree1(EssayFeedbackModel model);
         Task<ErrorsInText> getIntextCommentsFree(CriteriaFeedbackModel model);
         Task<ReviewScores> getEssayScoreFree(CriteriaFeedbackModel model);
         Task<EssayFeedback> getCriteriaFeedbackFree(EssayFeedbackModel model);
@@ -146,6 +147,11 @@ namespace Reboost.Service.Services
         public async Task<ReviewScores> getEssayScoreFree(CriteriaFeedbackModel model)
         {
             return await chatGPTService.getEssayScoreFree(model);
+        }
+
+        public async Task<EssayFeedback> getCriteriaFeedbackFree1(EssayFeedbackModel model)
+        {
+            return await chatGPTService.getCriteriaFeedbackFree1(model);
         }
 
         public async Task<EssayFeedback> getCriteriaFeedbackFree(EssayFeedbackModel model)
