@@ -20,6 +20,7 @@ import ResetPassword from '../views/account/ResetPassword.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
 import Review from '../views/learner/Review.vue'
 import Feedback from '../views/learner/Feedback.vue'
+import Feedback2 from '../views/learner/Feedback2.vue'
 import SampleFeedback from '../views/learner/SampleFeedback.vue'
 import ReviewTest from '../views/learner/ReviewTest.vue'
 // Pages
@@ -235,9 +236,27 @@ const router = new VueRouter({
       }
     },
     {
-      path: '/review/:questionId/:docId/:reviewId',
+      path: '/feedback/:questionId/:docId/:reviewId',
       name: PageName.REVIEW,
       component: Feedback,
+      beforeEnter: async (to, from, next) => {
+        const check = await userReviewAuthentication(to.params.reviewId)
+        if (check) {
+          next({ name: PageName.NOT_FOUND })
+        } else {
+          next()
+        }
+      },
+      meta: {
+        plainLayout: false,
+        landingPage: false,
+        loginRequired: true
+      }
+    },
+    {
+      path: '/review/:questionId/:docId/:reviewId',
+      name: PageName.REVIEW,
+      component: Feedback2,
       beforeEnter: async (to, from, next) => {
         const check = await userReviewAuthentication(to.params.reviewId)
         if (check) {

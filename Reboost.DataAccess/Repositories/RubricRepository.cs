@@ -36,8 +36,8 @@ namespace Reboost.DataAccess.Repositories
                         join criteria in ReboostDbContext.RubricCriteria
                             on questionRubric.Id equals criteria.RubricId into rc
                             from rubricCriteria in rc.DefaultIfEmpty()
-                        where question.Id == questionId && rubricCriteria.Name != "Overall Score & Feedback" &&
-                        (task == "Academic Writing Task 1" ? rubricCriteria.Name != "Arguments Assessment" : true)
+                        where question.Id == questionId && rubricCriteria.Name != "Overall Score & Feedback" && rubricCriteria.Name != "Critical Errors" &&
+                        (task == "Academic Writing Task 1" ? rubricCriteria.Name != "Arguments Assessment" : true )
                         select new FeedbackRubric
                         {
                             criteriaId = rubricCriteria.Id,

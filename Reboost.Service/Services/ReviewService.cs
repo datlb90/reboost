@@ -26,6 +26,14 @@ namespace Reboost.Service.Services
 {
     public interface IReviewService
     {
+        // Start version 2.0
+        Task<ErrorsInText> getIntextCommentsV2(CriteriaFeedbackModel model);
+        Task<EssayFeedbackV2> getCriteriaFeedbackFreeV2(EssayFeedbackModel model);
+        Task<EssayFeedbackV2> GetArgumentFeedbackV2(EssayFeedbackModel model);
+        Task<List<CriteriaFeedback>> GetCriteriaFeedbackV2(User user, FeedbackRequestModel model);
+        Task<ErrorsInText> getIntextFeedbackV2(User user, CriteriaFeedbackModel model);
+        // End version 2.0
+
         Task<EssayFeedback> getCriteriaFeedbackFree1(EssayFeedbackModel model);
         Task<ErrorsInText> getIntextCommentsFree(CriteriaFeedbackModel model);
         Task<ReviewScores> getEssayScoreFree(CriteriaFeedbackModel model);
@@ -137,6 +145,798 @@ namespace Reboost.Service.Services
             userService = _userService;
             chatGPTService = _chatGPTService;
             subscriptionService = _subscriptionService;
+        }
+
+        public async Task<List<CriteriaFeedback>> GetCriteriaFeedbackV2(User user, FeedbackRequestModel model)
+        {
+            if (model.hasGrade)
+            {
+                // If the review already has grade, return the feedback from db
+                return await _unitOfWork.Review.GetCriteriaFeedback(model.reviewId);
+            }
+            else
+            {
+                var userSubscription = await subscriptionService.GetUserSubscription(user.Id);
+                if (userSubscription != null || (model.feedbackType == "detail" && user.FreeToken > 0) || (model.feedbackType == "deep" && user.PremiumToken > 0))
+                {
+                    // If there is no grade, get the feedback from chatGPT, save the feedback in database, then return the feedback
+                    List<CriteriaFeedback> result = new List<CriteriaFeedback>(); // display feedback result
+                    try
+                    {
+                        // 1. Get the rubric for the question
+                        var rubricCriteria = await _unitOfWork.Rubrics.GetFeedbackRubric(model.questionId, model.task);
+                        var taskList = new Task<EssayFeedbackV2>[rubricCriteria.Count];
+
+                        // 2. Get feedback from chatGPT
+                        for (int i = 0; i < rubricCriteria.Count; i++)
+                        {
+                            if (rubricCriteria[i].name == "Arguments Assessment")
+                            {
+                                EssayFeedbackModel requestModel = new EssayFeedbackModel
+                                {
+                                    essay = model.essay,
+                                    task = model.task,
+                                    topic = model.topic,
+                                    chartDescription = model.chartDescription,
+                                    criteriaName = rubricCriteria[i].name,
+                                    feedbackLanguage = model.feedbackLanguage,
+                                    criteriaId = rubricCriteria[i].criteriaId,
+                                    order = rubricCriteria[i].order
+                                };
+
+                                taskList[i] = GetArgumentFeedbackV2(requestModel);
+                            }
+                            else
+                            {
+                                // Get chart description for Task Achievement?
+                                EssayFeedbackModel requestModel = new EssayFeedbackModel
+                                {
+                                    essay = model.essay,
+                                    task = model.task,
+                                    topic = model.topic,
+                                    chartDescription = model.chartDescription,
+                                    criteriaName = rubricCriteria[i].name,
+                                    feedbackLanguage = model.feedbackLanguage,
+                                    criteriaId = rubricCriteria[i].criteriaId,
+                                    order = rubricCriteria[i].order
+                                };
+
+                                taskList[i] = chatGPTService.getCriteriaFeedbackFreeV2(requestModel);
+                            }
+                            
+                        }
+
+                        EssayFeedbackV2[] completedTasks = await Task.WhenAll(taskList);
+
+                        //var scoreResults = completedTasks[0];
+                        foreach (EssayFeedbackV2 completedTask in completedTasks)
+                        {
+                            if(completedTask != null)
+                            {
+                                CriteriaFeedback criteriaFeedback = new CriteriaFeedback
+                                {
+                                    criteriaId = completedTask.criteriaId,
+                                    name = completedTask.criteriaName,
+                                    comment = "",
+                                    mark = 0
+                                };
+                                // Generate html connent for the comment
+                                switch (completedTask.criteriaName)
+                                {
+                                    case "Improved Version":
+                                        criteriaFeedback.comment = completedTask.improvedVersion;
+                                        break;
+                                    case "Vocabulary":
+                                        criteriaFeedback.comment = completedTask.vocabulary;
+                                        break;
+                                    case "Arguments Assessment":
+                                        string htmlContent = "<div>";
+                                        int start = 1;
+                                        foreach (ArgumentFeedback feedback in completedTask.argumentFeedback)
+                                        {
+                                            htmlContent += "<p><strong>" + start + ". Quoted Text: </strong>\"" + feedback.paragraphText + "\"</p>";
+                                            if (model.feedbackLanguage == "vn")
+                                                htmlContent += "<p><strong>- Đánh Giá Chi Tiết: </strong>\"" + feedback.assessment + "\"</p>";
+                                            else
+                                                htmlContent += "<p><strong>- Detailed Assessment: </strong>\"" + feedback.assessment + "\"</p>";
+
+                                            if (model.feedbackLanguage == "vn")
+                                                htmlContent += "<p><strong>- Gợi Ý Cải Thiện: </strong>" + feedback.howToImprove + "\"</p>";
+                                            else
+                                                htmlContent += "<p><strong>- How To Improve: </strong>" + feedback.howToImprove + "\"</p>";
+
+                                            if (model.feedbackLanguage == "vn")
+                                                htmlContent += "<p><strong>- Phiên Bản Cải Thiện: </strong>\"" + feedback.improvedVersion + "\"</p>";
+                                            else
+                                                htmlContent += "<p><strong>- Improved Version: </strong>\"" + feedback.improvedVersion + "\"</p>";
+                                            htmlContent += "<hr>";
+                                            start++;
+                                        }
+                                        htmlContent += "</div>";
+                                        criteriaFeedback.comment = htmlContent;
+
+                                        break;
+                                    case "Task Achievement":
+                                        string taskAchivementHtml = "<ul>";
+                                        // Fulfilling the Prompt Requirements
+                                        if (model.feedbackLanguage == "vn")
+                                            taskAchivementHtml += "<li><p><strong>Đáp Ứng Các Yêu Cầu Của Đề Bài:</strong></p>";
+                                        else
+                                            taskAchivementHtml += "<li><p><strong>Fulfilling the Prompt Requirements:</strong></p>";
+                                        taskAchivementHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            taskAchivementHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.fulfillRequirements.assessment + "</p>";
+                                        else
+                                            taskAchivementHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.fulfillRequirements.assessment + "</p>";
+
+                                        taskAchivementHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            taskAchivementHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.fulfillRequirements.howToImprove + "</p>";
+                                        else
+                                            taskAchivementHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.fulfillRequirements.howToImprove + "</p>";
+                                        taskAchivementHtml += "</li></ul></li>";
+
+                                        // Highlighting Key Data & Features
+                                        if (model.feedbackLanguage == "vn")
+                                            taskAchivementHtml += "<li><p><strong>Nêu Bật Các Dữ Liệu Và Tính Năng Chính:</strong></p>";
+                                        else
+                                            taskAchivementHtml += "<li><p><strong>Highlighting Key Features & Data:</strong></p>";
+                                        taskAchivementHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            taskAchivementHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.highlightKeyFeatures.assessment + "</p>";
+                                        else
+                                            taskAchivementHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.highlightKeyFeatures.assessment + "</p>";
+
+                                        taskAchivementHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            taskAchivementHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.highlightKeyFeatures.howToImprove + "</p>";
+                                        else
+                                            taskAchivementHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.highlightKeyFeatures.howToImprove + "</p>";
+                                        taskAchivementHtml += "</li></ul></li>";
+
+                                        // Comparing and Contrasting Data
+                                        if (model.feedbackLanguage == "vn")
+                                            taskAchivementHtml += "<li><p><strong>So Sánh Và Đối Chiếu Dữ Liệu:</strong></p>";
+                                        else
+                                            taskAchivementHtml += "<li><p><strong>Comparing and Contrasting Data:</strong></p>";
+                                        taskAchivementHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            taskAchivementHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.compareAndContrast.assessment + "</p>";
+                                        else
+                                            taskAchivementHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.compareAndContrast.assessment + "</p>";
+
+                                        taskAchivementHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            taskAchivementHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.compareAndContrast.howToImprove + "</p>";
+                                        else
+                                            taskAchivementHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.compareAndContrast.howToImprove + "</p>";
+                                        taskAchivementHtml += "</li></ul></li>";
+                                        // end
+                                        taskAchivementHtml += "</ul>";
+
+                                        criteriaFeedback.comment = taskAchivementHtml;
+                                        criteriaFeedback.mark = completedTask.criteriaFeedback.score;
+                                        break;
+                                    case "Task Response":
+                                        string tasResponseHtml = "<ul>";
+                                        // Addressing All Parts of the Question
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<li><p><strong>Trả Lời Tất Cả Các Phần Của Câu Hỏi:</strong></p>";
+                                        else
+                                            tasResponseHtml += "<li><p><strong>Addressing All Parts of the Question:</strong></p>";
+                                        tasResponseHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.answeringAllParts.assessment + "</p>";
+                                        else
+                                            tasResponseHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.answeringAllParts.assessment + "</p>";
+
+                                        tasResponseHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.answeringAllParts.howToImprove + "</p>";
+                                        else
+                                            tasResponseHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.answeringAllParts.howToImprove + "</p>";
+                                        tasResponseHtml += "</li></ul></li>";
+
+                                        // Clarity of Position
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<li><p><strong>Trình Bày Quan Điểm Rõ Ràng Suốt Bài:</strong></p>";
+                                        else
+                                            tasResponseHtml += "<li><p><strong>Clarity of Position:</strong></p>";
+                                        tasResponseHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.clarityOfPosition.assessment + "</p>";
+                                        else
+                                            tasResponseHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.clarityOfPosition.assessment + "</p>";
+
+                                        tasResponseHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.clarityOfPosition.howToImprove + "</p>";
+                                        else
+                                            tasResponseHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.clarityOfPosition.howToImprove + "</p>";
+                                        tasResponseHtml += "</li></ul></li>";
+
+                                        // Development of Ideas
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<li><p><strong>Trình Bày Và Phát Triển Ý Tưởng:</strong></p>";
+                                        else
+                                            tasResponseHtml += "<li><p><strong>Development of Ideas:</strong></p>";
+                                        tasResponseHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.developmentOfIdeas.assessment + "</p>";
+                                        else
+                                            tasResponseHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.developmentOfIdeas.assessment + "</p>";
+
+                                        tasResponseHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.developmentOfIdeas.howToImprove + "</p>";
+                                        else
+                                            tasResponseHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.developmentOfIdeas.howToImprove + "</p>";
+                                        tasResponseHtml += "</li></ul></li>";
+
+                                        // Justification of Opinions
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<li><p><strong>Tính Thuyết Phục Trong Quan Điểm:</strong></p>";
+                                        else
+                                            tasResponseHtml += "<li><p><strong>Justification of Opinions:</strong></p>";
+                                        tasResponseHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.justificationOfOpinion.assessment + "</p>";
+                                        else
+                                            tasResponseHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.justificationOfOpinion.assessment + "</p>";
+
+                                        tasResponseHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            tasResponseHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.justificationOfOpinion.howToImprove + "</p>";
+                                        else
+                                            tasResponseHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.justificationOfOpinion.howToImprove + "</p>";
+                                        tasResponseHtml += "</li></ul></li>";
+
+                                        // end
+                                        tasResponseHtml += "</ul>";
+
+                                        criteriaFeedback.comment = tasResponseHtml;
+                                        criteriaFeedback.mark = completedTask.criteriaFeedback.score;
+                                        break;
+                                    case "Coherence & Cohesion":
+                                        string coherenceHtml = "<ul>";
+                                        // Logical Organization
+                                        if (model.feedbackLanguage == "vn")
+                                            coherenceHtml += "<li><p><strong>Sắp Xếp Thông Tin Một Cách Hợp Lý:</strong></p>";
+                                        else
+                                            coherenceHtml += "<li><p><strong>Logical Organization:</strong></p>";
+                                        coherenceHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            coherenceHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.logicalOrganization.assessment + "</p>";
+                                        else
+                                            coherenceHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.logicalOrganization.assessment + "</p>";
+
+                                        coherenceHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            coherenceHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.logicalOrganization.howToImprove + "</p>";
+                                        else
+                                            coherenceHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.logicalOrganization.howToImprove + "</p>";
+                                        coherenceHtml += "</li></ul></li>";
+
+                                        // Paragraphing
+                                        if (model.feedbackLanguage == "vn")
+                                            coherenceHtml += "<li><p><strong>Sử Dụng Đoạn Văn:</strong></p>";
+                                        else
+                                            coherenceHtml += "<li><p><strong>Paragraphing:</strong></p>";
+                                        coherenceHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            coherenceHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.paragraphing.assessment + "</p>";
+                                        else
+                                            coherenceHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.paragraphing.assessment + "</p>";
+
+                                        coherenceHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            coherenceHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.paragraphing.howToImprove + "</p>";
+                                        else
+                                            coherenceHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.paragraphing.howToImprove + "</p>";
+                                        coherenceHtml += "</li></ul></li>";
+
+                                        // Use of Cohesive Devices
+                                        if (model.feedbackLanguage == "vn")
+                                            coherenceHtml += "<li><p><strong>Sử Dụng Đa Dạng Các Công Cụ Liên Kết:</strong></p>";
+                                        else
+                                            coherenceHtml += "<li><p><strong>Use of Cohesive Devices:</strong></p>";
+
+                                        coherenceHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            coherenceHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.cohesiveDevices.assessment + "</p>";
+                                        else
+                                            coherenceHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.cohesiveDevices.assessment + "</p>";
+
+                                        coherenceHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            coherenceHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.cohesiveDevices.howToImprove + "</p>";
+                                        else
+                                            coherenceHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.cohesiveDevices.howToImprove + "</p>";
+                                        coherenceHtml += "</li></ul></li>";
+                                        // end
+                                        coherenceHtml += "</ul>";
+
+                                        criteriaFeedback.comment = coherenceHtml;
+                                        criteriaFeedback.mark = completedTask.criteriaFeedback.score;
+                                        break;
+                                    case "Lexical Resource":
+                                        string lexicalHtml = "<ul>";
+                                        // Logical Organization
+                                        if (model.feedbackLanguage == "vn")
+                                            lexicalHtml += "<li><p><strong>Sử Dụng Đa Dạng Từ Vựng:</strong></p>";
+                                        else
+                                            lexicalHtml += "<li><p><strong>Range of Vocabulary:</strong></p>";
+                                        lexicalHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            lexicalHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.rangeOfVocabulary.assessment + "</p>";
+                                        else
+                                            lexicalHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.rangeOfVocabulary.assessment + "</p>";
+
+                                        lexicalHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            lexicalHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.rangeOfVocabulary.howToImprove + "</p>";
+                                        else
+                                            lexicalHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.rangeOfVocabulary.howToImprove + "</p>";
+                                        lexicalHtml += "</li></ul></li>";
+
+                                        // Accuracy of Word Choice
+                                        if (model.feedbackLanguage == "vn")
+                                            lexicalHtml += "<li><p><strong>Sử Dụng Từ Vựng Chính Xác:</strong></p>";
+                                        else
+                                            lexicalHtml += "<li><p><strong>Accuracy of Word Choice:</strong></p>";
+                                        lexicalHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            lexicalHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.accuracyOfWordChoice.assessment + "</p>";
+                                        else
+                                            lexicalHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.accuracyOfWordChoice.assessment + "</p>";
+
+                                        lexicalHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            lexicalHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.accuracyOfWordChoice.howToImprove + "</p>";
+                                        else
+                                            lexicalHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.accuracyOfWordChoice.howToImprove + "</p>";
+                                        lexicalHtml += "</li></ul></li>";
+
+                                        // Spelling and Word Formation
+                                        if (model.feedbackLanguage == "vn")
+                                            lexicalHtml += "<li><p><strong>Chính Tả Và Cấu Trúc Từ:</strong></p>";
+                                        else
+                                            lexicalHtml += "<li><p><strong>Spelling and Word Formation:</strong></p>";
+
+                                        lexicalHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            lexicalHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.spellingAndFormation.assessment + "</p>";
+                                        else
+                                            lexicalHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.spellingAndFormation.assessment + "</p>";
+
+                                        lexicalHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            lexicalHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.spellingAndFormation.howToImprove + "</p>";
+                                        else
+                                            lexicalHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.spellingAndFormation.howToImprove + "</p>";
+                                        lexicalHtml += "</li></ul></li>";
+                                        // end
+                                        lexicalHtml += "</ul>";
+
+                                        criteriaFeedback.comment = lexicalHtml;
+                                        criteriaFeedback.mark = completedTask.criteriaFeedback.score;
+                                        break;
+                                    case "Grammatical Range & Accuracy":
+                                        string grammarHtml = "<ul>";
+                                        // Logical Organization
+                                        if (model.feedbackLanguage == "vn")
+                                            grammarHtml += "<li><p><strong>Sử Dụng Đa Dạng Các Cấu Trúc Câu:</strong></p>";
+                                        else
+                                            grammarHtml += "<li><p><strong>Range of Grammatical Structures:</strong></p>";
+                                        grammarHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            grammarHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.grammarRange.assessment + "</p>";
+                                        else
+                                            grammarHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.grammarRange.assessment + "</p>";
+
+                                        grammarHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            grammarHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.grammarRange.howToImprove + "</p>";
+                                        else
+                                            grammarHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.grammarRange.howToImprove + "</p>";
+                                        grammarHtml += "</li></ul></li>";
+
+                                        // Accuracy of Word Choice
+                                        if (model.feedbackLanguage == "vn")
+                                            grammarHtml += "<li><p><strong>Sử Dụng Ngữ Pháp Chính Xác:</strong></p>";
+                                        else
+                                            grammarHtml += "<li><p><strong>Accuracy in Grammatical Forms:</strong></p>";
+                                        grammarHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            grammarHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.grammarAccuracy.assessment + "</p>";
+                                        else
+                                            grammarHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.grammarAccuracy.assessment + "</p>";
+
+                                        grammarHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            grammarHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.grammarAccuracy.howToImprove + "</p>";
+                                        else
+                                            grammarHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.grammarAccuracy.howToImprove + "</p>";
+                                        grammarHtml += "</li></ul></li>";
+
+                                        // Spelling and Word Formation
+                                        if (model.feedbackLanguage == "vn")
+                                            grammarHtml += "<li><p><strong>Sử Dụng Dấu Câu Đúng Cách:</strong></p>";
+                                        else
+                                            grammarHtml += "<li><p><strong>Punctuation:</strong></p>";
+
+                                        grammarHtml += "<ul><li>";
+                                        if (model.feedbackLanguage == "vn")
+                                            grammarHtml += "<p><strong>Giải Thích Chi Tiết: </strong>" + completedTask.criteriaFeedback.punctuation.assessment + "</p>";
+                                        else
+                                            grammarHtml += "<p><strong>Detailed Explannation: </strong>" + completedTask.criteriaFeedback.punctuation.assessment + "</p>";
+
+                                        grammarHtml += "</li><li>";
+
+                                        if (model.feedbackLanguage == "vn")
+                                            grammarHtml += "<p><strong>Gợi Ý Cải Thiện: </strong>" + completedTask.criteriaFeedback.punctuation.howToImprove + "</p>";
+                                        else
+                                            grammarHtml += "<p><strong>How To Improve: </strong>" + completedTask.criteriaFeedback.punctuation.howToImprove + "</p>";
+                                        grammarHtml += "</li></ul></li>";
+                                        // end
+                                        grammarHtml += "</ul>";
+
+                                        criteriaFeedback.comment = grammarHtml;
+                                        criteriaFeedback.mark = completedTask.criteriaFeedback.score;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                result.Add(criteriaFeedback);
+                            }
+                        }
+
+                        // Update feedback token
+                        if (userSubscription == null)
+                        {
+                            if (model.feedbackType == "detail" && user.FreeToken > 0)
+                            {
+                                user.FreeToken = user.FreeToken - 1;
+                            }
+                            else if (model.feedbackType == "deep" && user.PremiumToken > 0)
+                            {
+                                user.PremiumToken = user.PremiumToken - 1;
+                            }
+                            await _unitOfWork.Users.UpdateAsync(user);
+                        }
+
+                        return result;
+                    }
+                    catch (Exception e)
+                    {
+                        return null;
+                    }
+                }
+                return null;
+            }
+        }
+
+        public async Task<ErrorsInText> getIntextFeedbackV2(User user, CriteriaFeedbackModel model)
+        {
+            var userSubscription = await subscriptionService.GetUserSubscription(user.Id);
+
+            if (userSubscription != null || (model.feedbackType == "detail" && user.FreeToken > 0) || (model.feedbackType == "deep" && user.PremiumToken > 0))
+            {
+                if (userSubscription == null)
+                {
+                    return await chatGPTService.getIntextCommentsV2(model);
+                }
+                else
+                {
+                    if (userSubscription.PlanId >= 4)
+                    {
+                        return await getDeepIntextComments(model);
+                    }
+                    else
+                    {
+                        return await getDetailedIntextComments(model);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public async Task<ErrorsInText> getDetailedIntextComments(CriteriaFeedbackModel model)
+        {
+            // Make a ChatGpt call for each paragraph
+            ErrorsInText result = new ErrorsInText();
+            if (!String.IsNullOrEmpty(model.essay))
+            {
+                result.errors = new List<ErrorInText>();
+                model.essay = model.essay.Replace("\r", String.Empty);
+                string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                if (paragraphs.Length > 1)
+                {
+                    var taskList = new Task<ErrorsInText>[paragraphs.Length];
+                    for (int i = 0; i < paragraphs.Length; i++)
+                    {
+                        CriteriaFeedbackModel requestModel = new CriteriaFeedbackModel
+                        {
+                            essay = paragraphs[i],
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        taskList[i] = chatGPTService.getIntextCommentsV2(requestModel);
+                    }
+                    var completedTasks = await Task.WhenAll(taskList);
+
+                    foreach (var completedTask in completedTasks)
+                    {
+                        if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
+                        {
+                            foreach (ErrorInText error in completedTask.errors)
+                            {
+                                if (!result.errors.Any(e => e.error == error.error))
+                                {
+                                    result.errors.Add(error);
+                                }
+                            }
+                        }
+                    }
+
+                    return result;
+                }
+                else
+                {
+                    // If this is a 1-paragraph essay
+                    // Regular expression to split on period, exclamation or question mark, followed by space or end of string.
+                    // This regex handles cases where the punctuation is followed by a space or is at the end of the text.
+                    string[] sentences = Regex.Split(model.essay, @"(?<=[\.!\?])\s+(?=(?:[A-Z]|$))");
+
+                    if (sentences.Length >= 2)
+                    {
+                        var taskList = new Task<ErrorsInText>[2];
+                        int median = sentences.Length / 2;
+                        if (sentences.Length % 2 != 0) median += 1; // Optionally adjust how the median is calculated for odd numbers
+
+                        string[] firstList = sentences.Take(median).ToArray();
+                        string firstPart = String.Join(Environment.NewLine, firstList);
+
+                        CriteriaFeedbackModel request1 = new CriteriaFeedbackModel
+                        {
+                            essay = firstPart,
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        taskList[0] = chatGPTService.getIntextCommentsV2(request1);
+
+                        int remain = sentences.Length - median;
+                        string[] secondList = sentences.Skip(median).Take(remain).ToArray();
+                        string secondPart = String.Join(Environment.NewLine, secondList);
+
+
+                        CriteriaFeedbackModel request2 = new CriteriaFeedbackModel
+                        {
+                            essay = secondPart,
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        taskList[1] = chatGPTService.getIntextCommentsV2(request2);
+
+                        var completedTasks = await Task.WhenAll(taskList);
+
+                        foreach (var completedTask in completedTasks)
+                        {
+                            if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
+                            {
+                                foreach (ErrorInText error in completedTask.errors)
+                                {
+                                    if (!result.errors.Any(e => e.error == error.error))
+                                    {
+                                        result.errors.Add(error);
+                                    }
+                                }
+                            }
+                        }
+
+                        return result;
+
+                    }
+                    else
+                    {
+                        // Handle case with fewer than two sentences
+                        CriteriaFeedbackModel request = new CriteriaFeedbackModel
+                        {
+                            essay = model.essay,
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        return await chatGPTService.getIntextCommentsV2(request);
+                    }
+                }
+            }
+            return result;
+        }
+
+        public async Task<ErrorsInText> getDeepIntextComments(CriteriaFeedbackModel model)
+        {
+            // Make a ChatGpt call for each sentence
+            ErrorsInText result = new ErrorsInText();
+            result.errors = new List<ErrorInText>();
+            if (!String.IsNullOrEmpty(model.essay))
+            {
+                // If this is a 1-paragraph essay
+                // Regular expression to split on period, exclamation or question mark, followed by space or end of string.
+                // This regex handles cases where the punctuation is followed by a space or is at the end of the text.
+                //string[] sentences = Regex.Split(model.essay, @"(?<=[\.!\?])\s+(?=(?:[A-Z]|$))");
+                string[] sentences = Regex.Split(model.essay, @"(?<=[\.!\?])\s+(?=\S*(?:[A-Z]|$))");
+
+                // Filtering out any empty or whitespace-only entries
+                sentences = sentences.Where(sentence => !string.IsNullOrWhiteSpace(sentence)).ToArray();
+                var taskList = new Task<ErrorsInText>[sentences.Length];
+                for (int i = 0; i < sentences.Length; i++)
+                {
+                    CriteriaFeedbackModel requestModel = new CriteriaFeedbackModel
+                    {
+                        essay = sentences[i],
+                        task = model.task,
+                        topic = model.topic,
+                        feedbackLanguage = model.feedbackLanguage
+                    };
+
+                    taskList[i] = chatGPTService.getIntextCommentsV2(requestModel);
+                }
+                var completedTasks = await Task.WhenAll(taskList);
+
+                foreach (var completedTask in completedTasks)
+                {
+                    if (completedTask != null && completedTask.errors != null && completedTask.errors.Count > 0)
+                    {
+                        foreach (ErrorInText error in completedTask.errors)
+                        {
+                            if (!result.errors.Any(e => e.error == error.error))
+                            {
+                                result.errors.Add(error);
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+
+
+        public async Task<ErrorsInText> getIntextCommentsV2(CriteriaFeedbackModel model)
+        {
+            return await chatGPTService.getIntextCommentsV2(model);
+        }
+
+        public async Task<EssayFeedbackV2> GetArgumentFeedbackV2(EssayFeedbackModel model)
+        {
+            if (!String.IsNullOrEmpty(model.essay))
+            {
+                EssayFeedbackV2 result = new EssayFeedbackV2();
+                result.argumentFeedback = new List<ArgumentFeedback>();
+                result.criteriaName = model.criteriaName;
+                result.criteriaId = model.criteriaId;
+                model.essay = model.essay.Replace("\r", String.Empty);
+                string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+                if(paragraphs.Length <= 0)
+                {
+                    return null;
+                }
+                else if (paragraphs.Length == 1)
+                {
+                    EssayFeedbackModel requestModel = new EssayFeedbackModel
+                    {
+                        essay = paragraphs[0],
+                        task = model.task,
+                        topic = model.topic,
+                        feedbackLanguage = model.feedbackLanguage
+                    };
+
+                    ArgumentFeedback feedback = await chatGPTService.GetArgumentFeedbackV2(requestModel);
+                    result.argumentFeedback.Add(feedback);
+                    return result;
+                }
+                else if( paragraphs.Length == 2)
+                {
+                    var taskList = new Task<ArgumentFeedback>[paragraphs.Length];
+                    for (int i = 0; i < paragraphs.Length; i++)
+                    {
+                        EssayFeedbackModel requestModel = new EssayFeedbackModel
+                        {
+                            essay = paragraphs[i],
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        taskList[i] = chatGPTService.GetArgumentFeedbackV2(requestModel);
+                    }
+                    var completedTasks = await Task.WhenAll(taskList);
+
+                    foreach (ArgumentFeedback feedback in completedTasks)
+                    {
+                        result.argumentFeedback.Add(feedback);
+                    }
+                    return result;
+                }
+                else if (paragraphs.Length == 3)
+                {
+                    var taskList = new Task<ArgumentFeedback>[paragraphs.Length - 1];
+                    for (int i = 1; i < paragraphs.Length; i++)
+                    {
+                        EssayFeedbackModel requestModel = new EssayFeedbackModel
+                        {
+                            essay = paragraphs[i],
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        taskList[i - 1] = chatGPTService.GetArgumentFeedbackV2(requestModel);
+                    }
+                    var completedTasks = await Task.WhenAll(taskList);
+
+                    foreach (ArgumentFeedback feedback in completedTasks)
+                    {
+                        result.argumentFeedback.Add(feedback);
+                    }
+                    return result;
+                }
+                else // length >= 4
+                {
+                    var taskList = new Task<ArgumentFeedback>[paragraphs.Length - 2];
+                    for (int i = 1; i < paragraphs.Length - 1; i++)
+                    {
+                        EssayFeedbackModel requestModel = new EssayFeedbackModel
+                        {
+                            essay = paragraphs[i],
+                            task = model.task,
+                            topic = model.topic,
+                            feedbackLanguage = model.feedbackLanguage
+                        };
+
+                        taskList[i - 1] = chatGPTService.GetArgumentFeedbackV2(requestModel);
+                    }
+                    var completedTasks = await Task.WhenAll(taskList);
+
+                    foreach (ArgumentFeedback feedback in completedTasks)
+                    {
+                        result.argumentFeedback.Add(feedback);
+                    }
+
+                    return result;
+                }
+            }
+            return null;
+        }
+
+        public async Task<EssayFeedbackV2> getCriteriaFeedbackFreeV2(EssayFeedbackModel model)
+        {
+            return await chatGPTService.getCriteriaFeedbackFreeV2(model);
         }
 
         public async Task<ErrorsInText> getIntextCommentsFree(CriteriaFeedbackModel model)
@@ -359,6 +1159,7 @@ namespace Reboost.Service.Services
                 return null;
             }
         }
+
         public async Task<ErrorsInText> getIntextComments(User user, CriteriaFeedbackModel model)
         {
             var userSubscription = await subscriptionService.GetUserSubscription(user.Id);

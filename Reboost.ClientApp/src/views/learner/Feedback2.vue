@@ -453,7 +453,10 @@
                           <div>
                             <div>
                               <div>
-                                <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
+                                <div v-if="criteria.name == 'Vocabulary' || criteria.name == 'Improved Version'">
+                                  <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px; background: #f7f7f7;" v-html="criteria.comment" />
+                                </div>
+                                <div v-else style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px; background: #f7f7f7;" v-html="criteria.comment" />
                               </div>
                             </div>
                           </div>
@@ -1398,7 +1401,8 @@ export default {
       essayScore: null,
       loadEssayScoreCompleted: false,
       loadFeedbackCompleted: false,
-      loadErrorsCompleted: false
+      loadErrorsCompleted: false,
+      htmlContent: '<div><b>Title</b></div><ol><li>Tomatoes</li><li>Potatoes</li></ol>'
     }
   },
   computed: {
@@ -1512,7 +1516,7 @@ export default {
             feedbackLanguage: this.review.reviewRequest.feedbackLanguage,
             feedbackType: this.review.reviewRequest.reviewType
           }
-          const response = await reviewService.getIntextComments(model)
+          const response = await reviewService.getIntextCommentsV2(model)
           if (response) {
             this.loadErrorsCompleted = true
             this.errors = response.errors
@@ -1631,18 +1635,18 @@ export default {
 
         this.loadFeedbackCompleted = true
         // 1. Populate data for the critical errors criteria
-        if (this.errors && this.errors.length > 0) {
-          let errorFeedback = ''
-          let explain = 'Explain'
-          if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
-          for (let i = 0; i < this.errors.length; i++) {
-            const order = i + 1
-            const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
-            errorFeedback += error
-          }
-          const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
-          criticalError.comment = errorFeedback
-        }
+        // if (this.errors && this.errors.length > 0) {
+        //   let errorFeedback = ''
+        //   let explain = 'Explain'
+        //   if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
+        //   for (let i = 0; i < this.errors.length; i++) {
+        //     const order = i + 1
+        //     const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
+        //     errorFeedback += error
+        //   }
+        //   const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
+        //   criticalError.comment = errorFeedback
+        // }
 
         // 2. populate the score for each criteria
         const taskAchivement = this.rubricCriteria.find(c => c.name == 'Task Achievement')
@@ -1740,7 +1744,7 @@ export default {
         feedbackType: this.review.reviewRequest.reviewType
       }
       // get review feedback
-      reviewService.getReviewFeedback(model).then(rs => {
+      reviewService.getReviewFeedbackV2(model).then(rs => {
         if (rs) {
           this.rubricCriteria = rs
           console.log('Criteria Feedback:', this.rubricCriteria)
@@ -3708,11 +3712,31 @@ export default {
 }
 </script>
 
+<style>
+
+ul {
+  padding-inline-start: 20px;
+}
+
+li {
+  margin-bottom: 10px;
+}
+
+</style>
+
 <style scoped>
 @import '../../pdfjs/shared/document.css';
 @import '../../pdfjs/shared/toolbar.css';
 @import '../../pdfjs/shared/pdf_viewer.css';
 @import '../../styles/review.css';
+
+ul {
+  padding-inline-start: 20px;
+}
+
+li {
+  margin-bottom: 10px;
+}
 
 .band-score{
   width: 85px;

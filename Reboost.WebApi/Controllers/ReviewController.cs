@@ -44,7 +44,50 @@ namespace Reboost.WebApi.Controllers
             configuration = _configuration;
             db = ctx;
         }
+
         [Authorize]
+        [HttpPost("intext/feedback/v2")]
+        public async Task<ErrorsInText> getIntextFeedbackV2(CriteriaFeedbackModel model)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            return await _service.getIntextFeedbackV2(currentUser, model);
+        }
+
+        [Authorize]
+        [HttpPost("criteria/feedback/v2")]
+        public async Task<List<CriteriaFeedback>> GetCriteriaFeedbackV2(FeedbackRequestModel model)
+        {
+            var currentUserClaim = HttpContext.User;
+            var email = currentUserClaim.FindFirst("Email");
+            var role = currentUserClaim.FindFirst("Role");
+            var currentUser = await _userService.GetByEmailAsync(email.Value);
+
+            return await _service.GetCriteriaFeedbackV2(currentUser, model);
+        }
+
+
+        [HttpPost("intext/comment/v2")]
+        public async Task<ErrorsInText> getIntextCommentsV2(CriteriaFeedbackModel model)
+        {
+            return await _service.getIntextCommentsV2(model);
+        }
+
+        [HttpPost("argument/feedback/v2")]
+        public async Task<EssayFeedbackV2> GetArgumentFeedbackV2(EssayFeedbackModel model)
+        {
+            return await _service.GetArgumentFeedbackV2(model);
+        }
+
+        [HttpPost("criteria/feedback/free/v2")]
+        public async Task<EssayFeedbackV2> getCriteriaFeedbackFreeV2(EssayFeedbackModel model)
+        {
+            return await _service.getCriteriaFeedbackFreeV2(model);
+        }
+
         [HttpPost("criteria/feedback/free/v1")]
         public async Task<EssayFeedback> getCriteriaFeedbackFree1(EssayFeedbackModel model)
         {

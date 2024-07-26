@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace Reboost.Shared
 {
     public class ExperimentFeedbackModel
@@ -124,6 +126,60 @@ namespace Reboost.Shared
     {
         public string essay { get; set; }
         public string feedbackLanguage { get; set; }
+    }
+
+    public class EssayFeedbackV2
+    {
+        public string criteriaName { get; set; }
+        public int criteriaId { get; set; }
+        public IELTSCriterionFeedback criteriaFeedback { get; set; }
+        public int order { get; set; }
+        public List<ArgumentFeedback> argumentFeedback { get; set; }
+        public string improvedVersion { get; set; }
+        public string vocabulary { get; set; }
+    }
+
+    public class IELTSCriterionFeedback
+    {
+        public decimal score { get; set; }
+
+        public CriterionFeedback answeringAllParts { get; set; }
+        public CriterionFeedback clarityOfPosition { get; set; }
+        public CriterionFeedback developmentOfIdeas { get; set; }
+        public CriterionFeedback justificationOfOpinion { get; set; }
+
+        public CriterionFeedback fulfillRequirements { get; set; }
+        public CriterionFeedback highlightKeyFeatures { get; set; }
+        public CriterionFeedback compareAndContrast { get; set; }
+
+        public CriterionFeedback logicalOrganization { get; set; }
+        public CriterionFeedback paragraphing { get; set; }
+        public CriterionFeedback cohesiveDevices { get; set; }
+
+        public CriterionFeedback rangeOfVocabulary { get; set; }
+        public CriterionFeedback accuracyOfWordChoice { get; set; }
+        public CriterionFeedback spellingAndFormation { get; set; }
+
+        public CriterionFeedback grammarRange { get; set; }
+        public CriterionFeedback grammarAccuracy { get; set; }
+        public CriterionFeedback punctuation { get; set; }
+    }
+
+    public class CriterionFeedback
+    {
+        public string assessment { get; set; }
+        public string howToImprove { get; set; }
+    }
+
+    public class ArgumentFeedback
+    {
+        public string criteriaName { get; set; }
+        public int criteriaId { get; set; }
+        public string paragraphText { get; set; }
+        public string assessment { get; set; }
+        public string howToImprove { get; set; }
+        public string improvedVersion { get; set; }
+        public int order { get; set; }
     }
 }
 

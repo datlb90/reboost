@@ -1,6 +1,12 @@
 import http from '@/utils/axios'
 
 const reviewService = {
+  getIntextCommentsV2(model) {
+    return http.post('/review/intext/feedback/v2', model).then(rs => rs.data)
+  },
+  getReviewFeedbackV2(model) {
+    return http.post('/review/criteria/feedback/v2', model).then(rs => rs.data)
+  },
   getInitialSubmission(userId) {
     return http.get(`/review/intial/submission/${userId}`).then(rs => rs.data)
   },

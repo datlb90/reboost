@@ -26,6 +26,13 @@ namespace Reboost.Service.Services
 {
     public interface IChatGPTService
     {
+        // Start version 2.0
+        Task<EssayFeedbackV2> getCriteriaFeedbackFreeV2(EssayFeedbackModel model);
+        Task<ArgumentFeedback> GetArgumentFeedbackV2(EssayFeedbackModel model);
+        Task<ErrorsInText> getIntextCommentsV2(CriteriaFeedbackModel model);
+        // End version 2.0
+
+
         Task<EssayFeedback> getCriteriaFeedbackFree1(EssayFeedbackModel model);
 
         Task<ErrorsInText> getIntextCommentsFree(CriteriaFeedbackModel model);
@@ -84,6 +91,226 @@ namespace Reboost.Service.Services
            
             configuration = _configuration;
         }
+
+        public async Task<ErrorsInText> getIntextCommentsV2(CriteriaFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string prompt = "Given the following IELTS essay:\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                if (model.feedbackLanguage != "vn")
+                    prompt += "Provide a list of grammar and vocabulary issues in the essay using JSON format. The JSON list called errors. Each object in the list should contain the following properties:\r\n\r\n- error: The word or phrase that causes the issue. This should be less than 6 words.\r\n- type: The category of the issue. Can be either 'grammar' or 'vocabulary'\r\n- category: The sub-category of the issue\r\n- fix: The replacement for the word or phrase\r\n- reason: A detailed explanation on the issue and why the fix is better\r\n";
+                else
+                    prompt += "Provide a list of grammar and vocabulary issues in the essay using JSON format. The JSON list called errors. Each object in the list should contain the following properties:\r\n\r\n- error: The word or phrase that causes the issue. This should be less than 6 words.\r\n- type: The category of the issue. Can be either 'grammar' or 'vocabulary'\r\n- category: The sub-category of the issue\r\n- fix: The replacement in English for the word or phrase\r\n- reason: A detailed explanation in Vietnamese on the issue and why the fix is better\r\n";
+
+                ErrorsInText result = new ErrorsInText();
+                List<ErrorInText> errors = new List<ErrorInText>();
+
+                var errorResponse = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = "gpt-4o-mini",
+                    ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
+                    Temperature = 0.1,
+                    Messages = new ChatMessage[] {
+                        new ChatMessage(ChatMessageRole.User, prompt)
+                    }
+                });
+
+                ErrorsInText errorResult = JsonConvert.DeserializeObject<ErrorsInText>(errorResponse.Choices[0].Message.TextContent);
+
+                if (errorResult != null)
+                {
+                    foreach (ErrorInText error in errorResult.errors)
+                    {
+                        if (!errors.Any(e => e.error == error.error) && model.essay.Contains(error.error))
+                        {
+                            error.comment = error.reason;
+                            errors.Add(error);
+                        }
+                        else
+                        {
+                            Console.Write("duplicate");
+                        }
+                    }
+                }
+
+                result.errors = errors;
+                return result;
+            }
+            catch (Exception e)
+            {
+                Console.Write(e.InnerException.Message);
+                return null;
+            }
+        }
+
+        public async Task<ArgumentFeedback> GetArgumentFeedbackV2(EssayFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string prompt = "";
+                if (!String.IsNullOrEmpty(model.topic) && model.topic == "The writing topic is not provided")
+                {
+                    prompt += "Given the following IELTS Writing topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                }
+                prompt += "Given the following essay paragraph:\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                if (model.feedbackLanguage != "vn")
+                    prompt += "Provide detailed feedback for the arguments used in the paragraph using JSON format. The JSON object should contain the following properties:\r\n\r\n1. assessment: A detailed evaluation of the arguments in the paragraph.\r\n\r\n2. howToImprove: Suggestions for reinforcing the arguments detailed explanations and specific examples.\r\n\r\n3. improvedVersion: An argumentatively enhanced version of the paragraph.\r\n";
+                else
+                    prompt += "Provide detailed feedback for the arguments used in the paragraph using JSON format. The JSON object should contain the following properties:\r\n\r\n1. assessment: A detailed evaluation of the arguments in the paragraph. Response in Vietnamese.\r\n\r\n2. howToImprove: Suggestions for reinforcing the arguments detailed explanations and specific examples. Response in Vietnamese.\r\n\r\n3. improvedVersion: An argumentatively enhanced version of the paragraph in English.\r\n";
+                var result = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                {
+                    Model = "gpt-4o-mini",
+                    Temperature = 0.1,
+                    ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
+                    Messages = new ChatMessage[] {
+                        new ChatMessage(ChatMessageRole.User, prompt)
+                    }
+                });
+
+                ArgumentFeedback feedback = JsonConvert.DeserializeObject<ArgumentFeedback>(result.Choices[0].Message.TextContent);
+                feedback.criteriaId = model.criteriaId;
+                feedback.criteriaName = model.criteriaName;
+                feedback.order = model.order;
+                feedback.paragraphText = model.essay;
+
+                return feedback;
+            }
+            catch (Exception e)
+            {
+                Console.Write(e.InnerException.Message);
+                return null;
+            }
+
+        }
+
+        public async Task<EssayFeedbackV2> getCriteriaFeedbackFreeV2(EssayFeedbackModel model)
+        {
+            try
+            {
+                OpenAIAPI api = new OpenAIAPI(new APIAuthentication(OPENAI_API_KEY));
+                string prompt = "";
+                if(!String.IsNullOrEmpty(model.topic) && model.topic == "The writing topic is not provided")
+                {
+                    prompt += "Given the following IELTS Writing topic:\r\n\r\n" + model.topic + "\r\n\r\n";
+                }
+                if (!String.IsNullOrEmpty(model.chartDescription) && model.criteriaName == "Task Achievement")
+                {
+                    prompt += "Given the following chart information for the IELTS Writing Task 1 topic:\r\n\r\n" + model.chartDescription + "\r\n\r\n";
+                }
+                prompt += "Given the following response essay for the topic:\r\n\r\n" + model.essay + "\r\n\r\n";
+
+                switch (model.criteriaName)
+                {
+                    case "Improved Version":
+                        prompt += "Provide an improved version of the essay while keeping all ideas, author's point of view, arguments, and examples. \r\n\r\nPlease provide the response in plain text without any Markdown or special formatting.\r\n";
+                        break;
+                    case "Vocabulary":
+                        prompt += "Provide a list of 5 advanced words or phrases relevant to the specified topic. Each entry in your response includes the following details:\r\n\r\n- Từ hoặc cụm từ đó viết bằng tiếng anh: nghĩa bằng tiếng Việt.\r\n- Definition: A clear and concise definition of the phrase in English.\r\n- Example: An example sentence demonstrating how the phrase can be used in context related to the topic. The word or phrase must be highlighted in the example.\r\n\r\nPlease provide the response in plain text without any Markdown or special formatting.\r\n";
+                        break;
+                    case "Task Achievement":
+                        if (model.feedbackLanguage != "vn")
+                            prompt += "Provide a detailed assessment and suggestions for improvement for the essay using JSON format. The JSON object should contain the following properties:\r\n\r\n1. score: the score of the essay for the Task Achievement criterion (using IELTS band score in whole number)\r\n\r\n2. fulfillRequirements:\r\n- assessment: A detailed evaluation of how comprehensively all aspects of the prompt are addressed in the essay.\r\n\r\n3. highlightKeyFeatures:\r\n- assessment: A detailed evaluation of the essay’s ability to identify and select the main trends, patterns, and significant data points from the provided information.\r\n\r\n4. compareAndContrast:\r\n- assessment: A detailed evaluation of the essay’s ability to accurately identify relevant data points or trends for comparison and contrast.\r\n\r\nExcept score, each property should also include:\r\n- howToImprove: Suggestions for improvement with detailed explanations and specific examples.\r\n\r\nYour response should be as verbose as possible.\r\n";
+                        else
+                            prompt += "Provide a detailed assessment and suggestions for improvement for the essay using JSON format. The JSON object should contain the following properties:\r\n\r\n1. score: the score of the essay for the Task Achievement criterion (using IELTS band score in whole number)\r\n\r\n2. fulfillRequirements:\r\n- assessment: A detailed evaluation of how comprehensively all aspects of the prompt are addressed in the essay.\r\n\r\n3. highlightKeyFeatures:\r\n- assessment: A detailed evaluation of the essay’s ability to identify and select the main trends, patterns, and significant data points from the provided information.\r\n\r\n4. compareAndContrast:\r\n- assessment: A detailed evaluation of the essay’s ability to accurately identify relevant data points or trends for comparison and contrast.\r\n\r\nExcept score, each property should also include:\r\n- howToImprove: Suggestions for improvement with detailed explanations and specific examples.\r\n\r\nProvide your response in Vietnamese. Your response should be as verbose as possible.\r\n";
+                        break;
+                    case "Task Response":
+                        if (model.feedbackLanguage != "vn")
+                            prompt += "Provide a detailed assessment and suggestions for improvement for the essay using JSON format. The JSON object should contain the following properties:\r\n\r\n1. score: the score of the essay for the Task Response criterion (using IELTS band score in whole number)\r\n\r\n2. answeringAllParts:\r\n- assessment: A detailed evaluation of how well the essay addresses all parts of the question.\r\n\r\n3. clarityOfPosition:\r\n- assessment: A detailed evaluation of the clarity of the author’s position and how well it is maintained throughout the essay.\r\n\r\n4. developmentOfIdeas:\r\n- assessment: A detailed evaluation of how well the essay develops its ideas.\r\n\r\n5. justificationOfOpinion:\r\n- assessment: A detailed evaluation of how effectively the essay justifies its opinions with logical reasoning and evidence.\r\n\r\nExcept score, each property should also include:\r\n- howToImprove: suggestions for improvement with detailed explanations and specific examples (do not suggest adding research results, references, statistics or reports)\r\n\r\nYour response should be as verbose as possible.";
+                        else
+                            prompt += "Provide a detailed assessment and suggestions for improvement for the essay using JSON format. The JSON object should contain the following properties:\r\n\r\n1. score: the score of the essay for the Task Response criterion (using IELTS band score in whole number)\r\n\r\n2. answeringAllParts:\r\n- assessment: A detailed evaluation of how well the essay addresses all parts of the question.\r\n\r\n3. clarityOfPosition:\r\n- assessment: A detailed evaluation of the clarity of the author’s position and how well it is maintained throughout the essay.\r\n\r\n4. developmentOfIdeas:\r\n- assessment: A detailed evaluation of how well the essay develops its ideas.\r\n\r\n5. justificationOfOpinion:\r\n- assessment: A detailed evaluation of how effectively the essay justifies its opinions with logical reasoning and evidence.\r\n\r\nExcept score, each property should also include:\r\n- howToImprove: suggestions for improvement with detailed explanations and specific examples (do not suggest adding research results, references, statistics or reports)\r\n\r\nProvide your response in Vietnamese. Be as verbose as possible.\r\n";
+                        break;
+                    case "Coherence & Cohesion":
+                        if (model.feedbackLanguage != "vn")
+                            prompt += "Provide a detailed assessment and suggestions for improvement for the essay using JSON format. The JSON object should contain the following properties:\r\n\r\n1. score: the score of the essay for the Coherence & Cohesion criterion (using IELTS band score in whole number)\r\n\r\n2. logicalOrganization:\r\n- assessment: A detailed evaluation of how clear and logical the structure of the essay is.\r\n\r\n3. paragraphing:\r\n- assessment: A detailed evaluation of the effectiveness of the essay's paragraph structure.\r\n\r\n4. cohesiveDevices:\r\n- assessment: A detailed evaluation of how appropriately cohesive devices are used in the essay.\r\n\r\nExcept score, each property should also include:\r\n- howToImprove: Suggestions for improvement with detailed explanations and specific examples.\r\n\r\nYour response should be as verbose as possible.\r\n";
+                        else
+                            prompt += "Provide a detailed assessment and suggestions for improvement for the essay using JSON format. The JSON object should contain the following properties:\r\n\r\n1. score: the score of the essay for the Coherence & Cohesion criterion (using IELTS band score in whole number)\r\n\r\n2. logicalOrganization:\r\n- assessment: A detailed evaluation of how clear and logical the structure of the essay is.\r\n\r\n3. paragraphing:\r\n- assessment: A detailed evaluation of the effectiveness of the essay's paragraph structure.\r\n\r\n4. cohesiveDevices:\r\n- assessment: A detailed evaluation of how appropriately cohesive devices are used in the essay.\r\n\r\nExcept score, each property should also include:\r\n- howToImprove: Suggestions for improvement with detailed explanations and specific examples.\r\n\r\nProvide your response in Vietnamese. Suggest cohesive devices in English. Your response should be as verbose as possible.\r\n";
+                        break;
+                    case "Lexical Resource":
+                        if (model.feedbackLanguage != "vn")
+                            prompt += "Provide a detailed assessment and suggestions for improvement for the essay using JSON format. The JSON object should contain the following properties:\r\n\r\n1. score: the score of the essay for the Lexical Resrouce criterion (using IELTS band score in whole number)\r\n\r\n2. rangeOfVocabulary:\r\n- assessment: A detailed evaluation of the essay's ability to use a varied and task-appropriate vocabulary.\r\n\r\n3. accuracyOfWordChoice:\r\n- assessment: A detailed evaluation of how appropriately words are used within their context\r\n\r\n4. spellingAndFormation:\r\n- assessment: A detailed evaluation of the accuracy of spelling and the correct usage of words in their appropriate forms.\r\n\r\nExcept score, each property should also include:\r\n- howToImprove: Suggestions for improvement with detailed explanations and specific examples.\r\n";
+                        else
+                            prompt += "Provide a detailed assessment and suggestions for improvement for the essay using JSON format. The JSON object should contain the following properties:\r\n\r\n1. score: the score of the essay for the Lexical Resrouce criterion (using IELTS band score in whole number)\r\n\r\n2. rangeOfVocabulary:\r\n- assessment: A detailed evaluation of the essay's ability to use a varied and task-appropriate vocabulary.\r\n\r\n3. accuracyOfWordChoice:\r\n- assessment: A detailed evaluation of how appropriately words are used within their context\r\n\r\n4. spellingAndFormation:\r\n- assessment: A detailed evaluation of the accuracy of spelling and the correct usage of words in their appropriate forms.\r\n\r\nExcept score, each property should also include:\r\n- howToImprove: Suggestions for improvement with detailed explanations and specific examples.\r\n\r\nProvide your response in Vietnamese. Your response should be as verbose as possible.\r\n";
+                        break;
+                    case "Grammatical Range & Accuracy":
+                        if (model.feedbackLanguage != "vn")
+                            prompt += "Provide a detailed assessment and suggestions for improvement for the essay using JSON format. The JSON object should contain the following properties:\r\n\r\n1. score: the score of the essay for the Grammatical Range & Accuracy criterion (using IELTS band score in whole number)\r\n\r\n2. grammarRange:\r\n- assessment: A detailed evaluation of the essay's ability to appropriately use a variety of complex and simple grammatical constructions.\r\n\r\n3. grammarAccuracy:\r\n- assessment: A detailed evaluation of the accurate use of various grammatical structures and forms in the essay.\r\n\r\n4. punctuation:\r\n- assessment: A detailed evaluation of the accurate use of punctuation to enhance the clarity and readability of sentences in the essay.\r\n\r\nExcept score, each property should also include:\r\n- howToImprove: Suggestions for improvement with detailed explanations and specific examples.\r\n\r\nYour response should be as verbose as possible.\r\n";
+                        else
+                            prompt += "Provide a detailed assessment and suggestions for improvement for the essay using JSON format. The JSON object should contain the following properties:\r\n\r\n1. score: the score of the essay for the Grammatical Range & Accuracy criterion (using IELTS band score in whole number)\r\n\r\n2. grammarRange:\r\n- assessment: A detailed evaluation of the essay's ability to appropriately use a variety of complex and simple grammatical constructions.\r\n\r\n3. grammarAccuracy:\r\n- assessment: A detailed evaluation of the accurate use of various grammatical structures and forms in the essay.\r\n\r\n4. punctuation:\r\n- assessment: A detailed evaluation of the accurate use of punctuation to enhance the clarity and readability of sentences in the essay.\r\n\r\nExcept score, each property should also include:\r\n- howToImprove: Suggestions for improvement with detailed explanations and specific examples.\r\n\r\nProvide your response in Vietnamese. Your response should be as verbose as possible.\r\n";
+                        break;
+                    default:
+                        break;
+                }
+
+               
+                if(model.criteriaName == "Improved Version")
+                {
+                    var result = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                    {
+                        Model = "gpt-4o-mini",
+                        Temperature = 0.1,
+                        Messages = new ChatMessage[] {
+                            new ChatMessage(ChatMessageRole.User, prompt)
+                        }
+                    });
+                    return new EssayFeedbackV2
+                    {
+                        criteriaId = model.criteriaId,
+                        criteriaName = model.criteriaName,
+                        order = model.order,
+                        improvedVersion = result.Choices[0].Message.TextContent
+                    };
+                }
+                else if(model.criteriaName == "Vocabulary")
+                {
+                    var result = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                    {
+                        Model = "gpt-4o-mini",
+                        Temperature = 0.1,
+                        Messages = new ChatMessage[] {
+                            new ChatMessage(ChatMessageRole.User, prompt)
+                        }
+                    });
+                    return new EssayFeedbackV2
+                    {
+                        criteriaId = model.criteriaId,
+                        criteriaName = model.criteriaName,
+                        order = model.order,
+                        vocabulary = result.Choices[0].Message.TextContent
+                    };
+                }
+                else
+                {
+                    var result = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
+                    {
+                        Model = "gpt-4o-mini",
+                        Temperature = 0.1,
+                        ResponseFormat = ChatRequest.ResponseFormats.JsonObject,
+                        Messages = new ChatMessage[] {
+                            new ChatMessage(ChatMessageRole.User, prompt)
+                        }
+                    });
+                    return new EssayFeedbackV2
+                    {
+                        criteriaId = model.criteriaId,
+                        criteriaName = model.criteriaName,
+                        order = model.order,
+                        criteriaFeedback = JsonConvert.DeserializeObject<IELTSCriterionFeedback>(result.Choices[0].Message.TextContent)
+                    };
+                }
+                
+            }
+            catch (Exception e)
+            {
+                Console.Write(e.InnerException.Message);
+                return null;
+            }
+
+        }
+
 
         public async Task<ErrorsInText> getIntextCommentsFree(CriteriaFeedbackModel model)
         {
