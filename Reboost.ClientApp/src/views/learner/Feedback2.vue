@@ -8,459 +8,119 @@
               <div id="parent-scroll" style="flex-grow: 1;position: relative;">
                 <div id="child-scroll">
                   <div id="rubric">
-                    <div v-if="loadCriteriaFeedbackCompleted || loadEssayScoreCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
-                      <div v-if="loadEssayScoreCompleted">
-                        <el-card
-                          style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
-                          shadow="hover"
-                        >
-                          <div slot="header" class="clearfix">
-                            <div>
-                              <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                                <span>Overall Band Score</span>
-                              </div>
-                              <div style="float: right;">
-                                <div>
-                                  <div>
-                                    <div v-if="essayScore.overallBandScore" class="band-score">
-                                      Band: {{ essayScore.overallBandScore.toString().length == 1 ? essayScore.overallBandScore.toString() + '.0' : essayScore.overallBandScore }}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div style="border: 1px solid rgb(188, 188, 188); padding: 10px; border-radius: 5px;">
-                            <div v-if="essayScore.taskAchievementScore" class="criteria-score">
-                              <div>
-                                <b>
-                                  Task Achievement:
-                                  {{ essayScore.taskAchievementScore.toString().length == 1 ? essayScore.taskAchievementScore.toString() + '.0' : essayScore.taskAchievementScore }}
-                                </b>
-                              </div>
-                              <div v-if="essayScore.highlightKeyFeatures" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.highlightKeyFeatures > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
-                                    essayScore.highlightKeyFeatures == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <span>
-                                    {{ essayScore.highlightKeyFeatures.toString().length == 1 ? essayScore.highlightKeyFeatures.toString() + '.0' : essayScore.highlightKeyFeatures }}
-                                  </span>
-                                </el-tag>
-                                <div class="sub-criteria-label">Highlighting Key Features</div>
-                              </div>
-                              <div v-if="essayScore.compareAndContrast" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.compareAndContrast > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
-                                    essayScore.compareAndContrast == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <span>
-                                    {{ essayScore.compareAndContrast.toString().length == 1 ? essayScore.compareAndContrast.toString() + '.0' : essayScore.compareAndContrast }}
-                                  </span>
-                                </el-tag>
-                                <div class="sub-criteria-label">Comparing and Contrasting Data</div>
-                              </div>
-
-                              <div v-if="essayScore.dataSelection" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.dataSelection > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
-                                    essayScore.dataSelection == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <span>
-                                    {{ essayScore.dataSelection.toString().length == 1 ? essayScore.dataSelection.toString() + '.0' : essayScore.dataSelection }}
-                                  </span>
-
-                                </el-tag>
-                                <div class="sub-criteria-label">Data Selection and Relevance</div>
-                              </div>
-                              <div class="sub-criteria">
-                                <el-tag v-if="essayScore.appropriateWordCount" type="success" size="small">
-                                  <i class="criteria-score-check el-icon-check" />
-                                </el-tag>
-                                <el-tag v-else type="danger" size="small">
-                                  <i class="el-icon-close criteria-score-close" />
-                                </el-tag>
-                                <span class="sub-criteria-label">Appropriate Word Count</span>
-                              </div>
-                            </div>
-
-                            <div v-if="essayScore.taskResponseScore" class="criteria-score">
-                              <div>
-                                <b>
-                                  Task Response:
-                                  {{ essayScore.taskResponseScore.toString().length == 1 ? essayScore.taskResponseScore.toString() + '.0' : essayScore.taskResponseScore }}
-                                </b>
-                              </div>
-                              <div v-if="essayScore.clarityOfPosition" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.clarityOfPosition > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
-                                    essayScore.clarityOfPosition == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <span>
-                                    {{ essayScore.clarityOfPosition.toString().length == 1 ? essayScore.clarityOfPosition.toString() + '.0' : essayScore.clarityOfPosition }}
-                                  </span>
-                                </el-tag>
-                                <span class="sub-criteria-label">Clarity of Position</span>
-                              </div>
-                              <div v-if="essayScore.developmentOfIdeas" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.developmentOfIdeas > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
-                                    essayScore.developmentOfIdeas == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.developmentOfIdeas.toString().length == 1 ? essayScore.developmentOfIdeas.toString() + '.0' : essayScore.developmentOfIdeas }}
-                                  </span>
-                                </el-tag>
-                                <span class="sub-criteria-label">Development of Ideas</span>
-                              </div>
-                              <div v-if="essayScore.justificationOfOpinion" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.justificationOfOpinion > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
-                                    essayScore.justificationOfOpinion == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.justificationOfOpinion.toString().length == 1 ? essayScore.justificationOfOpinion.toString() + '.0' : essayScore.justificationOfOpinion }}
-                                  </span>
-
-                                </el-tag>
-                                <span class="sub-criteria-label">Justification of Opinions</span>
-                              </div>
-                              <div class="sub-criteria">
-                                <el-tag v-if="essayScore.appropriateWordCount" type="success" size="small">
-                                  <i class="criteria-score-check el-icon-check" />
-                                </el-tag>
-                                <el-tag v-else type="danger" size="small">
-                                  <i class="el-icon-close criteria-score-close" />
-                                </el-tag>
-                                <span class="sub-criteria-label">Appropriate Word Count</span>
-                              </div>
-                            </div>
-
-                            <div v-if="essayScore.coherenceScore" class="criteria-score">
-                              <div>
-                                <b>
-                                  Coherence and Cohesion:
-                                  {{ essayScore.coherenceScore.toString().length == 1 ? essayScore.coherenceScore.toString() + '.0' : essayScore.coherenceScore }}
-                                </b>
-                              </div>
-                              <div v-if="essayScore.logicalOrganization" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.logicalOrganization > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
-                                    essayScore.logicalOrganization == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.logicalOrganization.toString().length == 1 ? essayScore.logicalOrganization.toString() + '.0' : essayScore.logicalOrganization }}
-                                  </span>
-                                </el-tag>
-                                <div class="sub-criteria-label">Logical Organization</div>
-                              </div>
-                              <div v-if="essayScore.paragraphing" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.paragraphing > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
-                                    essayScore.paragraphing == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.paragraphing.toString().length == 1 ? essayScore.paragraphing.toString() + '.0' : essayScore.paragraphing }}
-                                  </span>
-
-                                </el-tag>
-                                <div class="sub-criteria-label">Paragraphing</div>
-                              </div>
-                              <div v-if="essayScore.cohesiveDevices" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.cohesiveDevices > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
-                                    essayScore.cohesiveDevices == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.cohesiveDevices.toString().length == 1 ? essayScore.cohesiveDevices.toString() + '.0' : essayScore.cohesiveDevices }}
-                                  </span>
-
-                                </el-tag>
-                                <div class="sub-criteria-label">Use of Cohesive Devices</div>
-                              </div>
-                            </div>
-
-                            <div v-if="essayScore.lexicalResourceScore" class="criteria-score">
-                              <div>
-                                <b>
-                                  Lexical Resource:
-                                  {{ essayScore.lexicalResourceScore.toString().length == 1 ? essayScore.lexicalResourceScore.toString() + '.0' : essayScore.lexicalResourceScore }}
-                                </b>
-                              </div>
-                              <div v-if="essayScore.rangeOfVocabulary" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.rangeOfVocabulary > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
-                                    essayScore.rangeOfVocabulary == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.rangeOfVocabulary.toString().length == 1 ? essayScore.rangeOfVocabulary.toString() + '.0' : essayScore.rangeOfVocabulary }}
-                                  </span>
-
-                                </el-tag>
-                                <div class="sub-criteria-label">Range of Vocabulary</div>
-                              </div>
-                              <div v-if="essayScore.accuracyOfWordChoice" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.accuracyOfWordChoice > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
-                                    essayScore.accuracyOfWordChoice == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.accuracyOfWordChoice.toString().length == 1 ? essayScore.accuracyOfWordChoice.toString() + '.0' : essayScore.accuracyOfWordChoice }}
-                                  </span>
-
-                                </el-tag>
-                                <div class="sub-criteria-label">Accuracy of Word Choice</div>
-                              </div>
-                              <div v-if="essayScore.spellingAndFormation" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.spellingAndFormation > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
-                                    essayScore.spellingAndFormation == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.spellingAndFormation.toString().length == 1 ? essayScore.spellingAndFormation.toString() + '.0' : essayScore.spellingAndFormation }}
-                                  </span>
-
-                                </el-tag>
-                                <div class="sub-criteria-label">Spelling and Word Formation</div>
-                              </div>
-                              <div v-if="essayScore.registerAndStyle" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.registerAndStyle > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
-                                    essayScore.registerAndStyle == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.registerAndStyle.toString().length == 1 ? essayScore.registerAndStyle.toString() + '.0' : essayScore.registerAndStyle }}
-                                  </span>
-
-                                </el-tag>
-                                <div class="sub-criteria-label">Appropriateness of Register and Style</div>
-                              </div>
-                            </div>
-
-                            <div v-if="essayScore.grammarScore" class="criteria-score">
-                              <div>
-                                <b>
-                                  Grammatical Range and Accuracy:
-                                  {{ essayScore.grammarScore.toString().length == 1 ? essayScore.grammarScore.toString() + '.0' : essayScore.grammarScore }}
-                                </b>
-                              </div>
-                              <div v-if="essayScore.grammarRange" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.grammarRange > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
-                                    essayScore.grammarRange == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.grammarRange.toString().length == 1 ? essayScore.grammarRange.toString() + '.0' : essayScore.grammarRange }}
-                                  </span>
-
-                                </el-tag>
-                                <div class="sub-criteria-label">Range of Grammatical Structures</div>
-                              </div>
-                              <div v-if="essayScore.sentenceComplexity" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.sentenceComplexity > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
-                                    essayScore.sentenceComplexity == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.sentenceComplexity.toString().length == 1 ? essayScore.sentenceComplexity.toString() + '.0' : essayScore.sentenceComplexity }}
-                                  </span>
-
-                                </el-tag>
-                                <div class="sub-criteria-label">Sentence Complexity</div>
-                              </div>
-                              <div v-if="essayScore.grammarAccuracy" class="sub-criteria">
-                                <el-tag
-                                  :type="essayScore.grammarAccuracy > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
-                                    essayScore.grammarAccuracy == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
-                                    ? 'success' : 'danger'"
-                                  size="small"
-                                  class="sub-score-tag"
-                                >
-                                  <!-- <span v-if="!userSubscription">
-                                    <el-tooltip class="item" effect="light" placement="top">
-                                      <div slot="content">Mua gói phản hồi để xem điểm thành phần</div>
-                                      <el-button style="padding: 0; border: none; margin-left: 2px; margin-right: 2px;"><i class="fas fa-question-circle" /></el-button>
-                                    </el-tooltip>
-                                  </span> -->
-                                  <span>
-                                    {{ essayScore.grammarAccuracy.toString().length == 1 ? essayScore.grammarAccuracy.toString() + '.0' : essayScore.grammarAccuracy }}
-                                  </span>
-
-                                </el-tag>
-                                <div class="sub-criteria-label">Accuracy in Grammatical Forms</div>
-                              </div>
-                            </div>
-                          </div>
-                          <div v-if="review && review.reviewRequest && review.reviewRequest.feedbackLanguage == 'vn'" style="font-size: 13px; margin-top: 5px; padding:2px;">
-                            <div style="background-color: rgb(244, 244, 245); border-color: rgb(233, 233, 235); color: rgb(144, 147, 153); font-size: 12px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px;">
-                              Xin lưu ý rằng điểm số được cung cấp không phải là điểm IELTS chính thức của bạn và chỉ nên được sử dụng cho mục đích học tập và cải thiện kỹ năng.
-                            </div>
-                          </div>
-                          <div v-else style="font-size: 13px; margin-top: 5px;">
-                            <div style="background-color: rgb(244, 244, 245); border-color: rgb(233, 233, 235); color: rgb(144, 147, 153); font-size: 12px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px;">
-                              Please note that the scores provided are not your official IELTS scores and should be used solely for learning and practicing purposes.
-                            </div>
-                          </div>
-                        </el-card>
-                      </div>
-                      <div v-else>
-                        <div style="background: rgb(248 249 250); height: 200px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px; margin-bottom: 5px;">
-                          <div class="el-loading-spinner" style="position: relative; top: 50px;">
-                            <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
-                            <p class="el-loading-text" style="word-break: break-word;">Đang chấm điểm 4 tiêu chí</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div v-if="loadCriteriaFeedbackCompleted">
-                        <el-card
+                    <div v-if="loadCriteriaFeedbackCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
+                      <div>
+                        <div
                           v-for="criteria in rubricCriteria"
                           :key="criteria.criteriaId"
-                          style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
-                          shadow="hover"
                         >
-                          <div slot="header" class="clearfix">
-                            <div>
-                              <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                                <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
-                                <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
-                                <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
-                                <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
-                                <span v-else>{{ criteria.name }}</span>
-                              </div>
-                              <div style="float: right;">
-                                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
-                                  <div v-if="isAiReview">
-                                    <div v-if="!criteria.loading && criteria.mark" class="band-score">
-                                      Band:
-                                      {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                          <el-card
+
+                            style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
+                            shadow="hover"
+                          >
+                            <div slot="header" class="clearfix">
+                              <div>
+                                <div style="float: left; font-size: 18px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                                  <strong v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</strong>
+                                  <strong v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</strong>
+                                  <strong v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</strong>
+                                  <strong v-else-if="criteria.name == 'Improved Version'">Bài Chữa Tham Khảo</strong>
+                                  <strong v-else>{{ criteria.name }}</strong>
+                                </div>
+                                <div style="float: right;">
+                                  <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
+                                    <div v-if="isAiReview">
+                                      <div v-if="!criteria.loading && criteria.mark" class="band-score">
+                                        Band:
+                                        {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                          <div>
                             <div>
                               <div>
-                                <div v-if="criteria.name == 'Vocabulary' || criteria.name == 'Improved Version'">
-                                  <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px; background: #f7f7f7;" v-html="criteria.comment" />
+                                <div>
+                                  <div v-if="criteria.name == 'Vocabulary' || criteria.name == 'Improved Version'">
+                                    <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px; background: #f7f7f7;" v-html="criteria.comment" />
+                                  </div>
+                                  <div v-else style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px; background: #f7f7f7;" v-html="criteria.comment" />
                                 </div>
-                                <div v-else style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px; background: #f7f7f7;" v-html="criteria.comment" />
+                              </div>
+                            </div>
+                          </el-card>
+
+                          <div v-if="criteria.name == 'Grammatical Range & Accuracy'">
+                            <div v-if="review && review.reviewRequest && review.reviewRequest.feedbackLanguage == 'vn'" style="margin-top: 10px; margin-bottom: 10px;">
+                              <div style="background-color: rgb(255 241 210); border-color: rgb(233, 233, 235); color: rgb(75 111 138); font-size: 15px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px; border-left: #efa800 solid 4px;">
+                                Xin lưu ý rằng điểm số ở trên không phải là điểm IELTS chính thức của bạn và chỉ được cung cấp cho mục đích tham khảo. Bạn nên sử dụng phản hồi để cải thiện bài luận của mình thay vì tập trung vào điểm số.
+                              </div>
+                            </div>
+                            <div v-else style="margin-top: 10px; margin-bottom: 10px;">
+                              <div style="background-color: rgb(255 241 210); border-color: rgb(233, 233, 235); color: rgb(75 111 138); font-size: 15px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px; border-left: #efa800 solid 4px;">
+                                Please note that the scores provided are not your official IELTS scores and should be used solely for learning and practice purposes. You should focus on the feedback that helps you improve the essay rather than on the score.
                               </div>
                             </div>
                           </div>
-                        </el-card>
+                        </div>
+
+                        <div>
+                          <el-card
+                            style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
+                            shadow="hover"
+                          >
+                            <div slot="header" class="clearfix">
+                              <div>
+                                <div style="float: left; font-size: 18px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                                  <strong>Nâng Cấp Từ Vựng Và Ngữ Pháp</strong>
+                                </div>
+                              </div>
+                            </div>
+                            <div>
+                              <div>
+                                <div>
+                                  <el-card
+                                    v-for="comment in comments"
+                                    :key="comment.uuid"
+                                    class="intext-comment"
+                                    style="margin-bottom: 10px;"
+                                  >
+                                    <div
+                                      slot="header"
+                                      class="clearfix"
+                                      :style="comment.type.toLowerCase() == 'grammar' || comment.type.toLowerCase() == 'ngữ pháp' ? 'padding: 8px 12px; background: #ffd6d0;' : 'padding: 8px 12px; background: rgb(213 204 255);'"
+                                    >
+                                      <div>
+                                        <div
+                                          v-if="comment.category"
+                                          style="font-weight: 500; font-size: 15px; text-align: left;  width: 220px; text-overflow: ellipsis; word-break: break-word;  overflow: hidden; white-space: nowrap;"
+                                        >
+                                          {{ comment.category }}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div style="margin-bottom: 10px; border-bottom: #aeaeae dashed 1px; padding-bottom: 10px;">
+                                        <span style="color: #ffa600;">{{ comment.text }}</span>  <i class="el-icon-right" /> <span>{{ comment.fix }}</span>
+                                      </div>
+                                      <div
+                                        v-show="!comment.isSelected "
+                                        :id="'comment-text-' + comment.uuid"
+                                        :style="{'-webkit-line-clamp': isInShowMoreList(comment.uuid).value==0 ? '3':'inherit'}"
+                                        style="text-align: left; overflow-wrap: break-word; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
+                                      >
+                                        <div>{{ comment.comment }}</div>
+                                      </div>
+                                    </div>
+                                  </el-card>
+                                </div>
+                              </div>
+                            </div>
+                          </el-card>
+                        </div>
+
                         <el-card
                           v-if="isAiReview && rubricCriteria && rubricCriteria.length > 0"
                           style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
@@ -499,14 +159,6 @@
                           </div>
                         </el-card>
                       </div>
-                      <div v-else>
-                        <div style="background: rgb(248 249 250); height: 200px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
-                          <div class="el-loading-spinner" style="position: relative; top: 50px;">
-                            <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
-                            <p class="el-loading-text" style="word-break: break-word;">Đang đánh giá bài viết và cung cấp phản hồi</p>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                     <div v-else>
                       <div v-if="loadingReview" style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
@@ -524,7 +176,7 @@
                       <div v-else style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                         <div class="el-loading-spinner" style="position: relative; top: 220px;">
                           <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
-                          <p class="el-loading-text" style="word-break: break-word;">Đang chấm 4 tiêu chí, đánh giá lập luận, và cung cấp gợi ý cải thiện</p>
+                          <p class="el-loading-text" style="word-break: break-word;">Đang chấm bài và tạo phản hồi</p>
                         </div>
                       </div>
                     </div>
@@ -581,7 +233,7 @@
             <div
               v-loading="true"
               style="height: 545px;"
-              element-loading-text="Đang tìm lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
+              element-loading-text="Đang tìm các lỗi sai và lựa chọn phương án sửa phù hợp"
               element-loading-background="rgb(248 249 250)"
             />
           </div>
@@ -698,350 +350,182 @@
   <div v-else id="reviewContainer">
     <div style="width: 100%; margin-top: 55px; height: calc(100vh - 60px); overflow: auto;">
       <!-- Question, rubric, and rate tab -->
+      <div id="document-wrapper" style="margin-bottom: 10px;">
+        <toolbar
+          ref="toolBar"
+          :review-page="this"
+          :expandcolorpicker.sync="expandColorPicker"
+          :documentid="documentId"
+          :reviewid="reviewId"
+          :renderoptions="RENDER_OPTIONS"
+          :is-rate="isRate"
+          :is-rated="isRated"
+          :is-author="isReviewAuth"
+          :is-submit="isSubmit"
+          :is-loading="isLoading"
+          @expandColorPickerToggle="expandColorPicker=$event"
+          @hideQuestion="hideQuestion($event)"
+          @redoAnnotation="redo($event)"
+          @undoAnnotation="undoAnnotation"
+          @scaleChange="handleScale($event)"
+          @highLightText="highlightEvent($event)"
+          @toolBarButtonChange="toolBarButtonClick($event)"
+          @rateBtnClick="rateReview"
+          @openDialogRevise="reviseDialogVisible = true"
+          @closeDialogRevise="reviseDialogVisible = false"
+        />
+
+        <div id="viewerContainer">
+          <div v-if="!completeLoading" style="width: calc(100% - 10px);">
+            <div
+              v-loading="true"
+              style="height: 545px;"
+              element-loading-text="Đang tìm các lỗi sai và lựa chọn phương án sửa phù hợp"
+              element-loading-background="rgb(248 249 250)"
+            />
+          </div>
+          <div
+            v-else
+            id="viewer"
+            :class="{'freeText': activeButton== 'text'}"
+            class="pdfViewer"
+            :document-id="documentId"
+            style="padding-bottom: 10px;"
+          />
+
+        </div>
+      </div>
+
       <div id="tabs-wrapper">
         <el-tabs v-model="selectedTab" type="border-card" style="margin-bottom: 10px;">
           <el-tab-pane name="rubric" label="Phản hồi cho bài viết">
             <div id="parent-scroll" style="flex-grow: 1;position: relative;">
               <div id="child-scroll">
                 <div id="rubric">
-                  <div v-if="loadCriteriaFeedbackCompleted || loadEssayScoreCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
-                    <div v-if="loadEssayScoreCompleted">
-                      <el-card
-                        style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
-                        shadow="hover"
-                      >
-                        <div slot="header" class="clearfix">
-                          <div>
-                            <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                              <span>Overall Band Score</span>
+                  <div v-if="loadCriteriaFeedbackCompleted" style="height: 100%; overflow: auto; padding-bottom: 20px;">
+                    <div>
+
+                      <div>
+                        <el-card
+                          style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
+                          shadow="hover"
+                        >
+                          <div slot="header" class="clearfix">
+                            <div>
+                              <div style="float: left; font-size: 18px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                                <strong>Nâng Cấp Từ Vựng Và Ngữ Pháp</strong>
+                              </div>
                             </div>
-                            <div style="float: right;">
-                              <div>
-                                <div>
-                                  <div v-if="essayScore.overallBandScore" class="band-score">
-                                    Band: {{ essayScore.overallBandScore.toString().length == 1 ? essayScore.overallBandScore.toString() + '.0' : essayScore.overallBandScore }}
+                          </div>
+                          <div>
+                            <div>
+                              <div v-if="comments && comments.length > 0">
+                                <el-card
+                                  v-for="comment in comments"
+                                  :key="comment.uuid"
+                                  class="intext-comment"
+                                  style="margin-bottom: 10px;"
+                                >
+                                  <div
+                                    slot="header"
+                                    class="clearfix"
+                                    :style="comment.type.toLowerCase() == 'grammar' || comment.type.toLowerCase() == 'ngữ pháp' ? 'padding: 8px 12px; background: #ffd6d0;' : 'padding: 8px 12px; background: rgb(213 204 255);'"
+                                  >
+                                    <div>
+                                      <div
+                                        v-if="comment.category"
+                                        style="font-weight: 500; font-size: 15px; text-align: left;  width: 220px; text-overflow: ellipsis; word-break: break-word;  overflow: hidden; white-space: nowrap;"
+                                      >
+                                        {{ comment.category }}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div style="margin-bottom: 10px; border-bottom: #aeaeae dashed 1px; padding-bottom: 10px;">
+                                      <span style="color: #ffa600;">{{ comment.text }}</span>  <i class="el-icon-right" /> <span>{{ comment.fix }}</span>
+                                    </div>
+                                    <div
+                                      v-show="!comment.isSelected "
+                                      :id="'comment-text-' + comment.uuid"
+                                      :style="{'-webkit-line-clamp': isInShowMoreList(comment.uuid).value==0 ? '3':'inherit'}"
+                                      style="text-align: left; overflow-wrap: break-word; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
+                                    >
+                                      <div>{{ comment.comment }}</div>
+                                    </div>
+                                  </div>
+                                </el-card>
+                              </div>
+                              <div v-else>
+                                <div style="background: rgb(248 249 250); height: 200px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px; margin-bottom: 5px;">
+                                  <div class="el-loading-spinner" style="position: relative; top: 60px;">
+                                    <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                        <div style="border: 1px solid rgb(188, 188, 188); padding: 10px; border-radius: 5px;">
-                          <div v-if="essayScore.taskAchievementScore" class="criteria-score">
-                            <div>
-                              <b>
-                                Task Achievement:
-                                {{ essayScore.taskAchievementScore.toString().length == 1 ? essayScore.taskAchievementScore.toString() + '.0' : essayScore.taskAchievementScore }}
-                              </b>
-                            </div>
-                            <div v-if="essayScore.highlightKeyFeatures" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.highlightKeyFeatures > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
-                                  essayScore.highlightKeyFeatures == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.highlightKeyFeatures.toString().length == 1 ? essayScore.highlightKeyFeatures.toString() + '.0' : essayScore.highlightKeyFeatures }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Highlighting Key Features</div>
-                            </div>
-                            <div v-if="essayScore.compareAndContrast" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.compareAndContrast > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
-                                  essayScore.compareAndContrast == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.compareAndContrast.toString().length == 1 ? essayScore.compareAndContrast.toString() + '.0' : essayScore.compareAndContrast }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Comparing and Contrasting Data</div>
-                            </div>
-
-                            <div v-if="essayScore.dataSelection" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.dataSelection > Math.min(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection) ||
-                                  essayScore.dataSelection == Math.max(essayScore.highlightKeyFeatures, essayScore.compareAndContrast, essayScore.dataSelection)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.dataSelection.toString().length == 1 ? essayScore.dataSelection.toString() + '.0' : essayScore.dataSelection }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Data Selection and Relevance</div>
-                            </div>
-                            <div class="sub-criteria">
-                              <el-tag v-if="essayScore.appropriateWordCount" type="success" size="small">
-                                <i class="criteria-score-check el-icon-check" />
-                              </el-tag>
-                              <el-tag v-else type="danger" size="small">
-                                <i class="el-icon-close criteria-score-close" />
-                              </el-tag>
-                              <span class="sub-criteria-label">Appropriate Word Count</span>
-                            </div>
-                          </div>
-
-                          <div v-if="essayScore.taskResponseScore" class="criteria-score">
-                            <div>
-                              <b>
-                                Task Response:
-                                {{ essayScore.taskResponseScore.toString().length == 1 ? essayScore.taskResponseScore.toString() + '.0' : essayScore.taskResponseScore }}
-                              </b>
-                            </div>
-                            <div v-if="essayScore.clarityOfPosition" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.clarityOfPosition > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
-                                  essayScore.clarityOfPosition == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.clarityOfPosition.toString().length == 1 ? essayScore.clarityOfPosition.toString() + '.0' : essayScore.clarityOfPosition }}
-                              </el-tag>
-                              <span class="sub-criteria-label">Clarity of Position</span>
-                            </div>
-                            <div v-if="essayScore.developmentOfIdeas" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.developmentOfIdeas > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
-                                  essayScore.developmentOfIdeas == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.developmentOfIdeas.toString().length == 1 ? essayScore.developmentOfIdeas.toString() + '.0' : essayScore.developmentOfIdeas }}
-                              </el-tag>
-                              <span class="sub-criteria-label">Development of Ideas</span>
-                            </div>
-                            <div v-if="essayScore.justificationOfOpinion" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.justificationOfOpinion > Math.min(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion) ||
-                                  essayScore.justificationOfOpinion == Math.max(essayScore.clarityOfPosition, essayScore.developmentOfIdeas, essayScore.justificationOfOpinion)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.justificationOfOpinion.toString().length == 1 ? essayScore.justificationOfOpinion.toString() + '.0' : essayScore.justificationOfOpinion }}
-                              </el-tag>
-                              <span class="sub-criteria-label">Justification of Opinions</span>
-                            </div>
-                            <div class="sub-criteria">
-                              <el-tag v-if="essayScore.appropriateWordCount" type="success" size="small">
-                                <i class="criteria-score-check el-icon-check" />
-                              </el-tag>
-                              <el-tag v-else type="danger" size="small">
-                                <i class="el-icon-close criteria-score-close" />
-                              </el-tag>
-                              <span class="sub-criteria-label">Appropriate Word Count</span>
-                            </div>
-                          </div>
-
-                          <div v-if="essayScore.coherenceScore" class="criteria-score">
-                            <div>
-                              <b>
-                                Coherence and Cohesion:
-                                {{ essayScore.coherenceScore.toString().length == 1 ? essayScore.coherenceScore.toString() + '.0' : essayScore.coherenceScore }}
-                              </b>
-                            </div>
-                            <div v-if="essayScore.logicalOrganization" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.logicalOrganization > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
-                                  essayScore.logicalOrganization == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.logicalOrganization.toString().length == 1 ? essayScore.logicalOrganization.toString() + '.0' : essayScore.logicalOrganization }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Logical Organization</div>
-                            </div>
-                            <div v-if="essayScore.paragraphing" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.paragraphing > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
-                                  essayScore.paragraphing == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.paragraphing.toString().length == 1 ? essayScore.paragraphing.toString() + '.0' : essayScore.paragraphing }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Paragraphing</div>
-                            </div>
-                            <div v-if="essayScore.cohesiveDevices" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.cohesiveDevices > Math.min(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices) ||
-                                  essayScore.cohesiveDevices == Math.max(essayScore.logicalOrganization, essayScore.paragraphing, essayScore.cohesiveDevices)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.cohesiveDevices.toString().length == 1 ? essayScore.cohesiveDevices.toString() + '.0' : essayScore.cohesiveDevices }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Use of Cohesive Devices</div>
-                            </div>
-                          </div>
-
-                          <div v-if="essayScore.lexicalResourceScore" class="criteria-score">
-                            <div>
-                              <b>
-                                Lexical Resource:
-                                {{ essayScore.lexicalResourceScore.toString().length == 1 ? essayScore.lexicalResourceScore.toString() + '.0' : essayScore.lexicalResourceScore }}
-                              </b>
-                            </div>
-                            <div v-if="essayScore.rangeOfVocabulary" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.rangeOfVocabulary > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
-                                  essayScore.rangeOfVocabulary == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.rangeOfVocabulary.toString().length == 1 ? essayScore.rangeOfVocabulary.toString() + '.0' : essayScore.rangeOfVocabulary }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Range of Vocabulary</div>
-                            </div>
-                            <div v-if="essayScore.accuracyOfWordChoice" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.accuracyOfWordChoice > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
-                                  essayScore.accuracyOfWordChoice == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.accuracyOfWordChoice.toString().length == 1 ? essayScore.accuracyOfWordChoice.toString() + '.0' : essayScore.accuracyOfWordChoice }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Accuracy of Word Choice</div>
-                            </div>
-                            <div v-if="essayScore.spellingAndFormation" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.spellingAndFormation > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
-                                  essayScore.spellingAndFormation == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.spellingAndFormation.toString().length == 1 ? essayScore.spellingAndFormation.toString() + '.0' : essayScore.spellingAndFormation }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Spelling and Word Formation</div>
-                            </div>
-                            <div v-if="essayScore.registerAndStyle" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.registerAndStyle > Math.min(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle) ||
-                                  essayScore.registerAndStyle == Math.max(essayScore.rangeOfVocabulary, essayScore.accuracyOfWordChoice, essayScore.spellingAndFormation, essayScore.registerAndStyle)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.registerAndStyle.toString().length == 1 ? essayScore.registerAndStyle.toString() + '.0' : essayScore.registerAndStyle }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Appropriateness of Register and Style</div>
-                            </div>
-                          </div>
-
-                          <div v-if="essayScore.grammarScore" class="criteria-score">
-                            <div>
-                              <b>
-                                Grammatical Range and Accuracy:
-                                {{ essayScore.grammarScore.toString().length == 1 ? essayScore.grammarScore.toString() + '.0' : essayScore.grammarScore }}
-                              </b>
-                            </div>
-                            <div v-if="essayScore.grammarRange" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.grammarRange > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
-                                  essayScore.grammarRange == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.grammarRange.toString().length == 1 ? essayScore.grammarRange.toString() + '.0' : essayScore.grammarRange }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Range of Grammatical Structures</div>
-                            </div>
-                            <div v-if="essayScore.sentenceComplexity" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.sentenceComplexity > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
-                                  essayScore.sentenceComplexity == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.sentenceComplexity.toString().length == 1 ? essayScore.sentenceComplexity.toString() + '.0' : essayScore.sentenceComplexity }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Sentence Complexity</div>
-                            </div>
-                            <div v-if="essayScore.grammarAccuracy" class="sub-criteria">
-                              <el-tag
-                                :type="essayScore.grammarAccuracy > Math.min(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy) ||
-                                  essayScore.grammarAccuracy == Math.max(essayScore.grammarRange, essayScore.sentenceComplexity, essayScore.grammarAccuracy)
-                                  ? 'success' : 'danger'"
-                                size="small"
-                                class="sub-score-tag"
-                              >
-                                {{ essayScore.grammarAccuracy.toString().length == 1 ? essayScore.grammarAccuracy.toString() + '.0' : essayScore.grammarAccuracy }}
-                              </el-tag>
-                              <div class="sub-criteria-label">Accuracy in Grammatical Forms</div>
-                            </div>
-                          </div>
-                        </div>
-                        <div v-if="review && review.reviewRequest && review.reviewRequest.feedbackLanguage == 'vn'" style="font-size: 13px; margin-top: 5px; padding:2px;">
-                          <div style="background-color: rgb(244, 244, 245); border-color: rgb(233, 233, 235); color: rgb(144, 147, 153); font-size: 12px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px;">
-                            Xin lưu ý rằng điểm số được cung cấp không phải là điểm IELTS chính thức của bạn và chỉ nên được sử dụng cho mục đích học tập và cải thiện kỹ năng.
-                          </div>
-                        </div>
-                        <div v-else style="font-size: 13px; margin-top: 5px;">
-                          <div style="background-color: rgb(244, 244, 245); border-color: rgb(233, 233, 235); color: rgb(144, 147, 153); font-size: 12px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px;">
-                            Please note that the scores provided are not your official IELTS scores and should be used solely for learning and practicing purposes.
-                          </div>
-                        </div>
-                      </el-card>
-                    </div>
-                    <div v-else>
-                      <div style="background: rgb(248 249 250); height: 200px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px; margin-bottom: 5px;">
-                        <div class="el-loading-spinner" style="position: relative; top: 50px;">
-                          <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
-                          <p class="el-loading-text" style="word-break: break-word;">Đang chấm điểm 4 tiêu chí</p>
-                        </div>
+                        </el-card>
                       </div>
-                    </div>
-                    <div v-if="loadCriteriaFeedbackCompleted">
-                      <el-card
+
+                      <div
                         v-for="criteria in rubricCriteria"
                         :key="criteria.criteriaId"
-                        style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
-                        shadow="hover"
                       >
-                        <div slot="header" class="clearfix">
-                          <div>
-                            <div style="float: left; font-size: 16px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
-                              <span v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</span>
-                              <span v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</span>
-                              <span v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</span>
-                              <span v-else-if="criteria.name == 'Improved Version'">Phiên Bản Cải Thiện</span>
-                              <span v-else>{{ criteria.name }}</span>
-                            </div>
-                            <div style="float: right;">
-                              <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
-                                <div v-if="isAiReview">
-                                  <div v-if="!criteria.loading && criteria.mark" class="band-score">
-                                    Band:
-                                    {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                        <el-card
+
+                          style="margin-bottom: 5px; border: 1px solid rgb(190, 190, 190);"
+                          shadow="hover"
+                        >
+                          <div slot="header" class="clearfix">
+                            <div>
+                              <div style="float: left; font-size: 18px; color: #4a6f8a; font-weight: 500; word-break: break-word; overflow: hidden; white-space: nowrap;">
+                                <strong v-if="criteria.name == 'Critical Errors'">Nâng Cấp Từ Vựng Và Ngữ Pháp</strong>
+                                <strong v-else-if="criteria.name == 'Arguments Assessment'">Củng Cố Lập Luận</strong>
+                                <strong v-else-if="criteria.name == 'Vocabulary'">Từ Vựng Tham Khảo</strong>
+                                <strong v-else-if="criteria.name == 'Improved Version'">Bài Chữa Tham Khảo</strong>
+                                <strong v-else>{{ criteria.name }}</strong>
+                              </div>
+                              <div style="float: right;">
+                                <div v-if="criteria.name != 'Critical Errors' && criteria.name != 'Arguments Assessment' && criteria.name != 'Vocabulary' && criteria.name != 'Improved Version'">
+                                  <div v-if="isAiReview">
+                                    <div v-if="!criteria.loading && criteria.mark" class="band-score">
+                                      Band:
+                                      {{ criteria.mark.toString().length == 1 ? criteria.mark.toString() + '.0' : criteria.mark }}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                        <div>
                           <div>
                             <div>
-                              <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px;" v-html="criteria.comment" />
+                              <div>
+                                <div v-if="criteria.name == 'Vocabulary' || criteria.name == 'Improved Version'">
+                                  <pre style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px; background: #f7f7f7;" v-html="criteria.comment" />
+                                </div>
+                                <div v-else style="border: #bcbcbc solid 1px; padding: 10px; border-radius: 5px; background: #f7f7f7;" v-html="criteria.comment" />
+                              </div>
+                            </div>
+                          </div>
+                        </el-card>
+
+                        <div v-if="criteria.name == 'Grammatical Range & Accuracy'">
+                          <div v-if="review && review.reviewRequest && review.reviewRequest.feedbackLanguage == 'vn'" style="margin-top: 10px; margin-bottom: 10px;">
+                            <div style="background-color: rgb(255 241 210); border-color: rgb(233, 233, 235); color: rgb(75 111 138); font-size: 15px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px; border-left: #efa800 solid 4px;">
+                              Xin lưu ý rằng điểm số ở trên không phải là điểm IELTS chính thức của bạn và chỉ được cung cấp cho mục đích tham khảo. Bạn nên sử dụng phản hồi để cải thiện bài luận của mình thay vì tập trung vào điểm số.
+                            </div>
+                          </div>
+                          <div v-else style="margin-top: 10px; margin-bottom: 10px;">
+                            <div style="background-color: rgb(255 241 210); border-color: rgb(233, 233, 235); color: rgb(75 111 138); font-size: 15px; border-width: 1px; border-style: solid; border-radius: 4px; padding: 10px; border-left: #efa800 solid 4px;">
+                              Please note that the scores provided are not your official IELTS scores and should be used solely for learning and practice purposes. You should focus on the feedback that helps you improve the essay rather than on the score.
                             </div>
                           </div>
                         </div>
-                      </el-card>
+                      </div>
+
                       <el-card
                         v-if="isAiReview && rubricCriteria && rubricCriteria.length > 0"
-                        style="margin-top: 10px; margin-bottom: 5px; margin-left: 3px; background: rgb(129 152 155);"
+                        style="margin-top: 10px; margin-bottom: 5px; background: rgb(129 152 155);"
                         shadow="hover"
                       >
                         <div slot="header" class="clearfix">
@@ -1077,14 +561,6 @@
                         </div>
                       </el-card>
                     </div>
-                    <div v-else>
-                      <div style="background: rgb(248 249 250); height: 200px; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
-                        <div class="el-loading-spinner" style="position: relative; top: 50px;">
-                          <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
-                          <p class="el-loading-text" style="word-break: break-word;">Đang đánh giá bài viết và cung cấp phản hồi</p>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                   <div v-else>
                     <div v-if="loadingReview" style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
@@ -1102,7 +578,7 @@
                     <div v-else style="background: rgb(248 249 250); height: 92vh; border: #bcbcbc solid 1px; padding-top: 40px; border-radius: 5px;">
                       <div class="el-loading-spinner" style="position: relative; top: 220px;">
                         <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path" /></svg>
-                        <p class="el-loading-text" style="word-break: break-word;">Đang đánh giá bài luận và cung cấp gợi ý cải thiện</p>
+                        <p class="el-loading-text" style="word-break: break-word;">Đang chấm bài và tạo phản hồi</p>
                       </div>
                     </div>
                   </div>
@@ -1127,50 +603,6 @@
 
         </el-tabs>
       </div>
-      <div id="document-wrapper">
-        <toolbar
-          ref="toolBar"
-          :review-page="this"
-          :expandcolorpicker.sync="expandColorPicker"
-          :documentid="documentId"
-          :reviewid="reviewId"
-          :renderoptions="RENDER_OPTIONS"
-          :is-rate="isRate"
-          :is-rated="isRated"
-          :is-author="isReviewAuth"
-          :is-submit="isSubmit"
-          :is-loading="isLoading"
-          @expandColorPickerToggle="expandColorPicker=$event"
-          @hideQuestion="hideQuestion($event)"
-          @redoAnnotation="redo($event)"
-          @undoAnnotation="undoAnnotation"
-          @scaleChange="handleScale($event)"
-          @highLightText="highlightEvent($event)"
-          @toolBarButtonChange="toolBarButtonClick($event)"
-          @rateBtnClick="rateReview"
-          @openDialogRevise="reviseDialogVisible = true"
-          @closeDialogRevise="reviseDialogVisible = false"
-        />
-
-        <div id="viewerContainer">
-          <div v-if="!completeLoading" style="width: calc(100% - 10px);">
-            <div
-              v-loading="true"
-              style="height: 545px;"
-              element-loading-text="Đang tìm lỗi trong bài viết và lựa chọn phương án sửa phù hợp"
-              element-loading-background="rgb(248 249 250)"
-            />
-          </div>
-          <div
-            v-else
-            id="viewer"
-            :class="{'freeText': activeButton== 'text'}"
-            class="pdfViewer"
-            :document-id="documentId"
-          />
-
-        </div>
-      </div>
 
       <div id="comment-wrapper">
         <el-card
@@ -1183,7 +615,7 @@
           :left="comment.annotation.left"
           :page-num="comment.annotation.page"
           :page-height="comment.annotation.pageHeight"
-          :style="{top: comment.topPosition + 'px', width: '100%'}"
+          style="display: none;"
         >
           <div
             slot="header"
@@ -1631,22 +1063,9 @@ export default {
       if (!this.hasGrade && this.loadErrorsCompleted && this.essayScore && this.rubricCriteria) {
         setTimeout(function() {
           if (!that.userSubscription) { that.$refs.pricingDialog?.openDialog() }
-        }, 5000)
+        }, 10000)
 
         this.loadFeedbackCompleted = true
-        // 1. Populate data for the critical errors criteria
-        // if (this.errors && this.errors.length > 0) {
-        //   let errorFeedback = ''
-        //   let explain = 'Explain'
-        //   if (this.review.reviewRequest.feedbackLanguage == 'vn') { explain = 'Giải thích' }
-        //   for (let i = 0; i < this.errors.length; i++) {
-        //     const order = i + 1
-        //     const error = order.toString() + ". '" + this.errors[i].error + "' --> '" + this.errors[i].fix + "'\n- " + explain + ': ' + this.errors[i].comment + '\n\n'
-        //     errorFeedback += error
-        //   }
-        //   const criticalError = this.rubricCriteria.find(c => c.name == 'Critical Errors')
-        //   criticalError.comment = errorFeedback
-        // }
 
         // 2. populate the score for each criteria
         const taskAchivement = this.rubricCriteria.find(c => c.name == 'Task Achievement')
@@ -1679,7 +1098,7 @@ export default {
       } else if (this.loadedAnnotation && this.loadedAnnotation.annotations && this.loadedAnnotation.annotations.length > 0 && this.essayScore && this.rubricCriteria) {
         setTimeout(function() {
           if (!that.userSubscription) { that.$refs.pricingDialog?.openDialog() }
-        }, 5000)
+        }, 10000)
         this.loadFeedbackCompleted = true
         console.log('Feedback load completed')
       }
@@ -3813,6 +3232,11 @@ li {
   overflow: auto !important;
 }
 .comment-card >.el-card__header, .add-new-comment >.el-card__header {
+  /* background: #b3d4f4; */
+  padding: 0px !important;
+}
+
+.intext-comment >.el-card__header, .add-new-comment >.el-card__header {
   /* background: #b3d4f4; */
   padding: 0px !important;
 }

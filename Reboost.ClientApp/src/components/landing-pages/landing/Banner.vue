@@ -16,7 +16,7 @@
                 class="btn btn-dark"
                 style="font-size: 18px; padding: 12px 50px; margin-top: 50px; background-color: #4b6f8a;"
                 @click="openRequestReviewDialog()"
-              > Chấm IELTS Writing Miễn Phí
+              > Chấm Điểm IELTS Writing
               </el-button>
               <div style="margin-top: 20px;">
                 <a style="text-decoration: underline; cursor: pointer;  font-weight: 500;" href="sample/feedback/basic" target="_blank">
@@ -94,7 +94,7 @@
                 class="btn btn-dark"
                 style="font-size: 18px; padding: 12px 30px; margin-top: 30px; background-color: #4b6f8a;"
                 @click="openRequestReviewDialog()"
-              >  Chấm IELTS Writing Miễn Phí
+              >  Chấm Điểm IELTS Writing
               </el-button>
 
               <div style="margin-top: 20px;">

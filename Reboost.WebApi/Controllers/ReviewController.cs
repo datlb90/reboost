@@ -69,19 +69,21 @@ namespace Reboost.WebApi.Controllers
             return await _service.GetCriteriaFeedbackV2(currentUser, model);
         }
 
-
+        [Authorize]
         [HttpPost("intext/comment/v2")]
         public async Task<ErrorsInText> getIntextCommentsV2(CriteriaFeedbackModel model)
         {
             return await _service.getIntextCommentsV2(model);
         }
 
+        [Authorize]
         [HttpPost("argument/feedback/v2")]
         public async Task<EssayFeedbackV2> GetArgumentFeedbackV2(EssayFeedbackModel model)
         {
             return await _service.GetArgumentFeedbackV2(model);
         }
 
+        [Authorize]
         [HttpPost("criteria/feedback/free/v2")]
         public async Task<EssayFeedbackV2> getCriteriaFeedbackFreeV2(EssayFeedbackModel model)
         {
@@ -105,6 +107,7 @@ namespace Reboost.WebApi.Controllers
         {
             return await _service.getIntextCommentsFree(model);
         }
+
         [Authorize]
         [HttpPost("essay/score/free")]
         public async Task<ReviewScores> getEssayScoreFree(CriteriaFeedbackModel model)
@@ -181,7 +184,6 @@ namespace Reboost.WebApi.Controllers
             model.userId = currentUser.Id;
             return await _service.getEssayScore(model);
         }
-
 
         [Authorize]
         [HttpPost("ai/feedback/intext/comment")]

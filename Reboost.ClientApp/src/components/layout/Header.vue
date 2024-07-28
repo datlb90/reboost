@@ -17,16 +17,16 @@
           <b-navbar-toggle target="navbarSupportedContent" />
           <b-collapse id="navbarSupportedContent" class="collapse navbar-collapse mean-menu" is-nav>
             <ul v-if="role == userRole.LEARNER" class="navbar-nav nav mr-auto nav-wrapper">
-              <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="padding-bottom: 12px;">
+              <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="margin-top: 10px;">
                 <router-link to="/questions" class="nav-link">Chủ đề viết</router-link>
               </li>
-              <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="padding-bottom: 12px;">
+              <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="margin-top: 10px;">
                 <router-link to="/submissions" class="nav-link">Bài viết của tôi</router-link>
               </li>
-              <li class="nav-item" style="padding-bottom: 12px;">
+              <li class="nav-item" style="margin-top: 10px;">
                 <a href="#" class="nav-link" @click.prevent="gotoPricing()">Bảng giá</a>
               </li>
-              <li class="nav-item" style="padding-bottom: 12px;">
+              <li class="nav-item" style="margin-top: 10px;">
                 <a href="/" class="nav-link" @click.prevent="openContactDialog()">Liên hệ</a>
               </li>
             </ul>

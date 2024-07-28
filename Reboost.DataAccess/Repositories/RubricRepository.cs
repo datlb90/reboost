@@ -43,7 +43,7 @@ namespace Reboost.DataAccess.Repositories
                             criteriaId = rubricCriteria.Id,
                             name = rubricCriteria.Name,
                             order = rubricCriteria.OrderId
-                        }).ToListAsync();
+                        }).OrderBy(r => r.order).ToListAsync();
         }
 
         public async Task<Rubrics> GetByIdAsync(int id)

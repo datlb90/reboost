@@ -645,11 +645,13 @@ namespace Reboost.Service.Services
                 {
                     if (userSubscription.PlanId >= 4)
                     {
-                        return await getDeepIntextComments(model);
+                        return await getDetailedIntextComments(model);
+                        //return await getDeepIntextComments(model);
                     }
                     else
                     {
-                        return await getDetailedIntextComments(model);
+                        //return await getDetailedIntextComments(model);
+                        return await chatGPTService.getIntextCommentsV2(model);
                     }
                 }
             }
@@ -824,8 +826,6 @@ namespace Reboost.Service.Services
             return result;
         }
 
-
-
         public async Task<ErrorsInText> getIntextCommentsV2(CriteriaFeedbackModel model)
         {
             return await chatGPTService.getIntextCommentsV2(model);
@@ -841,8 +841,8 @@ namespace Reboost.Service.Services
                 result.criteriaId = model.criteriaId;
                 model.essay = model.essay.Replace("\r", String.Empty);
                 string[] paragraphs = model.essay.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-
-                if(paragraphs.Length <= 0)
+                paragraphs = paragraphs.Where(p => !String.IsNullOrWhiteSpace(p)).ToArray();
+                if (paragraphs.Length <= 0)
                 {
                     return null;
                 }
