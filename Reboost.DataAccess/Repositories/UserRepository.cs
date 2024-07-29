@@ -10,6 +10,7 @@ namespace Reboost.DataAccess.Repositories
 {
     public interface IUserRepository
     {
+        bool IpAddressExist(string ipAddress);
         Task<bool> UsernameExist(string email, string phoneNumber);
         Task RecordUserLogin(string userId);
         Task<User> GetByIdAsync(string id);
@@ -29,6 +30,14 @@ namespace Reboost.DataAccess.Repositories
         public UserRepository(ReboostDbContext context)
         {
             _context = context;
+        }
+        public bool IpAddressExist(string ipAddress)
+        {
+            int count = _context.Users.Count(u => u.IpAddress == ipAddress);
+            if (count > 0)
+                return true;
+            else
+                return false;
         }
         public async Task<bool> UsernameExist(string email, string phoneNumber)
         {

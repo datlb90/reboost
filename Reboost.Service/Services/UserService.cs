@@ -10,6 +10,7 @@ namespace Reboost.Service.Services
 {
     public interface IUserService
     {
+        bool IpAddressExist(string ipAddress);
         Task<bool> UsernameExist(string email, string phoneNumber);
         Task RecordUserLogin(string userId);
         Task<ContactRequestModel> SendSupportEmail(ContactRequestModel model);
@@ -29,6 +30,11 @@ namespace Reboost.Service.Services
         public UserService(IUnitOfWork unitOfWork, IMailService _mailService) : base(unitOfWork)
         {
             mailService = _mailService;
+        }
+
+        public bool IpAddressExist(string ipAddress)
+        {
+            return _unitOfWork.Users.IpAddressExist(ipAddress);
         }
         public async Task<bool> UsernameExist(string email, string phoneNumber)
         {

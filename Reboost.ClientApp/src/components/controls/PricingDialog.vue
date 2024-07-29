@@ -10,13 +10,13 @@
       <div class="section-title" style="margin-bottom: 40px;">
         <div style="text-align: center;">
           <div class="menu-btns" style="margin-left: 5px;">
-            <a style="margin-right: 10px; padding: 10px 25px;  margin-top: 10px;" class="btn btn-light" :class="{ 'active': durationActive(6) }" @click="selectDuration(6)">
+            <a style="margin-right: 10px; padding: 15px;  margin-top: 10px;" class="btn btn-light" :class="{ 'active': durationActive(6) }" @click="selectDuration(6)">
               6 tháng
             </a>
-            <a style="margin-right: 10px; padding: 10px 25px;  margin-top: 10px;" class="btn btn-light" :class="{ 'active': durationActive(3) }" @click="selectDuration(3)">
+            <a style="margin-right: 10px; padding: 15px;  margin-top: 10px;" class="btn btn-light" :class="{ 'active': durationActive(3) }" @click="selectDuration(3)">
               3 tháng
             </a>
-            <a style="padding: 10px 25px; margin-top: 10px;" class="btn btn-light" :class="{ 'active': durationActive(1) }" @click="selectDuration(1)">
+            <a style="padding: 15px; margin-top: 10px;" class="btn btn-light" :class="{ 'active': durationActive(1) }" @click="selectDuration(1)">
               1 tháng
             </a>
           </div>

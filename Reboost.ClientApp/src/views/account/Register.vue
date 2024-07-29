@@ -64,7 +64,7 @@
               </div>
               <el-form-item>
                 <form ref="facebookLoginForm" method="post" :action="facebookFormAction">
-                  <el-button type="primary" plain style="width: 48%; float: left;" @click="submitFacebookLoginForm()">
+                  <el-button type="primary" plain style="width: 48%; float: left;" :disabled="true" @click="submitFacebookLoginForm()">
                     Facebook
                   </el-button>
                 </form>

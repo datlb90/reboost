@@ -94,6 +94,7 @@ namespace Reboost.WebApi.Identity
                 }
                 else
                 {
+                    
                     var identityUser = new ApplicationUser
                     {
                         Email = model.Email,

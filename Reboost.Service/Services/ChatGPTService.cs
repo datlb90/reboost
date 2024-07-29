@@ -105,17 +105,17 @@ namespace Reboost.Service.Services
                 }
                 prompt += "Given the following response essay:\r\n\r\n" + model.essay + "\r\n\r\n";
 
-                if (model.task == "Academic Writing Task 2")
-                    prompt += "Evaluate the essay and provide the scores in JSON format. The JSON object should include the following properties, each scored using IELTS band score in whole numbers:\r\n\r\n- taskResponseScore: The score of the essay for the Task Response criterion\r\n- coherenceScore: The score of the essay for the Coherence and Cohesion criterion\r\n- lexicalResourceScore: The score of the essay for the Lexical Resource criterion\r\n- grammarScore: The score of the essay for the Grammatical Range and Accuracy criterion\r\n";
-                else
-                    prompt += "Evaluate the essay and provide the scores in JSON format. The JSON object should include the following properties, each scored using IELTS band score in whole numbers:\r\n\r\n- taskAchievementScore: The score of the essay for the Task Achievement criterion\r\n- coherenceScore: The score of the essay for the Coherence and Cohesion criterion\r\n- lexicalResourceScore: The score of the essay for the Lexical Resource criterion\r\n- grammarScore: The score of the essay for the Grammatical Range and Accuracy criterion\r\n";
-
-
                 //if (model.task == "Academic Writing Task 2")
-                //    prompt += "Evaluate the IELTS essay and provide the scores in JSON format. The JSON object should include the following properties, each scored using IELTS band score in whole numbers:\r\n\r\n- taskResponseScore: The score of the essay for the Task Response criterion\r\n- clarityOfPosition: Assesses the clarity of the essay's position\r\n- developmentOfIdeas: Assesses the development of ideas in the essay\r\n- justificationOfOpinion: Assesses the justification of opinions in the essay\r\n\r\n- coherenceScore: The score of the essay for the Coherence and Cohesion criterion\r\n- logicalOrganization: Assesses the logical organization of the essay\r\n- paragraphing: Assesses the use of paragraphs in the essay\r\n- cohesiveDevices: Assesses the use of cohesive devices in the essay\r\n\r\n- lexicalResourceScore: The score of the essay for the lexical Resource criterion\r\n- rangeOfVocabulary: Assesses the range of vocabulary used in the essay\r\n- accuracyOfWordChoice: Assesses the accuracy of word choice in the essay\r\n- spellingAndFormation: Assesses the accuracy of spelling and word formation in the essay\r\n- registerAndStyle: Assesses the appropriateness of register and style in the essay\r\n\r\n- grammarScore: The score of the essay for the Grammatical Range and Accuracy criterion\r\n- grammarRange: Assesses the range of grammar used in the essay\r\n- sentenceComplexity: Assesses the complexity of sentence structures in the essay\r\n- grammarAccuracy: Assesses the grammatical accuracy in the essay\r\n";
-
+                //    prompt += "Evaluate the essay and provide the scores in JSON format. The JSON object should include the following properties, each scored using IELTS band score in whole numbers:\r\n\r\n- taskResponseScore: The score of the essay for the Task Response criterion\r\n- coherenceScore: The score of the essay for the Coherence and Cohesion criterion\r\n- lexicalResourceScore: The score of the essay for the Lexical Resource criterion\r\n- grammarScore: The score of the essay for the Grammatical Range and Accuracy criterion\r\n";
                 //else
-                //    prompt += "Evaluate the IELTS essay and provide the scores in JSON format. The JSON object should include the following properties, each scored 0 to 9 in whole numbers:\r\n\r\n- taskAchievementScore: The score of the essay for the Task Response criterion\r\n- highlightKeyFeatures: Assesses the essay’s ability to identify the main trends, patterns, and significant data points in the visual information\r\n- compareAndContrast: Assesses the essay’s ability to accurately identify relevant data points or trends for comparison and contrast\r\n\r\n- coherenceScore: The score of the essay for the Coherence and Cohesion criterion\r\n- logicalOrganization: Assesses the logical organization of the essay\r\n- paragraphing: Assesses the use of paragraphs in the essay\r\n- cohesiveDevices: Assesses the use of cohesive devices in the essay\r\n\r\n- lexicalResourceScore: The score of the essay for the lexical Resource criterion\r\n- rangeOfVocabulary: Assesses the range of vocabulary used in the essay\r\n- accuracyOfWordChoice: Assesses the accuracy of word choice in the essay\r\n- spellingAndFormation: Assesses the accuracy of spelling and word formation in the essay\r\n- registerAndStyle: Assesses the appropriateness of register and style in the essay\r\n\r\n- grammarScore: The score of the essay for the Grammatical Range and Accuracy criterion\r\n- grammarRange: Assesses the range of grammar used in the essay\r\n- sentenceComplexity: Assesses the complexity of sentence structures in the essay\r\n- grammarAccuracy: Assesses the grammatical accuracy in the essay\r\n";
+                //    prompt += "Evaluate the essay and provide the scores in JSON format. The JSON object should include the following properties, each scored using IELTS band score in whole numbers:\r\n\r\n- taskAchievementScore: The score of the essay for the Task Achievement criterion\r\n- coherenceScore: The score of the essay for the Coherence and Cohesion criterion\r\n- lexicalResourceScore: The score of the essay for the Lexical Resource criterion\r\n- grammarScore: The score of the essay for the Grammatical Range and Accuracy criterion\r\n";
+
+
+                if (model.task == "Academic Writing Task 2")
+                    prompt += "Evaluate the IELTS essay and provide the scores in JSON format. The JSON object should include the following properties, each scored using IELTS band score in whole numbers:\r\n\r\n- taskResponseScore: The score of the essay for the Task Response criterion\r\n- clarityOfPosition: Assesses the clarity of the essay's position\r\n- developmentOfIdeas: Assesses the development of ideas in the essay\r\n- justificationOfOpinion: Assesses the justification of opinions in the essay\r\n\r\n- coherenceScore: The score of the essay for the Coherence and Cohesion criterion\r\n- logicalOrganization: Assesses the logical organization of the essay\r\n- paragraphing: Assesses the use of paragraphs in the essay\r\n- cohesiveDevices: Assesses the use of cohesive devices in the essay\r\n\r\n- lexicalResourceScore: The score of the essay for the lexical Resource criterion\r\n- rangeOfVocabulary: Assesses the range of vocabulary used in the essay\r\n- accuracyOfWordChoice: Assesses the accuracy of word choice in the essay\r\n- spellingAndFormation: Assesses the accuracy of spelling and word formation in the essay\r\n- registerAndStyle: Assesses the appropriateness of register and style in the essay\r\n\r\n- grammarScore: The score of the essay for the Grammatical Range and Accuracy criterion\r\n- grammarRange: Assesses the range of grammar used in the essay\r\n- sentenceComplexity: Assesses the complexity of sentence structures in the essay\r\n- grammarAccuracy: Assesses the grammatical accuracy in the essay\r\n";
+
+                else
+                    prompt += "Evaluate the IELTS essay and provide the scores in JSON format. The JSON object should include the following properties, each scored 0 to 9 in whole numbers:\r\n\r\n- taskAchievementScore: The score of the essay for the Task Response criterion\r\n- highlightKeyFeatures: Assesses the essay’s ability to identify the main trends, patterns, and key features in the visual information\r\n- compareAndContrast: Assesses the essay’s ability to accurately identify relevant data points or trends for comparison and contrast\r\n- dataSelection: Assesses the essay’s ability to select the most important and relevant data points from the visual information\r\n\r\n- coherenceScore: The score of the essay for the Coherence and Cohesion criterion\r\n- logicalOrganization: Assesses the logical organization of the essay\r\n- paragraphing: Assesses the use of paragraphs in the essay\r\n- cohesiveDevices: Assesses the use of cohesive devices in the essay\r\n\r\n- lexicalResourceScore: The score of the essay for the lexical Resource criterion\r\n- rangeOfVocabulary: Assesses the range of vocabulary used in the essay\r\n- accuracyOfWordChoice: Assesses the accuracy of word choice in the essay\r\n- spellingAndFormation: Assesses the accuracy of spelling and word formation in the essay\r\n- registerAndStyle: Assesses the appropriateness of register and style in the essay\r\n\r\n- grammarScore: The score of the essay for the Grammatical Range and Accuracy criterion\r\n- grammarRange: Assesses the range of grammar used in the essay\r\n- sentenceComplexity: Assesses the complexity of sentence structures in the essay\r\n- grammarAccuracy: Assesses the grammatical accuracy in the essay\r\n";
 
                 var taskResponseResult = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
                 {
@@ -132,6 +132,30 @@ namespace Reboost.Service.Services
 
                 if (result != null)
                 {
+                    if (model.task == "Academic Writing Task 1")
+                    {
+                        // Apply under word penalty
+                        char[] delimiters = new char[] { ' ', '\r', '\n' };
+                        int wordCount = model.essay.Split(delimiters, StringSplitOptions.RemoveEmptyEntries).Length;
+                        result.AppropriateWordCount = true;
+                        if (wordCount < 150)
+                        {
+                            result.AppropriateWordCount = false;
+                           
+                        }
+                    }
+                    else
+                    {
+                        // Apply under word penalty
+                        char[] delimiters = new char[] { ' ', '\r', '\n' };
+                        result.AppropriateWordCount = true;
+                        int wordCount = model.essay.Split(delimiters, StringSplitOptions.RemoveEmptyEntries).Length;
+                        if (wordCount < 250)
+                        {
+                            result.AppropriateWordCount = false;
+                        }
+                    }
+
                     // Calculating Overall Band Score
                     List<decimal> overallBandScores = new List<decimal>();
                     if (model.task == "Academic Writing Task 1")
