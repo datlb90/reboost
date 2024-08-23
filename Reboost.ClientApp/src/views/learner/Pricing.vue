@@ -1298,6 +1298,9 @@ export default {
         this.proratedAmount = this.userSubscription.proratedAmount
       }
     }
+
+     // Dispatch render event after DOM manipulations
+     document.dispatchEvent(new Event('render-event'))
   },
   methods: {
     getUrlParameter(sParam) {

@@ -3914,6 +3914,9 @@ export default {
     this.intextCommentCompleted = true
     this.$refs.toolBar?.handleScale('fitPage')
     this.$refs.toolBar?.insertExpandMenu()
+
+     // Dispatch render event after DOM manipulations
+     document.dispatchEvent(new Event('render-event'))
   },
   beforeCreate() {
     document.body.style = 'overflow: hidden'

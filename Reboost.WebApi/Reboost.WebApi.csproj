@@ -2084,6 +2084,21 @@
     <Content Remove="wwwroot\img\ielts-logo.46a90ee1.png" />
     <Content Remove="wwwroot\img\avatar-large.77904896.svg" />
     <Content Remove="wwwroot\static\demand.pdf" />
+    <Content Remove="wwwroot\robots.txt" />
+    <Content Remove="wwwroot\css\chunk-vendors.83cc7cca.css" />
+    <Content Remove="wwwroot\img\ielts-logo.46a90ee1.png" />
+    <Content Remove="wwwroot\img\nguyen-thai-nguyen.4b692c39.png" />
+    <Content Remove="wwwroot\img\avatar-large.77904896.svg" />
+    <Content Remove="wwwroot\index.html" />
+    <Content Remove="wwwroot\img\like.544f0bcf.png" />
+    <Content Remove="wwwroot\static\demand copy 5.pdf" />
+    <Content Remove="wwwroot\static\demand copy 3.pdf" />
+    <Content Remove="wwwroot\static\demand copy 6.pdf" />
+    <Content Remove="wwwroot\favicon.ico" />
+    <Content Remove="wwwroot\static\demand copy 4.pdf" />
+    <Content Remove="wwwroot\static\demand copy.pdf" />
+    <Content Remove="wwwroot\static\test1.pdf" />
+    <Content Remove="wwwroot\static\example.pdf" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="log4net" />

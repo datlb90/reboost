@@ -61,6 +61,9 @@ export default {
     })
 
     window.scrollTo(0, 1000)
+
+     // Dispatch render event after DOM manipulations
+     document.dispatchEvent(new Event('render-event'))
   },
   updated: function () {
     this.$nextTick(function () {
@@ -76,28 +79,6 @@ export default {
           }
           document.title = 'Reboost - Trải nghiệm'
         }
-        // else if (section == 'new-method') {
-        //   href = 'howItWorks'
-        //   anchor = $('#' + href).offset()
-        //   if (anchor) {
-        //     window.scrollTo(anchor.left, anchor.top - 20)
-        //   }
-        //   document.title = 'Reboost - Phương pháp học mới'
-        // } else if (section == 'benefit') {
-        //   href = 'benefit'
-        //   anchor = $('#' + href).offset()
-        //   if (anchor) {
-        //     window.scrollTo(0, anchor.top - 20)
-        //   }
-        //   document.title = 'Reboost - Lợi ích của thành viên'
-        // } else if (section == 'features') {
-        //   href = 'features'
-        //   anchor = $('#' + href).offset()
-        //   if (anchor) {
-        //     window.scrollTo(0, anchor.top - 20)
-        //   }
-        //   document.title = 'Reboost - Chức năng độc đáo'
-        // }
       }
     })
   },

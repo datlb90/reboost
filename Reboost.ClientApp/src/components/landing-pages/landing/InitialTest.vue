@@ -7,7 +7,7 @@
         <div class="section-title">
           <h2>Luyện tập cùng Reboost</h2>
           <div class="bar" />
-          <p style="max-width: 85%;">Chúng tôi cung cấp miễn phí bộ chủ đề được cập nhật thường xuyên kèm theo gợi ý từ vựng nâng band,
+          <p style="max-width: 85%;">Reboost cung cấp miễn phí bộ chủ đề được cập nhật thường xuyên kèm theo gợi ý từ vựng nâng band,
             hướng dẫn phân tích, và bài viết mẫu cho từng chủ đề. Hãy cùng luyện tập và tiến bộ mỗi ngày với Reboost.</p>
         </div>
         <splitpanes class="default-theme" vertical style="height: 800px; width: 100%; -webkit-box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06); box-shadow: 0 2px 28px 0 rgba(0, 0, 0, 0.06);">
@@ -370,7 +370,7 @@
         <div class="section-title">
           <h3>Luyện tập cùng Reboost</h3>
           <div class="bar" />
-          <p style="max-width: 85%;">Chúng tôi cung cấp miễn phí bộ chủ đề được cập nhật thường xuyên kèm theo gợi ý từ vựng nâng band,
+          <p style="max-width: 85%;">Reboost cung cấp miễn phí bộ chủ đề được cập nhật thường xuyên kèm theo gợi ý từ vựng nâng band,
             hướng dẫn phân tích, và bài viết mẫu cho từng chủ đề. Hãy cùng luyện tập và tiến bộ mỗi ngày với Reboost.</p>
         </div>
         <div style="width: 100%;">

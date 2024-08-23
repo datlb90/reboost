@@ -5,6 +5,7 @@ const port = process.env.port || process.env.npm_config_port || 3011
 
 var PrerenderSpaPlugin = require('prerender-spa-plugin')
 var path = require('path')
+const Renderer = PrerenderSpaPlugin.PuppeteerRenderer
 
 module.exports = {
   devServer: {
@@ -17,12 +18,19 @@ module.exports = {
 
     return {
       plugins: [
-        new PrerenderSpaPlugin(
+        new PrerenderSpaPlugin({
           // Absolute path to compiled SPA
-          path.resolve(__dirname, 'dist'),
+          staticDir: path.resolve(__dirname, '../Reboost.WebApi/wwwroot'),
           // List of routes to prerender
-          ['/', '/about'],
-        )
+          routes: ['/', '/pricing', '/sample/feedback/basic'],
+
+          // Configure Puppeteer for better rendering of pages with dynamic content
+          renderer: new Renderer({
+            headless: true,
+            renderAfterDocumentEvent: 'render-event', // Wait for 'render-event' to be dispatched
+            renderAfterTime: 5000 // Add a delay to ensure everything is fully loaded (optional)
+          })
+        })
       ]
     }
   }
