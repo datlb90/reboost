@@ -25,6 +25,7 @@ namespace Reboost.DataAccess
         IOrderRepository Orders { get; }
         ISubscriptionRepository Subscriptions { get; }
         IReviewScoreRepository ReviewScores { get; }
+        ICourseRepository Courses { get; }
         Task<int> CommitAsync();
     }
 
@@ -49,6 +50,8 @@ namespace Reboost.DataAccess
         private OrderRepository _orderRepository;
         private SubscriptionRepository _subscriptionRepository;
         private ReviewScoreRepository _reviewScoreRepository;
+        private CourseRepository _courseRepository;
+
         public UnitOfWork(ReboostDbContext context)
         {
             _context = context;
@@ -72,6 +75,7 @@ namespace Reboost.DataAccess
         public IOrderRepository Orders => _orderRepository = _orderRepository ?? new OrderRepository(_context);
         public ISubscriptionRepository Subscriptions => _subscriptionRepository = _subscriptionRepository ?? new SubscriptionRepository(_context);
         public IReviewScoreRepository ReviewScores => _reviewScoreRepository = _reviewScoreRepository ?? new ReviewScoreRepository(_context);
+        public ICourseRepository Courses => _courseRepository = _courseRepository ?? new CourseRepository(_context);
 
         public async Task<int> CommitAsync()
         {

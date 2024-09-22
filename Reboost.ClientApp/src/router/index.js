@@ -19,7 +19,7 @@ import ForgotPassword from '../views/account/ForgotPassword.vue'
 import ResetPassword from '../views/account/ResetPassword.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
 import Review from '../views/learner/Review.vue'
-import Feedback from '../views/learner/Feedback.vue'
+// import Feedback from '../views/learner/Feedback.vue'
 import Feedback2 from '../views/learner/Feedback2.vue'
 import SampleFeedback from '../views/learner/SampleFeedback.vue'
 import ReviewTest from '../views/learner/ReviewTest.vue'
@@ -52,9 +52,13 @@ import LearnerArticles from '../views/learner/Articles.vue'
 import ArticleDetail from '../views/learner/ArticleDetail.vue'
 import PaymentRedirect from '../views/learner/PaymentRedirect.vue'
 
-// import PageNotFound from '../views/PageNotFound.vue'
 import protect from './guard'
 import { PageName, UserRole } from '@/app.constant'
+
+// Courses components
+import CoursePlayLayout from '../views/course/CoursePlayLayout.vue'
+import CourseHome from '../views/course/CourseHome.vue'
+import CourseDoc from '../views/course/CourseDoc.vue'
 
 // Guard
 import { userReviewAuthentication } from './guard/UserReviewValidation'
@@ -76,6 +80,27 @@ const router = new VueRouter({
         plainLayout: false,
         landingPage: true
       }
+    },
+    {
+      path: '/course-play/:courseName',
+      name: 'CoursePlay',
+      component: CoursePlayLayout,
+      meta: {
+        plainLayout: false,
+        landingPage: false
+      },
+      children: [
+        {
+          path: '',
+          name: 'CourseHome',
+          component: CourseHome
+        },
+        {
+          path: 'doc/:docName',
+          name: 'CourseDoc',
+          component: CourseDoc
+        }
+      ]
     },
     {
       path: '/rater',
@@ -236,17 +261,17 @@ const router = new VueRouter({
       }
     },
     {
-      path: '/feedback/:questionId/:docId/:reviewId',
-      name: PageName.REVIEW,
-      component: Feedback,
-      beforeEnter: async (to, from, next) => {
-        const check = await userReviewAuthentication(to.params.reviewId)
-        if (check) {
-          next({ name: PageName.NOT_FOUND })
-        } else {
-          next()
-        }
-      },
+      path: '/peer/review/:questionId/:docId/:reviewId',
+      name: 'Peer Review',
+      component: Review,
+      // beforeEnter: async (to, from, next) => {
+      //   const check = await userReviewAuthentication(to.params.reviewId)
+      //   if (check) {
+      //     next({ name: PageName.NOT_FOUND })
+      //   } else {
+      //     next()
+      //   }
+      // },
       meta: {
         plainLayout: false,
         landingPage: false,
@@ -271,24 +296,6 @@ const router = new VueRouter({
         loginRequired: true
       }
     },
-    // {
-    //   path: '/review/:questionId/:docId/:reviewId',
-    //   name: PageName.REVIEW,
-    //   component: Review,
-    //   beforeEnter: async (to, from, next) => {
-    //     const check = await userReviewAuthentication(to.params.reviewId)
-    //     if (check) {
-    //       next({ name: PageName.NOT_FOUND })
-    //     } else {
-    //       next()
-    //     }
-    //   },
-    //   meta: {
-    //     plainLayout: false,
-    //     landingPage: false,
-    //     loginRequired: true
-    //   }
-    // },
     {
       path: '/review-plain/:questionId/:docId/:reviewId',
       name: PageName.REVIEW,
@@ -313,24 +320,6 @@ const router = new VueRouter({
       component: Review,
       beforeEnter: async (to, from, next) => {
         next()
-        // if (to.params.isViewOrRate === 'view' || to.params.isViewOrRate === 'rate') {
-        //   const check = await revieweeReviewAuthentication(to.params.reviewId)
-        //   if (check === 0) {
-        //     next({ path: 'notfound' })
-        //   } else {
-        //     if (check === 1 && to.params.isViewOrRate === 'view') {
-        //       next()
-        //     }
-        //     if (check === 2 && to.params.isViewOrRate === 'rate') {
-        //       next()
-        //     }
-        //     if (check === 2 && to.params.isViewOrRate === 'view') {
-        //       next({ path: 'notfound' })
-        //     }
-        //   }
-        // } else {
-        //   next({ path: 'notfound' })
-        // }
       },
       meta: {
         plainLayout: false,

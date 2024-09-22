@@ -94,7 +94,7 @@
     <!-- <rubric :question-id="questionId" :review-id="reviewId" /> -->
     <div id="comment-wrapper">
       <el-card id="add-new-comment" class="box-card add-new-comment" style="width: 100%; display: none;">
-        <div slot="header" class="clearfix">
+        <div slot="header" class="clearfix" style="padding: 8px 12px; background: rgb(213 204 255);">
           <div>
             <div style="font-weight: 500; font-size: 15px; text-align: left;">
               Thêm bình luận mới
@@ -131,13 +131,13 @@
         :page-height="comment.annotation.pageHeight"
         :style="{top: comment.topPosition + 'px', width: '100%'}"
       >
-        <div slot="header" class="clearfix">
+        <div slot="header" class="clearfix" style="padding: 8px 12px; background: rgb(213 204 255);">
           <div>
             <div
               v-if="comment.text"
               style="font-weight: 500; font-size: 15px; text-align: left;  width: 180px; text-overflow: ellipsis; word-break: break-word;  overflow: hidden; white-space: nowrap;"
             >
-              "{{ comment.text }}"
+              "{{ comment.type }}"
             </div>
             <div v-else-if="comment.annotation.type =='point'" style="font-weight: 500; font-size: 15px; text-align: left;">
               Ghi chú
@@ -160,7 +160,7 @@
             :style="{'-webkit-line-clamp': isInShowMoreList(comment.uuid).value==0 ? '3':'inherit'}"
             style="text-align: left; overflow-wrap: break-word; white-space: pre-wrap; display: -webkit-box;overflow: hidden;-webkit-box-orient: vertical;"
           >
-            {{ comment.content }}
+            {{ comment.text }}
           </div>
           <div v-if="isInShowMoreList(comment.uuid)" class="show__more-container" @click="toggleShowMore(comment.uuid)">
             {{ isInShowMoreList(comment.uuid).value==0 ? 'Show more':'Show less' }}
@@ -169,13 +169,13 @@
             v-show="comment.isSelected == true || comment.isSaved == false"
             :id="'comment-input-' + comment.uuid"
             :ref="'comment' + comment.uuid"
-            v-model="comment.content"
+            v-model="comment.text"
             type="textarea"
             resize="none"
             autosize
           />
           <div v-show="comment.isSelected == true || comment.isSaved == false" style="height: 20px; margin-top: 10px;">
-            <el-button type="primary" :disabled="comment.content.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="editCommentCard(comment)">
+            <el-button type="primary" :disabled="comment.text.replace(/\s/g, '').length == 0" style="float: left; padding: 5px;" @click="editCommentCard(comment)">
               Save
             </el-button>
             <el-button style="float: right; padding: 5px;" @click="cancelCommentText('edit',comment)">
@@ -932,6 +932,8 @@ export default {
         element.isSelected = false
         element.isSaved = true
       })
+
+      console.log('Comments:', this.comments)
 
       // await this.comments.sort((a, b) => (a.topPosition >= b.topPosition) ? 1 : -1)
       await this.comments.sort(this.compareTopAnnoAttributes)

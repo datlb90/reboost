@@ -95,18 +95,13 @@ export default async (router) => {
       return
     }
 
-    if (to.path == '/sample/feedback/basic' || to.path == '/sample/feedback/basic/' || to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing' || to.path == '/pricing/' || to.path == '/confirm/email') {
-      next()
-      return
-    }
-
-    if (to.path == '/sample/feedback/basic' || to.path == '/sample/feedback/basic/' || to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing' || to.path == '/pricing/' || to.path == '/confirm/email') {
+    if (to.name == 'CourseDoc' || to.path == '/sample/feedback/basic' || to.path == '/sample/feedback/basic/' || to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing' || to.path == '/pricing/' || to.path == '/confirm/email') {
       next()
       return
     }
 
     if (!currentUser || !currentUser.id) {
-      if (to.path == '/sample/feedback/basic' || to.path == '/sample/feedback/basic/' || to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing' || to.path == '/pricing/' || to.path == '/confirm/email') {
+      if (to.name == 'CourseDoc' || to.path == '/sample/feedback/basic' || to.path == '/sample/feedback/basic/' || to.path == '/login' || to.path == '/terms' || to.path == '/privacy' || to.path == '/data/deletion' || to.path == '/' || to.path == '/register' || to.path == '/rater' || to.path == '/rater/login' || to.path == '/rater/register' || to.path == '/forgot/password' || to.path == '/reset/password' || to.path == '/pricing' || to.path == '/pricing/' || to.path == '/confirm/email') {
         next()
         return
       }
@@ -180,40 +175,6 @@ export default async (router) => {
           } else {
             return next({ name: PageName.QUESTIONS })
           }
-
-          // Check if user is requesting a review
-          // Open the request review dialog
-          // const personalQuestion = store.getters['question/getPersonalQuestion']
-          // if (personalQuestion) {
-          //   // Create the new submission and new AI review request
-          //   const rs = await store.dispatch('question/submitPersonalQuestion', currentUser.id)
-          //   console.log(rs)
-          //   if (rs) {
-          //     const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
-          //     // Send user to the review page for getting feedback
-          //     next({ path: url })
-          //   } else {
-          //     return next({ name: PageName.QUESTIONS })
-          //   }
-          // } else {
-          //   // check for personal review request and initial test here
-          //   // Check if user is submitting an initial test
-          //   const initialSubmission = store.getters['question/getInitialSubmission']
-          //   if (initialSubmission) {
-          //     // Create the new submission and new AI review request
-          //     const rs = await store.dispatch('question/submitInitialTest', currentUser.id)
-          //     // Send user to the review page for getting feedback
-          //     if (rs) {
-          //       const url = `/review/${rs.questionId}/${rs.docId}/${rs.reviewId}`
-          //       // Send user to the review page for getting feedback
-          //       next({ path: url })
-          //     } else {
-          //       return next({ name: PageName.QUESTIONS })
-          //     }
-          //   } else {
-          //     return next({ name: PageName.QUESTIONS })
-          //   }
-          // }
         } else {
           next({ name: PageName.NOT_FOUND })
           return

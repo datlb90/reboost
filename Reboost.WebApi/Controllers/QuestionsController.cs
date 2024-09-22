@@ -98,7 +98,7 @@ namespace Reboost.WebApi.Controllers
             return await _service.GetAllByUserAsync(userId);
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet]
         [Route("getById/{id}")]
         public async Task<QuestionModel> GetByIdAsync([FromRoute] int id)

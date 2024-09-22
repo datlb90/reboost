@@ -164,6 +164,8 @@ namespace Reboost.WebApi
             services.AddScoped<IChatGPTService, ChatGPTService>();
             services.AddScoped<IOrderService, Reboost.Service.Services.OrderService>();
             services.AddScoped<ISubscriptionService, Reboost.Service.Services.SubscriptionService>();
+            services.AddScoped<ICourseService, CourseService>();
+
             services.AddControllers().AddNewtonsoftJson(option => option.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
             services.AddRazorPages();
             services.AddMvc(option => option.EnableEndpointRouting = false);

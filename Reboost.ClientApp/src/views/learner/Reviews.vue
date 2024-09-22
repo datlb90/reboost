@@ -691,7 +691,7 @@ export default {
   },
   methods: {
     rowClicked(row, column, event) {
-      const url = `/review/${row.id}/${row.docId}/${row.reviewId}`
+      const url = `/peer/review/${row.id}/${row.docId}/${row.reviewId}`
       this.$router.push(url)
     },
     closeIntro() {
@@ -882,14 +882,14 @@ export default {
       return moment.utc(time).tz(tz).format('DD/MM/YYYY LT')
     },
     navigateToReviewRequest(object) {
-      const url = `/review/${object.submission.questionId}/${object.submission.docId}/${object.reviewId}`
+      const url = `/peer/review/${object.submission.questionId}/${object.submission.docId}/${object.reviewId}`
       this.$router.push(url)
     },
     onNewRequestClick() {
       this.isLoading = true
       reviewService.newRequest().then(rs => {
         if (rs) {
-          this.$router.push({ name: PageName.REVIEW, params: { questionId: rs.reviewRequest.submission.questionId, docId: rs.reviewRequest.submission.docId, reviewId: rs.reviewId }})
+          this.$router.push({ name: 'Peer Review', params: { questionId: rs.reviewRequest.submission.questionId, docId: rs.reviewRequest.submission.docId, reviewId: rs.reviewId }})
         } else {
           this.$notify.error({
             title: 'Đã xảy ra lỗi',

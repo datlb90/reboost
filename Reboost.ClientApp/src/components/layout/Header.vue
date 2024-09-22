@@ -23,6 +23,9 @@
               <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="margin-top: 10px;">
                 <router-link to="/submissions" class="nav-link">Bài viết của tôi</router-link>
               </li>
+              <!-- <li v-if="selectedTest && selectedTest.length > 0" class="nav-item" style="margin-top: 10px;">
+                <router-link to="/reviews" class="nav-link">Đánh giá của tôi</router-link>
+              </li> -->
               <li class="nav-item" style="margin-top: 10px;">
                 <a href="#" class="nav-link" @click.prevent="gotoPricing()">Bảng giá</a>
               </li>
@@ -273,7 +276,7 @@ export default {
       this.screenWidth = newWidth
     },
     $route(to, from) {
-      if (to.name == 'PracticeWriting' || to.name == 'Review') {
+      if (to.name == 'PracticeWriting' || to.name == 'Review' || to.name == 'CourseDoc') {
         this.fullSizeHeader = true
       } else {
         this.fullSizeHeader = false
@@ -294,7 +297,7 @@ export default {
     // this.waitForFeedbackDialogVisible = true
   },
   created() {
-    if (this.$router.currentRoute.name == 'PracticeWriting' || this.$router.currentRoute.name == 'Review') {
+    if (this.$router.currentRoute.name == 'PracticeWriting' || this.$router.currentRoute.name == 'Review' || this.$router.currentRoute.name == 'CourseDoc') {
       this.fullSizeHeader = true
     } else {
       this.fullSizeHeader = false

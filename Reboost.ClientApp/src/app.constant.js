@@ -68,7 +68,8 @@ export const PageName = {
   SAMPLES: 'Samples',
   ARTICLES: 'Articles',
   LEARNER_ARTICLES: 'LearnerArticles',
-  LEARNER_ARTICLE_DETAIL: 'LearnerArticleDetail'
+  LEARNER_ARTICLE_DETAIL: 'LearnerArticleDetail',
+  FEEDBACK: 'Feedback'
 }
 
 export const UserRole = {
