@@ -83,7 +83,7 @@ namespace Reboost.Service.Services
 
     public class ChatGPTService : BaseService, IChatGPTService
     {
-        private string OPENAI_API_KEY = "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"; // "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";
+        private string OPENAI_API_KEY = "";
         IConfiguration configuration;
         public ChatGPTService(IUnitOfWork unitOfWork,
             IConfiguration _configuration) : base(unitOfWork)
@@ -3457,6 +3457,7 @@ namespace Reboost.Service.Services
                 };
                 return model;
             }
+
             catch (Exception e)
             {
 
